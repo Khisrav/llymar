@@ -1,37 +1,46 @@
 <?php
 
+use App\Http\Controllers\AppCalculatorController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Foundation\Application;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\SocialiteController;
 
+/*
+ *  PUBLIC ROUTES
+ */
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canLogin' => Route::has('auth'),
     ]);
 });
 
-//public routes
 Route::get('/auth', function() {
     return Inertia::render('Auth/Index', [
-        'canLogin' => Route::has('Auth'),
-        'canRegister' => Route::has('register'),
-    ]); 
+        'canLogin' => Route::has('auth'),
+    ]);
 })->name('auth');
 
-
-//private routes
+/*
+ *  PRIVATE ROUTES
+ */
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
-    // Add other protected routes here
+    Route::get('/app', function () {
+        return Inertia::render('App/Index', [
+        ]);
+    })->name('app.home');
+    
+    Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
+    
+    Route::get('/app/history', function () {
+        return Inertia::render('App/History', [
+            
+        ]); 
+    })->name('app.history');
 });
 
-//socialite routes
+/*
+ *  SOCIALITE ROUTES
+ */
 Route::get('login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
 Route::get('login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
 

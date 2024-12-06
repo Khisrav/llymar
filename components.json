@@ -5,7 +5,7 @@
   "tsConfigPath": "./tsconfig.json",
   "tailwind": {
     "config": "tailwind.config.js",
-    "css": "resources/css/app.css",
+    "css": "@/css/app.css",
     "baseColor": "slate",
     "cssVariables": true,
     "prefix": ""
@@ -13,6 +13,6 @@
   "framework": "laravel",
   "aliases": {
     "components": "resources/js/Components",
-    "utils": "resources/js/lib/utils"
+    "utils": "@/lib/utils"
   }
 }

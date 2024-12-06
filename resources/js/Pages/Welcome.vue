@@ -7,6 +7,4 @@ import { Head } from '@inertiajs/vue3';
 
 <template>
     <Head title="Welcome" />
-    
-    <GuestHeaderLayout/>
 </template>

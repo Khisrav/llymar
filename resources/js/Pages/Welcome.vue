@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedHeaderLayout from '@/Layouts/AuthenticatedHeaderLayout.vue';
+import GuestHeaderLayout from '../Layouts/GuestHeaderLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
 
@@ -8,5 +8,5 @@ import { Head } from '@inertiajs/vue3';
 <template>
     <Head title="Welcome" />
     
-    <AuthenticatedHeaderLayout/>
+    <GuestHeaderLayout/>
 </template>

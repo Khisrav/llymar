@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Activity, ArrowUpRight, CreditCard, DollarSign, Users } from "lucide-vue-next";
+import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
 </script>
 
 <template>
+	<AuthenticatedHeaderLayout/>
 	<div class="flex min-h-screen w-full flex-col">
 		<main class="flex items-center flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
 			<svg class="w-96 h-96" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 500 500" style="enable-background: new 0 0 500 500" xml:space="preserve">

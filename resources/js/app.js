@@ -9,6 +9,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 // Layouts
 import AuthenticatedHeaderLayout from './Layouts/AuthenticatedHeaderLayout.vue';
 import GuestHeaderLayout from './Layouts/GuestHeaderLayout.vue';
+import { createPinia } from 'pinia';
 
 const appName = import.meta.env.VITE_APP_NAME || 'LLYMAR';
 
@@ -18,18 +19,12 @@ createInertiaApp({
         resolvePageComponent(
             `./Pages/${name}.vue`,
             import.meta.glob('./Pages/**/*.vue'),
-        ).then(({ default: page }) => {
-            if (name.startsWith('App')) {
-                page.layout = AuthenticatedHeaderLayout;
-            } else {
-                page.layout = GuestHeaderLayout;
-            }
-            return page;
-        }),
+        ),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(createPinia())
             .mount(el);
     },
     progress: {

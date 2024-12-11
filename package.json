@@ -11,7 +11,7 @@
         "@vitejs/plugin-vue": "^5.0.0",
         "@vue/server-renderer": "^3.4.0",
         "autoprefixer": "^10.4.12",
-        "axios": "^1.7.4",
+        "axios": "^1.7.9",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.31",
@@ -25,6 +25,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-vue-next": "^0.465.0",
+        "pinia": "^2.3.0",
         "radix-vue": "^1.9.10",
         "tailwind-merge": "^2.5.5",
         "tailwindcss-animate": "^1.0.7"

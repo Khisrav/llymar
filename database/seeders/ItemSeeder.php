@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ItemSeeder extends Seeder
@@ -192,7 +195,6 @@ class ItemSeeder extends Seeder
             array('id' => '211','idAdmin' => '6000','name' => 'Магнитный профиль под уплотнитель,','purchasing' => '1400','retail' => '2520','idParty' => '15','img' => 'http://y89883xz.beget.tech/state/images/Screenshot_15.jpg','value' => 'шт','article' => '0'),
             array('id' => '212','idAdmin' => '6000','name' => 'Магнитный уплотнитель для Z и L образной коробки','purchasing' => '1600','retail' => '2880','idParty' => '15','img' => 'http://y89883xz.beget.tech/state/images/Screenshot_15.jpg','value' => 'шт','article' => '0'),
             array('id' => '213','idAdmin' => '6000','name' => 'Ручка для сауны 20х220х320 мм Полировка и дерево','purchasing' => '2900','retail' => '5220','idParty' => '15','img' => 'http://y89883xz.beget.tech/state/images/Screenshot_15.jpg','value' => 'шт','article' => '0'),
-            array('id' => '231','idAdmin' => '6000','name' => 'Доставка до ТК','purchasing' => '1000','retail' => '0','idParty' => '15','img' => 'https://brilliant24.ru/files/cat/template_01.png','value' => 'шт','article' => '0'),
             array('id' => '237','idAdmin' => '6000','name' => 'Петля стекло-стекло открывание внутрь 90° без реза уплотнителя без крышек ХРОМ','purchasing' => '1700','retail' => '2900','idParty' => '7','img' => 'https://yourairglass.ru/public/imagesAll/i237product.jpeg','value' => 'шт','article' => '0'),
             array('id' => '238','idAdmin' => '6000','name' => 'Петля стекло-стекло открывание внутрь 90° без реза уплотнителя без крышек ЧЕРНЫЙ','purchasing' => '1700','retail' => '2900','idParty' => '7','img' => 'https://yourairglass.ru/public/imagesAll/i238product.jpeg','value' => 'шт','article' => '0'),
             array('id' => '241','idAdmin' => '6000','name' => 'Держатель стекла сквозной 30х10 вертикальный SUS304 ЧЕРНЫЙ','purchasing' => '400','retail' => '850','idParty' => '12','img' => 'https://yourairglass.ru/public/imagesAll/i241product.jpeg','value' => 'шт','article' => '0'),
@@ -402,21 +404,76 @@ class ItemSeeder extends Seeder
             array('id' => '487','idAdmin' => '6000','name' => 'Коннектор для стекла α стекло-стекло 180° ЧЕРНЫЙ','purchasing' => '800','retail' => '1550','idParty' => '13','img' => 'https://yourairglass.ru/public/imagesAll/i487product.jpeg','value' => 'шт','article' => '123')
         );
         
+        $vendor_codes = array(
+            array('id' => '1','vendor_code' => '1','img' => '01J1VJYM6MG6SB469Q5RS1WWC3.jpg','name' => 'Профиль опорный - нижний на 3 стекла','type' => NULL,'unit' => 'м.п.','price' => '1784','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-09-29 09:48:47','discount' => '0','quantity' => '10','is_warehouse' => '1'),
+            array('id' => '2','vendor_code' => '2','img' => '01J1VJZ3T4XF4CP167F75CK98P.jpg','name' => 'Профиль опорный - верхний на 3 стекла','type' => NULL,'unit' => 'м.п.','price' => '3885','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:33:47','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '3','vendor_code' => '3','img' => '01J1VJZJWVTQ1M5HE5EKVEPMGM.jpg','name' => 'Профиль опорный - нижний на 2 стекла','type' => NULL,'unit' => 'м.п.','price' => '1281','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:34:57','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '4','vendor_code' => '4','img' => '01J1VJZZDG4860TKDF133PV57H.jpg','name' => 'Профиль опорный - верхний на 2 стекла','type' => NULL,'unit' => 'м.п.','price' => '2856','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:34:42','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '5','vendor_code' => '5','img' => '01J1VK0SCG9MCJW32FMPJXNMP1.jpg','name' => 'Профиль створочный','type' => NULL,'unit' => 'м.п.','price' => '3499','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:35:03','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '6','vendor_code' => '6','img' => '01J1VK1651DCH3ZH60A22F2168.jpg','name' => 'Профиль пристенный','type' => NULL,'unit' => 'м.п.','price' => '651','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:35:19','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '7','vendor_code' => '8','img' => '01J1VJY2STPJYMGZF2MD92SDP2.jpg','name' => 'Алюминиевый межстворочный профиль','type' => 'aluminium','unit' => 'шт.','price' => '1323','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:36:13','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '8','vendor_code' => '9','img' => '01J1VK25J365VXF8NEHZDF1VX8.jpg','name' => 'Алюминиевый стекольно-торцевой профиль','type' => 'aluminium','unit' => 'шт.','price' => '5250','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:36:25','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '9','vendor_code' => '10','img' => '01J1VK1PNT6MWBV8BHMW3D30WP.jpg','name' => 'Поликарбонатный межстворочный профиль','type' => 'polycarbonate','unit' => 'шт.','price' => '1176','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:43','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '10','vendor_code' => '11','img' => '01J1VK2GWCRYYZ2K1KJSTV9A1Y.jpg','name' => 'Поликарбонатный стекольно-торцевой профиль','type' => 'polycarbonate','unit' => 'шт.','price' => '1176','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:49','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '11','vendor_code' => '12','img' => '01J1VK3K3HXBYAHZS0BP14BWMY.jpg','name' => 'Фетр щеточный 7*6','type' => NULL,'unit' => 'м.п.','price' => '46','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:36:52','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '12','vendor_code' => '13','img' => '01J1VK6KNFWY825QQSKQ914DBA.jpg','name' => 'Фетр щеточный 4*8','type' => NULL,'unit' => 'м.п.','price' => '74','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:00','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '13','vendor_code' => '14','img' => '01J1VK71K2HKA7HYVVJWGXGGFC.jpg','name' => 'Фетр щеточный 7*10','type' => NULL,'unit' => 'м.п.','price' => '53','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:05','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '14','vendor_code' => '15','img' => '01J1VK7Q9RTDPCYVN0QK2FPFZ8.jpg','name' => 'Заглушка П1','type' => NULL,'unit' => 'шт.','price' => '609','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:54','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '15','vendor_code' => '16','img' => '01J1VK99R89ESS5E9T7PTFGFE2.jpg','name' => 'Заглушка П2','type' => NULL,'unit' => 'шт.','price' => '551','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-07-03 06:08:08','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '16','vendor_code' => '17','img' => '01J1VK9T82WN6D6DPZ2KCXJ44S.jpg','name' => 'Заглушка П3','type' => NULL,'unit' => 'шт.','price' => '551','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-07-03 06:08:18','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '17','vendor_code' => '18','img' => '01J1VKBRYRCAAF0Y79AZHYQ6VW.jpg','name' => 'Заглушка Л1','type' => NULL,'unit' => 'шт.','price' => '609','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:58','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '18','vendor_code' => '19','img' => '01J1VKCAJYXH11GWGF9SCBCN6M.jpg','name' => 'Заглушка Л2','type' => NULL,'unit' => 'м.п.','price' => '609','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:59','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '19','vendor_code' => '20','img' => '01J1VKD5DQA11HX1F1NJ1MCK9E.jpg','name' => 'Заглушка Л3','type' => NULL,'unit' => 'м.п.','price' => '609','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:38:28','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '20','vendor_code' => '21','img' => '01J1VKG3HX0D76C1EGKJG4R9WG.jpg','name' => 'Демпфер закрывания','type' => NULL,'unit' => 'шт.','price' => '168','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:15','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '21','vendor_code' => '22','img' => '01J1VKGN66B3J961MR07JY7JAT.jpg','name' => 'Демпфер открывания','type' => NULL,'unit' => 'шт.','price' => '42','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:24','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '22','vendor_code' => '26','img' => '01J1VKHEWH16NRAZ0FH0D6VA8A.jpg','name' => 'Опорный ролик','type' => NULL,'unit' => 'шт.','price' => '1260','created_at' => '2024-07-02 14:49:03','updated_at' => '2024-08-02 11:37:30','discount' => '0','quantity' => '0','is_warehouse' => '1'),
+            array('id' => '23','vendor_code' => '2000','img' => '01J7VF5JDV4HKHSG4EAQV37WT8.jpg','name' => 'Глухое остекление','type' => NULL,'unit' => 'шт.','price' => '7700','created_at' => NULL,'updated_at' => '2024-09-19 07:46:50','discount' => '0','quantity' => '0','is_warehouse' => '0'),
+            array('id' => '24','vendor_code' => '2001','img' => '01J7VF8X7TQMKWW13CATAY2TBZ.jpg','name' => 'Треугольник','type' => NULL,'unit' => 'шт.','price' => '7700','created_at' => NULL,'updated_at' => '2024-09-19 07:46:48','discount' => '0','quantity' => '0','is_warehouse' => '0')
+        );
+        
         $formatted_items = array();
+        
         foreach ($items as $item) {
+            $imageUrl = $this->processImage($item['img']);
             $formatted_items[] = [
-                'id' => $item['id'],
-                // 'idAdmin' => $item['idAdmin'],
+                'id' => (int)$item['id'],
                 'name' => $item['name'],
-                'purchase_price' => $item['purchasing'],
-                'retail_price' => $item['retail'],
-                'category_id' => $item['idParty'],
-                'img' => $item['img'],
+                'purchase_price' => (int)$item['purchasing'],
+                'retail_price' => (int)$item['retail'],
+                'category_id' => (int)$item['idParty'],
+                'img' => $imageUrl,
                 'unit' => $item['value'],
-                // 'vendor_code' => $item['article']
+            ];
+        }
+        
+        $formatted_vc = [];
+
+        foreach ($vendor_codes as $vc) {
+            $imageUrl = $this->processImage('https://api.llymar.ru/storage/' . $vc['img']);
+            $formatted_vc[] = [
+                'name' => $vc['name'],
+                'purchase_price' => intval($vc['price']),
+                'retail_price' => intval($vc['price']),
+                'category_id' => 2,
+                'img' => $imageUrl,
+                'unit' => $vc['unit'],
+                'vendor_code' => 'L' . $vc['vendor_code']
             ];
         }
         
         DB::table('items')->insert($formatted_items);
+        DB::table('items')->insert($formatted_vc);
+    }
+    
+    private function processImage($imageUrl)
+    {
+        $imageContent = Http::get($imageUrl)->body();
+        $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
+        $uniqueFilename = Str::uuid() . '.' . $extension;
+        $path = 'items/' . $uniqueFilename;
+    
+        Storage::disk('public')->put($path, $imageContent);
+    
+        return Storage::url($path);
     }
 }

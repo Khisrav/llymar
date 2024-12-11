@@ -25,8 +25,7 @@ Route::get('/auth', function() {
  */
 Route::middleware(['auth'])->group(function () {
     Route::get('/app', function () {
-        return Inertia::render('App/Index', [
-        ]);
+        return Inertia::render('App/Index');
     })->name('app.home');
     
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');

@@ -15,6 +15,7 @@ class CategorySeeder extends Seeder
     {
         $parties = array(
             array('id' => '1','idAdmin' => '6000','name' => 'Стекло'),
+            array('id' => '2','idAdmin' => '6000','name' => 'Разное'),
             array('id' => '3','idAdmin' => '6000','name' => 'Раздвижные системы'),
             array('id' => '4','idAdmin' => '6000','name' => 'Штанги 30x10 мм'),
             array('id' => '5','idAdmin' => '6000','name' => 'Уплотнители'),

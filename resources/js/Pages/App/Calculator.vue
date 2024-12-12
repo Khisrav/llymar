@@ -6,11 +6,15 @@ import { useItemsStore } from '../../Stores/itemsStore';
 import { usePage } from '@inertiajs/vue3';
 import { Item } from '../../lib/types';
 import Items from '../../Components/Calculator/Items.vue';
+import Additionals from '../../Components/Calculator/Additionals.vue';
+import OrderActions from '../../Components/Calculator/OrderActions.vue';
 
 const itemsStore = useItemsStore();
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.base_url = usePage().props.base_url as string
+
+itemsStore.calculate()
 </script>
 
 <template>
@@ -19,8 +23,10 @@ itemsStore.base_url = usePage().props.base_url as string
     <h1 class="text-2xl font-bold">Калькулятор</h1>
     
     <div class="">
-        <Openings class="mb-4"/>
-        <Items class="mb-4"/>
+        <Openings class="mb-8"/>
+        <Additionals class="mb-8"/>
+        <Items class="mb-8"/>
     </div>
 </div>
+<OrderActions />
 </template>

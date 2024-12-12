@@ -6,14 +6,18 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
         <!-- Scripts -->
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&display=swap');
+            
+            * {
+                font-family: "Open Sans", sans-serif;
+                font-optical-sizing: auto;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased">
         @inertia

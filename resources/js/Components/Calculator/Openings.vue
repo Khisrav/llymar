@@ -11,8 +11,10 @@ import Input from '../ui/input/Input.vue';
 import { onMounted, ref, watch, computed, toRefs } from 'vue';
 import { doorsSelectLimiter } from '../../Utils/doorsSelectLimiter';
 import QuantitySelector from '../QuantitySelector.vue';
+import { useItemsStore } from '../../Stores/itemsStore';
 
 const openingStore = useOpeningStore();
+const itemsStore = useItemsStore();
 
 openingStore.openings.forEach((opening, index) => {
     watch(() => openingStore.openings[index].type, (newType) => {
@@ -20,6 +22,11 @@ openingStore.openings.forEach((opening, index) => {
         openingStore.openings[index].doors = limits.min;
     });
 });
+
+watch(() => openingStore.openings, () => {
+    console.log('change detected');
+    itemsStore.calculate();
+}, { deep: true });
 </script>
 
 <template>
@@ -27,7 +34,7 @@ openingStore.openings.forEach((opening, index) => {
         <h2 class="text-xl font-bold text-muted-foreground mb-4">Проемы</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
-        <div v-for="(opening, index) in openingStore.openings" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl transition-all hover:z-10">
+        <div v-for="(opening, index) in openingStore.openings" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
             <div class="flex justify-between items-center gap-2">
                 <Select v-model="openingStore.openings[index].type" class="h-9 block">
                     <SelectTrigger class="h-9 shadow-sm">

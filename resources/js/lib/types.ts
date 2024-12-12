@@ -38,6 +38,5 @@ export interface Item {
 }
 
 export interface CartItem {
-    vendor_code: string;
     quantity: number;
 }

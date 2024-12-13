@@ -8,7 +8,7 @@ import SelectContent from '../ui/select/SelectContent.vue';
 import SelectItem from '../ui/select/SelectItem.vue';
 import SelectValue from '../ui/select/SelectValue.vue';
 import Input from '../ui/input/Input.vue';
-import { onMounted, ref, watch, computed, toRefs } from 'vue';
+import { watch } from 'vue';
 import { doorsSelectLimiter } from '../../Utils/doorsSelectLimiter';
 import QuantitySelector from '../QuantitySelector.vue';
 import { useItemsStore } from '../../Stores/itemsStore';
@@ -16,16 +16,16 @@ import { useItemsStore } from '../../Stores/itemsStore';
 const openingStore = useOpeningStore();
 const itemsStore = useItemsStore();
 
-openingStore.openings.forEach((opening, index) => {
-    watch(() => openingStore.openings[index].type, (newType) => {
-        const limits = doorsSelectLimiter(newType);
-        openingStore.openings[index].doors = limits.min;
-    });
-});
-
-watch(() => openingStore.openings, () => {
+watch(() => openingStore.openings, (newOpenings) => {
     console.log('change detected');
     itemsStore.calculate();
+
+    newOpenings.forEach((opening, index) => {
+        watch(() => openingStore.openings[index].type, (newValue) => {
+            console.log(`Opening ${index} type changed to: ${newValue}`);
+            openingStore.openings[index].doors = doorsSelectLimiter(newValue).min;
+        });
+    });
 }, { deep: true });
 </script>
 
@@ -38,7 +38,7 @@ watch(() => openingStore.openings, () => {
             <div class="flex justify-between items-center gap-2">
                 <Select v-model="openingStore.openings[index].type" class="h-9 block">
                     <SelectTrigger class="h-9 shadow-sm">
-                        <SelectValue placeholder="Выберите проем" />
+                        <SelectValue placeholder="Выберите проем"/>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem v-for="(type, key) in openingStore.openingTypes" :key="key" :value="key">{{ type }}</SelectItem>
@@ -64,7 +64,7 @@ watch(() => openingStore.openings, () => {
                     <div class="gap-2 mt-2">
                         <label class="text-center mb-1 text-muted-foreground text-xs md:text-sm block">Кол-во створок:</label>
                         <QuantitySelector
-                            v-model="openingStore.openings[index].doors"
+                            v-model="opening.doors"
                             :min="doorsSelectLimiter(openingStore.openings[index].type).min"
                             :max="doorsSelectLimiter(openingStore.openings[index].type).max"
                             :step="doorsSelectLimiter(openingStore.openings[index].type).step"

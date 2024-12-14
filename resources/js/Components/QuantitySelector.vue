@@ -23,7 +23,7 @@ const props = defineProps<{
 	step: number;
 }>();
 
-const doors = defineModel<number>({ default: 1 });
+const doors = defineModel<number>({ default: 0 });
 
 const increment = () => {
 	if (doors.value < props.max) {

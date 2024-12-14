@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { EllipsisVertical, Printer, ScrollText } from "lucide-vue-next";
+import { ArrowRightIcon, EllipsisVertical, Printer, ScrollText } from "lucide-vue-next";
 import Button from "../ui/button/Button.vue";
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue";
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue";
@@ -7,13 +7,17 @@ import DropdownMenuContent from "../ui/dropdown-menu/DropdownMenuContent.vue";
 import DropdownMenuLabel from "../ui/dropdown-menu/DropdownMenuLabel.vue";
 import DropdownMenuSeparator from "../ui/dropdown-menu/DropdownMenuSeparator.vue";
 import DropdownMenuItem from "../ui/dropdown-menu/DropdownMenuItem.vue";
+import { currencyFormatter } from "../../Utils/currencyFormatter";
+import { useItemsStore } from "../../Stores/itemsStore";
+
+const itemsStore = useItemsStore();
 </script>
 
 <template>
 	<div class="h-6 md:h-10"></div>
 	<div class="z-20 fixed bottom-0 md:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 bg-white dark:bg-slate-900 p-2 px-4 md:p-4 border md:rounded-2xl shadow-sm">
 		<div class="flex items-center justify-between">
-			<span class="font-bold text-xl text-primary">123 456 ₽</span>
+			<span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price) }}</span>
 
 			<div class="flex gap-2 md:gap-4 items-center">
 				<DropdownMenu>
@@ -37,6 +41,7 @@ import DropdownMenuItem from "../ui/dropdown-menu/DropdownMenuItem.vue";
 				</DropdownMenu>
 				<Button>
 					<span class="text-base">Заказать</span>
+					<ArrowRightIcon class="size-4" />
 				</Button>
 			</div>
 		</div>

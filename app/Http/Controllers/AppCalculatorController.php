@@ -13,7 +13,7 @@ class AppCalculatorController extends Controller
         return Inertia::render('App/Calculator', [
             'base_url' => config('app.url'),
             'items' => $this->getCalculatorItems(),
-            'additional_items' => Item::all()->where('is_for_llymar', true)->whereNotIn('id', $this->getCalculatorItems()->pluck('id')),
+            'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
         ]);
     }
     

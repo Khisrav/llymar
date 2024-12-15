@@ -16,17 +16,29 @@ import { useItemsStore } from '../../Stores/itemsStore';
 const openingStore = useOpeningStore();
 const itemsStore = useItemsStore();
 
-watch(() => openingStore.openings, (newOpenings) => {
-    console.log('change detected');
-    itemsStore.calculate();
+watch(
+    () => openingStore.openings,
+    (newOpenings) => {
+        newOpenings.forEach((opening) => {
+            watch(
+                () => opening.type,
+                (newType, oldType) => {
+                    const { min, max, step } = doorsSelectLimiter(newType);
 
-    newOpenings.forEach((opening, index) => {
-        watch(() => openingStore.openings[index].type, (newValue) => {
-            console.log(`Opening ${index} type changed to: ${newValue}`);
-            openingStore.openings[index].doors = doorsSelectLimiter(newValue).min;
+                    // Adjust the `doors` value only if it's outside the allowed range
+                    if (opening.doors < min || opening.doors % step) {
+                        opening.doors = min;
+                    } else if (opening.doors > max) {
+                        opening.doors = max;
+                    }
+                },
+                { immediate: true } // Ensure it runs when the watcher initializes
+            );
         });
-    });
-}, { deep: true });
+        itemsStore.calculate();
+    },
+    { deep: true }
+);
 </script>
 
 <template>
@@ -34,7 +46,7 @@ watch(() => openingStore.openings, (newOpenings) => {
         <h2 class="text-xl font-bold text-muted-foreground mb-4">Проемы</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
-        <div v-for="(opening, index) in openingStore.openings" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
+        <div v-for="(opening, index) in openingStore.openings" :key="index" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
             <div class="flex justify-between items-center gap-2">
                 <Select v-model="openingStore.openings[index].type" class="h-9 block">
                     <SelectTrigger class="h-9 shadow-sm">
@@ -84,3 +96,4 @@ watch(() => openingStore.openings, (newOpenings) => {
     </div>
     </div>
 </template>
+Openings.vue:24 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'type') when trying to remove opening

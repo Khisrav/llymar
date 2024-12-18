@@ -20,7 +20,7 @@ const cartItems = ref(itemsStore.cartItems);
 			</Button>
 		</div>
 
-		<div class="overflow-hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mt-4 transition-all duration-1000">
+		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mt-4 transition-all duration-1000">
 			<div
 				v-for="item in itemsStore.additional_items"
 				:key="item.vendor_code"
@@ -31,12 +31,16 @@ const cartItems = ref(itemsStore.cartItems);
 				</p>
 				<div class="flex flex-row gap-2 md:gap-4">
 					<div class="basis-1/3">
-						<img :src="item.img" class="rounded w-full" />
+						<img :src="item.img" class="rounded-md w-full" />
 					</div>
-					<div class="basis-2/3 flex flex-col justify-between gap-2 md:gap-4">
+					<div class="basis-2/3 flex flex-col justify-between gap-2">
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Цена:</span>
 							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price) }}/{{ item.unit }}</span>
+						</div>
+						<div class="flex justify-between items-center text-sm text-muted-foreground">
+							<span>Итого:</span>
+							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price * itemsStore.cartItems[item.id].quantity) }}</span>
 						</div>
 
 						<QuantitySelector

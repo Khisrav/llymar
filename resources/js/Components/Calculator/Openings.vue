@@ -45,25 +45,30 @@ watch(
     <div>
         <h2 class="text-xl font-bold text-muted-foreground mb-4">Проемы</h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
         <div v-for="(opening, index) in openingStore.openings" :key="index" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
             <div class="flex justify-between items-center gap-2">
-                <Select v-model="openingStore.openings[index].type" class="h-9 block">
-                    <SelectTrigger class="h-9 shadow-sm">
-                        <SelectValue placeholder="Выберите проем"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="(type, key) in openingStore.openingTypes" :key="key" :value="key">{{ type }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Button variant="outline" size="icon" @click="openingStore.removeOpening(index)">
+                <div class="flex-1 overflow-hidden">
+                    <Select v-model="openingStore.openings[index].type" class="h-9 block text-sm">
+                        <SelectTrigger class="h-9 shadow-sm text-sm">
+                            <SelectValue placeholder="Выберите проем" class="text-sm"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="(type, key) in openingStore.openingTypes" :key="key" :value="key" class="text-sm">
+                                {{ type }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <Button variant="outline" size="icon" @click="openingStore.removeOpening(index)" class="shrink-0">
                     <Trash2Icon class="size-4" />
                 </Button>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-1 gap-2">
+
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2">
                 <div class="flex items-center">
-                    <img :src="openingStore.opening_images[opening.type]" class="w-full rounded md:mt-4">
+                    <img :src="openingStore.opening_images[opening.type]" class="w-full rounded-md mt-2 md:mt-4">
                 </div>
                 <div>
                     <label class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Размеры (ШxВ) в мм:</label>
@@ -96,4 +101,3 @@ watch(
     </div>
     </div>
 </template>
-Openings.vue:24 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'type') when trying to remove opening

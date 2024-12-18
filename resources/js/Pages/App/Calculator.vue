@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import Openings from '../../Components/Calculator/Openings.vue';
 import AuthenticatedHeaderLayout from '../../Layouts/AuthenticatedHeaderLayout.vue';
 import { useItemsStore } from '../../Stores/itemsStore';
-import { usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { Item } from '../../lib/types';
 import Items from '../../Components/Calculator/Items.vue';
 import Additionals from '../../Components/Calculator/Additionals.vue';
@@ -19,6 +19,7 @@ itemsStore.calculate()
 </script>
 
 <template>
+<Head title="Калькулятор" />
 <AuthenticatedHeaderLayout />
 <div class="container p-4 rounded-xl">
     <h1 class="text-2xl font-bold">Калькулятор</h1>

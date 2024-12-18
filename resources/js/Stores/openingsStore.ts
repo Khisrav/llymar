@@ -29,6 +29,30 @@ export const useOpeningStore = defineStore('openingStore', () => {
             height: 2700,
             type: 'left',
         },
+        // {
+        //     doors: 2,
+        //     width: 3000,
+        //     height: 2700,
+        //     type: 'right',
+        // },
+        // {
+        //     doors: 4,
+        //     width: 3000,
+        //     height: 2700,
+        //     type: 'center',
+        // },
+        // {
+        //     doors: 3,
+        //     width: 3000,
+        //     height: 2700,
+        //     type: 'inner-left',
+        // },
+        // {
+        //     doors: 3,
+        //     width: 3000,
+        //     height: 2700,
+        //     type: 'inner-right',
+        // },
     ]);
 
     const addOpening = () => {

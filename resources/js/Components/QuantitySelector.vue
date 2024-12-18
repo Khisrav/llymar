@@ -1,11 +1,11 @@
 <template>
 	<div class="flex items-center justify-between gap-2 rounded-md">
-		<Button variant="outline" :disabled="false" class="rounded-full" size="icon" @click="decrement">
+		<Button variant="outline" :disabled="doors <= props.min" class="rounded-full" size="icon" @click="decrement">
 			<MinusIcon />
 		</Button>
 		<Input v-model="doors" class="hidden" type="number" />
 		<span>{{ doors }} шт.</span>
-		<Button variant="outline" :disabled="false" class="rounded-full" size="icon" @click="increment">
+		<Button variant="outline" :disabled="doors >= props.max" class="rounded-full" size="icon" @click="increment">
 			<PlusIcon />
 		</Button>
 	</div>

@@ -14,7 +14,14 @@ class AppCalculatorController extends Controller
             'base_url' => config('app.url'),
             'items' => $this->getCalculatorItems(),
             'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
+            'glasses' => $this->getGlasses(),
         ]);
+    }
+    
+    protected function getGlasses() {
+        $glass_category_id = 1;
+        
+        return Item::where('category_id', $glass_category_id)->get()->toArray();
     }
     
     protected function getCalculatorItems() {

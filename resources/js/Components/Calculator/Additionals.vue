@@ -5,6 +5,7 @@ import { useItemsStore } from "../../Stores/itemsStore";
 import { currencyFormatter } from "../../Utils/currencyFormatter";
 import QuantitySelector from "../QuantitySelector.vue";
 import { computed, ref } from "vue";
+import Select from "../ui/select/Select.vue";
 
 const itemsStore = useItemsStore();
 const cartItems = ref(itemsStore.cartItems);
@@ -14,13 +15,34 @@ const cartItems = ref(itemsStore.cartItems);
 <template>
 	<div class="border p-2 md:p-4 rounded-2xl">
 		<div class="flex items-center">
-			<h2 class="text-xl font-bold text-muted-foreground">Дополнительно</h2>
+			<h2 class="text-xl font-bold text-muted-foreground">Доп. детали</h2>
 			<Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="">
 				<EyeOff class="size-6" />
 			</Button>
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mt-4 transition-all duration-1000">
+			<div
+				class="flex flex-col justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
+			>
+				<Select></Select>
+				<div class="flex flex-row gap-2 md:gap-4">
+					<div class="basis-1/3">
+						<!-- <img :src="item.img" class="rounded-md w-full" /> -->
+					</div>
+					<div class="basis-2/3 flex flex-col justify-between gap-2">
+						<div class="flex justify-between items-center text-sm text-muted-foreground">
+							<span>Цена:</span>
+							<!-- <span class="font-bold text-primary">{{ currencyFormatter(item.retail_price) }}/{{ item.unit }}</span> -->
+						</div>
+						<div class="flex justify-between items-center text-sm text-muted-foreground">
+							<span>Итого:</span>
+							<!-- <span class="font-bold text-primary">{{ currencyFormatter(item.retail_price * itemsStore.cartItems[item.id].quantity) }}</span> -->
+						</div>
+					</div>
+				</div>
+			</div>
+			
 			<div
 				v-for="item in itemsStore.additional_items"
 				:key="item.vendor_code"

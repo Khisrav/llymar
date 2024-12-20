@@ -1,6 +1,63 @@
 {
+  "_AuthenticatedHeaderLayout.vue_vue_type_script_setup_true_lang-D1iI7XOJ.js": {
+    "file": "assets/AuthenticatedHeaderLayout.vue_vue_type_script_setup_true_lang-D1iI7XOJ.js",
+    "name": "AuthenticatedHeaderLayout.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js",
+      "resources/js/app.js"
+    ]
+  },
+  "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js": {
+    "file": "assets/Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js",
+    "name": "Button.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_Input.vue_vue_type_script_setup_true_lang-LC0uCHgy.js": {
+    "file": "assets/Input.vue_vue_type_script_setup_true_lang-LC0uCHgy.js",
+    "name": "Input.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "resources/js/app.js",
+      "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js"
+    ]
+  },
+  "resources/js/Pages/App/Calculator.vue": {
+    "file": "assets/Calculator-BSnpLwdn.js",
+    "name": "Calculator",
+    "src": "resources/js/Pages/App/Calculator.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js",
+      "_AuthenticatedHeaderLayout.vue_vue_type_script_setup_true_lang-D1iI7XOJ.js",
+      "_Input.vue_vue_type_script_setup_true_lang-LC0uCHgy.js"
+    ]
+  },
+  "resources/js/Pages/App/Index.vue": {
+    "file": "assets/Index-9ateVmRX.js",
+    "name": "Index",
+    "src": "resources/js/Pages/App/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_AuthenticatedHeaderLayout.vue_vue_type_script_setup_true_lang-D1iI7XOJ.js",
+      "resources/js/app.js",
+      "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js"
+    ]
+  },
+  "resources/js/Pages/Auth/Index.vue": {
+    "file": "assets/Index-BZ0RXlST.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Auth/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_Button.vue_vue_type_script_setup_true_lang-htOjkNoX.js",
+      "_Input.vue_vue_type_script_setup_true_lang-LC0uCHgy.js",
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/Pages/Welcome.vue": {
-    "file": "assets/Welcome-A46AWErH.js",
+    "file": "assets/Welcome-tHKbB0ud.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.vue",
     "isDynamicEntry": true,
@@ -9,15 +66,18 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-GcQ0h_Xa.js",
+    "file": "assets/app-8F-lrkrS.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
+      "resources/js/Pages/App/Calculator.vue",
+      "resources/js/Pages/App/Index.vue",
+      "resources/js/Pages/Auth/Index.vue",
       "resources/js/Pages/Welcome.vue"
     ],
     "css": [
-      "assets/app-Cw290GdC.css"
+      "assets/app-DxjftfHp.css"
     ]
   }
 }

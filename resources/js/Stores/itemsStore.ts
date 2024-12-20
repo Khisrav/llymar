@@ -8,6 +8,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const items = ref<Item[]>([])
     const additional_items = ref<Item[]>([])
+    const glasses = ref<Item[]>([])
     const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
 
@@ -137,5 +138,5 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return totalPrice
     })
 
-    return { items, additional_items, base_url, cartItems, total_price, calculate, initiateCartItems }
+    return { items, glasses, additional_items, base_url, cartItems, total_price, calculate, initiateCartItems }
 })

@@ -14,6 +14,7 @@ const itemsStore = useItemsStore();
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.base_url = usePage().props.base_url as string
 itemsStore.additional_items = usePage().props.additional_items as Item[]
+itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.initiateCartItems()
 itemsStore.calculate()
 </script>
@@ -25,9 +26,9 @@ itemsStore.calculate()
     <h1 class="text-2xl font-bold">Калькулятор</h1>
     
     <div class="">
-        <Openings class="mb-8"/>
-        <Additionals class="mb-8"/>
-        <Items class="mb-8"/>
+        <Openings class="mb-8" />
+        <Additionals class="mb-8" />
+        <Items class="mb-8" />
     </div>
 </div>
 <OrderActions />

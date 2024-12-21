@@ -10,12 +10,13 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filters\TrashedFilter;
 use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ItemResource\RelationManagers;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 
 class ItemResource extends Resource
 {
@@ -23,7 +24,7 @@ class ItemResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?int $navigationSort = 4;
+    // protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Товары';
     protected ?string $title = 'Товары';
@@ -34,7 +35,43 @@ class ItemResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Section::make('Информация о товаре')
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 3,
+                        'lg' => 3
+                    ])
+                    ->schema([
+                        Forms\Components\TextInput::make('vendor_code')
+                            ->label('Артикул'),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Наименование')
+                            ->required(),
+                        Forms\Components\TextInput::make('purchase_price')
+                            ->label('Закупка, ₽')
+                            ->prefix('₽')
+                            ->required(),
+                        Forms\Components\TextInput::make('retail_price')
+                            ->label('Розница, ₽')
+                            ->prefix('₽')
+                            ->required(),
+                        Forms\Components\Select::make('unit')
+                            ->label('Единица измерения')
+                            ->native(false)
+                            ->options(['шт.' => 'шт.', 'кг' => 'кг', 'м' => 'м', 'м.п.' => 'м.п.', 'м.кв.' => 'м.кв.', 'мм' => 'мм', 'створ.' => 'створ.'])
+                            ->required(),
+                        Forms\Components\Select::make('category_id')                    
+                            ->label('Категория')
+                            ->native(false)
+                            ->options(Category::all()->pluck('name', 'id'))
+                            ->required(),                   
+                        Forms\Components\FileUpload::make('img')
+                            ->label('Картинка'),
+                        Forms\Components\Toggle::make('is_for_llymar')
+                            ->label('Для LLYMAR')
+                            ->default(false)
+                            ->helperText('Включение товара в калькуляторе LLYMAR'),
+                    ])
             ]);
     }
 

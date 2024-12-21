@@ -11,6 +11,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const glasses = ref<Item[]>([])
     const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
+    
+    // const selectedServices = 
+    // const selectedGlasses = ref(0)
 
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']

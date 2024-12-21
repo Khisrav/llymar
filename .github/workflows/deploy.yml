@@ -12,43 +12,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'  # Specify the Node.js version
-
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.0'  # Specify the PHP version
-
-    - name: Install Composer
-      run: |
-        curl -sS https://getcomposer.org/installer | php
-        sudo mv composer.phar /usr/local/bin/composer
-
-    - name: Install backend dependencies
-      run: composer install
-      working-directory: ./backend  # Change this to your backend directory if different
-
-    - name: Install frontend dependencies
-      run: npm install
-      working-directory: ./frontend  # Change this to your frontend directory if different
-
-    - name: Build frontend project
-      run: npm run build
-      working-directory: ./frontend  # Change this to your frontend directory if different
-
-    - name: Run Artisan commands
-      run: |
-        php artisan storage:link
-        php artisan migrate --force
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-      working-directory: ./backend  # Change this to your backend directory if different
-
+      
     - name: Deploy to Beget via SSH
       uses: appleboy/ssh-action@v0.1.4
       with:

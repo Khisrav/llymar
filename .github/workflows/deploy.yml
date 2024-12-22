@@ -19,7 +19,6 @@ jobs:
         host: ${{ secrets.BEGET_SSH_USERNAME }}
         username: ${{ secrets.BEGET_SSH_USERNAME }}
         key: ${{ secrets.BEGET_SSH_KEY }}
-        password: ${{ secrets.BEGET_SSH_PASSWORD }}
         script: |
           git pull origin main
           php8.2 composer.phar install --no-dev --optimize-autoloader

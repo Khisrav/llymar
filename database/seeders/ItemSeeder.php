@@ -487,6 +487,6 @@ class ItemSeeder extends Seeder
     
         Storage::disk('public')->put($path, $imageContent);
     
-        return Storage::url($path);
+        return '/' . $path;
     }
 }

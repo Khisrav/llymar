@@ -49,10 +49,12 @@ class ItemResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('purchase_price')
                             ->label('Закупка, ₽')
+                            ->type('number')
                             ->prefix('₽')
                             ->required(),
                         Forms\Components\TextInput::make('retail_price')
                             ->label('Розница, ₽')
+                            ->type('number')
                             ->prefix('₽')
                             ->required(),
                         Forms\Components\Select::make('unit')
@@ -66,11 +68,20 @@ class ItemResource extends Resource
                             ->options(Category::all()->pluck('name', 'id'))
                             ->required(),                   
                         Forms\Components\FileUpload::make('img')
-                            ->label('Картинка'),
-                        Forms\Components\Toggle::make('is_for_llymar')
-                            ->label('Для LLYMAR')
-                            ->default(false)
-                            ->helperText('Включение товара в калькуляторе LLYMAR'),
+                            ->label('Картинка')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ])
+                            ->directory('items'),
+                        // Forms\Components\Toggle::make('is_for_llymar')
+                        //     ->label('Для LLYMAR')
+                        //     // ->default(false)
+                        //     ->helperText('Включение товара в калькуляторе LLYMAR (блок с доп. деталями)'),
                     ])
             ]);
     }
@@ -96,7 +107,8 @@ class ItemResource extends Resource
                     ->label('Картинка')
                     ->width(100)
                     ->height('auto')
-                    ->url(fn ($record) => $record->img)
+                    // ->url(fn ($record) => $record->img)
+                    ->disk('public')
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('purchase_price')
                     ->label('Закупка, ₽')

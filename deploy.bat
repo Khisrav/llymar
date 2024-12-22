@@ -1,7 +1,7 @@
 @echo off
 :: Configuration
 set SERVER=g89883cb.beget.tech
-set USER=g89883cb
+set USER=g89883cb_beta
 set REMOTE_DIR=./
 set LOCAL_DIR=./
 set BRANCH=dev

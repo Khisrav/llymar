@@ -1,8 +1,8 @@
 @echo off
 :: Configuration
 set SERVER=g89883cb.beget.tech
-set USER=g89883cb_beta
-set REMOTE_DIR=./
+set USER=g89883cb
+set REMOTE_DIR=/home/g/g89883cb/beta.llymar.ru
 set LOCAL_DIR=./
 set BRANCH=dev
 
@@ -29,7 +29,16 @@ if %errorlevel% neq 0 (
 )
 echo Git push succeeded.
 
-:: Step 3: SSH to server and pull changes
+:: Step 3: SSH to server and configure Git safe directory
+echo Configuring Git safe directory on the server...
+ssh -i "%USERPROFILE%\.ssh\id_rsa" %USER%@%SERVER% "git config --global --add safe.directory %REMOTE_DIR%"
+if %errorlevel% neq 0 (
+    echo Failed to configure Git safe directory. Exiting deployment.
+    pause
+    exit /b 1
+)
+
+:: Step 4: Pull changes on the server
 echo Pulling changes on the server...
 ssh -i "%USERPROFILE%\.ssh\id_rsa" %USER%@%SERVER% "cd %REMOTE_DIR% && git pull origin %BRANCH%"
 if %errorlevel% neq 0 (
@@ -38,10 +47,6 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 echo Git pull succeeded.
-
-:: Step 4: Install Composer dependencies on the server
-echo Installing Composer dependencies on the server...
-ssh -i "%USERPROFILE%\.ssh\id_rsa" %USER%@%SERVER% "cd %REMOTE_DIR% && php8.2 composer.phar install --optimize-autoloader --no-dev"
 
 :: Step 5: Run Laravel migrations
 echo Running Laravel migrations...

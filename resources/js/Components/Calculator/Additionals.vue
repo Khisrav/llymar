@@ -1,28 +1,17 @@
 <script setup lang="ts">
-import { CrosshairIcon, CrossIcon, EyeOff, PlusIcon, XIcon } from "lucide-vue-next";
-import Button from "../ui/button/Button.vue";
 import { useItemsStore } from "../../Stores/itemsStore";
 import { currencyFormatter } from "../../Utils/currencyFormatter";
 import QuantitySelector from "../QuantitySelector.vue";
-import { computed, ref } from "vue";
+import { ref, watch } from "vue";
 import Select from "../ui/select/Select.vue";
 import SelectTrigger from "../ui/select/SelectTrigger.vue";
 import SelectValue from "../ui/select/SelectValue.vue";
 import SelectItem from "../ui/select/SelectItem.vue";
 import SelectContent from "../ui/select/SelectContent.vue";
-import Drawer from "../ui/drawer/Drawer.vue";
-import { DrawerClose, DrawerTrigger } from "vaul-vue";
-import DrawerContent from "../ui/drawer/DrawerContent.vue";
-import DrawerHeader from "../ui/drawer/DrawerHeader.vue";
-import DrawerTitle from "../ui/drawer/DrawerTitle.vue";
-import DrawerDescription from "../ui/drawer/DrawerDescription.vue";
-import DrawerFooter from "../ui/drawer/DrawerFooter.vue";
-// import DrawerClose from "../ui/drawer/DrawerClose.vue";
+import { getImageSource } from "../../Utils/getImageSource";
+import Checkbox from '../ui/checkbox/Checkbox.vue';
 
 const itemsStore = useItemsStore();
-const cartItems = ref(itemsStore.cartItems);
-
-const selectedGlass = ref(itemsStore.glasses[0].id);
 </script>
 
 
@@ -37,10 +26,10 @@ const selectedGlass = ref(itemsStore.glasses[0].id);
 				class="mt-4 flex flex-col md:flex-row gap-2 md:gap-4 justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>
 				<div class="basis-1/3 order-2 md:order-1">
-					<img :src="itemsStore.glasses[0].img" class="rounded-md w-full" />
+					<img :src="getImageSource(itemsStore.glasses[0].img as string)" class="rounded-md w-full" />
 				</div>
 				<div class="flex-1 basis-2/3 overflow-hidden order-1 md:order-2">
-					<Select v-model="selectedGlass">
+					<Select v-model="itemsStore.selectedGlassID">
 						<SelectTrigger>
 							<SelectValue placeholder="Выберите стекло" />
 						</SelectTrigger>
@@ -69,18 +58,16 @@ const selectedGlass = ref(itemsStore.glasses[0].id);
 				class="mt-4 p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>
 				<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
-					<span class="font-medium">Выбранные услуги</span>
+					<span class="font-semibold">Выбранные услуги</span>
 					<!-- <Button variant="outline" size="icon" class="">
 						<PlusIcon class="size-4" />
 					</Button> -->
 				</div>
-				<div class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
-					<span>Покраска</span>
+				<div v-for="service in itemsStore.services" class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
+					<span>{{ service.name }}</span>
 					<div class="flex items-center gap-2 md:gap-4">
-						<span class="font-bold text-primary">1238 руб</span>
-						<Button variant="outline" size="icon" class="size-6 rounded-sm">
-							<XIcon class="size-4" />
-						</Button>
+						<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
+						<Checkbox />
 					</div>
 				</div>
 			</div>
@@ -99,7 +86,7 @@ const selectedGlass = ref(itemsStore.glasses[0].id);
 				</p>
 				<div class="flex flex-row gap-2 md:gap-4">
 					<div class="basis-1/3">
-						<img :src="item.img" class="rounded-md w-full" />
+						<img :src="getImageSource(item.img as string)" class="rounded-md w-full" />
 					</div>
 					<div class="basis-2/3 flex flex-col justify-between gap-2">
 						<div class="flex justify-between items-center text-sm text-muted-foreground">

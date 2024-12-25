@@ -4,6 +4,7 @@ import { useItemsStore } from '../../Stores/itemsStore'
 import { ref } from 'vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
+import { getImageSource } from '../../Utils/getImageSource';
 
 const itemsStore = useItemsStore()
 const isItemsListHidden = ref(false)
@@ -24,7 +25,7 @@ const isItemsListHidden = ref(false)
                 <div class="text-center font-bold text-lg text-primary font-mono">{{ item.vendor_code }}</div>
 
                 <div>
-                    <img :src="itemsStore.base_url + item.img" class="rounded-md w-full">
+                    <img :src="getImageSource(item.img as string)" class="rounded-md w-full">
                 </div>
 
                 <div>

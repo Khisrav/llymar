@@ -1,1 +1,1 @@
-export const getImageSource = (image: string): string => import.meta.env.VITE_APP_URL + `/storage${image}`
+export const getImageSource = (image: string): string => `/storage${image}`

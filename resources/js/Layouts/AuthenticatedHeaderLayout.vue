@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "../Components/ui/sheet";
 import { CircleUser, Menu } from "lucide-vue-next";
 import Button from "../Components/ui/button/Button.vue";
 import { Link } from "@inertiajs/vue3";

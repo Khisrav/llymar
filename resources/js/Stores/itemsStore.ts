@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
 import { Item, CartItem } from '../lib/types'
 
@@ -9,11 +9,22 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const items = ref<Item[]>([])
     const additional_items = ref<Item[]>([])
     const glasses = ref<Item[]>([])
+    const services = ref<Item[]>([])
     const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
     
-    // const selectedServices = 
-    // const selectedGlasses = ref(0)
+    const selectedServicesID = ref([])
+    const selectedGlassID = ref(369);
+    
+    watch(selectedGlassID, (newSelectedGlassID, oldSelectedGlassID) => {
+        cartItems.value[newSelectedGlassID as number] = {
+            quantity: openingsStore.openings.reduce((acc, {width, height}) => {
+                return acc + width * height
+            }, 0) / 1000000
+        }
+        calculate()
+    })
+    
 
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']
@@ -141,5 +152,5 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return totalPrice
     })
 
-    return { items, glasses, additional_items, base_url, cartItems, total_price, calculate, initiateCartItems }
+    return { items, glasses, services, selectedGlassID, selectedServicesID, additional_items, base_url, cartItems, total_price, calculate, initiateCartItems }
 })

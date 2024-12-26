@@ -12,19 +12,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const services = ref<Item[]>([])
     const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
-    
+
     const selectedServicesID = ref([])
-    const selectedGlassID = ref(369);
-    
-    watch(selectedGlassID, (newSelectedGlassID, oldSelectedGlassID) => {
-        cartItems.value[newSelectedGlassID as number] = {
-            quantity: openingsStore.openings.reduce((acc, {width, height}) => {
-                return acc + width * height
-            }, 0) / 1000000
-        }
+    const selectedGlassID = ref(369)
+
+    watch(selectedGlassID, (newSelectedGlassID) => {
+        updateGlassQuantity(newSelectedGlassID)
         calculate()
     })
-    
 
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']
@@ -32,14 +27,16 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const initiateCartItems = () => {
         const allItems = [...items.value, ...additional_items.value]
-        allItems.forEach(item => { cartItems.value[item.id] = { quantity: 0 } })
+        allItems.forEach(item => {
+            cartItems.value[item.id] = { quantity: 0 }
+        })
     }
 
     const getItemQuantity = (vendorCode: string): number => {
         const item = items.value.find(i => i.vendor_code === vendorCode)
         return cartItems.value[item?.id as number]?.quantity || 0
     }
-    
+
     const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: 'left' | 'right' | 'center' | 'inner-left' | 'inner-right'): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
@@ -62,11 +59,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 L1: { 3: 0 },
                 L3: { 3: 1 },
             },
-        };
-    
-        return multipliers[type]?.[vendor_code]?.[doors] ?? 0; // Return 0 if any key is missing
-    };
-    
+        }
+
+        return multipliers[type]?.[vendor_code]?.[doors] ?? 0
+    }
 
     const calculateQuantity = (item: Item): number => {
         const { vendor_code } = item
@@ -74,18 +70,16 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         const quantityMap: { [key: string]: () => number } = {
             L1: () => openings.reduce((acc, { type, width, doors }) => {
-                let a, b, c
-                a = Math.floor(width / 1000 / 3) * 3
-                b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
-                c = ((width % 3) ? 3 : 0)
+                let a = Math.floor(width / 1000 / 3) * 3
+                let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
+                let c = ((width % 3) ? 3 : 0)
                 return acc + a * b + c
             }, 0),
             L2: () => getItemQuantity('L1'),
             L3: () => openings.reduce((acc, { type, width, doors }) => {
-                let a, b, c
-                a = Math.floor(width / 1000 / 3) * 3
-                b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
-                c = ((width % 3) ? 3 : 0)
+                let a = Math.floor(width / 1000 / 3) * 3
+                let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
+                let c = ((width % 3) ? 3 : 0)
                 return acc + a * b + c
             }, 0),
             L4: () => getItemQuantity('L3'),
@@ -131,16 +125,31 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return quantityMap[vendor_code as string] ? quantityMap[vendor_code as string]() : 0
     }
 
+    const updateGlassQuantity = (glassID: number) => {
+        cartItems.value[glassID] = {
+            quantity: openingsStore.openings.reduce((acc, { width, height }) => {
+                return acc + width * height
+            }, 0) / 1000000
+        }
+    }
+
     const calculate = () => {
         items.value.forEach(item => {
             const quantity = calculateQuantity(item)
             cartItems.value[item.id] = { quantity }
         })
+
+        // Calculate glass quantity
+        glasses.value.forEach(glass => {
+            cartItems.value[glass.id] = { quantity: 0 }
+        })
+        updateGlassQuantity(selectedGlassID.value)
     }
 
     const total_price = computed(() => {
         let totalPrice = 0
-        const allItems = [...items.value, ...additional_items.value]
+        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        console.log(allItems)
 
         allItems.forEach(item => {
             const quantity = cartItems.value[item.id]?.quantity || 0
@@ -152,5 +161,17 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return totalPrice
     })
 
-    return { items, glasses, services, selectedGlassID, selectedServicesID, additional_items, base_url, cartItems, total_price, calculate, initiateCartItems }
+    return {
+        items,
+        glasses,
+        services,
+        selectedGlassID,
+        selectedServicesID,
+        additional_items,
+        base_url,
+        cartItems,
+        total_price,
+        calculate,
+        initiateCartItems
+    }
 })

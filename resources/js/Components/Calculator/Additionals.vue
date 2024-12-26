@@ -12,6 +12,11 @@ import { getImageSource } from "../../Utils/getImageSource";
 import Checkbox from '../ui/checkbox/Checkbox.vue';
 
 const itemsStore = useItemsStore();
+const selectedGlass = ref(itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID));
+
+watch(() => itemsStore.selectedGlassID, (newID) => {
+    selectedGlass.value = itemsStore.glasses.find(glass => glass.id === newID);
+});
 </script>
 
 
@@ -22,13 +27,8 @@ const itemsStore = useItemsStore();
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-			<div
-				class="mt-4 flex flex-col md:flex-row gap-2 md:gap-4 justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
-			>
-				<div class="basis-1/3 order-2 md:order-1">
-					<img :src="getImageSource(itemsStore.glasses[0].img as string)" class="rounded-md w-full" />
-				</div>
-				<div class="flex-1 basis-2/3 overflow-hidden order-1 md:order-2">
+			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
+				<div>
 					<Select v-model="itemsStore.selectedGlassID">
 						<SelectTrigger>
 							<SelectValue placeholder="Выберите стекло" />
@@ -37,23 +37,37 @@ const itemsStore = useItemsStore();
 							<SelectItem v-for="glass in itemsStore.glasses" :value="glass.id">{{ glass.name }}</SelectItem>
 						</SelectContent>
 					</Select>
-					
-					<div>
-						<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
-							<span>Цена:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.glasses[0].retail_price) }}/{{ itemsStore.glasses[0].unit }}</span>
-						</div>
-						<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
-							<span>Кол-во:</span>
-							<span class="font-bold text-primary">{{ 0 }} {{ itemsStore.glasses[0].unit }}</span>
-						</div>
-						<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
-							<span>Итого:</span>
-							<span class="font-bold text-primary">{{ 1231230 }}</span>
+				</div>
+				<div class="mt-4 flex flex-row gap-2 md:gap-4 justify-between">
+					<div class="basis-1/4 order-2 md:order-1">
+						<img :src="getImageSource(itemsStore.glasses[0].img as string)" class="rounded-md w-full" />
+					</div>
+					<div class="flex-1 basis-3/4 order-1 md:order-2">
+						
+						<div class="flex flex-col justify-between h-full">
+							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+								<span>Цена:</span>
+								<span class="font-bold text-primary">
+									{{ currencyFormatter(selectedGlass.retail_price) }}/{{ selectedGlass.unit }}
+								</span>
+							</div>
+							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+								<span>Кол-во:</span>
+								<span class="font-bold text-primary">
+									{{ itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit }}
+								</span>
+							</div>
+							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+								<span>Итого:</span>
+								<span class="font-bold text-primary">
+									{{ currencyFormatter(selectedGlass.retail_price * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+			
 			<div
 				class="mt-4 p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>

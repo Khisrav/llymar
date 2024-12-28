@@ -17,6 +17,14 @@ const selectedGlass = ref(itemsStore.glasses.find(glass => glass.id === itemsSto
 watch(() => itemsStore.selectedGlassID, (newID) => {
     selectedGlass.value = itemsStore.glasses.find(glass => glass.id === newID);
 });
+
+const toggleSelection = (serviceId: number) => {
+    if (itemsStore.selectedServicesID.includes(serviceId)) {
+        itemsStore.selectedServicesID = itemsStore.selectedServicesID.filter(id => id !== serviceId);
+    } else {
+        itemsStore.selectedServicesID.push(serviceId);
+    }
+};
 </script>
 
 
@@ -71,18 +79,23 @@ watch(() => itemsStore.selectedGlassID, (newID) => {
 			<div
 				class="mt-4 p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>
-				<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
-					<span class="font-semibold">Выбранные услуги</span>
-					<!-- <Button variant="outline" size="icon" class="">
-						<PlusIcon class="size-4" />
-					</Button> -->
-				</div>
-				<div v-for="service in itemsStore.services" class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
-					<span>{{ service.name }}</span>
-					<div class="flex items-center gap-2 md:gap-4">
-						<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
-						<Checkbox />
+				<div v-if="!itemsStore.services.length">
+					<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
+						<span class="font-semibold">Выбранные услуги</span>
+						<!-- <Button variant="outline" size="icon" class="">
+							<PlusIcon class="size-4" />
+						</Button> -->
 					</div>
+					<div v-for="service in itemsStore.services" class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
+						<span>{{ service.name }}</span>
+						<div class="flex items-center gap-2 md:gap-4">
+							<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
+							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />
+						</div>
+					</div>
+				</div>
+				<div v-else class="flex w-full h-full items-center justify-center">
+					<p class="text-muted-foreground">Нет доступных услуг для выбора</p>
 				</div>
 			</div>
 		</div>

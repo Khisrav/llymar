@@ -13,7 +13,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
 
-    const selectedServicesID = ref([])
+    const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(369)
 
     watch(selectedGlassID, (newSelectedGlassID) => {
@@ -70,14 +70,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         const quantityMap: { [key: string]: () => number } = {
             L1: () => openings.reduce((acc, { type, width, doors }) => {
-                let a = Math.floor(width / 1000 / 3) * 3
+                let a = Math.ceil(width / 1000 / 3) * 3
                 let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
                 let c = ((width % 3) ? 3 : 0)
                 return acc + a * b + c
             }, 0),
             L2: () => getItemQuantity('L1'),
             L3: () => openings.reduce((acc, { type, width, doors }) => {
-                let a = Math.floor(width / 1000 / 3) * 3
+                let a = Math.ceil(width / 1000 / 3) * 3
                 let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
                 let c = ((width % 3) ? 3 : 0)
                 return acc + a * b + c

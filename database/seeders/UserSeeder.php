@@ -18,11 +18,13 @@ class UserSeeder extends Seeder
                 'name' => 'Худоёров Хисрав',
                 'email' => 'kh.khisrav2018@gmail.com',
                 'discount' => 0,
+                'phone' => '8-999-999-99-99',
             ],
             [
                 'name' => 'Полстяной Александр',
                 'email' => 'alive250787@gmail.com',
                 'discount' => 0,
+                'phone' => '8-999-999-99-01',
             ],
         ];
         

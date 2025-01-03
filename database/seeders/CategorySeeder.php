@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CategorySeeder extends Seeder
@@ -44,6 +45,7 @@ class CategorySeeder extends Seeder
         
         $formatted_categories = array();
         foreach ($parties as $party) {
+            Log::info($party);
             $formatted_categories[] = [
                 'id' => $party['id'],
                 // 'idAdmin' => $party['idAdmin'],
@@ -52,6 +54,7 @@ class CategorySeeder extends Seeder
                 // 'updated_at' => now(),
             ];
         }
+        
         DB::table('categories')->insert($formatted_categories);
     }
 }

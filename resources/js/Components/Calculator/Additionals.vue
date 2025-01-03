@@ -12,10 +12,10 @@ import { getImageSource } from "../../Utils/getImageSource";
 import Checkbox from '../ui/checkbox/Checkbox.vue';
 
 const itemsStore = useItemsStore();
-const selectedGlass = ref(itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID));
+const selectedGlass = ref<any>(itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || null);
 
 watch(() => itemsStore.selectedGlassID, (newID) => {
-    selectedGlass.value = itemsStore.glasses.find(glass => glass.id === newID);
+    selectedGlass.value = itemsStore.glasses.find(glass => glass.id === newID) || null;
 });
 
 const toggleSelection = (serviceId: number) => {
@@ -26,7 +26,6 @@ const toggleSelection = (serviceId: number) => {
     }
 };
 </script>
-
 
 <template>
 	<div class="border p-2 md:p-4 rounded-2xl">
@@ -42,32 +41,31 @@ const toggleSelection = (serviceId: number) => {
 							<SelectValue placeholder="Выберите стекло" />
 						</SelectTrigger>
 						<SelectContent class="max-w-xs sm:max-w-max">
-							<SelectItem v-for="glass in itemsStore.glasses" :value="glass.id">{{ glass.name }}</SelectItem>
+							<SelectItem v-for="glass in itemsStore.glasses" :key="glass.id" :value="glass.id">{{ glass.name }}</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 				<div class="mt-4 flex flex-row gap-2 md:gap-4 justify-between">
 					<div class="basis-1/4 order-2 md:order-1">
-						<img :src="getImageSource(itemsStore.glasses[0].img as string)" class="rounded-md w-full" />
+						<img v-if="selectedGlass" :src="getImageSource(selectedGlass.img as string)" class="rounded-md w-full" />
 					</div>
 					<div class="flex-1 basis-3/4 order-1 md:order-2">
-						
 						<div class="flex flex-col justify-between h-full">
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Цена:</span>
-								<span class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-primary">
 									{{ currencyFormatter(selectedGlass.retail_price) }}/{{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Кол-во:</span>
-								<span class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-primary">
 									{{ itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Итого:</span>
-								<span class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-primary">
 									{{ currencyFormatter(selectedGlass.retail_price * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
@@ -75,7 +73,7 @@ const toggleSelection = (serviceId: number) => {
 					</div>
 				</div>
 			</div>
-			
+
 			<div
 				class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>
@@ -86,8 +84,8 @@ const toggleSelection = (serviceId: number) => {
 							<PlusIcon class="size-4" />
 						</Button> -->
 					</div>
-					<div v-for="service in itemsStore.services" class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
-						<p><span class="font-mono">{{ service.vendor_code || '##' }}</span> - {{ service.name }}</p>
+					<div v-for="service in itemsStore.services" :key="service.id" class="flex items-center justify-between gap-2 md:gap-4 py-1" :class="{'border-b': service !== itemsStore.services[itemsStore.services.length - 1]}">
+						<p><span class="font-mono">{{ service.vendor_code ? service.vendor_code + ' - ' : '' }}</span>{{ service.name }}</p>
 						<div class="flex items-center gap-2 md:gap-4">
 							<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
 							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />
@@ -101,8 +99,6 @@ const toggleSelection = (serviceId: number) => {
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mt-4 transition-all duration-1000">
-			
-			
 			<div
 				v-for="item in itemsStore.additional_items"
 				:key="item.vendor_code"
@@ -137,4 +133,3 @@ const toggleSelection = (serviceId: number) => {
 		</div>
 	</div>
 </template>
-

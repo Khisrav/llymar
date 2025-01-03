@@ -30,7 +30,7 @@ const toggleSelection = (serviceId: number) => {
 
 <template>
 	<div class="border p-2 md:p-4 rounded-2xl">
-		<div class="flex items-center">
+		<div class="flex items-center mb-4">
 			<h2 class="text-xl font-bold text-muted-foreground">Детали</h2>
 		</div>
 
@@ -77,9 +77,9 @@ const toggleSelection = (serviceId: number) => {
 			</div>
 			
 			<div
-				class="mt-4 p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
+				class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
 			>
-				<div v-if="!itemsStore.services.length">
+				<div v-if="itemsStore.services.length">
 					<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
 						<span class="font-semibold">Выбранные услуги</span>
 						<!-- <Button variant="outline" size="icon" class="">
@@ -87,7 +87,7 @@ const toggleSelection = (serviceId: number) => {
 						</Button> -->
 					</div>
 					<div v-for="service in itemsStore.services" class="flex items-center justify-between gap-2 md:gap-4 border-b pb-1">
-						<span>{{ service.name }}</span>
+						<p><span class="font-mono">{{ service.vendor_code || '##' }}</span> - {{ service.name }}</p>
 						<div class="flex items-center gap-2 md:gap-4">
 							<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
 							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />

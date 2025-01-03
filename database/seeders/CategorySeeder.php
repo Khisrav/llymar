@@ -38,7 +38,8 @@ class CategorySeeder extends Seeder
             array('id' => '22','idAdmin' => '6000','name' => 'Обвязка 15*15'),
             array('id' => '23','idAdmin' => '6000','name' => 'Коммерческие ограждения'),
             array('id' => '24','idAdmin' => '6000','name' => 'Крючки'),
-            array('id' => '25','idAdmin' => '6000','name' => 'Монтаж')
+            array('id' => '25','idAdmin' => '6000','name' => 'Монтаж'),
+            array('id' => '26','idAdmin' => '6000','name' => 'Услуги'),
         );
         
         $formatted_categories = array();

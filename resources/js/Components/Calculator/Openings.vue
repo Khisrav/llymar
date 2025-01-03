@@ -73,9 +73,9 @@ watch(
                 <div>
                     <label class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Размеры (ШxВ) в мм:</label>
                     <div class="flex items-center gap-2">
-                        <Input v-model="openingStore.openings[index].width" type="number" max="12800" placeholder="Ширина" class="h-9 text-center" />
+                        <Input v-model="openingStore.openings[index].width" type="number" step="100" max="12800" placeholder="Ширина" class="h-9 text-center" />
                         <span class="inline-block text-sm">&#10005;</span>
-                        <Input v-model="openingStore.openings[index].height" type="number" placeholder="Высота" class="h-9 text-center" />
+                        <Input v-model="openingStore.openings[index].height" type="number" step="100" placeholder="Высота" class="h-9 text-center" />
                     </div>
 
                     <div class="gap-2 mt-2">

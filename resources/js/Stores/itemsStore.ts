@@ -35,6 +35,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const CENTER_TYPE = ['center']
 
     const initiateCartItems = () => {
+        selectedGlassID.value = glasses.value[0].id
+    
         const allItems = [...items.value, ...additional_items.value]
         allItems.forEach(item => {
             cartItems.value[item.id] = { quantity: 0 }

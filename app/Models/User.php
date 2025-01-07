@@ -49,4 +49,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    
+    protected function canAccessPanel(): bool
+    {
+        return true;
+    }
 }

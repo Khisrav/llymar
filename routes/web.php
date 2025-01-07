@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppCalculatorController;
+use App\Http\Controllers\AppCartController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
@@ -35,10 +36,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
     Route::get('/app/history', function () {
-        return Inertia::render('App/History', [
-
-        ]);
+        return Inertia::render('App/History', []);
     })->name('app.history');
+    
+    Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
 });
 
 /*

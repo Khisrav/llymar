@@ -1,3 +1,6 @@
+@if (Request::is('app/*'))
+    @php($__inertiaSsr = null)
+@endif
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

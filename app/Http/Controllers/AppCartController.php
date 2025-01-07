@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use App\Models\LlymarCalculatorItem;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Models\LlymarCalculatorItem;
 
-class AppCalculatorController extends Controller
+class AppCartController extends Controller
 {
     public function index() {
-        return Inertia::render('App/Calculator', [
+        return Inertia::render('App/Cart', [
             'items' => $this->getCalculatorItems(),
             'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
             'glasses' => $this->getGlasses(),

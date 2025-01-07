@@ -33,6 +33,7 @@ export interface Item {
     purchase_price: number;
     unit: string;
     category_id: number;
+    discount: number;
     created_at?: string | null;
     updated_at?: string | null;
 }

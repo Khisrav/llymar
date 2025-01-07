@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
 import { Item, CartItem } from '../lib/types'
+import { discountRate } from '../Utils/discountRate'
 
 export const useItemsStore = defineStore('itemsStore', () => {
     const openingsStore = useOpeningStore()
@@ -10,24 +11,30 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const additional_items = ref<Item[]>([])
     const glasses = ref<Item[]>([])
     const services = ref<Item[]>([])
-    const base_url = ref('')
     const cartItems = ref<{ [key: number]: CartItem }>({})
+    const user_discount = ref(0)
 
     const selectedServicesID = ref<number[]>([])
-    const selectedGlassID = ref(369)
+    const selectedGlassID = ref(287)
 
     watch(selectedGlassID, (newSelectedGlassID) => {
         updateGlassQuantity(newSelectedGlassID)
         calculate()
-    })
+    }, { deep: true })
     
-    // watch(selectedServicesID, (newSelectedServicesID) => {
-    //     updateServicesQuantity(newSelectedServicesID)
-    //     calculate()
-    // })
     watch(selectedServicesID, (newSelectedServicesID, oldSelectedServicesID) => {
         updateServicesQuantity(newSelectedServicesID)
         calculate()
+    }, { deep: true })
+    
+    watch(cartItems, (newCartItems) => {
+        Object.keys(newCartItems).forEach(key => {
+            if (newCartItems[+key].quantity === 0) {
+                delete newCartItems[+key]
+            }
+        })
+    
+        sessionStorage.setItem('cartItems', JSON.stringify(newCartItems))
     }, { deep: true })
 
     const LEFT_RIGHT = ['left', 'right']
@@ -35,12 +42,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const CENTER_TYPE = ['center']
 
     const initiateCartItems = () => {
-        selectedGlassID.value = glasses.value[0].id
-    
-        const allItems = [...items.value, ...additional_items.value]
-        allItems.forEach(item => {
-            cartItems.value[item.id] = { quantity: 0 }
-        })
+        if (sessionStorage.getItem('cartItems')) {
+            cartItems.value = JSON.parse(sessionStorage.getItem('cartItems') as string)
+        } else {
+            selectedGlassID.value = glasses.value[0].id
+
+            const allItems = [...items.value, ...additional_items.value]
+            allItems.forEach(item => { cartItems.value[item.id] = { quantity: 0 } })
+        }
     }
 
     const getItemQuantity = (vendorCode: string): number => {
@@ -153,12 +162,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
         services.value.forEach(service => {
             delete cartItems.value[service.id]
         })
-        
-        console.log('service watcher', servicesID)
-        
+                
         servicesID.forEach(serviceID => {
             cartItems.value[serviceID] = { quantity: 1 }
-            console.log('serviceID: ', serviceID, cartItems.value[serviceID])
         })
     }
 
@@ -172,18 +178,29 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
 
     const total_price = computed(() => {
-        let totalPrice = 0
+        let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
         const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
 
         allItems.forEach(item => {
             const quantity = cartItems.value[item.id]?.quantity || 0
-            if (quantity > 0) {
-                totalPrice += item.retail_price * quantity
-            }
+            
+            if (!quantity) return
+            
+            totalPriceWithoutDiscount += item.retail_price * quantity
+            totalPriceWithDiscount += item.retail_price * quantity * discountRate(item.discount || user_discount.value)
         })
 
-        return totalPrice
+        return {
+            without_discount: totalPriceWithoutDiscount,
+            with_discount: totalPriceWithDiscount
+        }
     })
+    
+    const getItemInfo = (id: number) => {
+        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        const item = allItems.find(i => i.id === id)
+        return item
+    }
 
     return {
         items,
@@ -192,10 +209,11 @@ export const useItemsStore = defineStore('itemsStore', () => {
         selectedGlassID,
         selectedServicesID,
         additional_items,
-        base_url,
         cartItems,
         total_price,
         calculate,
-        initiateCartItems
+        initiateCartItems,
+        getItemInfo,
+        user_discount,
     }
 })

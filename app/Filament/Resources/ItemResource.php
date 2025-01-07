@@ -105,7 +105,7 @@ class ItemResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\ImageColumn::make('img')
                     ->label('Картинка')
-                    ->width(100)
+                    ->width(86)
                     ->height('auto')
                     // ->url(fn ($record) => $record->img)
                     ->disk('public')

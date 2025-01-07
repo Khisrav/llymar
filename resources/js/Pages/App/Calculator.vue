@@ -12,10 +12,10 @@ import OrderActions from '../../Components/Calculator/OrderActions.vue';
 const itemsStore = useItemsStore();
 
 itemsStore.items = usePage().props.items as Item[]
-itemsStore.base_url = usePage().props.base_url as string
 itemsStore.additional_items = usePage().props.additional_items as Item[]
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
+itemsStore.user_discount = usePage().props.user_discount as number
 itemsStore.initiateCartItems()
 itemsStore.calculate()
 </script>
@@ -23,7 +23,7 @@ itemsStore.calculate()
 <template>
 <Head title="Калькулятор" />
 <AuthenticatedHeaderLayout />
-<div class="container p-4 rounded-xl">
+<div class="container p-2 rounded-xl">
     <h1 class="text-2xl font-bold">Калькулятор</h1>
     
     <div class="">

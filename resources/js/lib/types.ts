@@ -41,3 +41,15 @@ export interface Item {
 export interface CartItem {
     quantity: number;
 }
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    address?: string;
+    phone?: string;
+    company?: string;
+    discount: number;
+    created_at?: string | null;
+    updated_at?: string | null;
+}

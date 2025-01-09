@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
-import { Item, CartItem } from '../lib/types'
+import { Item, CartItem, User } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 
 export const useItemsStore = defineStore('itemsStore', () => {
@@ -12,7 +12,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const glasses = ref<Item[]>([])
     const services = ref<Item[]>([])
     const cartItems = ref<{ [key: number]: CartItem }>({})
-    const user_discount = ref(0)
+    const user = ref<User>({} as User)
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -187,7 +187,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             if (!quantity) return
             
             totalPriceWithoutDiscount += item.retail_price * quantity
-            totalPriceWithDiscount += item.retail_price * quantity * discountRate(item.discount || user_discount.value)
+            totalPriceWithDiscount += item.retail_price * quantity * discountRate(item.discount || user.value.discount)
         })
 
         return {
@@ -214,6 +214,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
         calculate,
         initiateCartItems,
         getItemInfo,
-        user_discount,
+        user,
     }
 })

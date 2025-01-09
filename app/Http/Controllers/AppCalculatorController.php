@@ -15,7 +15,7 @@ class AppCalculatorController extends Controller
             'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
-            'user_discount' => auth()->user()->discount,
+            'user' => auth()->user(),
         ]);
     }
     

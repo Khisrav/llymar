@@ -29,11 +29,11 @@ const removeItem = (item_id: number) => {
 				{{ props.item.name || "Unknown Item" }}
 			</h3>
 			<div>
-			    <p v-if="discountRate(props.item.discount || itemsStore.user_discount) === 0" class="hidden md:block line-through text-muted-foreground">{{ 
+			    <p v-if="discountRate(props.item.discount || itemsStore.user.discount) === 0" class="hidden md:block line-through text-muted-foreground">{{ 
 			        currencyFormatter(itemsStore.cartItems[props.item.id].quantity * props.item.retail_price)
 			    }}</p>
 			    <p class="hidden md:block font-medium">{{
-			        currencyFormatter(itemsStore.cartItems[props.item.id].quantity * props.item.retail_price * discountRate(props.item.discount || itemsStore.user_discount))
+			        currencyFormatter(itemsStore.cartItems[props.item.id].quantity * props.item.retail_price * discountRate(props.item.discount || itemsStore.user.discount))
 			    }}</p>
 			</div>
 		</div>

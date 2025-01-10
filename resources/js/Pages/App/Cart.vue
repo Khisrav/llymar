@@ -17,7 +17,6 @@ itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as Item[]
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
-itemsStore.user_discount = usePage().props.user_discount as number
 itemsStore.user = usePage().props.user as User
 itemsStore.initiateCartItems()
 
@@ -25,22 +24,19 @@ const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number)
 
 const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null
 
-const subtotal = computed(() => {
-    return cartItemIDs.value.reduce((sum, id) => {
-	    const cartItem = itemsStore.cartItems[id]
-	    const itemInfo = item(id)
-	    if (cartItem && itemInfo) {
-	        return sum + cartItem.quantity * (itemInfo.retail_price || 0)
-	    }
-	    return sum
-    }, 0)
+//snp for Surname Name Patronymic
+const snp = ref({
+	surname: itemsStore.user.name.split(" ")[0],
+	name: itemsStore.user.name.split(" ")[1],
+	patronymic: itemsStore.user.name.split(" ")[2],
 })
 
-const order_info = ref({
-	name: "",
-	phone: "",
-	address: "",
-})
+const order_info = computed(() => ({
+	name: (snp.value.surname || '') + " " + (snp.value.name || '') + " " + (snp.value.patronymic || ''),
+	phone: itemsStore.user.phone,
+	address: itemsStore.user.address,
+	email: itemsStore.user.email,
+}))
 
 const checkout = () => {
     console.log("Proceeding to checkout...")
@@ -89,41 +85,40 @@ const checkout = () => {
 						</div>
 						<!-- <Button @click="checkout" class="mt-6">Proceed to Checkout</Button> -->
 					</div>
-					
+
 					<form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
 						<h3 class="text-lg font-semibold">Информация о клиенте</h3>
-						
+
 						<div>
 							<Label class="inline-block mb-2">Фамилия <span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" placeholder="Иванов" required />
+							<Input type="text" v-model="snp.surname" placeholder="Иванов" required />
 						</div>
-						
+
 						<div>
 							<Label class="inline-block mb-2">Имя <span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" placeholder="Иван" required />
+							<Input type="text" v-model="snp.name" placeholder="Иван" required />
 						</div>
-						
+
 						<div>
 							<Label class="inline-block mb-2">Отчество</Label>
-							<Input type="text" placeholder="Иванович" />
+							<Input type="text" v-model="snp.patronymic" placeholder="Иванович" />
 						</div>
-						
+
 						<div>
 							<Label class="inline-block mb-2">Адрес <span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" placeholder="г. Москва, ул. Пушкинская, д. 1" required />
+							<Input type="text" v-model="order_info.address" placeholder="г. Москва, ул. Пушкинская, д. 1" required />
 						</div>
-						
-						<!-- email and phone -->
+
 						<div>
 							<Label class="inline-block mb-2">Email <span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="email" placeholder="email@mail.ru" required />
+							<Input type="email" v-model="order_info.email" placeholder="email@mail.ru" required />
 						</div>
-						
+
 						<div>
 							<Label class="inline-block mb-2">Телефон <span class="text-destructive dark:text-red-500">*</span></Label>
 							<Input type="tel" v-model="order_info.phone" v-maska="'+7 (###) ###-##-##'" placeholder="+7 (999) 999-99-99" required />
 						</div>
-						
+
 						<div>
 							<Button type="submit">Оформить заказ</Button>
 							<p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p>

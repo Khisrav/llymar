@@ -33,10 +33,23 @@ export interface Item {
     purchase_price: number;
     unit: string;
     category_id: number;
+    discount: number;
     created_at?: string | null;
     updated_at?: string | null;
 }
 
 export interface CartItem {
     quantity: number;
+}
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    address?: string;
+    phone?: string;
+    company?: string;
+    discount: number;
+    created_at?: string | null;
+    updated_at?: string | null;
 }

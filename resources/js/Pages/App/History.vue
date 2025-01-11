@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
-import { ArrowLeft, FolderClockIcon } from "lucide-vue-next";
+import { ArrowLeft, FolderClockIcon, PencilIcon, TrashIcon } from "lucide-vue-next";
 import { ref, computed } from "vue";
 import { Order, Pagination } from "../../lib/types";
 import Table from "../../Components/ui/table/Table.vue";
@@ -64,17 +64,31 @@ const formatStatus = (status: string) => {
 						<TableRow>
 							<TableHead class="font-bold">ID</TableHead>
 							<TableHead class="font-bold">Дата</TableHead>
+							<TableHead class="font-bold">Заказчик</TableHead>
 							<TableHead class="font-bold">Сумма</TableHead>
 							<TableHead class="font-bold">Статус</TableHead>
+							<TableHead class="font-bold">Действия</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						<TableRow v-for="order in orders" :key="order.id">
 							<TableCell>{{ order.id }}</TableCell>
 							<TableCell>{{ formatDate(order.created_at || '') }}</TableCell>
+							<TableCell class="flex flex-col gap-1">
+							    <p class="font-medium">{{ order.customer_name }}</p>
+							    <a :href="'tel:' + order.customer_phone" class="underline font-mono">{{ order.customer_phone }}</a>
+							</TableCell>
 							<TableCell>{{ currencyFormatter(order.total_price) }}</TableCell>
 							<TableCell>
 							    <Badge variant="outline">{{ order.status }}</Badge>
+							</TableCell>
+							<TableCell class="flex gap-2">
+							    <Button variant="outline" size="icon">
+							        <PencilIcon />
+							    </Button>
+							    <Button variant="secondary" size="icon">
+							        <TrashIcon />
+							    </Button>
 							</TableCell>
 						</TableRow>
 					</TableBody>

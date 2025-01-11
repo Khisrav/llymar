@@ -15,7 +15,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('App/History', [
-            'orders' => Order::where('user_id', auth()->id())->paginate(25)
+            'orders' => Order::where('user_id', auth()->id())->orderBy('created_at', 'desc')->paginate(25)
         ]);
     }
     

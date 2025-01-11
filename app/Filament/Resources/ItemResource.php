@@ -26,16 +26,16 @@ class ItemResource extends Resource
 
     // protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Товары';
-    protected ?string $title = 'Товары';
-    protected ?string $heading = 'Товары';
-    protected ?string $subheading = 'Товары';
+    protected static ?string $navigationLabel = 'Детали';
+    protected ?string $title = 'Детали';
+    protected ?string $heading = 'Детали';
+    protected ?string $subheading = 'Детали';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Информация о товаре')
+                Section::make('Информация о детали')
                     ->columns([
                         'sm' => 2,
                         'md' => 3,

@@ -5,6 +5,7 @@ use App\Http\Controllers\AppCartController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -35,11 +36,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
-    Route::get('/app/history', function () {
-        return Inertia::render('App/History', []);
-    })->name('app.history');
+    Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
+    
+    Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
 });
 
 /*

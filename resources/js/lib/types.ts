@@ -53,3 +53,22 @@ export interface User {
     created_at?: string | null;
     updated_at?: string | null;
 }
+
+export interface Order {
+    id: number;
+    user_id: number;
+    status: string;
+    comment?: string | null;
+    total_price: number;
+    customer_name: string;
+    customer_phone: string;
+    customer_address: string;
+    created_at?: string | null;
+    update_at?: string | null;
+}
+
+export interface Pagination {
+    active: boolean;
+    label: string;
+    url?: string | null;
+}

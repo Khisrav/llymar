@@ -1,7 +1,6 @@
-// stores/openingStore.ts
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { Opening, OpeningImages, OpeningType } from '../lib/types';
+import { defineStore } from 'pinia'
+import { ref, watch } from 'vue'
+import { Opening, OpeningImages, OpeningType } from '../lib/types'
 
 export const useOpeningStore = defineStore('openingStore', () => {
     const openingTypes: OpeningType = {
@@ -10,7 +9,7 @@ export const useOpeningStore = defineStore('openingStore', () => {
         center: 'Центральный проем',
         'inner-left': 'Входная группа левая',
         'inner-right': 'Входная группа правая',
-    };
+    }
 
     const opening_images: OpeningImages = {
         left: 'https://llymar.ru/assets/openings-left.jpg',
@@ -20,40 +19,16 @@ export const useOpeningStore = defineStore('openingStore', () => {
         'inner-right': 'https://llymar.ru/assets/openings-inner-right.jpg',
         'blind-glazing': 'https://llymar.ru/assets/openings-blind-glazing.jpg',
         triangle: 'https://llymar.ru/assets/openings-triangle.jpg',
-    };
+    }
 
-    const openings = ref<Opening[]>([
+    const openings = ref<Opening[]>(sessionStorage.getItem('openings') ? JSON.parse(sessionStorage.getItem('openings') as string) : [
         {
             doors: 2,
             width: 3000,
             height: 2700,
             type: 'left',
         },
-        // {
-        //     doors: 2,
-        //     width: 3000,
-        //     height: 2700,
-        //     type: 'right',
-        // },
-        // {
-        //     doors: 4,
-        //     width: 3000,
-        //     height: 2700,
-        //     type: 'center',
-        // },
-        // {
-        //     doors: 3,
-        //     width: 3000,
-        //     height: 2700,
-        //     type: 'inner-left',
-        // },
-        // {
-        //     doors: 3,
-        //     width: 3000,
-        //     height: 2700,
-        //     type: 'inner-right',
-        // },
-    ]);
+    ])
 
     const addOpening = () => {
         openings.value.push({
@@ -61,12 +36,20 @@ export const useOpeningStore = defineStore('openingStore', () => {
             width: 3000,
             height: 2700,
             type: 'left',
-        });
-    };
+        })
+    }
+    
+    watch(openings, () => {
+        sessionStorage.setItem('openings', JSON.stringify(openings.value))
+    }, { deep: true })
+    
+    if (!sessionStorage.getItem('openings')) {
+        sessionStorage.setItem('openings', JSON.stringify(openings.value))
+    }
 
     const removeOpening = (index: number) => {
-        openings.value.splice(index, 1);
-    };
+        openings.value.splice(index, 1)
+    }
 
     return {
         openingTypes,
@@ -74,5 +57,5 @@ export const useOpeningStore = defineStore('openingStore', () => {
         openings,
         addOpening,
         removeOpening,
-    };
-});
+    }
+})

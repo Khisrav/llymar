@@ -42,7 +42,7 @@ watch(
 </script>
 
 <template>
-    <div>
+    <div class="border p-2 md:p-4 rounded-2xl">
         <h2 class="text-xl font-bold text-muted-foreground mb-4">Проемы</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">

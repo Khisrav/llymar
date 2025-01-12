@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OpeningsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'openings';
+    protected static string $relationship = 'orderOpenings';
+    
+    protected static ?string $title = 'Проемы';
 
     public function form(Form $form): Form
     {
@@ -20,6 +22,33 @@ class OpeningsRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('order_id')
                     ->required()
+                    ->label('ID заказа')
+                    ->disabled()
+                    ->maxLength(255),
+                Forms\Components\Select::make('type')
+                    ->required()
+                    ->label('Тип проема')
+                    ->native(false)
+                    ->options([
+                        'left' => 'Левый проем',
+                        'right' => 'Правый проем',
+                        'center' => 'Центральный проем',
+                        'inner-left' => 'Входная группа левая',
+                        'inner-right' => 'Входная группа правая',
+                        'blind-glazing' => 'Глухое остекление',
+                        'triangle' => 'Треугольник',
+                    ]),
+                Forms\Components\TextInput::make('doors')
+                    ->required()
+                    ->label('Кол-во створок')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('width')
+                    ->required()
+                    ->label('Ширина (мм)')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('height')
+                    ->required()
+                    ->label('Высота (мм)')
                     ->maxLength(255),
             ]);
     }
@@ -29,7 +58,36 @@ class OpeningsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('order_id')
             ->columns([
-                Tables\Columns\TextColumn::make('order_id'),
+                // Tables\Columns\TextColumn::make('order_id'),
+                Tables\Columns\SelectColumn::make('type')
+                    ->label('Тип проема')
+                    ->searchable()
+                    // ->options(Opening::all()->pluck('name', 'type')),
+                    ->options([
+                        'left' => 'Левый проем',
+                        'right' => 'Правый проем',
+                        'center' => 'Центральный проем',
+                        'inner-left' => 'Входная группа левая',
+                        'inner-right' => 'Входная группа правая',
+                        'blind-glazing' => 'Глухое остекление',
+                        'triangle' => 'Треугольник',
+                    ])
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextInputColumn::make('doors')
+                    ->label('Створки')
+                    ->sortable()
+                    ->type('number')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextInputColumn::make('height')
+                    ->label('Высота (мм)')
+                    ->sortable()
+                    ->type('number')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextInputColumn::make('width')
+                    ->label('Ширина (мм)')
+                    ->sortable()
+                    ->type('number')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

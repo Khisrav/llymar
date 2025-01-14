@@ -6,6 +6,7 @@ use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Order;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Grid;
@@ -34,6 +35,14 @@ class OrderResource extends Resource
                     ->schema([
                         Grid::make(12) // 4-column layout for desktop
                             ->schema([
+                                TextInput::make('id')
+                                    ->label('ID заказа')
+                                    ->disabled()
+                                    ->columnSpan(3),
+                                TextInput::make('user_id')
+                                    ->label('Создатель')
+                                    ->disabled()
+                                    ->columnSpan(3),
                                 // General details
                                 TextInput::make('customer_name')
                                     ->label('Заказчик')
@@ -45,7 +54,28 @@ class OrderResource extends Resource
                                     ->label('Номер телефона')
                                     ->required()
                                     ->mask('+7 (999) 999 99-99')
-                                    ->tel()
+                                    // ->tel()
+                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    
+                                TextInput::make('customer_email')
+                                    ->label('Email')
+                                    ->required()
+                                    // ->mail()
+                                    ->columnSpan(3), // Spans 2 columns on desktop
+            
+                                Select::make('status')
+                                    ->label('Статус заказа')
+                                    ->required()
+                                    ->native(false)
+                                    ->options([
+                                        'created' => 'Создан',
+                                        'paid' => 'Оплачен',
+                                        'expired' => 'Просрочен',
+                                        'assembled' => 'Собран',
+                                        'sent' => 'Отправлен',
+                                        'completed' => 'Выполнен',
+                                        'archived' => 'Архивирован',
+                                    ])
                                     ->columnSpan(3), // Spans 2 columns on desktop
             
                                 TextInput::make('customer_address')
@@ -53,17 +83,6 @@ class OrderResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->columnSpan(6), // Full width
-            
-                                Select::make('status')
-                                    ->label('Статус заказа')
-                                    ->required()
-                                    ->options([
-                                        'pending' => 'Pending',
-                                        'processing' => 'Processing',
-                                        'completed' => 'Completed',
-                                        'cancelled' => 'Cancelled',
-                                    ])
-                                    ->columnSpan(3), // Spans 2 columns on desktop
             
                                 TextInput::make('total_price')
                                     ->label('Итоговая стоимость')
@@ -92,48 +111,54 @@ class OrderResource extends Resource
                     ->label('ID')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('customer_name')
                     ->label('Заказчик')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('customer_phone')
                     ->label('Телефон')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 // TextColumn::make('customer_address')
                 //     ->label('Адрес')
                 //     ->limit(30)
-                //     ->toggleable(isToggledHiddenByDefault: true),
+                //     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('total_price')
                     ->label('Цена')
                     ->money('RUB')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('created_at')
                     ->label('Дата')
                     ->dateTime('d M Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->colors([
-                        'secondary' => 'pending',
-                        'warning' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'cancelled',
-                    ])
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->color(fn (string $state): string => match($state) {
+                        'created' => 'info',
+                        'paid' => 'danger',
+                        'expired' => 'gray',
+                        'assembled' => 'primary',
+                        'sent' => 'success',
+                        'completed' => 'warning',
+                        'archived' => 'info',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'pending' => 'Pending',
-                        'processing' => 'Processing',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
+                        'created' => 'Создан',
+                        'paid' => 'Оплачен',
+                        'expired' => 'Просрочен',
+                        'assembled' => 'Собран',
+                        'sent' => 'Отправлен',
+                        'completed' => 'Выполнен',
+                        'archived' => 'Архивирован',
                     ]),
             ])
             ->defaultSort('created_at', 'desc')

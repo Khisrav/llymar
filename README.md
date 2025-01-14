@@ -68,9 +68,14 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Some notes for devs
 Order statuses (may change or pending approval):
-- created
-- paid
-- expired
-- assembled
-- completed
-- archived?
+- created - создан
+- paid - оплачен
+- expired - просрочен
+- assembled - собран
+- sent - отправлен
+- страховой случай???
+- completed - выполнен
+- archived - архивирован
+- unknown - неизвестно
+обсудить статусы с деловыми линиями
+

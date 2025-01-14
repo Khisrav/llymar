@@ -17,6 +17,9 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/orders/{orderId}/pdf', [OrderController::class, 'generateOrderPDF'])
+    ->name('orders.pdf');
+
 Route::get('/auth', function() {
     if (Auth::check()) {
         return redirect()->route('app.home');
@@ -41,6 +44,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
     
     Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    
+    Route::get('/app/account/settings', function () {
+        return Inertia::render('App/Account/Settings', [
+            'user' => Auth::user(),
+        ]);
+    })->name('app.account.settings');
 });
 
 /*

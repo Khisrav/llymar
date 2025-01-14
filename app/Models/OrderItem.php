@@ -23,4 +23,14 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Order::class);
     }
+    
+    /**
+     * Relationship: OrderItem belongs to an Item.
+     *
+     * @return BelongsTo
+     */
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'item_id');
+    }
 }

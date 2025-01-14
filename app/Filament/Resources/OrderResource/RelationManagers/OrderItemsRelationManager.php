@@ -71,7 +71,6 @@ class OrderItemsRelationManager extends RelationManager
                     ->label('Итого')
                     ->state(function (Model $record) {
                         $item = Item::where('id', $record->item_id)->first();
-                        
                         return number_format($record->quantity * $item->retail_price * (1 - ($item->discount || auth()->user()->discount) / 100), 0, '.', ' ') . ' ₽';
                     })
                     ->toggleable(isToggledHiddenByDefault: true),

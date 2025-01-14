@@ -17,6 +17,9 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/orders/{orderId}/pdf', [OrderController::class, 'generateOrderPDF'])
+    ->name('orders.pdf');
+
 Route::get('/auth', function() {
     if (Auth::check()) {
         return redirect()->route('app.home');

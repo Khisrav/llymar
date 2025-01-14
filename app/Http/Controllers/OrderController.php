@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -84,5 +85,17 @@ class OrderController extends Controller
     
     private function telegramNotifier() {
         
+    }
+    
+    public function generateOrderPDF($orderId)
+    {
+        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
+        // return view('orders.pdf', [ 'order' => $order ]);
+        
+        $pdf = Pdf::loadView('orders.pdf', [ 'order' => $order ]);
+        $pdf->setOptions(['isRemoteEnabled' => true]);
+        
+        // return $pdf->download('order.pdf');
+        return $pdf->stream('order.pdf');
     }
 }

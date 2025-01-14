@@ -18,6 +18,7 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Пользователи';
 
     public static function form(Form $form): Form
     {
@@ -31,7 +32,31 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Имя')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Телефон')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\SelectColumn::make('role')
+                    ->label('Роль')
+                    ->searchable()
+                    ->options([
+                        'admin' => 'Администратор',
+                        'manager' => 'Менеджер',
+                        'user' => 'Пользователь',
+                    ])
+                    ->sortable(),
             ])
             ->filters([
                 //

@@ -83,7 +83,12 @@ const checkout = () => {
 	<AuthenticatedHeaderLayout />
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl">
-			<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold mb-6">Ваша корзина</h2>
+			<div class="flex items-center gap-4 mb-6">
+				<Button as="a" href="/app/calculator" size="icon" variant="outline">
+					<ArrowLeft />
+				</Button>
+				<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Ваша корзина</h2>
+			</div>
 			<div v-if="cartItemIDs.length === 0" class="text-center py-8">
 				<ShoppingCartIcon class="h-16 w-16 mx-auto mb-4" />
 				<p class="text-lg">Ваша корзина пуста</p>

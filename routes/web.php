@@ -44,6 +44,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
     
     Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    
+    Route::get('/app/account/settings', function () {
+        return Inertia::render('App/Account/Settings', [
+            'user' => Auth::user(),
+        ]);
+    })->name('app.account.settings');
 });
 
 /*

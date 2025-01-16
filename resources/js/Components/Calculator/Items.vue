@@ -34,7 +34,7 @@ const isItemsListHidden = ref(false)
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Цена:</span>
-                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(item.retail_price) }}/{{ item.unit }}</span>
+                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
                         </div>
                         <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>
@@ -46,7 +46,7 @@ const isItemsListHidden = ref(false)
     
                     <div class="text-center pt-2">
                         <span class="font-bold">
-                            {{ currencyFormatter((itemsStore.cartItems[item.id as number]?.quantity ?? 0) * item.retail_price) }}
+                            {{ currencyFormatter((itemsStore.cartItems[item.id as number]?.quantity ?? 0) * itemsStore.itemPrice(item.id)) }}
                         </span>
                     </div>
                 </div>

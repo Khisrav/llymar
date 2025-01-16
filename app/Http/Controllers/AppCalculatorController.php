@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\LlymarCalculatorItem;
+use App\Models\WholesaleFactor;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,7 @@ class AppCalculatorController extends Controller
             'services' => $this->getServices(),
             'user' => auth()->user(),
             'categories' => Category::all()->toArray(),
+            'wholesale_factor' => WholesaleFactor::where('name', auth()->user()->wholesale_factor_key)->first(),
         ]);
     }
     

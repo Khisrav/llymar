@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
-import { Item, CartItem, User } from '../lib/types'
+import { Item, CartItem, User, Category, WholesaleFactor } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 
 export const useItemsStore = defineStore('itemsStore', () => {
@@ -13,6 +13,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const services = ref<Item[]>([])
     const cartItems = ref<{ [key: number]: CartItem }>({})
     const user = ref<User>({} as User)
+    const categories = ref<Category[]>([])
+    const wholesale_factor = ref<WholesaleFactor>()
+    
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -57,7 +60,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return cartItems.value[item?.id as number]?.quantity || 0
     }
 
-    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: 'left' | 'right' | 'center' | 'inner-left' | 'inner-right'): number => {
+    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
                 L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
@@ -147,7 +150,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const updateGlassQuantity = (glassID: number) => {
         glasses.value.forEach(glass => {
-            // cartItems.value[glass.id] = { quantity: 0 }
             delete cartItems.value[glass.id]
         })
         
@@ -176,6 +178,21 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         updateGlassQuantity(selectedGlassID.value)
     }
+    
+    const itemPrice = (item_id: number): number => {
+        let ku;
+        
+        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        const item = allItems.find(i => i.id === item_id)
+        
+        if (!item) return 0;
+        
+        const category = categories.value.find(c => c.id === item?.category_id)
+        
+        ku = category?.reduction_factors?.find(ku => ku.key === user.value.reduction_factor_key)
+        
+        return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
+    }
 
     const total_price = computed(() => {
         let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
@@ -186,8 +203,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
             
             if (!quantity) return
             
-            totalPriceWithoutDiscount += item.retail_price * quantity
-            totalPriceWithDiscount += item.retail_price * quantity * discountRate(item.discount || user.value.discount)
+            totalPriceWithoutDiscount += 0
+            totalPriceWithDiscount += itemPrice(item.id) * quantity
         })
 
         return {
@@ -215,5 +232,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
         initiateCartItems,
         getItemInfo,
         user,
+        categories,
+        wholesale_factor,
+        itemPrice,
     }
 })

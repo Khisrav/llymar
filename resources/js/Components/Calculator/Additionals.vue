@@ -55,7 +55,7 @@ const toggleSelection = (serviceId: number) => {
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Цена:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary">
-									{{ currencyFormatter(selectedGlass.retail_price) }}/{{ selectedGlass.unit }}
+									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
@@ -67,7 +67,7 @@ const toggleSelection = (serviceId: number) => {
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Итого:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary">
-									{{ currencyFormatter(selectedGlass.retail_price * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
+									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
 						</div>

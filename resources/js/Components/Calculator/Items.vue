@@ -13,7 +13,7 @@ const isItemsListHidden = ref(false)
 <template>
     <div class="border p-2 md:p-4 rounded-2xl">
         <div class="flex items-center">
-            <h2 class="text-xl font-bold text-muted-foreground">Авторасчет</h2>
+            <h2 class="text-xl font-bold text-muted-foreground">Состав системы</h2>
             <Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="isItemsListHidden = !isItemsListHidden">
                 <Eye v-if="!isItemsListHidden" class="size-6" />
                 <EyeOff v-else class="size-6" />

@@ -4,6 +4,8 @@ export interface OpeningType {
     center: string;
     'inner-left': string;
     'inner-right': string;
+    'blind-glazing': string;
+    triangle: string;
 }
 
 export interface OpeningImages {

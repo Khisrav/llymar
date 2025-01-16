@@ -15,6 +15,7 @@ itemsStore.additional_items = usePage().props.additional_items as Item[]
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
+console.log(usePage().props.categories)
 itemsStore.initiateCartItems()
 itemsStore.calculate()
 </script>

@@ -98,17 +98,17 @@ class ItemResource extends Resource
                     ->label('Арт.')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Наименование')
-                    ->searchable()
-                    ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\ImageColumn::make('img')
                     ->label('Картинка')
                     ->width(86)
                     ->height('auto')
                     // ->url(fn ($record) => $record->img)
                     ->disk('public')
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Наименование')
+                    ->searchable()
+                    ->wrap()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('purchase_price')
                     ->label('Закупка, ₽')

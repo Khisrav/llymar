@@ -33,9 +33,10 @@ const toggleSelection = (serviceId: number) => {
 			<h2 class="text-xl font-bold text-muted-foreground">Детали</h2>
 		</div>
 
-		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-8">
 			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
 				<div>
+					<p class="font-semibold mb-4">Стекло</p>
 					<Select v-model="itemsStore.selectedGlassID">
 						<SelectTrigger>
 							<SelectValue placeholder="Выберите стекло" />
@@ -79,7 +80,7 @@ const toggleSelection = (serviceId: number) => {
 			>
 				<div v-if="itemsStore.services.length">
 					<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
-						<span class="font-semibold">Доступные услуги</span>
+						<span class="font-semibold">Услуги</span>
 						<!-- <Button variant="outline" size="icon" class="">
 							<PlusIcon class="size-4" />
 						</Button> -->
@@ -118,15 +119,15 @@ const toggleSelection = (serviceId: number) => {
 						</div>
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Итого:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price * itemsStore.cartItems[item.id].quantity) }}</span>
+							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
 						</div>
 
-						<QuantitySelector
+						<!-- <QuantitySelector
 							:min="0"
 							:max="100"
 							:step="1"
 							v-model="itemsStore.cartItems[item.id].quantity"
-						/>
+						/> -->
 					</div>
 				</div>
 			</div>

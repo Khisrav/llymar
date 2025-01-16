@@ -26,6 +26,9 @@ class User extends Authenticatable
         'company',
         'phone',
         'address',
+        'role',
+        'reduction_factor_key',
+        'wholesale_factor_key',
     ];
 
     /**

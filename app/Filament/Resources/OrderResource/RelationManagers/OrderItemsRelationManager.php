@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
 use App\Models\Item;
+use App\Models\OrderItem;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -52,28 +53,30 @@ class OrderItemsRelationManager extends RelationManager
                         return $item ? $item->img : null; 
                     })
                     ->size(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_id')
                     ->label('ID')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_name')
                     ->label('Деталь')
                     ->state(fn ($record) => Item::find($record->item_id)->name)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Кол-во')
                     ->suffix(function (Model $record) {
                         return ' ' . Item::find($record->item_id)->unit;
                     })
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Итого')
                     ->state(function (Model $record) {
                         $item = Item::where('id', $record->item_id)->first();
-                        return number_format($record->quantity * $item->retail_price * (1 - ($item->discount || auth()->user()->discount) / 100), 0, '.', ' ') . ' ₽';
+                        
+                        // return OrderItem::itemTotalPrice(auth()->user()->id);
+                        return number_format($record->itemTotalPrice(), 0, '.', ' ') . ' ₽';
                     })
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //

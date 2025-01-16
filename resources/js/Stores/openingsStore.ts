@@ -9,16 +9,20 @@ export const useOpeningStore = defineStore('openingStore', () => {
         center: 'Центральный проем',
         'inner-left': 'Входная группа левая',
         'inner-right': 'Входная группа правая',
+        'blind-glazing': 'Глухое остекление',
+        triangle: 'Треугольник',
     }
+    
+    const defaultHeight = ref(2700)
 
     const opening_images: OpeningImages = {
-        left: 'https://llymar.ru/assets/openings-left.jpg',
-        right: 'https://llymar.ru/assets/openings-right.jpg',
-        center: 'https://llymar.ru/assets/openings-center.jpg',
-        'inner-left': 'https://llymar.ru/assets/openings-inner-left.jpg',
-        'inner-right': 'https://llymar.ru/assets/openings-inner-right.jpg',
-        'blind-glazing': 'https://llymar.ru/assets/openings-blind-glazing.jpg',
-        triangle: 'https://llymar.ru/assets/openings-triangle.jpg',
+        left: '/assets/openings/openings-left.jpg',
+        right: '/assets/openings/openings-right.jpg',
+        center: '/assets/openings/openings-center.jpg',
+        'inner-left': '/assets/openings/openings-inner-left.jpg',
+        'inner-right': '/assets/openings/openings-inner-right.jpg',
+        'blind-glazing': '/assets/openings/openings-blind-glazing.jpg',
+        triangle: '/assets/openings/openings-triangle.jpg',
     }
 
     const openings = ref<Opening[]>(sessionStorage.getItem('openings') ? JSON.parse(sessionStorage.getItem('openings') as string) : [
@@ -34,7 +38,7 @@ export const useOpeningStore = defineStore('openingStore', () => {
         openings.value.push({
             doors: 2,
             width: 3000,
-            height: 2700,
+            height: defaultHeight.value,
             type: 'left',
         })
     }
@@ -53,6 +57,7 @@ export const useOpeningStore = defineStore('openingStore', () => {
 
     return {
         openingTypes,
+        defaultHeight,
         opening_images,
         openings,
         addOpening,

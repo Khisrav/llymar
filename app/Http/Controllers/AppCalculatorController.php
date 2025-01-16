@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\LlymarCalculatorItem;
 use Inertia\Inertia;
@@ -16,6 +17,7 @@ class AppCalculatorController extends Controller
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
             'user' => auth()->user(),
+            'categories' => Category::all()->toArray(),
         ]);
     }
     

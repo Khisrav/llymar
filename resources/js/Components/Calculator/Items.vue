@@ -13,7 +13,7 @@ const isItemsListHidden = ref(false)
 <template>
     <div class="border p-2 md:p-4 rounded-2xl">
         <div class="flex items-center">
-            <h2 class="text-xl font-bold text-muted-foreground">Авторасчет</h2>
+            <h2 class="text-xl font-bold text-muted-foreground">Состав системы</h2>
             <Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="isItemsListHidden = !isItemsListHidden">
                 <Eye v-if="!isItemsListHidden" class="size-6" />
                 <EyeOff v-else class="size-6" />
@@ -34,7 +34,7 @@ const isItemsListHidden = ref(false)
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Цена:</span>
-                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(item.retail_price) }}/{{ item.unit }}</span>
+                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
                         </div>
                         <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>
@@ -46,7 +46,7 @@ const isItemsListHidden = ref(false)
     
                     <div class="text-center pt-2">
                         <span class="font-bold">
-                            {{ currencyFormatter((itemsStore.cartItems[item.id as number]?.quantity ?? 0) * item.retail_price) }}
+                            {{ currencyFormatter((itemsStore.cartItems[item.id as number]?.quantity ?? 0) * itemsStore.itemPrice(item.id)) }}
                         </span>
                     </div>
                 </div>

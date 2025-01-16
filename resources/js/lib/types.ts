@@ -4,6 +4,8 @@ export interface OpeningType {
     center: string;
     'inner-left': string;
     'inner-right': string;
+    'blind-glazing': string;
+    triangle: string;
 }
 
 export interface OpeningImages {
@@ -50,6 +52,8 @@ export interface User {
     phone?: string;
     company?: string;
     discount: number;
+    reduction_factor_key?: string;
+    wholesale_factor_keey?: string;
     created_at?: string | null;
     updated_at?: string | null;
 }
@@ -71,4 +75,22 @@ export interface Pagination {
     active: boolean;
     label: string;
     url?: string | null;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    created_at: string | null;
+    updated_at: string;
+    reduction_factors: ReductionFactor[] | null;
+}
+
+export interface ReductionFactor {
+    key: string;
+    value: string | number;
+}
+
+export interface WholesaleFactor {
+    name: string;
+    value: number;
 }

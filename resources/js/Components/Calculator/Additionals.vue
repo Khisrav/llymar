@@ -10,6 +10,8 @@ import SelectItem from "../ui/select/SelectItem.vue";
 import SelectContent from "../ui/select/SelectContent.vue";
 import { getImageSource } from "../../Utils/getImageSource";
 import Checkbox from '../ui/checkbox/Checkbox.vue';
+import Button from "../ui/button/Button.vue";
+import { PlusIcon } from "lucide-vue-next";
 
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || null);
@@ -33,9 +35,10 @@ const toggleSelection = (serviceId: number) => {
 			<h2 class="text-xl font-bold text-muted-foreground">Детали</h2>
 		</div>
 
-		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-8">
 			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
 				<div>
+					<p class="font-semibold mb-4">Стекло</p>
 					<Select v-model="itemsStore.selectedGlassID">
 						<SelectTrigger>
 							<SelectValue placeholder="Выберите стекло" />
@@ -54,7 +57,7 @@ const toggleSelection = (serviceId: number) => {
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Цена:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary">
-									{{ currencyFormatter(selectedGlass.retail_price) }}/{{ selectedGlass.unit }}
+									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
@@ -66,7 +69,7 @@ const toggleSelection = (serviceId: number) => {
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Итого:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary">
-									{{ currencyFormatter(selectedGlass.retail_price * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
+									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
 						</div>
@@ -79,15 +82,12 @@ const toggleSelection = (serviceId: number) => {
 			>
 				<div v-if="itemsStore.services.length">
 					<div class="flex items-center justify-between gap-2 md:gap-4 mb-2 md:mb-4">
-						<span class="font-semibold">Доступные услуги</span>
-						<!-- <Button variant="outline" size="icon" class="">
-							<PlusIcon class="size-4" />
-						</Button> -->
+						<span class="font-semibold">Услуги</span>
 					</div>
 					<div v-for="service in itemsStore.services" :key="service.id" class="flex items-center justify-between gap-2 md:gap-4 py-1" :class="{'border-b': service !== itemsStore.services[itemsStore.services.length - 1]}">
 						<p><span class="font-mono">{{ service.vendor_code ? service.vendor_code + ' - ' : '' }}</span>{{ service.name }}</p>
 						<div class="flex items-center gap-2 md:gap-4">
-							<span class="font-bold text-primary">{{ currencyFormatter(service.retail_price) }}</span>
+							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(service.id)) }}</span>
 							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />
 						</div>
 					</div>
@@ -114,19 +114,25 @@ const toggleSelection = (serviceId: number) => {
 					<div class="basis-2/3 flex flex-col justify-between gap-2">
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Цена:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price) }}/{{ item.unit }}</span>
+							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
 						</div>
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Итого:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(item.retail_price * itemsStore.cartItems[item.id].quantity) }}</span>
+							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
 						</div>
 
-						<QuantitySelector
-							:min="0"
-							:max="100"
-							:step="1"
-							v-model="itemsStore.cartItems[item.id].quantity"
-						/>
+						<div>
+							<QuantitySelector
+								v-if="itemsStore.cartItems[item.id]"
+								:min="0"
+								:max="100"
+								:step="1"
+								v-model="itemsStore.cartItems[item.id].quantity"
+							/>
+							<Button v-else class="w-full" @click="() => itemsStore.cartItems[item.id] = { quantity: 1 }">
+								<PlusIcon /> Добавить
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>

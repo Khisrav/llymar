@@ -180,16 +180,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
     
     const itemPrice = (item_id: number): number => {
-        let ku;
-        
-        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
-        const item = allItems.find(i => i.id === item_id)
+        const item = getItemInfo(item_id)
         
         if (!item) return 0;
         
         const category = categories.value.find(c => c.id === item?.category_id)
-        
-        ku = category?.reduction_factors?.find(ku => ku.key === user.value.reduction_factor_key)
+        const ku = category?.reduction_factors?.find(ku => ku.key === user.value.reduction_factor_key)
         
         return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
     }

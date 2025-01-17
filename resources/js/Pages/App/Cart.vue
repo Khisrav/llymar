@@ -6,7 +6,7 @@ import { router } from "@inertiajs/vue3"
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
 import Button from "../../Components/ui/button/Button.vue"
 import { useItemsStore } from "../../Stores/itemsStore"
-import { Item, User } from "../../lib/types"
+import { Category, Item, OpeningType, User, WholesaleFactor } from "../../lib/types"
 import CartItem from "../../Components/Cart/CartItem.vue"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import Input from "../../Components/ui/input/Input.vue"
@@ -23,6 +23,9 @@ itemsStore.additional_items = usePage().props.additional_items as Item[]
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
+itemsStore.categories = usePage().props.categories as Category[]
+itemsStore.wholesale_factor = usePage().props.wholesale_factor as WholesaleFactor
+
 itemsStore.initiateCartItems()
 
 const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number))
@@ -35,6 +38,10 @@ const snp = ref({
 	name: itemsStore.user.name.split(" ")[1],
 	patronymic: itemsStore.user.name.split(" ")[2],
 })
+
+const getOpeningName = (type: OpeningType): string => {
+	return openingsStore.openingTypes[type]
+}
 
 const order_info = computed(() => ({
 	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
@@ -54,7 +61,7 @@ const checkout = () => {
 		total_price: itemsStore.total_price.with_discount,
 	}
 
-	router.post("/app/checkout", formData, {
+	router.post("/app/checkout", formData as any, {
 		onSuccess: () => {
 			sessionStorage.removeItem('openings')
 			sessionStorage.removeItem('cartItems')
@@ -101,22 +108,30 @@ const checkout = () => {
 				<div class="md:w-2/3">
 					<ul class="divide-y divide-gray-200 dark:divide-gray-700">
 						<li v-for="itemID in cartItemIDs" :key="itemID" class="py-6 flex items-center">
-							<CartItem :item="item(itemID)" />
+							<CartItem :item="item(itemID) as any" />
 						</li>
 					</ul>
 				</div>
 
 				<!-- Order Summary -->
 				<div class="md:w-1/3 mt-8 md:mt-0">
-					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6">
+					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 space-y-4">
+						<h3 class="text-lg font-semibold">Проемы</h3>
+						<div v-for="opening in openingsStore.openings" :key="opening.type" class="">
+							<div class="">
+								<div class="font-medium">{{ getOpeningName(opening.type) }}</div> 
+								<div class="text-muted-foreground flex flex-row items-center justify-between">
+									<span>{{ opening.width }} мм ✕ {{ opening.height }} мм</span>
+									<span v-if="!['blind-glazing', 'triangle'].includes(opening.type)">{{ opening.doors }} ств.</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-6">
 						<h3 class="text-lg font-semibold mb-4">Сводка по заказу</h3>
 						<div class="flex justify-between mb-2">
 							<p class="">Всего</p>
-							<p class="">{{ currencyFormatter(itemsStore.total_price.without_discount) }}</p>
-						</div>
-						<div class="flex justify-between mb-2">
-							<p class="">Скидка</p>
-							<p class="">{{ currencyFormatter(itemsStore.total_price.with_discount - itemsStore.total_price.without_discount) }}</p>
+							<p class="">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</p>
 						</div>
 						<!-- Additional order details -->
 						<div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4 flex justify-between items-center">

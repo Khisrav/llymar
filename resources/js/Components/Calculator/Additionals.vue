@@ -87,7 +87,7 @@ const toggleSelection = (serviceId: number) => {
 					<div v-for="service in itemsStore.services" :key="service.id" class="flex items-center justify-between gap-2 md:gap-4 py-1" :class="{'border-b': service !== itemsStore.services[itemsStore.services.length - 1]}">
 						<p><span class="font-mono">{{ service.vendor_code ? service.vendor_code + ' - ' : '' }}</span>{{ service.name }}</p>
 						<div class="flex items-center gap-2 md:gap-4">
-							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(service.id)) }}</span>
+							<span v-if="itemsStore.cartItems[service.id]" class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(service.id) * (itemsStore.cartItems[service.id] ? itemsStore.cartItems[service.id].quantity : 0)) }}</span>
 							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />
 						</div>
 					</div>

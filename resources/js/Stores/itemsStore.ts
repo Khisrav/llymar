@@ -166,7 +166,17 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
                 
         servicesID.forEach(serviceID => {
-            cartItems.value[serviceID] = { quantity: 1 }
+            //386 & 388 это покраска и распил соответственно
+            if  ([386, 388].includes(serviceID)) {
+                console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
+                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) }
+            } 
+            //387 & 389 это монтаж и изготовление створок соответственно
+            else if ([387, 389].includes(serviceID)) {
+                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { width, height }) => {
+                    return acc + width * height
+                }, 0) / 1000000 }
+            }
         })
     }
 
@@ -177,6 +187,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
 
         updateGlassQuantity(selectedGlassID.value)
+        updateServicesQuantity(selectedServicesID.value)
     }
     
     const itemPrice = (item_id: number): number => {

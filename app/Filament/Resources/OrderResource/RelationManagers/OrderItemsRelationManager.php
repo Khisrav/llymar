@@ -30,6 +30,8 @@ class OrderItemsRelationManager extends RelationManager
                 Forms\Components\Select::make('item_id')
                     ->required()
                     ->label('ID детали')
+                    ->selectablePlaceholder(false)
+                    ->native(false)
                     ->options(Item::all()->mapWithKeys(function ($vc) {
                         return [$vc->id => $vc->id . ' - ' . $vc->name];
                     })),

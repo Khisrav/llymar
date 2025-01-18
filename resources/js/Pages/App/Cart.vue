@@ -118,10 +118,10 @@ const checkout = () => {
 					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 space-y-4">
 						<h3 class="text-lg font-semibold">Проемы</h3>
 						<div v-for="opening in openingsStore.openings" :key="opening.type" class="">
-							<div class="">
-								<div class="font-medium">{{ getOpeningName(opening.type) }}</div> 
+							<div>
+								<div>{{ getOpeningName(opening.type) }}</div> 
 								<div class="text-muted-foreground flex flex-row items-center justify-between">
-									<span>{{ opening.width }} мм ✕ {{ opening.height }} мм</span>
+									<span>{{ opening.width }} мм <span class="text-xs">✕</span> {{ opening.height }} мм</span>
 									<span v-if="!['blind-glazing', 'triangle'].includes(opening.type)">{{ opening.doors }} ств.</span>
 								</div>
 							</div>

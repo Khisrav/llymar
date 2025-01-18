@@ -44,6 +44,7 @@ class OrderResource extends Resource
                                 TextInput::make('user_id')
                                     ->label('Создатель')
                                     ->disabled()
+                                    ->formatStateUsing(fn (string $state) => 'ID: ' . $state . ' - ' . User::find($state)->name)
                                     ->columnSpan(3),
                                 // General details
                                 TextInput::make('customer_name')
@@ -86,18 +87,18 @@ class OrderResource extends Resource
                                     ->maxLength(255)
                                     ->columnSpan(6), // Full width
             
+                                Textarea::make('comment')
+                                    ->label('Комментарий заказчика')
+                                    ->rows(3)
+                                    ->maxLength(500)
+                                    ->columnSpan(6), // Full width for text area
+            
                                 TextInput::make('total_price')
                                     ->label('Итоговая стоимость')
                                     ->required()
                                     ->numeric()
                                     ->prefix('₽')
                                     ->columnSpan(3), // Spans 2 columns on desktop
-            
-                                Textarea::make('comment')
-                                    ->label('Комментарий заказчика')
-                                    ->rows(3)
-                                    ->maxLength(500)
-                                    ->columnSpan(6), // Full width for text area
                             ]),
                     ])
             ]);

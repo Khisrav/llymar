@@ -11,8 +11,8 @@ import TableHead from "../../Components/ui/table/TableHead.vue";
 import TableBody from "../../Components/ui/table/TableBody.vue";
 import TableCell from "../../Components/ui/table/TableCell.vue";
 import { currencyFormatter } from "../../Utils/currencyFormatter";
-import Badge from "../../Components/ui/badge/Badge.vue";
 import Button from "../../Components/ui/button/Button.vue";
+import StatusBadge from "../../Components/StatusBadge.vue";
 
 const page = usePage();
 const orders = ref(page.props.orders.data as Order[]);
@@ -23,22 +23,9 @@ const hasOrders = computed(() => orders.value.length > 0);
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString("ru-RU", {
 		year: "numeric",
-		month: "long",
+		month: "short",
 		day: "numeric",
 	});
-};
-
-const formatStatus = (status: string) => {
-	switch (status) {
-		case "completed":
-			return "Завершен";
-		case "pending":
-			return "В обработке";
-		case "cancelled":
-			return "Отменен";
-		default:
-			return status;
-	}
 };
 </script>
 
@@ -58,46 +45,48 @@ const formatStatus = (status: string) => {
 				</Link>
 			</div>
 
-			<div v-else class="rounded-lg border">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead class="font-bold">ID</TableHead>
-							<TableHead class="font-bold">Дата</TableHead>
-							<TableHead class="font-bold">Заказчик</TableHead>
-							<TableHead class="font-bold">Сумма</TableHead>
-							<TableHead class="font-bold">Статус</TableHead>
-							<TableHead class="font-bold">Действия</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						<TableRow v-for="order in orders" :key="order.id">
-							<TableCell>{{ order.id }}</TableCell>
-							<TableCell>{{ formatDate(order.created_at || '') }}</TableCell>
-							<TableCell class="flex flex-col gap-1">
-							    <p class="font-medium">{{ order.customer_name }}</p>
-							    <a :href="'tel:' + order.customer_phone" class="underline font-mono">{{ order.customer_phone }}</a>
-							</TableCell>
-							<TableCell>{{ currencyFormatter(order.total_price) }}</TableCell>
-							<TableCell>
-							    <Badge variant="outline">{{ order.status }}</Badge>
-							</TableCell>
-							<TableCell class="flex gap-2">
-							    <Button variant="outline" size="icon">
-							        <PencilIcon />
-							    </Button>
-							    <Button variant="secondary" size="icon">
-							        <TrashIcon />
-							    </Button>
-							</TableCell>
-						</TableRow>
-					</TableBody>
-				</Table>
-			</div>
+			<div v-else>
+				<div class="rounded-lg border">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead class="font-bold">ID</TableHead>
+								<TableHead class="font-bold">Дата</TableHead>
+								<TableHead class="font-bold">Получатель</TableHead>
+								<TableHead class="font-bold">Сумма</TableHead>
+								<TableHead class="font-bold">Статус</TableHead>
+								<TableHead class="font-bold">Действия</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							<TableRow v-for="order in orders" :key="order.id">
+								<TableCell>{{ order.id }}</TableCell>
+								<TableCell>{{ formatDate(order.created_at || '') }}</TableCell>
+								<TableCell class="flex flex-col gap-1">
+								    <p class="font-medium">{{ order.customer_name }}</p>
+								    <a :href="'tel:' + order.customer_phone" class="underline font-mono">{{ order.customer_phone }}</a>
+								</TableCell>
+								<TableCell>{{ currencyFormatter(order.total_price) }}</TableCell>
+								<TableCell>
+								    <StatusBadge :status="order.status" />
+								</TableCell>
+								<TableCell class="flex gap-2">
+								    <!-- <Button variant="outline" size="icon">
+								        <PencilIcon />
+								    </Button> -->
+								    <Button variant="secondary" size="icon">
+								        <TrashIcon />
+								    </Button>
+								</TableCell>
+							</TableRow>
+						</TableBody>
+					</Table>
+				</div>
 
-            <div class="mt-4 md:mt-8 flex justify-center">
-                <Button v-for="link in pagination" :key="link.label" :disabled="!link.url" :variant="link.active ? 'default' : 'outline'" class="mx-1" @click="$inertia.visit(link.url || '#')" v-html="link.label" />
-            </div>
+				<div class="mt-4 md:mt-8 flex justify-center">
+					<Button v-for="link in pagination" :key="link.label" :disabled="!link.url" :variant="link.active ? 'default' : 'outline'" class="mx-1" @click="$inertia.visit(link.url || '#')" v-html="link.label" />
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

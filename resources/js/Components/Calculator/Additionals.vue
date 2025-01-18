@@ -56,19 +56,19 @@ const toggleSelection = (serviceId: number) => {
 						<div class="flex flex-col justify-between h-full">
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Цена:</span>
-								<span v-if="selectedGlass" class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
 									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Кол-во:</span>
-								<span v-if="selectedGlass" class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
 									{{ itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit }}
 								</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Итого:</span>
-								<span v-if="selectedGlass" class="font-bold text-primary">
+								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
 									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
@@ -87,13 +87,13 @@ const toggleSelection = (serviceId: number) => {
 					<div v-for="service in itemsStore.services" :key="service.id" class="flex items-center justify-between gap-2 md:gap-4 py-1" :class="{'border-b': service !== itemsStore.services[itemsStore.services.length - 1]}">
 						<p><span class="font-mono">{{ service.vendor_code ? service.vendor_code + ' - ' : '' }}</span>{{ service.name }}</p>
 						<div class="flex items-center gap-2 md:gap-4">
-							<span v-if="itemsStore.cartItems[service.id]" class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(service.id) * (itemsStore.cartItems[service.id] ? itemsStore.cartItems[service.id].quantity : 0)) }}</span>
+							<span v-if="itemsStore.cartItems[service.id]" class="font-bold text-accent-foreground">{{ currencyFormatter(itemsStore.itemPrice(service.id) * (itemsStore.cartItems[service.id] ? itemsStore.cartItems[service.id].quantity : 0)) }}</span>
 							<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id)" @click="toggleSelection(service.id)" />
 						</div>
 					</div>
 				</div>
 				<div v-else class="flex w-full h-full items-center justify-center">
-					<p class="text-muted-foreground">Нет доступных услуг для выбора</p>
+					<p class="text-accent-foreground">Нет доступных услуг для выбора</p>
 				</div>
 			</div>
 		</div>
@@ -114,11 +114,11 @@ const toggleSelection = (serviceId: number) => {
 					<div class="basis-2/3 flex flex-col justify-between gap-2">
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Цена:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
+							<span class="font-bold text-accent-foreground">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
 						</div>
 						<div class="flex justify-between items-center text-sm text-muted-foreground">
 							<span>Итого:</span>
-							<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
+							<span class="font-bold text-accent-foreground">{{ currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
 						</div>
 
 						<div>

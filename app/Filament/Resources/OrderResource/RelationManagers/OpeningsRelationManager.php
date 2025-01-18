@@ -62,6 +62,7 @@ class OpeningsRelationManager extends RelationManager
                 Tables\Columns\SelectColumn::make('type')
                     ->label('Тип проема')
                     ->searchable()
+                    ->selectablePlaceholder(false)
                     // ->options(Opening::all()->pluck('name', 'type')),
                     ->options([
                         'left' => 'Левый проем',
@@ -72,22 +73,22 @@ class OpeningsRelationManager extends RelationManager
                         'blind-glazing' => 'Глухое остекление',
                         'triangle' => 'Треугольник',
                     ])
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('doors')
                     ->label('Створки')
                     ->sortable()
                     ->type('number')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('height')
                     ->label('Высота (мм)')
                     ->sortable()
                     ->type('number')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('width')
                     ->label('Ширина (мм)')
                     ->sortable()
                     ->type('number')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //
@@ -96,7 +97,7 @@ class OpeningsRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

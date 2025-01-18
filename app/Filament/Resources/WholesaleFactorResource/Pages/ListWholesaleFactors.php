@@ -9,6 +9,8 @@ use Filament\Resources\Pages\ListRecords;
 class ListWholesaleFactors extends ListRecords
 {
     protected static string $resource = WholesaleFactorResource::class;
+    
+    protected static ?string $title = 'Оптовые коэффициенты';
 
     protected function getHeaderActions(): array
     {

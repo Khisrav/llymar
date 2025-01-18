@@ -9,6 +9,8 @@ use Filament\Resources\Pages\EditRecord;
 class EditItem extends EditRecord
 {
     protected static string $resource = ItemResource::class;
+    
+    protected static ?string $title = 'Просмотр детали';
 
     protected function getHeaderActions(): array
     {

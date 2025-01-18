@@ -9,6 +9,8 @@ use Filament\Resources\Pages\ListRecords;
 class ListItems extends ListRecords
 {
     protected static string $resource = ItemResource::class;
+    
+    protected static ?string $title = 'Детали';
 
     protected function getHeaderActions(): array
     {

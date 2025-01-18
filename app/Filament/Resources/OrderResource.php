@@ -19,12 +19,14 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
     protected static ?string $navigationLabel = 'Заказы';
 
     public static function form(Forms\Form $form): Forms\Form
@@ -146,6 +148,16 @@ class OrderResource extends Resource
                         'completed' => 'warning',
                         'archived' => 'info',
                     })
+                    ->formatStateUsing(fn (string $state): string => match($state) {
+                        'created' => 'Создан',
+                        'paid' => 'Оплачен',
+                        'expired' => 'Просрочен',
+                        'assembled' => 'Собран',
+                        'sent' => 'Отправлен',
+                        'completed' => 'Завершен',
+                        'archived' => 'Архивирован',
+                        default => $state,
+                    })
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
@@ -163,7 +175,15 @@ class OrderResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Action::make('list_pdf')
+                        ->label('Перечень PDF')
+                        ->icon('heroicon-o-arrow-down-tray'),
+                    Action::make('invoice_pdf')
+                        ->label('Счет PDF')
+                        ->icon('heroicon-o-document-currency-dollar'),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

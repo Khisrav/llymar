@@ -17,9 +17,9 @@ class WholesaleFactorResource extends Resource
 {
     protected static ?string $model = WholesaleFactor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
     
-    protected static ?string $navigationLabel = 'Оптовый коэффициент';
+    protected static ?string $navigationLabel = 'Оптовые коэффициенты';
 
     public static function form(Form $form): Form
     {

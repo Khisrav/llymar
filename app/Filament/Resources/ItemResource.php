@@ -22,7 +22,7 @@ class ItemResource extends Resource
 {
     protected static ?string $model = Item::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     // protected static ?int $navigationSort = 4;
 
@@ -52,11 +52,11 @@ class ItemResource extends Resource
                             ->type('number')
                             ->prefix('₽')
                             ->required(),
-                        Forms\Components\TextInput::make('retail_price')
-                            ->label('Розница, ₽')
-                            ->type('number')
-                            ->prefix('₽')
-                            ->required(),
+                        // Forms\Components\TextInput::make('retail_price')
+                        //     ->label('Розница, ₽')
+                        //     ->type('number')
+                        //     ->prefix('₽')
+                        //     ->required(),
                         Forms\Components\Select::make('unit')
                             ->label('Единица измерения')
                             ->native(false)
@@ -97,7 +97,7 @@ class ItemResource extends Resource
                 Tables\Columns\TextColumn::make('vendor_code')
                     ->label('Арт.')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('img')
                     ->label('Картинка')
                     ->width(86)
@@ -114,10 +114,10 @@ class ItemResource extends Resource
                     ->label('Закупка, ₽')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextInputColumn::make('retail_price')
-                    ->label('Розница, ₽')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                // Tables\Columns\TextInputColumn::make('retail_price')
+                //     ->label('Розница, ₽')
+                //     ->searchable()
+                //     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('unit')
                     ->label('Ед. изм.')
                     ->searchable()

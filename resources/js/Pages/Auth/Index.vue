@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Link } from "@inertiajs/vue3";
+import { Link, useForm } from "@inertiajs/vue3";
+import Label from "../../Components/ui/label/Label.vue";
+import Input from "../../Components/ui/input/Input.vue";
+import Button from "../../Components/ui/button/Button.vue";
+
+const form = useForm({
+	email: "",
+	password: "",
+})
 </script>
 
 <template>
@@ -14,18 +19,22 @@ import { Link } from "@inertiajs/vue3";
 					<p class="text-balance text-muted-foreground">Добро пожаловать снова!</p>
 				</div>
 				<div class="grid gap-4">
-					<div class="grid gap-2">
-						<Label for="email">Email</Label>
-						<Input id="email" type="email" placeholder="m@example.com" required />
-					</div>
-					<div class="grid gap-2">
-						<div class="flex items-center">
-							<Label for="password">Пароль</Label>
-							<Link href="/forgot-password" class="ml-auto inline-block text-sm underline"> Забыли пароль? </Link>
+					<form @submit.prevent="form.post('/login')" class="space-y-4">
+						<div class="grid gap-2">
+							<Label for="email">Email</Label>
+							<Input v-model="form.email" id="email" type="email" placeholder="m@example.com" required />
+							<div v-if="form.errors.email" class="text-xs text-destructive">{{ form.errors.email }}</div>
 						</div>
-						<Input id="password" type="password" required />
-					</div>
-					<Button type="submit" class="w-full"> Войти </Button>
+						<div class="grid gap-2">
+							<div class="flex items-center">
+								<Label for="password">Пароль</Label>
+								<Link href="/forgot-password" class="ml-auto inline-block text-sm underline"> Забыли пароль? </Link>
+							</div>
+							<Input v-model="form.password" id="password" type="password" required />
+							<div v-if="form.errors.password" class="text-xs text-destructive">{{ form.errors.password }}</div>
+						</div>
+						<Button type="submit" class="w-full" :disabled="form.processing"> Войти </Button>
+					</form>
 					<a href="/login/google">
 						<Button variant="outline" class="w-full">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">

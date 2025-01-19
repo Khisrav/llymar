@@ -87,15 +87,15 @@ class OrderController extends Controller
         
     }
     
-    public function generateOrderPDF($orderId)
+    public static function listPDF($orderId)
     {
         $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
-        // return view('orders.pdf', [ 'order' => $order ]);
         
         $pdf = Pdf::loadView('orders.pdf', [ 'order' => $order ]);
         $pdf->setOptions(['isRemoteEnabled' => true]);
+        $pdfName = "order_{$order->id}_" . date('Y-m-d') . ".pdf";
         
-        // return $pdf->download('order.pdf');
-        return $pdf->stream('order.pdf');
+        // return $pdf->download($pdfName);
+        return $pdf->stream($pdfName);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
+use App\Http\Controllers\OrderController;
 use App\Models\Order;
 use App\Models\User;
 use Filament\Forms;
@@ -180,6 +181,9 @@ class OrderResource extends Resource
                 ActionGroup::make([
                     Action::make('list_pdf')
                         ->label('Перечень PDF')
+                        ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
+                        ->openUrlInNewTab()
+                        // ->action(fn (Order $record) => OrderController::invoicePDF($record->id))
                         ->icon('heroicon-o-arrow-down-tray'),
                     Action::make('invoice_pdf')
                         ->label('Счет PDF')

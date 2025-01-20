@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Order #{{ $order->id }}</title>
+    <title>Заказ №{{ $order->order_number }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -40,7 +40,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Заказ №{{ $order->id }}</h1>
+        <h1>Заказ №{{ $order->order_number }}</h1>
     </div>
 
     <table style="width: 100%">

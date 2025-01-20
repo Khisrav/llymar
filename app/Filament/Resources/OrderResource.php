@@ -117,6 +117,11 @@ class OrderResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('order_number')
+                    ->label('№ заказа')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('customer_name')
                     ->label('ФИО клиента')
                     ->sortable()

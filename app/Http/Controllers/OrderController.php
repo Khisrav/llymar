@@ -131,6 +131,7 @@ class OrderController extends Controller
         $pdf->setOptions(['isRemoteEnabled' => true]);
         $pdfName = "order_{$order->order_number}_" . date('Y-m-d') . ".pdf";
 
-        return $pdf->stream($pdfName);
+        return $pdf->download($pdfName);
+        // return $pdf->stream($pdfName);
     }
 }

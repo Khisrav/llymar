@@ -33,6 +33,11 @@ const formatDate = (dateString: string) => {
 		day: "numeric",
 	});
 };
+
+declare const window: any;
+const downloadListPDF = (order_id: number) => {
+	return window.open("/orders/" + order_id + "/list-pdf", "_blank").focus();
+}
 </script>
 
 <template>
@@ -90,7 +95,7 @@ const formatDate = (dateString: string) => {
 								                    <TrashIcon class="size-4" />
 								                    <span>Удалить</span>
 								            </DropdownMenuItem>
-								            <DropdownMenuItem>
+								            <DropdownMenuItem @click="downloadListPDF(order.id)">
 								                    <ScrollTextIcon class="size-4" />
 								                    <span>Перечень PDF</span>
 								            </DropdownMenuItem>

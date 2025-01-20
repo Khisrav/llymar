@@ -30,7 +30,7 @@ const itemsStore = useItemsStore();
 					<DropdownMenuContent>
 						<DropdownMenuLabel>Действия</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem @click="console.log('clicked')">
+						<DropdownMenuItem>
 							<Printer class="size-4" />
 							<span>Печать КП</span>
 						</DropdownMenuItem>

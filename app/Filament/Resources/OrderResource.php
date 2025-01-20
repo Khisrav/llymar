@@ -8,16 +8,13 @@ use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationMana
 use App\Models\Order;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -33,38 +30,43 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make('Информация о заказе')
+                    ->collapsible()
                     ->schema([
-                        Grid::make(12) // 4-column layout for desktop
+                        Grid::make(12) 
                             ->schema([
                                 TextInput::make('id')
                                     ->label('ID заказа')
                                     ->disabled()
                                     ->columnSpan(3),
+            
+                                TextInput::make('order_number')
+                                    ->label('Номер заказа')
+                                    ->disabled()
+                                    ->columnSpan(3),
+                                    
                                 TextInput::make('user_id')
-                                    ->label('Создатель')
+                                    ->label('Кем создан')
                                     ->disabled()
                                     ->formatStateUsing(fn (string $state) => 'ID: ' . $state . ' - ' . User::find($state)->name)
                                     ->columnSpan(3),
-                                // General details
+                                
                                 TextInput::make('customer_name')
-                                    ->label('Заказчик')
+                                    ->label('ФИО клиента')
                                     ->required()
                                     ->maxLength(255)
-                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    ->columnSpan(3),
             
                                 TextInput::make('customer_phone')
                                     ->label('Номер телефона')
                                     ->required()
                                     ->mask('+7 (999) 999 99-99')
-                                    // ->tel()
-                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    ->columnSpan(3),
                                     
                                 TextInput::make('customer_email')
                                     ->label('Email')
                                     ->required()
-                                    // ->mail()
-                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    ->columnSpan(3),
             
                                 Select::make('status')
                                     ->label('Статус заказа')
@@ -79,7 +81,14 @@ class OrderResource extends Resource
                                         'completed' => 'Выполнен',
                                         'archived' => 'Архивирован',
                                     ])
-                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    ->columnSpan(3),
+            
+                                TextInput::make('total_price')
+                                    ->label('Итоговая стоимость')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('₽')
+                                    ->columnSpan(3),
             
                                 TextInput::make('customer_address')
                                     ->label('Адрес')
@@ -91,14 +100,7 @@ class OrderResource extends Resource
                                     ->label('Комментарий заказчика')
                                     ->rows(3)
                                     ->maxLength(500)
-                                    ->columnSpan(6), // Full width for text area
-            
-                                TextInput::make('total_price')
-                                    ->label('Итоговая стоимость')
-                                    ->required()
-                                    ->numeric()
-                                    ->prefix('₽')
-                                    ->columnSpan(3), // Spans 2 columns on desktop
+                                    ->columnSpan(6),
                             ]),
                     ])
             ]);
@@ -115,8 +117,13 @@ class OrderResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('order_number')
+                    ->label('№ заказа')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('customer_name')
-                    ->label('Заказчик')
+                    ->label('ФИО клиента')
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -124,10 +131,6 @@ class OrderResource extends Resource
                     ->label('Телефон')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                // TextColumn::make('customer_address')
-                //     ->label('Адрес')
-                //     ->limit(30)
-                //     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('total_price')
                     ->label('Цена')
                     ->money('RUB')
@@ -180,9 +183,13 @@ class OrderResource extends Resource
                 ActionGroup::make([
                     Action::make('list_pdf')
                         ->label('Перечень PDF')
+                        ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
+                        ->openUrlInNewTab()
                         ->icon('heroicon-o-arrow-down-tray'),
                     Action::make('invoice_pdf')
                         ->label('Счет PDF')
+                        ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
+                        ->openUrlInNewTab()
                         ->icon('heroicon-o-document-currency-dollar'),
                 ])
             ])

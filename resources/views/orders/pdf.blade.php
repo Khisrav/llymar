@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Order #{{ $order->id }}</title>
+    <title>Заказ №{{ $order->order_number }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -40,7 +40,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Заказ №{{ $order->id }}</h1>
+        <h1>Заказ №{{ $order->order_number }}</h1>
     </div>
 
     <table style="width: 100%">
@@ -54,10 +54,58 @@
                 <td><b>Адрес:</b> {{ $order->customer_address }}</td>
             </tr>
             <tr>
-                <td><b>Комментарий к заказу:</b> {{ $order->comment ? $order->comment : '-' }}</td>
+                <td><b>Комментарий к заказу:</b> {{ $order->comment ?? '-' }}</td>
             </tr>
         </tbody>
     </table>
+
+    <h2>Проемы</h2>
+    @if($order->orderOpenings->isNotEmpty())
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Тип проема</th>
+                    <th>Кол-во створок</th>
+                    <th>Ш х В, мм</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($order->orderOpenings as $opening)
+                    <tr>
+                        <td>
+                            @switch($opening->type)
+                                @case('left')
+                                    Левый проем
+                                    @break
+                                @case('right')
+                                    Правый проем
+                                    @break
+                                @case('center')
+                                    Центральный проем
+                                    @break
+                                @case('inner-left')
+                                    Входная группа левая
+                                    @break
+                                @case('inner-right')
+                                    Входная группа правая
+                                    @break
+                                @case('blind-glazing')
+                                    Глухое остекление
+                                    @break
+                                @case('triangle')
+                                    Треугольник
+                                    @break
+                                @default
+                                    {{ $opening->type }}
+                            @endswitch
+                        </td>
+                        <td>{{ $opening->type != 'blind-glazing' && $opening->type != 'triangle' ? $opening->doors . ' ств.' : '-' }}</td>
+                        <td>{{ $opening->width }} x {{ $opening->height }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 
     <h2>Детали</h2>
     <table class="table">
@@ -65,7 +113,6 @@
             <tr>
                 <th>ID</th>
                 <th>Арт.</th>
-                {{-- <th>Фото</th> --}}
                 <th>Деталь</th>
                 <th>Кол-во</th>
                 <th>Цена</th>
@@ -76,33 +123,29 @@
             @foreach($order->orderItems as $item)
                 <tr>
                     <td>{{ $item->item_id }}</td>
-                    <td>{{ $item->item->vendor_code ? $item->item->vendor_code : '-' }}</td>
-                    {{-- <td><img src="{{ '\storage' . $item->item->img }}" width="50"></td> --}}
+                    <td>{{ $item->item->vendor_code ?? '-' }}</td>
                     <td>{{ $item->item->name }}</td>
                     <td>{{ $item->quantity }} {{ $item->item->unit }}</td>
-                    <td>{{ number_format($item->item->retail_price, 0, '.', ' ') }} ₽</td>
-                    <td>{{ number_format($item->quantity * $item->item->retail_price * (1 - ($item->discount ? $item->discount : auth()->user()->discount) / 100), 0, '.', ' ') }} ₽</td>
+                    <td>{{ number_format($item->itemTotalPrice() / $item->quantity, 0, '.', ' ') }} ₽</td>
+                    <td>{{ number_format($item->itemTotalPrice(), 0, '.', ' ') }} ₽</td>
                 </tr>
             @endforeach
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><b>Итого:</b></td>
+                <td><b>{{ number_format($order->total_price, 0, '.', ' ') }} ₽</b></td>
+            </tr>
         </tbody>
     </table>
 
-    <h2>Openings</h2>
-    @if($order->orderOpenings->isNotEmpty())
-        <ul>
-            @foreach($order->orderOpenings as $opening)
-                <li>{{ $opening->type }} - {{ $opening->doors }}</li>
-            @endforeach
-        </ul>
-    @else
-        <p>No openings associated with this order.</p>
-    @endif
-
-    <h2>Total</h2>
-    <p><strong>Total Price:</strong> {{ number_format($order->total_price, 2, '.', ' ') }} ₽</p>
+    {{-- <h2>Total</h2>
+    <p><strong>Total Price:</strong> {{ number_format($order->total_price, 2, '.', ' ') }} ₽</p> --}}
 
     <div class="footer">
-        <p>Generated on {{ now()->format('d-m-Y H:i:s') }}</p>
+        <p>Дата генерации файла: {{ now()->format('d-m-Y H:i:s') }}</p>
     </div>
 </body>
 </html>

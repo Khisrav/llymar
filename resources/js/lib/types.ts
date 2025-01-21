@@ -54,6 +54,13 @@ export interface User {
     discount: number;
     reduction_factor_key?: string;
     wholesale_factor_keey?: string;
+    inn?: string;
+    kpp?: string;
+    bik?: string;
+    bank?: string;
+    legal_address?: string;
+    current_account?: string;
+    correspondent_account?: string;
     created_at?: string | null;
     updated_at?: string | null;
 }

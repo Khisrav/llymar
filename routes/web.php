@@ -17,7 +17,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/orders/{orderId}/invoice-pdf', [OrderController::class, 'listPDF'])
+Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');
 
 Route::get('/auth', function() {

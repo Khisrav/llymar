@@ -29,6 +29,13 @@ class User extends Authenticatable
         'role',
         'reduction_factor_key',
         'wholesale_factor_key',
+        'inn',
+        'kpp',
+        'current_account',
+        'correspondent_account',
+        'bik',
+        'bank',
+        'legal_address',
     ];
 
     /**

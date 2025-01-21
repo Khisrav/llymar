@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +44,12 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
+                            ->required(),
+                        Forms\Components\TextInput::make('address')
+                            ->label('Фактический адрес')
+                            ->required(),
+                        Forms\Components\TextInput::make('company')
+                            ->label('Организация/Компания')
                             ->required(),
                         Grid::make(4)
                             ->schema([
@@ -83,9 +90,6 @@ class UserResource extends Resource
                                     })
                                     ->columnSpan(1),
                                 ]), 
-                        Forms\Components\TextInput::make('address')
-                            ->label('Фактический адрес')
-                            ->required(),
                                              
                     ]),
                 Section::make('Реквизиты')
@@ -158,7 +162,13 @@ class UserResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('role')
+                    ->label('Роль')
+                    ->options([
+                        'admin' => 'Администратор',
+                        'manager' => 'Менеджер',
+                        'user' => 'Пользователь',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

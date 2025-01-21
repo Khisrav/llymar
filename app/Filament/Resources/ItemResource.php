@@ -42,11 +42,12 @@ class ItemResource extends Resource
                         'lg' => 3
                     ])
                     ->schema([
-                        Forms\Components\TextInput::make('vendor_code')
-                            ->label('Артикул'),
                         Forms\Components\TextInput::make('name')
                             ->label('Наименование')
+                            ->columnSpanFull()
                             ->required(),
+                        Forms\Components\TextInput::make('vendor_code')
+                            ->label('Артикул'),
                         Forms\Components\TextInput::make('purchase_price')
                             ->label('Закупка, ₽')
                             ->type('number')
@@ -93,10 +94,12 @@ class ItemResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
                     ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('vendor_code')
                     ->label('Арт.')
                     ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('img')
                     ->label('Картинка')
@@ -109,10 +112,12 @@ class ItemResource extends Resource
                     ->label('Наименование')
                     ->searchable()
                     ->wrap()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('purchase_price')
                     ->label('Закупка, ₽')
                     ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 // Tables\Columns\TextInputColumn::make('retail_price')
                 //     ->label('Розница, ₽')
@@ -138,7 +143,8 @@ class ItemResource extends Resource
                     ->options(Category::all()->pluck('name', 'id')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

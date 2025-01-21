@@ -49,7 +49,7 @@ class CategoryResource extends Resource
                             ->label('')
                             ->schema([
                                 TextInput::make('key')
-                                    ->label('Название (KU1, KU2, ...)')
+                                    ->label('Ключ (KU1, KU2, ...)')
                                     ->regex('/^KU\d+$/')
                                     ->required(),
                                 TextInput::make('value')
@@ -71,9 +71,11 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextInputColumn::make('name')
+                    ->label('Название')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
             ])

@@ -65,7 +65,7 @@ watch(
 							</SelectContent>
 						</Select>
 					</div>
-					<Button variant="outline" size="icon" @click="openingStore.removeOpening(index)" class="shrink-0">
+					<Button v-if="openingStore.openings.length > 1" variant="outline" size="icon" @click="openingStore.removeOpening(index)" class="shrink-0">
 						<Trash2Icon class="size-4" />
 					</Button>
 				</div>

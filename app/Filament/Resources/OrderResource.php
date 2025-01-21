@@ -80,6 +80,7 @@ class OrderResource extends Resource
                                         'sent' => 'Отправлен',
                                         'completed' => 'Выполнен',
                                         'archived' => 'Архивирован',
+                                        'unknown' => 'Неизвестно',
                                     ])
                                     ->columnSpan(3),
             
@@ -134,6 +135,7 @@ class OrderResource extends Resource
                 TextColumn::make('total_price')
                     ->label('Цена')
                     ->money('RUB')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('created_at')
                     ->label('Дата')
@@ -145,12 +147,13 @@ class OrderResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match($state) {
                         'created' => 'info',
-                        'paid' => 'danger',
-                        'expired' => 'gray',
-                        'assembled' => 'primary',
-                        'sent' => 'success',
-                        'completed' => 'warning',
-                        'archived' => 'info',
+                        'paid' => 'primary',
+                        'expired' => 'danger',
+                        'assembled' => 'gray',
+                        'sent' => 'warning',
+                        'completed' => 'success',
+                        'archived' => 'gray',
+                        'unknown' => 'danger',
                     })
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'created' => 'Создан',
@@ -160,6 +163,7 @@ class OrderResource extends Resource
                         'sent' => 'Отправлен',
                         'completed' => 'Завершен',
                         'archived' => 'Архивирован',
+                        'unknown' => 'Неизвестно',
                         default => $state,
                     })
                     ->toggleable(isToggledHiddenByDefault: false),

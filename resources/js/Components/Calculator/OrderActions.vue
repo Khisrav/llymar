@@ -35,7 +35,7 @@ const downloadCommercialOffer = async () => {
         const link = document.createElement('a');
         
         link.href = url;
-        link.setAttribute('download', `offer_${new Date().toISOString().split('T')[0]}.pdf`); // Set the desired file name
+        link.setAttribute('download', `offer_${new Date().toISOString().split('T')[0]}.pdf`);
         document.body.appendChild(link);
         link.click();
 

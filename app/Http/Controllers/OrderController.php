@@ -142,7 +142,7 @@ class OrderController extends Controller
 
     public static function commercialOfferPDF(Request $request)
     {
-        Log::info('Incoming request data:', $request->all());
+        // Log::info('Incoming request data:', $request->all());
 
         $offer = $request->validate([
             'openings' => 'required|array',
@@ -152,19 +152,16 @@ class OrderController extends Controller
             'cart_items' => 'required|array',
         ]);
 
-        Log::info('Validated offer data:', $offer);
+        // Log::info('Validated offer data:', $offer);
 
         $user = auth()->user();
-        // $wholesaleFactor = Cache::remember('wholesale_factor_' . $user->wholesale_factor_key, 60, function () use ($user) {
-        //     return WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
-        // });
-        $wholesaleFactor = WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
+        $wholesaleFactor = Cache::remember('wholesale_factor_' . $user->wholesale_factor_key, 60, function () use ($user) {
+            return WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
+        });
         
-
-        // $reductionFactors = Cache::remember('reduction_factors_' . $offer['glass']['category_id'], 60, function () use ($offer) {
-        //     return Category::where('id', $offer['glass']['category_id'])->first()->reduction_factors;
-        // });
-        $reductionFactors = Category::where('id', $offer['glass']['category_id'])->first()->reduction_factors;
+        $reductionFactors = Cache::remember('reduction_factors_' . $offer['glass']['category_id'], 60, function () use ($offer) {
+            return Category::where('id', $offer['glass']['category_id'])->first()->reduction_factors;
+        });
 
         // Generate the PDF
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', ['offer' => $offer, 'wholesaleFactor' => $wholesaleFactor, 'reductionFactors' => $reductionFactors])

@@ -42,9 +42,9 @@
 <body>
     <div style='font-size:14px;font-weight:semibold;text-align:center;margin-bottom:12px'>
         <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
-        <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>    
+        <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
     </div>
-    
+
     <table>
         <thead>
             <tr>
@@ -52,7 +52,7 @@
                 <th>Информация о производителе</th>
             </tr>
         </thead>
-        
+
         <tbody>
             <tr>
                 <td>Клиент: </td>
@@ -68,19 +68,23 @@
             </tr>
         </tbody>
     </table>
-    
+
     <h2>Проемы</h2>
     <table>
         <thead>
             <tr>
+                <th>Картинка</th>
                 <th>Тип проема</th>
                 <th>Кол-во створок</th>
-                <th>Ш х В, мм</th>
+                <th>Площадь</th>
             </tr>
         </thead>
         <tbody>
             @foreach($offer['openings'] as $opening)
                 <tr>
+                    <td>
+                        {{-- <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($opening['image'])) }}" alt=""> --}}
+                    </td>
                     <td>
                         @switch($opening['type'])
                             @case('left')
@@ -109,7 +113,7 @@
                         @endswitch
                     </td>
                     <td>{{ $opening['type'] != 'blind-glazing' && $opening['type'] != 'triangle' ? $opening['doors'] . ' ств.' : '-' }}</td>
-                    <td>{{ $opening['width'] }} x {{ $opening['height'] }}</td>
+                    <td>{{ ($opening['width'] * $opening['height']) / 1000000 }} м<sup>2</sup></td>
                 </tr>
             @endforeach
         </tbody>
@@ -120,6 +124,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Картинка</th>
                 <th>Наименование</th>
                 <th>Кол-во</th>
                 <th>Цена</th>
@@ -127,19 +132,22 @@
             </tr>
         </thead>
         <tbody>
-            @php
+            {{-- @php
                 $sum = 0;
-            @endphp
+            @endphp --}}
             @foreach ($offer['additional_items'] as $item)
                 @if (isset($offer['cart_items'][$item['id']]))
                     @php
                         $price = App\Models\Item::itemPrice($item['id']);
                         $quantity = $offer['cart_items'][$item['id']]['quantity'];
                         $total = $price * $quantity;
-                        $sum += $total;
+                        // $sum += $total;
                     @endphp
                     <tr>
                         <td>{{ $item['id'] }}</td>
+                        <td>
+                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . $item['img']))) }}" alt="" width="48">
+                        </td>
                         <td>@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
                         <td class="nowrap">{{ $quantity }} {{ $item['unit'] }}</td>
                         <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
@@ -154,10 +162,13 @@
                         $price = App\Models\Item::itemPrice($service['id']);
                         $quantity = $offer['cart_items'][$service['id']]['quantity'];
                         $total = $price * $quantity;
-                        $sum += $total;
+                        // $sum += $total;
                     @endphp
                     <tr>
                         <td>{{ $service['id'] }}</td>
+                        <td>
+                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . $service['img']))) }}" alt="" width="48">
+                        </td>
                         <td>@if ($service['vendor_code']) {{ $service['vendor_code'] . ' - ' }} @endif {{ $service['name'] }}</td>
                         <td class="nowrap">{{ $quantity }} {{ $service['unit'] }}</td>
                         <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
@@ -171,10 +182,13 @@
                     $price = App\Models\Item::itemPrice($offer['glass']['id']);
                     $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
                     $total = $price * $quantity;
-                    $sum += $total;
+                    // $sum += $total;
                 @endphp
                 <tr>
                     <td>{{ $offer['glass']['id'] }}</td>
+                    <td>
+                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . $offer['glass']['img']))) }}" alt="" width="48">
+                    </td>
                     <td>@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
                     <td class="nowrap">{{ $quantity }} {{ $offer['glass']['unit'] }}</td>
                     <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
@@ -188,7 +202,7 @@
             </tr> --}}
         </tbody>
     </table>
-    
+
     <div class="footer">
         <p>Дата генерации файла: {{ now()->format('d-m-Y H:i:s') }}</p>
     </div>

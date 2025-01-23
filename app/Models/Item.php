@@ -39,10 +39,10 @@ class Item extends Model
             $reductionFactor = 1;
         }
 
-        Log::info('Item ID: ' . $item_id);
-        Log::info('Purchase Price: ' . $item->purchase_price);
-        Log::info('Wholesale Factor: ' . $wholesaleFactor['value']);
-        Log::info('Reduction Factor: ' . $reductionFactor);
+        // Log::info('Item ID: ' . $item_id);
+        // Log::info('Purchase Price: ' . $item->purchase_price);
+        // Log::info('Wholesale Factor: ' . $wholesaleFactor['value']);
+        // Log::info('Reduction Factor: ' . $reductionFactor);
 
         return $item->purchase_price * $wholesaleFactor['value'] * $reductionFactor;
     }

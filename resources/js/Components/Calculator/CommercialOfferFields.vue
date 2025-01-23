@@ -4,10 +4,10 @@ import Button from '../ui/button/Button.vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import Input from '../ui/input/Input.vue'
 import Label from '../ui/label/Label.vue'
-import { useItemsStore } from '../../Stores/itemsStore'
+import { useCommercialOfferStore } from '../../Stores/commercialOfferStore'
 
 const isCommercialOfferHidden = ref(true)
-const itemsStore = useItemsStore()
+const commercialOfferStore = useCommercialOfferStore()
 </script>
 
 <template>

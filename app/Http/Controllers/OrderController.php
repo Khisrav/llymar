@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
+use App\Models\WholesaleFactor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -127,11 +131,55 @@ class OrderController extends Controller
     {
         $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
 
-        $pdf = Pdf::loadView('orders.pdf', ['order' => $order]);
+        $pdf = Pdf::loadView('orders.pdf', ['order' => $order])
+                  ->setPaper('a4', 'portrait'); // Set paper size to A4
+
         $pdf->setOptions(['isRemoteEnabled' => true]);
         $pdfName = "order_{$order->order_number}_" . date('Y-m-d') . ".pdf";
 
         return $pdf->download($pdfName);
-        // return $pdf->stream($pdfName);
+    }
+
+    public static function commercialOfferPDF(Request $request)
+    {
+        Log::info('Incoming request data:', $request->all());
+
+        $offer = $request->validate([
+            'openings' => 'required|array',
+            'additional_items' => 'required|array',
+            'services' => 'array',
+            'glass' => 'required|array',
+            'cart_items' => 'required|array',
+        ]);
+
+        Log::info('Validated offer data:', $offer);
+
+        $user = auth()->user();
+        // $wholesaleFactor = Cache::remember('wholesale_factor_' . $user->wholesale_factor_key, 60, function () use ($user) {
+        //     return WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
+        // });
+        $wholesaleFactor = WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
+        
+
+        // $reductionFactors = Cache::remember('reduction_factors_' . $offer['glass']['category_id'], 60, function () use ($offer) {
+        //     return Category::where('id', $offer['glass']['category_id'])->first()->reduction_factors;
+        // });
+        $reductionFactors = Category::where('id', $offer['glass']['category_id'])->first()->reduction_factors;
+
+        // Generate the PDF
+        $pdf = Pdf::loadView('orders.commercial_offer_pdf', ['offer' => $offer, 'wholesaleFactor' => $wholesaleFactor, 'reductionFactors' => $reductionFactors])
+                  ->setPaper('a4', 'portrait'); // Set paper size to A4
+
+        $pdf->setOptions(['isRemoteEnabled' => true]);
+        $pdfName = "offer_{$request->order_number}_" . date('Y-m-d') . ".pdf";
+    
+        // Generate the PDF content
+        $pdfContent = $pdf->output();
+    
+        // Return the PDF as a downloadable file
+        return Response::make($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $pdfName . '"',
+        ]);
     }
 }

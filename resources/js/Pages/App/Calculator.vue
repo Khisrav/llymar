@@ -7,6 +7,7 @@ import { Category, Item, User, WholesaleFactor } from '../../lib/types';
 import Items from '../../Components/Calculator/Items.vue';
 import Additionals from '../../Components/Calculator/Additionals.vue';
 import OrderActions from '../../Components/Calculator/OrderActions.vue';
+import CommercialOfferFields from '../../Components/Calculator/CommercialOfferFields.vue';
 
 const itemsStore = useItemsStore();
 
@@ -29,6 +30,7 @@ itemsStore.calculate()
     <h1 class="text-2xl font-bold">Калькулятор</h1>
     
     <div class="mt-4">
+        <CommercialOfferFields class="mb-8" />
         <Openings class="mb-8" />
         <Additionals class="mb-8" />
         <Items class="mb-8" />

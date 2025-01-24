@@ -29,6 +29,9 @@
         .table th {
             background-color: #f2f2f2;
         }
+        .nowrap {
+            white-space: nowrap;
+        }
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -135,7 +138,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><b>Итого:</b></td>
+                <td><b>Сумма:</b></td>
                 <td><b>{{ number_format($order->total_price, 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>

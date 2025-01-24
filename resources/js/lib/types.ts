@@ -101,3 +101,16 @@ export interface WholesaleFactor {
     name: string;
     value: number;
 }
+
+export interface CommercialOffer {
+    customer: {
+        name: string;
+        phone: string;
+        address: string;
+    },
+    manufacturer: {
+        manufacturer: string;
+        company: string;
+        phone: string;
+    }
+}

@@ -19,6 +19,8 @@ Route::get('/', function () {
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');
+Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
+    ->name('orders.commercial_offer_pdf');
 
 Route::get('/auth', function() {
     if (Auth::check()) {

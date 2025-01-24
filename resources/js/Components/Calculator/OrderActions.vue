@@ -12,13 +12,17 @@ import { useItemsStore } from "../../Stores/itemsStore"
 import { Link } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
+import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
 
 const itemsStore = useItemsStore()
 const openingStore = useOpeningStore()
+const commercialOfferStore = useCommercialOfferStore()
 
 const downloadCommercialOffer = async () => {
     try {
         const formData = {
+            customer: commercialOfferStore.commercialOffer.customer,
+            manufacturer: commercialOfferStore.commercialOffer.manufacturer,
             openings: openingStore.openings,
             additional_items: itemsStore.additional_items,
             glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID),

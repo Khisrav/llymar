@@ -55,16 +55,16 @@
 
         <tbody>
             <tr>
-                <td>Клиент: </td>
-                <td>Производитель: </td>
+                <td>Клиент: <b>{{ $offer['customer']['name'] }}</b></td>
+                <td>Производитель: <b>{{ $offer['manufacturer']['manufacturer'] }}</b></td>
             </tr>
             <tr>
-                <td>Телефон: </td>
-                <td>Организация: </td>
+                <td>Телефон: <b>{{ $offer['customer']['phone'] }}</b></td>
+                <td>Организация: <b>{{ $offer['manufacturer']['company'] }}</b></td>
             </tr>
             <tr>
-                <td>Адрес: </td>
-                <td>Телефон: </td>
+                <td>Адрес: <b>{{ $offer['customer']['address'] }}</b></td>
+                <td>Телефон: <b>{{ $offer['manufacturer']['phone'] }}</b></td>
             </tr>
         </tbody>
     </table>
@@ -80,10 +80,21 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $openingImage = [
+                    'left' => '/assets/openings/openings-left.jpg',
+                    'right' => '/assets/openings/openings-right.jpg',
+                    'center' => '/assets/openings/openings-center.jpg',
+                    'inner-left' => '/assets/openings/openings-inner-left.jpg',
+                    'inner-right' => '/assets/openings/openings-inner-right.jpg',
+                    'blind-glazing' => '/assets/openings/openings-blind-glazing.jpg',
+                    'triangle' => '/assets/openings/openings-triangle.jpg',
+                ]
+            @endphp
             @foreach($offer['openings'] as $opening)
                 <tr>
                     <td>
-                        {{-- <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($opening['image'])) }}" alt=""> --}}
+                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public' . $openingImage[$opening['type']]))) }}" alt="" width="86">
                     </td>
                     <td>
                         @switch($opening['type'])

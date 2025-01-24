@@ -58,9 +58,11 @@ class OrderItemsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_id')
                     ->label('ID')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_name')
                     ->label('Деталь')
+                    ->wrap(true)
                     ->state(fn ($record) => Item::find($record->item_id)->name)
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('quantity')
@@ -70,12 +72,17 @@ class OrderItemsRelationManager extends RelationManager
                     })
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Цена')
+                    ->state(function (Model $record) {
+                        $item = Item::where('id', $record->item_id)->first();
+                        return number_format($record->itemTotalPrice() / $record->quantity, 0, '.', ' ') . ' ₽';
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Итого')
                     ->state(function (Model $record) {
                         $item = Item::where('id', $record->item_id)->first();
-                        
-                        // return OrderItem::itemTotalPrice(auth()->user()->id);
                         return number_format($record->itemTotalPrice(), 0, '.', ' ') . ' ₽';
                     })
                     ->toggleable(isToggledHiddenByDefault: false),

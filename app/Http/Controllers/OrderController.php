@@ -145,6 +145,8 @@ class OrderController extends Controller
         // Log::info('Incoming request data:', $request->all());
 
         $offer = $request->validate([
+            'customer' => 'required|array',
+            'manufacturer' => 'required|array',
             'openings' => 'required|array',
             'additional_items' => 'required|array',
             'services' => 'array',

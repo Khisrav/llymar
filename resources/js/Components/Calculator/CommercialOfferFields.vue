@@ -5,9 +5,18 @@ import { Eye, EyeOff } from 'lucide-vue-next'
 import Input from '../ui/input/Input.vue'
 import Label from '../ui/label/Label.vue'
 import { useCommercialOfferStore } from '../../Stores/commercialOfferStore'
+import { useItemsStore } from '../../Stores/itemsStore'
+import { vMaska } from 'maska/vue'
 
 const isCommercialOfferHidden = ref(true)
+const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
+
+commercialOfferStore.commercialOffer.manufacturer = {
+    manufacturer: itemsStore.user.name,
+    company: itemsStore.user.company || '',
+    phone: itemsStore.user.phone || '',
+}
 </script>
 
 <template>
@@ -20,35 +29,41 @@ const commercialOfferStore = useCommercialOfferStore()
             </Button>
 		</div>
 		
-        <div v-if="!isCommercialOfferHidden" class="grid md:grid-cols-2 gap-2 md:gap-4 mt-4">
+        <div v-show="!isCommercialOfferHidden" class="grid md:grid-cols-2 gap-2 md:gap-4 mt-4">
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
                 <h4 class="font-semibold text-muted-foreground">Информация о клиенте</h4>
                 <div>
                     <Label class="mb-2 block">Ф.И.О. клиента:</Label>
-                    <Input class="w-full" placeholder="Иванов Иван Иванович" />
+                    <Input v-model="commercialOfferStore.commercialOffer.customer.name" class="w-full" placeholder="Иванов Иван Иванович" />
                 </div>
                 
                 <div>
                     <Label class="mb-2 block">Адрес:</Label>
-                    <Input class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
+                    <Input v-model="commercialOfferStore.commercialOffer.customer.address" class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
                 </div>
                 
                 <div>
                     <Label class="mb-2 block">Телефон:</Label>
-                    <Input class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
+                    <Input v-maska="'+7 (###) ###-##-##'" v-model="commercialOfferStore.commercialOffer.customer.phone" class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
                 </div>
             </div>
             
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
                 <h4 class="font-semibold text-muted-foreground">Информация о производителе</h4>
-                <div class="flex items-center justify-between md:gap-4">
-                    <span>Организация/Компания: </span>
-                    <span>{{ itemsStore.user.company ?? '-' }}</span>
+                <div>
+                    <div class="flex items-center justify-between md:gap-4">
+                        <span>Производитель: </span>
+                        <span class="font-semibold">{{ itemsStore.user.company }}</span>
+                    </div>
+                    <div class="flex items-center justify-between md:gap-4">
+                        <span>Телефон: </span>
+                        <span class="font-semibold">{{ itemsStore.user.phone }}</span>
+                    </div>
+                    <div class="flex items-center justify-between md:gap-4">
+                        <span>Почта: </span>
+                        <span class="font-semibold">{{ itemsStore.user.email }}</span>
+                    </div>
                 </div>
-                
-                    <span>Представитель: </span>
-                    <span>Номер телефона: </span>
-                    <span>Электронная почта: </span>
             </div>
 		</div>
     </div>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 
 class Order extends Model
 {
@@ -19,6 +20,25 @@ class Order extends Model
         'customer_phone',
         'customer_address',
     ];
+    
+    //do changes into warehouse_records when order is created/deleted
+    public static function boot()
+    {
+        parent::boot();
+        
+        static::updated(function ($model) {
+            Log::info('Order updated');
+            Log::info($model->orderItems);
+            
+            if ($model->status == 'expired')
+            foreach ($model->orderItems as $orderItem) {
+                WarehouseRecord::create([
+                    'item_id' => $orderItem->item_id,
+                    'quantity' => $orderItem->quantity,
+                ]);
+            }
+        });
+    }
 
     /**
      * Relationship: Order belongs to a User.

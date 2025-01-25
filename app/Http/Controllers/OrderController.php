@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
+use App\Models\WarehouseRecord;
 use App\Models\WholesaleFactor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -36,10 +37,10 @@ class OrderController extends Controller
             'openings' => 'required|array',
             'total_price' => 'required|numeric',
         ]);
-
+    
         try {
             DB::beginTransaction();
-
+    
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => '6-' . time(),
@@ -49,17 +50,15 @@ class OrderController extends Controller
                 'customer_email' => $fields['email'],
                 'total_price' => $fields['total_price'],
             ]);
-
-            $orderItems = array();
-
+    
             foreach ($fields['cart_items'] as $itemID => $item) {
-                $orderItems[] = [
+                OrderItem::create([
                     'item_id' => $itemID,
                     'order_id' => $order->id,
                     'quantity' => $item['quantity'],
-                ];
+                ]);
             }
-
+    
             $orderOpenings = collect($fields['openings'])->map(function ($opening) use ($order) {
                 return [
                     'order_id' => $order->id,
@@ -72,26 +71,26 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ];
             })->toArray();
-
-            OrderItem::insert($orderItems);
+    
             OrderOpening::insert($orderOpenings);
-
+    
             DB::commit();
-
+    
             $this->telegramNotifier($order);
-
+    
             return to_route('app.history');
         } catch (\Exception $e) {
             DB::rollBack();
-
+    
             Log::error("Order creation failed", [
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString(),
             ]);
-
+    
             return back()->withErrors(['error' => 'Order creation failed. Please try again later.']);
         }
     }
+
 
     private function telegramNotifier(Order $order)
     {

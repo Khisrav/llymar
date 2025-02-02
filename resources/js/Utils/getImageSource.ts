@@ -1,1 +1,1 @@
-export const getImageSource = (image: string): string => `/storage${image}`
+export const getImageSource = (image: string): string => `/storage${image.startsWith('/') ? '' : '/'}${image}`;

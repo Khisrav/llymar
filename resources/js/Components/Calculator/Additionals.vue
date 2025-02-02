@@ -30,7 +30,7 @@ const toggleSelection = (serviceId: number) => {
 </script>
 
 <template>
-	<div class="border p-2 md:p-4 rounded-2xl">
+	<div class="border p-2 md:p-4 rounded-2xl bg-background">
 		<div class="flex items-center mb-4">
 			<h2 class="text-xl font-bold text-muted-foreground">Детали</h2>
 		</div>

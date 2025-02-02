@@ -42,12 +42,15 @@ watch(
 </script>
 
 <template>
-	<div class="border p-2 md:p-4 rounded-2xl">
+	<div class="border p-2 md:p-4 rounded-2xl bg-background">
 		<h2 class="text-xl font-bold text-muted-foreground block">Проемы</h2>
 
 		<div class="flex flex-col md:flex-row md:items-center gap-2 my-2">
-			<Label>Высота по умолчанию</Label>
-			<Input type="number" v-model="openingStore.defaultHeight" placeholder="Высота для всех, мм" class="md:max-w-48 text-center" />
+			<Label>Высота по умолчанию: </Label>
+			<div class="flex flex-row items-center gap-2">
+				<Input type="number" v-model="openingStore.defaultHeight" placeholder="Высота для всех, мм" class="max-w-32 text-center" />
+				<Button @click="openingStore.setDefaultHeightToAll()" variant="outline" class="h-10">Применить ко всем</Button>
+			</div>
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">

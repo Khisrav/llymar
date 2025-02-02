@@ -145,6 +145,7 @@ class ItemResource extends Resource
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Категория')
+                    ->multiple()
                     ->options(Category::all()->pluck('name', 'id')),
             ])
             ->actions([

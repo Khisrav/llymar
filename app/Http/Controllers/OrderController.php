@@ -43,13 +43,15 @@ class OrderController extends Controller
     
             $order = Order::create([
                 'user_id' => auth()->id(),
-                'order_number' => '6-' . time(),
                 'customer_name' => $fields['name'],
                 'customer_phone' => $fields['phone'],
                 'customer_address' => $fields['address'],
                 'customer_email' => $fields['email'],
                 'total_price' => $fields['total_price'],
             ]);
+            
+            $order->order_number = '6-' . $order->id;
+            $order->save();
     
             foreach ($fields['cart_items'] as $itemID => $item) {
                 OrderItem::create([
@@ -179,5 +181,18 @@ class OrderController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $pdfName . '"',
         ]);
+    }
+    
+    public static function sketchPDF(Request $request)
+    {
+        // $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
+
+        $pdf = Pdf::loadView('orders.sketch_pdf')
+                  ->setPaper('a4', 'portrait'); 
+
+        $pdf->setOptions(['isRemoteEnabled' => true]);
+        $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
+
+        return $pdf->stream($pdfName);
     }
 }

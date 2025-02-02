@@ -20,8 +20,8 @@ const updateUser = () => {
 	<Head title="История заказов" />
 	<AuthenticatedHeaderLayout />
 
-	<div class="container p-4 md:p-8">
-	    <form @submit.prevent="updateUser" class="md:p-8 md:mt-8 md:border rounded-2xl">
+	<div class="container p-0 md:p-4">
+	    <form @submit.prevent="updateUser" class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<h2 class="text-3xl font-semibold mb-6">Настройки</h2>
 			<h3 class="text-xl font-semibold mb-4 text-muted-foreground">Основная информация</h3>
 
@@ -39,7 +39,7 @@ const updateUser = () => {
 			    </div>
 			</div>
 
-		    <div class="grid grid-cols-3 gap-8 mt-8">
+		    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
 		        <div>
 			        <Label class="font-bold">Электронная почта</Label>
     			    <p class="text-sm text-muted-foreground mb-4">Электронная почта используется для отправки важных уведомлений и подтверждений.</p>
@@ -59,7 +59,7 @@ const updateUser = () => {
 				</div>
 		    </div>
 
-			<Separator class="my-4 md:my-12" />
+			<Separator class="my-12" />
 
 			<h3 class="text-xl font-semibold mb-4 text-muted-foreground">Реквизиты</h3>
 

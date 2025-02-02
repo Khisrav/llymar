@@ -89,7 +89,7 @@ const checkout = () => {
 	<Head title="Корзина" />
 	<AuthenticatedHeaderLayout />
 	<div class="container p-0 md:p-4">
-		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl">
+		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
 				<Button as="a" href="/app/calculator" size="icon" variant="outline">
 					<ArrowLeft />

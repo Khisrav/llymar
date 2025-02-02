@@ -54,6 +54,12 @@ export const useOpeningStore = defineStore('openingStore', () => {
     const removeOpening = (index: number) => {
         openings.value.splice(index, 1)
     }
+    
+    const setDefaultHeightToAll = () => {
+        openings.value.forEach(opening => {
+            opening.height = defaultHeight.value
+        })
+    }
 
     return {
         openingTypes,
@@ -62,5 +68,6 @@ export const useOpeningStore = defineStore('openingStore', () => {
         openings,
         addOpening,
         removeOpening,
+        setDefaultHeightToAll,
     }
 })

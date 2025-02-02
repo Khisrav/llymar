@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use Illuminate\Database\Eloquent\Model;
 
 class ItemResource extends Resource
 {
@@ -136,10 +137,15 @@ class ItemResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_for_llymar')
                     ->label('LLYMAR')
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('quantity_in_warehouse')
+                    ->label('На складе')
+                    ->suffix(fn (Model $record) => ' ' . Item::find($record->id)->unit)
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Категория')
+                    ->multiple()
                     ->options(Category::all()->pluck('name', 'id')),
             ])
             ->actions([

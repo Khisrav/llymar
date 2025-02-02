@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
+use App\Models\WarehouseRecord;
 use App\Models\WholesaleFactor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -36,30 +37,30 @@ class OrderController extends Controller
             'openings' => 'required|array',
             'total_price' => 'required|numeric',
         ]);
-
+    
         try {
             DB::beginTransaction();
-
+    
             $order = Order::create([
                 'user_id' => auth()->id(),
-                'order_number' => '6-' . time(),
                 'customer_name' => $fields['name'],
                 'customer_phone' => $fields['phone'],
                 'customer_address' => $fields['address'],
                 'customer_email' => $fields['email'],
                 'total_price' => $fields['total_price'],
             ]);
-
-            $orderItems = array();
-
+            
+            $order->order_number = '6-' . $order->id;
+            $order->save();
+    
             foreach ($fields['cart_items'] as $itemID => $item) {
-                $orderItems[] = [
+                OrderItem::create([
                     'item_id' => $itemID,
                     'order_id' => $order->id,
                     'quantity' => $item['quantity'],
-                ];
+                ]);
             }
-
+    
             $orderOpenings = collect($fields['openings'])->map(function ($opening) use ($order) {
                 return [
                     'order_id' => $order->id,
@@ -72,26 +73,26 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ];
             })->toArray();
-
-            OrderItem::insert($orderItems);
+    
             OrderOpening::insert($orderOpenings);
-
+    
             DB::commit();
-
+    
             $this->telegramNotifier($order);
-
+    
             return to_route('app.history');
         } catch (\Exception $e) {
             DB::rollBack();
-
+    
             Log::error("Order creation failed", [
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString(),
             ]);
-
+    
             return back()->withErrors(['error' => 'Order creation failed. Please try again later.']);
         }
     }
+
 
     private function telegramNotifier(Order $order)
     {
@@ -180,5 +181,18 @@ class OrderController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $pdfName . '"',
         ]);
+    }
+    
+    public static function sketchPDF(Request $request)
+    {
+        // $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
+
+        $pdf = Pdf::loadView('orders.sketch_pdf')
+                  ->setPaper('a4', 'portrait'); 
+
+        $pdf->setOptions(['isRemoteEnabled' => true]);
+        $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
+
+        return $pdf->stream($pdfName);
     }
 }

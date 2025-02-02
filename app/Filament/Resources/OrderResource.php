@@ -7,6 +7,7 @@ use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManage
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Order;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -18,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
 
 class OrderResource extends Resource
 {
@@ -195,6 +197,7 @@ class OrderResource extends Resource
                         ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-document-currency-dollar'),
+                    ActionsDeleteAction::make(),
                 ])
             ])
             ->bulkActions([

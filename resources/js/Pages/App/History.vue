@@ -44,8 +44,8 @@ const downloadListPDF = (order_id: number) => {
 	<Head title="История заказов" />
 	<AuthenticatedHeaderLayout />
 
-	<div class="container p-4 md:p-8">
-		<div class="md:p-8 md:mt-8 md:border rounded-2xl">
+	<div class="container p-0 md:p-4">
+		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<h2 class="text-3xl font-semibold mb-6">История заказов</h2>
 
 			<div v-if="!hasOrders" class="text-center py-8">

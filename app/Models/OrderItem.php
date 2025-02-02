@@ -14,6 +14,24 @@ class OrderItem extends Model
         'quantity',
         'price',
     ];
+    
+    public static function boot() {
+        parent::boot();
+    
+        static::created(function ($model) {
+            WarehouseRecord::create([
+                'item_id' => $model->item_id,
+                'quantity' => -$model->quantity,
+            ]);
+        });
+        
+        static::deleted(function ($model) {
+            WarehouseRecord::create([
+                'item_id' => $model->item_id,
+                'quantity' => $model->quantity,
+            ]);
+        });
+    }
 
     /**
      * Relationship: OrderItem belongs to an Order.
@@ -68,3 +86,4 @@ class OrderItem extends Model
         return $item->purchase_price * $this->quantity * $wholesaleFactor['value'] * $reductionFactor;    
     }
 }
+//Undefined array key "App\Models\OrderItem"

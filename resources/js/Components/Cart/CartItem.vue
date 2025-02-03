@@ -17,7 +17,6 @@ const itemsStore = useItemsStore()
 const props = defineProps<{ item: Item }>()
 
 const itemPrice = itemsStore.itemPrice(props.item.id)
-console.log(props.item.id, itemPrice, itemsStore.wholesale_factor)
 
 const removeItem = (item_id: number) => {
     delete itemsStore.cartItems[item_id]

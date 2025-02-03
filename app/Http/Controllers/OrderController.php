@@ -153,6 +153,7 @@ class OrderController extends Controller
             'services' => 'array',
             'glass' => 'required|array',
             'cart_items' => 'required|array',
+            'total_price' => 'required|numeric',
         ]);
 
         // Log::info('Validated offer data:', $offer);

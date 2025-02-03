@@ -46,6 +46,11 @@ commercialOfferStore.commercialOffer.manufacturer = {
                     <Label class="mb-2 block">Телефон:</Label>
                     <Input v-maska="'+7 (###) ###-##-##'" v-model="commercialOfferStore.commercialOffer.customer.phone" class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
                 </div>
+                
+                <div>
+                    <Label class="mb-2 block">Примечание:</Label>
+                    <textarea v-model="commercialOfferStore.commercialOffer.customer.comment" class="w-full block border rounded p-2 text-sm" placeholder="Примечание"></textarea>
+                </div>
             </div>
             
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">

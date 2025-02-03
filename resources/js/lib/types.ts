@@ -107,6 +107,7 @@ export interface CommercialOffer {
         name: string;
         phone: string;
         address: string;
+        comment: string;
     },
     manufacturer: {
         manufacturer: string;

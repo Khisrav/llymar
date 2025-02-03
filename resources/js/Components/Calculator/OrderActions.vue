@@ -28,24 +28,25 @@ const downloadCommercialOffer = async () => {
             glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID),
             services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,
-        };
+            total_price: itemsStore.total_price.with_discount
+        }
 
         const response = await axios.post('/orders/commercial-offer', formData, {
             responseType: 'blob', // Important: set responseType to 'blob'
             headers: { 'Content-Type': 'application/json' }
-        });
+        })
 
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
         
-        link.href = url;
-        link.setAttribute('download', `offer_${new Date().toISOString().split('T')[0]}.pdf`);
-        document.body.appendChild(link);
-        link.click();
+        link.href = url
+        link.setAttribute('download', `offer_${new Date().toISOString().split('T')[0]}.pdf`)
+        document.body.appendChild(link)
+        link.click()
 
-        link.parentNode.removeChild(link);
+        link.parentNode.removeChild(link)
     } catch (error) {
-        console.error('Error downloading the PDF:', error);
+        console.error('Error downloading the PDF:', error)
     }
 }
 </script>

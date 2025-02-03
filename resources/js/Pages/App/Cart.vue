@@ -13,7 +13,6 @@ import Input from "../../Components/ui/input/Input.vue"
 import Label from "../../Components/ui/label/Label.vue"
 import { vMaska } from "maska/vue"
 import { useOpeningStore } from "../../Stores/openingsStore"
-import Swal from "sweetalert2"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore();
@@ -65,21 +64,9 @@ const checkout = () => {
 		onSuccess: () => {
 			sessionStorage.removeItem('openings')
 			sessionStorage.removeItem('cartItems')
-			
-			Swal.fire({
-				title: 'Заказ создан',
-				icon: 'success',
-				confirmButtonText: 'Закрыть',
-			})
 		},
 		onError: (errors: any) => {
 			console.log(errors)
-			
-			Swal.fire({
-				title: 'Ошибка при создании заказа',
-				icon: 'error',
-				confirmButtonText: 'Закрыть',
-			})
 		},
 	})
 }
@@ -91,9 +78,11 @@ const checkout = () => {
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
-				<Button as="a" href="/app/calculator" size="icon" variant="outline">
-					<ArrowLeft />
-				</Button>
+				<Link href="/app/calculator">
+					<Button size="icon" variant="outline">
+						<ArrowLeft />
+					</Button>
+				</Link>
 				<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Ваша корзина</h2>
 			</div>
 			<div v-if="cartItemIDs.length === 0" class="text-center py-8">
@@ -108,7 +97,7 @@ const checkout = () => {
 				<div class="md:w-2/3">
 					<ul class="divide-y divide-gray-200 dark:divide-gray-700">
 						<li v-for="itemID in cartItemIDs" :key="itemID" class="py-6 flex items-center">
-							<CartItem :item="item(itemID) as any" />
+							<CartItem v-if="itemID != -1" :item="item(itemID) as any" />
 						</li>
 					</ul>
 				</div>

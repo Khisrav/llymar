@@ -25,10 +25,10 @@ const removeItem = (item_id: number) => {
 </script>
 
 <template>
-	<img :src="getImageSource(props.item.img as string) || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="h-24 w-24 rounded-md object-cover mr-4" />
+	<img :src="getImageSource(props.item.img as string) || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="w-20 md:w-24 rounded-md object-cover mr-4" />
 	<div class="flex-1">
-		<div class="flex justify-between">
-			<h3 class="text-sm md:text-base font-medium">
+		<div class="flex justify-between text-xs md:text-base">
+			<h3 class="font-medium">
 				{{ props.item.name || "Неизвестная деталь" }}
 			</h3>
 			<div>
@@ -37,21 +37,21 @@ const removeItem = (item_id: number) => {
 			    }}</p>
 			</div>
 		</div>
-		<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">Цена: {{ currencyFormatter(itemPrice) }}/{{ props.item.unit }}</p>
-		<p class="block md:hidden mt-1 text-sm">Всего: <b>{{ currencyFormatter(itemsStore.cartItems[props.item.id].quantity * itemPrice) }}</b></p>
+		<p class="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-300">Цена: {{ currencyFormatter(itemPrice) }}/{{ props.item.unit }}</p>
+		<p class="block md:hidden mt-1 text-xs md:text-sm">Всего: <b>{{ currencyFormatter(itemsStore.cartItems[props.item.id].quantity * itemPrice) }}</b></p>
 		<div class="flex justify-between gap-2 md:gap-4 items-center mt-2">
 		    <div>
 		        <NumberField v-model="itemsStore.cartItems[props.item.id].quantity">
                     <NumberFieldContent>
                         <NumberFieldDecrement />
-                        <NumberFieldInput />
+                        <NumberFieldInput class="h-8 md:h-auto" />
                         <NumberFieldIncrement />
                     </NumberFieldContent>
                 </NumberField>
 		    </div>
 
 			<div>
-			    <Button variant="outline" size="icon" class="size-10" @click="removeItem(props.item.id)">
+			    <Button variant="outline" size="icon" class="size-8 md:size-10" @click="removeItem(props.item.id)">
     				<TrashIcon class="h-4 w-4" />
     			</Button>
 			</div>

@@ -153,6 +153,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
             delete cartItems.value[glass.id]
         })
         
+        if (glassID == -1) return
+        
         cartItems.value[glassID] = {
             quantity: openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height

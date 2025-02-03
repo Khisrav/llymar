@@ -37,24 +37,23 @@ const toggleSelection = (serviceId: number) => {
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-8">
 			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
-				<div>
-					<p class="font-semibold mb-4">Стекло</p>
-					<Select v-model="itemsStore.selectedGlassID">
-						<SelectTrigger>
-							<SelectValue placeholder="Выберите стекло" />
-						</SelectTrigger>
-						<SelectContent class="max-w-xs sm:max-w-max">
-							<SelectItem v-for="glass in itemsStore.glasses" :key="glass.id" :value="glass.id">{{ glass.name }}</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-				<div class="mt-4 flex flex-row gap-2 md:gap-4 justify-between">
-					<div class="basis-1/3 md:basis-1/4 order-2 md:order-1">
-						<img v-if="selectedGlass" :src="getImageSource(selectedGlass.img as string)" class="rounded-md w-full" />
-					</div>
-					<div class="flex-1 basis-2/3 md:basis-3/4 order-1 md:order-2">
-						<div class="flex flex-col justify-between h-full">
-							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+				
+				<div class="flex flex-row gap-2 md:gap-4 justify-between">
+					<div class="flex-1 basis-2/3">
+						<div>
+							<p class="font-semibold mb-2">Стекло</p>
+							<Select v-model="itemsStore.selectedGlassID" class="">
+								<SelectTrigger>
+									<SelectValue placeholder="Выберите стекло" />
+								</SelectTrigger>
+								<SelectContent class="max-w-xs sm:max-w-max">
+									<SelectItem value="-1">Без стекла</SelectItem>
+									<SelectItem v-for="glass in itemsStore.glasses" :key="glass.id" :value="glass.id">{{ glass.name }}</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<div v-if="selectedGlass" class="flex flex-col justify-between mt-2">
+							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Цена:</span>
 								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
 									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }}
@@ -66,13 +65,16 @@ const toggleSelection = (serviceId: number) => {
 									{{ itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit }}
 								</span>
 							</div>
-							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Итого:</span>
 								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
 									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
 						</div>
+					</div>
+					<div v-if="selectedGlass" class="basis-1/3">
+						<img :src="getImageSource(selectedGlass.img as string)" class="rounded-md w-full" />
 					</div>
 				</div>
 			</div>

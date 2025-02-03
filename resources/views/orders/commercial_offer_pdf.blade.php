@@ -157,7 +157,7 @@
                     <tr>
                         <td>{{ $item['id'] }}</td>
                         <td>
-                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . $item['img']))) }}" alt="" width="48">
+                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item['img'][0] != '/' ? '/' : '') . $item['img']))) }}" alt="" width="48">
                         </td>
                         <td>@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
                         <td class="nowrap">{{ $quantity }} {{ $item['unit'] }}</td>

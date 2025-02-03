@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Коммерческое предложение</title>
     <style>
+    @page {
+        margin:10px;
+    }
     body {
         font-family: DejaVu Sans, sans-serif;
         margin: 0;
@@ -21,7 +24,7 @@
     table th, table td {
         border: 1px solid #ddd;
         padding: 8px;
-        text-align: left;
+        text-align: center;
         font-weight: normal;
     }
     table th {
@@ -44,6 +47,7 @@
         <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
         <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
     </div>
+    {{-- <p>{{ now()->format('d.m.Y') }}</p> --}}
 
     <table>
         <thead>
@@ -66,6 +70,9 @@
                 <td>Адрес: <b>{{ $offer['customer']['address'] }}</b></td>
                 <td>Телефон: <b>{{ $offer['manufacturer']['phone'] }}</b></td>
             </tr>
+            <tr>
+                <td colspan="2"><b>Примечание:</b> {{ $offer['customer']['comment'] }}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -76,6 +83,7 @@
                 <th>Картинка</th>
                 <th>Тип проема</th>
                 <th>Кол-во створок</th>
+                <th>Ш х В</th>
                 <th>Площадь</th>
             </tr>
         </thead>
@@ -124,9 +132,13 @@
                         @endswitch
                     </td>
                     <td>{{ $opening['type'] != 'blind-glazing' && $opening['type'] != 'triangle' ? $opening['doors'] . ' ств.' : '-' }}</td>
+                    <td>{{ $opening['width'] }}мм x {{ $opening['height'] }}мм</td>
                     <td>{{ ($opening['width'] * $opening['height']) / 1000000 }} м<sup>2</sup></td>
                 </tr>
             @endforeach
+            <tr>
+                <td colspan="5" style="text-align: right">Сумма: <b>{{ number_format($offer['total_price'], 0, '.', ' ') }} ₽</b></td>
+            </tr>
         </tbody>
     </table>
 
@@ -213,9 +225,5 @@
             </tr> --}}
         </tbody>
     </table>
-
-    <div class="footer">
-        <p>Дата генерации файла: {{ now()->format('d-m-Y H:i:s') }}</p>
-    </div>
 </body>
 </html>

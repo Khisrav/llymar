@@ -68,6 +68,9 @@ const navigationMenu = ref([
 					<DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>
+						<Link href="/admin">Админка</Link>
+					</DropdownMenuItem>
+					<DropdownMenuItem>
 						<Link href="/app/account/settings">Настройки</Link>
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />

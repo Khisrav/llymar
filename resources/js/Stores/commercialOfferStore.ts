@@ -7,7 +7,8 @@ export const useCommercialOfferStore = defineStore('commercialOffer', () => {
         customer: {
             name: '',
             phone: '',
-            address: ''
+            address: '',
+            comment: '',
         },
         manufacturer: {
             manufacturer: '',    

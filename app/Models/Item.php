@@ -4,46 +4,81 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use App\Models\WholesaleFactor;
-use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class Item extends Model
 {
     protected $fillable = [
-        'name', 'purchase_price', 'retail_price', 'category_id', 'img', 'unit', 'quantity_in_warehouse', 'vendor_code'
+        'name',
+        'purchase_price',
+        'retail_price',
+        'category_id',
+        'img',
+        'unit',
+        'quantity_in_warehouse',
+        'vendor_code',
+        'is_for_llymar',
     ];
 
-    public static function itemPrice(int $item_id): float
+    /**
+     * Relationship to Category model.
+     */
+    public function category()
     {
-        $item = Item::findOrFail($item_id);
+        return $this->belongsTo(Category::class);
+    }
 
-        if (!$item) { return 0; }
+    /**
+     * Calculate the item price based on the user's wholesale factor
+     * and the category's reduction factors. Utilizes caching to reduce
+     * repeated DB queries.
+     *
+     * @param  int  $itemId
+     * @return float
+     */
+    public static function itemPrice(int $itemId): float
+    {
+        // Find or fail will throw a 404 if not found
+        /** @var self $item */
+        $item = self::findOrFail($itemId);
 
-        $user = auth()->user();
+        // Get logged-in user
+        $user = Auth::user();
 
-        $opt = $user->wholesale_factor_key;
-        $ku = $user->reduction_factor_key;
+        // Retrieve the user's wholesale factor key & reduction factor key
+        $wholesaleFactorKey = $user->wholesale_factor_key;
+        $reductionFactorKey = $user->reduction_factor_key;
 
-        $wholesaleFactor = WholesaleFactor::where('name', $opt)->first();
-        $wholesaleFactor = [
-            'name' => $opt,
-            'value' => $wholesaleFactor['value'] ?? 1,
-        ];
+        // Cache the wholesale factor value for 60 minutes
+        $wholesaleFactorValue = Cache::remember(
+            "wholesale_factor_value_{$wholesaleFactorKey}",
+            60,
+            function () use ($wholesaleFactorKey) {
+                return WholesaleFactor::where('name', $wholesaleFactorKey)->value('value') ?? 1.0;
+            }
+        );
 
-        $reductionFactors = Category::where('id', $item->category_id)->first()->reduction_factors;
+        // Cache the reduction factors for the category for 60 minutes
+        $reductionFactors = Cache::remember(
+            "category_{$item->category_id}_reduction_factors",
+            60,
+            function () use ($item) {
+                // If the item has a valid category relationship, return its reduction_factors
+                return $item->category ? $item->category->reduction_factors : [];
+            }
+        );
 
-        if ($reductionFactors) {
-            $reductionFactor = floatval(collect($reductionFactors)->firstWhere('key', $ku)['value']);
-            $reductionFactor = $reductionFactor ? $reductionFactor : 1;
-        } else {
-            $reductionFactor = 1;
+        // Find the matching factor from the array; default to 1 if not found
+        $reductionFactorValue = 1.0;
+        if (! empty($reductionFactors)) {
+            $foundFactor = collect($reductionFactors)->firstWhere('key', $reductionFactorKey);
+            $reductionFactorValue = isset($foundFactor['value'])
+                ? floatval($foundFactor['value'])
+                : 1.0;
         }
 
-        // Log::info('Item ID: ' . $item_id);
-        // Log::info('Purchase Price: ' . $item->purchase_price);
-        // Log::info('Wholesale Factor: ' . $wholesaleFactor['value']);
-        // Log::info('Reduction Factor: ' . $reductionFactor);
-
-        return $item->purchase_price * $wholesaleFactor['value'] * $reductionFactor;
+        // Calculate and return the final price
+        return $item->purchase_price * $wholesaleFactorValue * $reductionFactorValue;
     }
 }

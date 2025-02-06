@@ -19,13 +19,15 @@ Route::get('/', function () {
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');
+Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalcPDF'])
+    ->name('orders.calc_list_pdf');
 Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
-// Route::get('/orders/sketch', [OrderController::class, 'sketchPDF'])
-//     ->name('orders.sketch_pdf');
-Route::get('/orders/sketch', function() {
-    return view('orders.sketch_pdf');
-})->name('orders.sketch_pdf');
+Route::get('/orders/sketch', [OrderController::class, 'sketchPDF'])
+    ->name('orders.sketch_pdf');
+// Route::get('/orders/sketch', function() {
+//     return view('orders.sketch_pdf');
+// })->name('orders.sketch_pdf');
 
 Route::get('/auth', function() {
     if (Auth::check()) {

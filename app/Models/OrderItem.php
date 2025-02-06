@@ -15,19 +15,24 @@ class OrderItem extends Model
         'price',
     ];
     
-    public static function boot() {
+    /**
+     * The "boot" method of the model.
+     * Automatically creates Warehouse records on create/delete.
+     */
+    public static function boot()
+    {
         parent::boot();
     
         static::created(function ($model) {
             WarehouseRecord::create([
-                'item_id' => $model->item_id,
+                'item_id'  => $model->item_id,
                 'quantity' => -$model->quantity,
             ]);
         });
         
         static::deleted(function ($model) {
             WarehouseRecord::create([
-                'item_id' => $model->item_id,
+                'item_id'  => $model->item_id,
                 'quantity' => $model->quantity,
             ]);
         });
@@ -35,8 +40,6 @@ class OrderItem extends Model
 
     /**
      * Relationship: OrderItem belongs to an Order.
-     *
-     * @return BelongsTo
      */
     public function order(): BelongsTo
     {
@@ -45,8 +48,6 @@ class OrderItem extends Model
     
     /**
      * Relationship: OrderItem belongs to an Item.
-     *
-     * @return BelongsTo
      */
     public function item(): BelongsTo
     {
@@ -54,36 +55,48 @@ class OrderItem extends Model
     }
     
     /**
-     * Get the total price of the order item.
-     * 
+     * Calculate the total price of this OrderItem.
+     *
      * @return float
-    */
+     */
     public function itemTotalPrice(): float
     {
         $item = $this->item;
-    
-        if (!$item) { return 0; }
-    
+        if (! $item) {
+            return 0.0;
+        }
+
+        // Retrieve the Order and its associated User
         $order = Order::find($this->order_id);
+        if (! $order) {
+            return 0.0;
+        }
+        
         $user = User::find($order->user_id);
-    
-        $opt = $user->wholesale_factor_key;
-        $ku = $user->reduction_factor_key;
-    
-        $wholesaleFactor = WholesaleFactor::where('name', $opt)->first();
-        $wholesaleFactor = [
-            'name' => $opt,
-            'value' => $wholesaleFactor['value'] ?? 1,
-        ];
-        
-        $reductionFactors = Category::where('id', $item->category_id)->first()->reduction_factors;
-        
-        if ($reductionFactors) {
-            $reductionFactor = floatval(collect($reductionFactors)->firstWhere('key', $ku)['value']);
-            $reductionFactor = $reductionFactor ? $reductionFactor : 1;   
-        } else $reductionFactor = 1;
-        
-        return $item->purchase_price * $this->quantity * $wholesaleFactor['value'] * $reductionFactor;    
+        if (! $user) {
+            return 0.0;
+        }
+
+        // Get user keys
+        $wholesaleFactorKey = $user->wholesale_factor_key;
+        $reductionFactorKey = $user->reduction_factor_key;
+
+        // Fetch wholesale factor (default to 1 if not found)
+        $wholesaleFactor = WholesaleFactor::where('name', $wholesaleFactorKey)->first();
+        $wholesaleFactorValue = $wholesaleFactor['value'] ?? 1.0;
+
+        // Fetch reduction factors for this item's category
+        $category = Category::find($item->category_id);
+        $reductionFactors = $category ? $category->reduction_factors : [];
+
+        // Find matching factor in the array (default to 1 if not found)
+        $foundFactor = collect($reductionFactors)->firstWhere('key', $reductionFactorKey);
+        $reductionFactorValue = $foundFactor['value'] ?? 1.0;
+
+        // Final total = purchase price * quantity * factors
+        return $item->purchase_price
+            * $this->quantity
+            * $wholesaleFactorValue
+            * floatval($reductionFactorValue);
     }
 }
-//Undefined array key "App\Models\OrderItem"

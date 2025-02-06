@@ -13,7 +13,8 @@ const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
 
 commercialOfferStore.commercialOffer.manufacturer = {
-    manufacturer: itemsStore.user.name,
+    title: 'Информация о производителе',
+    manufacturer: itemsStore.user.company || '',
     company: itemsStore.user.company || '',
     phone: itemsStore.user.phone || '',
 }
@@ -54,11 +55,12 @@ commercialOfferStore.commercialOffer.manufacturer = {
             </div>
             
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
-                <h4 class="font-semibold text-muted-foreground">Информация о производителе</h4>
+                <!-- <h4 class="font-semibold text-muted-foreground">Информация о производителе</h4> -->
+                <Input v-model="commercialOfferStore.commercialOffer.manufacturer.title" class="w-full font-semibold" />
                 <div>
-                    <div class="flex items-center justify-between md:gap-4">
-                        <span>Производитель: </span>
-                        <span class="font-semibold">{{ itemsStore.user.company }}</span>
+                    <div class="mb-4">
+                        <Label class="mb-2 block">Производитель:</Label>
+                        <Input v-model="commercialOfferStore.commercialOffer.manufacturer.manufacturer" class="w-full" placeholder="" />
                     </div>
                     <div class="flex items-center justify-between md:gap-4">
                         <span>Телефон: </span>

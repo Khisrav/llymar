@@ -31,16 +31,16 @@ const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number)
 
 const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null
 
+const getOpeningName = (type: OpeningType): string => {
+	return openingsStore.openingTypes[type]
+}
+
 // SNP for Surname Name Patronymic
 const snp = ref({
 	surname: itemsStore.user.name.split(" ")[0],
 	name: itemsStore.user.name.split(" ")[1],
 	patronymic: itemsStore.user.name.split(" ")[2],
 })
-
-const getOpeningName = (type: OpeningType): string => {
-	return openingsStore.openingTypes[type]
-}
 
 const order_info = computed(() => ({
 	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),

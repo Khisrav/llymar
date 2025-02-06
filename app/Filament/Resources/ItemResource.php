@@ -80,10 +80,10 @@ class ItemResource extends Resource
                                 '1:1',
                             ])
                             ->directory('items'),
-                        // Forms\Components\Toggle::make('is_for_llymar')
-                        //     ->label('Для LLYMAR')
-                        //     // ->default(false)
-                        //     ->helperText('Включение товара в калькуляторе LLYMAR (блок с доп. деталями)'),
+                        Forms\Components\Toggle::make('is_for_llymar')
+                            ->label('Для LLYMAR')
+                            // ->default(false)
+                            ->helperText('Включение товара в калькуляторе LLYMAR (блок с доп. деталями)'),
                     ])
             ]);
     }

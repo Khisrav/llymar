@@ -110,6 +110,7 @@ export interface CommercialOffer {
         comment: string;
     },
     manufacturer: {
+        title: string;
         manufacturer: string;
         company: string;
         phone: string;

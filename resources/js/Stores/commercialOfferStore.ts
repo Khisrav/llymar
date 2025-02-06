@@ -11,6 +11,7 @@ export const useCommercialOfferStore = defineStore('commercialOffer', () => {
             comment: '',
         },
         manufacturer: {
+            title: 'Информация о производителе',
             manufacturer: '',    
             company: '',
             phone: ''

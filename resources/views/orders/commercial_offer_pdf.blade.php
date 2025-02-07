@@ -73,9 +73,11 @@
                 <td>Телефон: <b>{{ $offer['customer']['phone'] }}</b></td>
                 <td></td>
             </tr>
-            <tr>
-                <td colspan="2"><b>Примечание:</b> {{ $offer['customer']['comment'] }}</td>
-            </tr>
+            @if ($offer['customer']['comment'])
+                <tr>
+                    <td colspan="2"><b>Примечание:</b> {{ $offer['customer']['comment'] }}</td>
+                </tr>
+            @endif
         </tbody>
     </table>
 
@@ -149,7 +151,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>№</th>
                 <th>Картинка</th>
                 <th style="text-align: left !important">Наименование</th>
                 <th>Кол-во</th>
@@ -223,8 +225,8 @@
             @endif
 
             <tr>
-                <td colspan="5" style="text-align: right">Сумма:</td>
-                <td><b>{{ number_format($offer_additionals_price, 0, '.', ' ') }} ₽</b></td>
+                <td colspan="5" style="text-align: right">Итого:</td>
+                <td><b>{{ number_format($offer['total_price'], 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>
     </table>

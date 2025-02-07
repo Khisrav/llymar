@@ -111,6 +111,7 @@ export interface CommercialOffer {
     },
     manufacturer: {
         title: string;
+        // manufacturer_name: string;
         manufacturer: string;
         company: string;
         phone: string;

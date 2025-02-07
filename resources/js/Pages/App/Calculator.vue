@@ -8,6 +8,7 @@ import Items from '../../Components/Calculator/Items.vue';
 import Additionals from '../../Components/Calculator/Additionals.vue';
 import OrderActions from '../../Components/Calculator/OrderActions.vue';
 import CommercialOfferFields from '../../Components/Calculator/CommercialOfferFields.vue';
+import CustomPricing from '../../Components/Calculator/CustomPricing.vue';
 
 const itemsStore = useItemsStore();
 
@@ -32,6 +33,7 @@ itemsStore.calculate()
     <div class="mt-4">
         <CommercialOfferFields class="mb-8" />
         <Openings class="mb-8" />
+        <CustomPricing class="mb-8" />
         <Additionals class="mb-8" />
         <Items class="mb-8" />
     </div>

@@ -51,13 +51,19 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('company')
                             ->label('Организация/Компания')
                             ->required(),
-                        Grid::make(4)
+                        Grid::make(10)
                             ->schema([
+                                Forms\Components\TextInput::make('telegram')
+                                    ->label('Ник в Telegram')
+                                    // ->required()
+                                    ->startsWith('@')
+                                    ->placeholder('@user')
+                                    ->columnSpan(2),
                                 Forms\Components\TextInput::make('phone')
                                     ->label('Телефон')
                                     ->mask('+7 (999) 999 99-99')
                                     ->required()
-                                    ->columnSpan(1),
+                                    ->columnSpan(2),
                                     
                                 Forms\Components\Select::make('role')
                                     ->label('Роль')
@@ -67,7 +73,7 @@ class UserResource extends Resource
                                         'user' => 'Пользователь',
                                     ])
                                     ->required()
-                                    ->columnSpan(1),
+                                    ->columnSpan(2),
                                     
                                 Forms\Components\Select::make('reduction_factor_key')
                                     ->label('Коэффициент уменьшения')
@@ -79,7 +85,7 @@ class UserResource extends Resource
                                             array_map(fn($key) => 'KU' . $key, range(1, 10))
                                         );
                                     })
-                                    ->columnSpan(1),
+                                    ->columnSpan(2),
                                 
                                 Forms\Components\Select::make('wholesale_factor_key')
                                     ->label('Оптовый коэффициент')
@@ -88,7 +94,7 @@ class UserResource extends Resource
                                         // Retrieve key-value pairs (e.g., name => value) from the WholesaleFactors model
                                         return \App\Models\WholesaleFactor::query()->pluck('name', 'name')->toArray();
                                     })
-                                    ->columnSpan(1),
+                                    ->columnSpan(2),
                                 ]), 
                                              
                     ]),

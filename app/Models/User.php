@@ -36,6 +36,7 @@ class User extends Authenticatable
         'bik',
         'bank',
         'legal_address',
+        'telegram',
     ];
 
     /**

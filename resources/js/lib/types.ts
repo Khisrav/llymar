@@ -61,6 +61,7 @@ export interface User {
     legal_address?: string;
     current_account?: string;
     correspondent_account?: string;
+    telegram?: string;
     created_at?: string | null;
     updated_at?: string | null;
 }

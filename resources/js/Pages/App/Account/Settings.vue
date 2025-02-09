@@ -52,6 +52,12 @@ const updateUser = () => {
     			    <Input v-model="user.phone" type="tel" v-maska="'+7 (###) ###-##-##'" required class="shadow-sm" />
 			    </div>
 
+			    <div>
+			        <Label class="font-bold">Ник в Telegram</Label>
+    			    <p class="text-sm text-muted-foreground mb-4">Ник в Telegram используется для быстрой связи в случае срочных вопросов.</p>
+    			    <Input v-model="user.telegram" type="text" required class="shadow-sm" />
+			    </div>
+
 				<div>
 					<Label class="font-bold">Организация</Label>
 					<p class="text-sm text-muted-foreground mb-4">Название организации используется для правильного оформления документов и счетов.</p>

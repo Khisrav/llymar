@@ -43,7 +43,8 @@ const downloadCommercialOffer = async () => {
             glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID),
             services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,
-            total_price: itemsStore.total_price.with_discount
+            total_price: itemsStore.total_price.with_discount,
+            markup_percentage: itemsStore.markupPercentage.toFixed(2),
         }
 
         const response = await axios.post('/orders/commercial-offer', formData, {

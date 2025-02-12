@@ -78,21 +78,21 @@
 }
 
 /* Custom scrollbar styles */
-body::-webkit-scrollbar {
+::-webkit-scrollbar {
   @apply w-2;
 }
 
-body::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   @apply bg-muted;
   @apply dark:bg-primary-foreground;
 }
 
-body::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   @apply bg-gray-300 rounded-full;
   @apply dark:bg-muted-foreground;
 }
 
-body::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
   @apply dark:bg-muted-foreground;
 }

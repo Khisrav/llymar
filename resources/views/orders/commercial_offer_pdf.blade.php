@@ -94,6 +94,8 @@
         </thead>
         <tbody>
             @php
+                $markupPercentage = $offer['markup_percentage'] / 100 + 1;
+                
                 $openingImage = [
                     'left' => '/assets/openings/openings-left.jpg',
                     'right' => '/assets/openings/openings-right.jpg',
@@ -142,7 +144,7 @@
                 </tr>
             @endforeach
             <tr>
-                <td colspan="5" style="text-align: right">Сумма: <b>{{ number_format($offer_openings_price, 0, '.', ' ') }} ₽</b></td>
+                <td colspan="5" style="text-align: right">Сумма: <b>{{ number_format($offer_openings_price * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>
     </table>
@@ -166,7 +168,7 @@
             @foreach ($offer['additional_items'] as $item)
                 @if (isset($offer['cart_items'][$item['id']]))
                     @php
-                        $price = App\Models\Item::itemPrice($item['id']);
+                        $price = App\Models\Item::itemPrice($item['id']) * $markupPercentage;
                         $quantity = $offer['cart_items'][$item['id']]['quantity'];
                         $total = $price * $quantity;
                         // $sum += $total;
@@ -187,10 +189,9 @@
             @foreach ($offer['services'] as $service)
                 @if (isset($offer['cart_items'][$service['id']]))
                     @php
-                        $price = App\Models\Item::itemPrice($service['id']);
+                        $price = App\Models\Item::itemPrice($service['id']) * $markupPercentage;
                         $quantity = $offer['cart_items'][$service['id']]['quantity'];
                         $total = $price * $quantity;
-                        // $sum += $total;
                     @endphp
                     <tr>
                         <td>{{ ++$count }}</td>
@@ -207,10 +208,9 @@
 
             @if (isset($offer['cart_items'][$offer['glass']['id']]))
                 @php
-                    $price = App\Models\Item::itemPrice($offer['glass']['id']);
+                    $price = App\Models\Item::itemPrice($offer['glass']['id']) * $markupPercentage;
                     $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
                     $total = $price * $quantity;
-                    // $sum += $total;
                 @endphp
                 <tr>
                     <td>{{ ++$count }}</td>
@@ -226,7 +226,7 @@
 
             <tr>
                 <td colspan="5" style="text-align: right">Итого:</td>
-                <td><b>{{ number_format($offer['total_price'], 0, '.', ' ') }} ₽</b></td>
+                <td><b>{{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>
     </table>

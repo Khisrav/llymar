@@ -35,17 +35,21 @@ class OrderResource extends Resource
                 Section::make('Информация о заказе')
                     ->collapsible()
                     ->schema([
-                        Grid::make(12) 
+                        Grid::make(12)
                             ->schema([
                                 TextInput::make('id')
-                                    ->label('ID заказа')
+                                    ->label('ID')
                                     ->disabled()
-                                    ->columnSpan(3),
+                                    ->columnSpan(2),
             
                                 TextInput::make('order_number')
                                     ->label('Номер заказа')
                                     ->disabled()
-                                    ->columnSpan(3),
+                                    ->columnSpan(2),
+                                    
+                                TextInput::make('ral_code')
+                                    ->label('Цвет RAL')
+                                    ->columnSpan(2),
                                     
                                 TextInput::make('user_id')
                                     ->label('Кем создан')

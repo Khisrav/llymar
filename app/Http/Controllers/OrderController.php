@@ -55,22 +55,16 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create the order
             $order = $this->createOrder($fields);
 
-            // Create Order Items
             $this->createOrderItems($order, $fields['cart_items']);
 
-            // Create Order Openings
             $this->createOrderOpenings($order, $fields['openings']);
 
-            // Commit all changes
             DB::commit();
 
-            // Notify via Telegram
             $this->notifyViaTelegram($order);
 
-            // Redirect to history
             return redirect()->route('app.history');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -171,23 +165,21 @@ class OrderController extends Controller
     public static function commercialOfferPDF(Request $request)
     {
         $offer = $request->validate([
-            'customer'         => 'required|array',
-            'manufacturer'     => 'required|array',
-            'openings'         => 'required|array',
-            'additional_items' => 'required|array',
-            'services'         => 'array',
-            'glass'            => 'required|array',
-            'cart_items'       => 'required|array',
-            'total_price'      => 'required|numeric',
+            'customer'          => 'required|array',
+            'manufacturer'      => 'required|array',
+            'openings'          => 'required|array',
+            'additional_items'  => 'required|array',
+            'services'          => 'array',
+            'glass'             => 'required|array',
+            'cart_items'        => 'required|array',
+            'total_price'       => 'required|numeric',
+            'markup_percentage' => 'required|numeric',
         ]);
 
-        // Calculate additional items price
         $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
 
-        // Calculate openings price
         $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;
 
-        // Get user and caching factors
         $user = auth()->user();
         $wholesaleFactor = Cache::remember("wholesale_factor_{$user->wholesale_factor_key}", 60, function () use ($user) {
             return WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
@@ -254,7 +246,6 @@ class OrderController extends Controller
             'total_price'       => $data['total_price'],
         ]);
 
-        // Generate order number
         $order->order_number = '6-' . $order->id;
         $order->save();
 
@@ -413,7 +404,6 @@ class OrderController extends Controller
     {
         $offerAdditionalsPrice = 0;
 
-        // Sum up additional items
         foreach ($offer['additional_items'] as $item) {
             if (isset($offer['cart_items'][$item['id']])) {
                 $price = Item::itemPrice($item['id']);
@@ -422,7 +412,6 @@ class OrderController extends Controller
             }
         }
 
-        // Sum up services
         $services = $offer['services'] ?? [];
         foreach ($services as $service) {
             if (isset($offer['cart_items'][$service['id']])) {
@@ -432,7 +421,6 @@ class OrderController extends Controller
             }
         }
 
-        // Sum up glass
         if (isset($offer['glass']['id'], $offer['cart_items'][$offer['glass']['id']])) {
             $price = Item::itemPrice($offer['glass']['id']);
             $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];

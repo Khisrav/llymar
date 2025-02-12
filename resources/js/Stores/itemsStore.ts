@@ -15,17 +15,20 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
     const wholesale_factor = ref<WholesaleFactor>()
+    const markupPercentage = ref(0)
     
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
 
     watch(selectedGlassID, (newSelectedGlassID) => {
+        sessionStorage.setItem('selectedGlassID', JSON.stringify(newSelectedGlassID))
         updateGlassQuantity(newSelectedGlassID)
         calculate()
     }, { deep: true })
     
-    watch(selectedServicesID, (newSelectedServicesID, oldSelectedServicesID) => {
+    watch(selectedServicesID, (newSelectedServicesID) => {
+        sessionStorage.setItem('selectedServicesID', JSON.stringify(newSelectedServicesID))
         updateServicesQuantity(newSelectedServicesID)
         calculate()
     }, { deep: true })
@@ -47,11 +50,25 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const initiateCartItems = () => {
         if (sessionStorage.getItem('cartItems')) {
             cartItems.value = JSON.parse(sessionStorage.getItem('cartItems') as string)
+        }
+  
+        if (sessionStorage.getItem('selectedGlassID')) {
+            selectedGlassID.value = JSON.parse(sessionStorage.getItem('selectedGlassID') as string)
         } else {
-            selectedGlassID.value = glasses.value[0].id
-
+            if (glasses.value.length) {
+                selectedGlassID.value = glasses.value[0].id
+            }
+        }
+  
+        if (sessionStorage.getItem('selectedServicesID')) {
+          selectedServicesID.value = JSON.parse(sessionStorage.getItem('selectedServicesID') as string)
+        } else { selectedServicesID.value = [] }
+  
+        if (!sessionStorage.getItem('cartItems')) {
             const allItems = [...items.value, ...additional_items.value]
-            allItems.forEach(item => { cartItems.value[item.id] = { quantity: 0 } })
+            allItems.forEach(item => {
+                cartItems.value[item.id] = { quantity: 0 }
+            })
         }
     }
 
@@ -244,5 +261,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
         categories,
         wholesale_factor,
         itemPrice,
+        markupPercentage,
     }
 })

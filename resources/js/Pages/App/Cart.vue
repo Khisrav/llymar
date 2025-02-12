@@ -13,9 +13,22 @@ import Input from "../../Components/ui/input/Input.vue"
 import Label from "../../Components/ui/label/Label.vue"
 import { vMaska } from "maska/vue"
 import { useOpeningStore } from "../../Stores/openingsStore"
+import { RAL } from "ral-colors/index.js"
+import Popover from "../../Components/ui/popover/Popover.vue"
+import PopoverContent from "../../Components/ui/popover/PopoverContent.vue"
+import Command from "../../Components/ui/command/Command.vue"
+import CommandInput from "../../Components/ui/command/CommandInput.vue"
+import CommandList from "../../Components/ui/command/CommandList.vue"
+import CommandItem from "../../Components/ui/command/CommandItem.vue"
+import PopoverTrigger from "../../Components/ui/popover/PopoverTrigger.vue"
 
 const itemsStore = useItemsStore()
-const openingsStore = useOpeningStore();
+const openingsStore = useOpeningStore()
+const open = ref(false)
+const selectedRALColor = ref({
+  name: "Выбрать цвет",
+  HEX: "none",
+})
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as Item[]
@@ -31,144 +44,180 @@ const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number)
 
 const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null
 
-const getOpeningName = (type: OpeningType): string => {
-	return openingsStore.openingTypes[type]
-}
+const getOpeningName = (type: OpeningType): string => openingsStore.openingTypes[type]
 
 // SNP for Surname Name Patronymic
 const snp = ref({
-	surname: itemsStore.user.name.split(" ")[0],
-	name: itemsStore.user.name.split(" ")[1],
-	patronymic: itemsStore.user.name.split(" ")[2],
+  surname: itemsStore.user.name.split(" ")[0],
+  name: itemsStore.user.name.split(" ")[1],
+  patronymic: itemsStore.user.name.split(" ")[2],
 })
 
 const order_info = computed(() => ({
-	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
-	phone: itemsStore.user.phone,
-	address: itemsStore.user.address,
-	email: itemsStore.user.email,
+  name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
+  phone: itemsStore.user.phone,
+  address: itemsStore.user.address,
+  email: itemsStore.user.email,
+  color: "",
 }))
 
 const checkout = () => {
-	const formData = {
-		name: order_info.value.name,
-		phone: order_info.value.phone,
-		address: order_info.value.address,
-		email: order_info.value.email,
-		cart_items: itemsStore.cartItems,
-		openings: openingsStore.openings,
-		total_price: itemsStore.total_price.with_discount,
-	}
+  const formData = {
+    name: order_info.value.name,
+    phone: order_info.value.phone,
+    address: order_info.value.address,
+    email: order_info.value.email,
+    cart_items: itemsStore.cartItems,
+    openings: openingsStore.openings,
+    total_price: itemsStore.total_price.with_discount,
+  }
+  
+  if (selectedRALColor.value.HEX === "none") {
+    alert("Выберите цвет")
+	return
+  }
 
-	router.post("/app/checkout", formData as any, {
-		onSuccess: () => {
-			sessionStorage.removeItem('openings')
-			sessionStorage.removeItem('cartItems')
-		},
-		onError: (errors: any) => {
-			console.log(errors)
-		},
-	})
+  router.post("/app/checkout", formData as any, {
+    onSuccess: () => {
+      sessionStorage.removeItem("openings")
+      sessionStorage.removeItem("cartItems")
+    },
+    onError: (errors: any) => {
+      console.log(errors)
+    },
+  })
 }
 </script>
 
 <template>
-	<Head title="Корзина" />
-	<AuthenticatedHeaderLayout />
-	<div class="container p-0 md:p-4">
-		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
-			<div class="flex items-center gap-4 mb-6">
-				<Link href="/app/calculator">
-					<Button size="icon" variant="outline">
-						<ArrowLeft />
-					</Button>
-				</Link>
-				<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Ваша корзина</h2>
-			</div>
-			<div v-if="cartItemIDs.length === 0" class="text-center py-8">
-				<ShoppingCartIcon class="h-16 w-16 mx-auto mb-4" />
-				<p class="text-lg">Ваша корзина пуста</p>
-				<Link href="/app/calculator" class="inline-block mt-4">
-					<Button variant="secondary"> <ArrowLeft class="mr-2" /> Перейти к калькулятору </Button>
-				</Link>
-			</div>
-			<div v-else class="flex flex-col md:flex-row md:space-x-8">
-				<!-- Cart Items List -->
-				<div class="md:w-2/3">
-					<ul class="divide-y divide-gray-200 dark:divide-gray-700">
-						<li v-for="itemID in cartItemIDs" :key="itemID" class="py-6 flex items-center">
-							<CartItem v-if="itemID != -1" :item="item(itemID) as any" />
-						</li>
-					</ul>
-				</div>
+  <Head title="Корзина" />
+  <AuthenticatedHeaderLayout />
+  <div class="container p-0 md:p-4">
+    <div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
+      <div class="flex items-center gap-4 mb-6">
+        <Link href="/app/calculator"><Button size="icon" variant="outline"><ArrowLeft /></Button></Link>
+        <h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Ваша корзина</h2>
+      </div>
+      <div v-if="cartItemIDs.length === 0" class="text-center py-8">
+        <ShoppingCartIcon class="h-16 w-16 mx-auto mb-4" />
+        <p class="text-lg">Ваша корзина пуста</p>
+        <Link href="/app/calculator" class="inline-block mt-4">
+          <Button variant="secondary"> <ArrowLeft class="mr-2" /> Перейти к калькулятору </Button>
+        </Link>
+      </div>
+      <div v-else class="flex flex-col md:flex-row md:space-x-8">
+        <div class="md:w-2/3">
+          <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+            <li v-for="itemID in cartItemIDs" :key="itemID" class="py-6 flex items-center">
+              <CartItem v-if="itemID != -1" :item="item(itemID)" />
+            </li>
+          </ul>
+        </div>
 
-				<!-- Order Summary -->
-				<div class="md:w-1/3 mt-8 md:mt-0">
-					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 space-y-4">
-						<h3 class="text-lg font-semibold">Проемы</h3>
-						<div v-for="opening in openingsStore.openings" :key="opening.type" class="">
-							<div>
-								<div>{{ getOpeningName(opening.type) }}</div> 
-								<div class="text-muted-foreground flex flex-row items-center justify-between">
-									<span>{{ opening.width }} мм <span class="text-xs">✕</span> {{ opening.height }} мм</span>
-									<span v-if="!['blind-glazing', 'triangle'].includes(opening.type)">{{ opening.doors }} ств.</span>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-6">
-						<h3 class="text-lg font-semibold mb-4">Сводка по заказу</h3>
-						<div class="flex justify-between mb-2">
-							<p class="">Всего</p>
-							<p class="">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</p>
-						</div>
-						<!-- Additional order details -->
-						<div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4 flex justify-between items-center">
-							<p class="text-lg font-semibold">Итого</p>
-							<p class="text-xl font-semibold">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</p>
-						</div>
-					</div>
+        <div class="md:w-1/3 mt-8 md:mt-0">
+          <div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 space-y-4">
+            <h3 class="text-lg font-semibold">Проемы</h3>
+            <div v-for="opening in openingsStore.openings" :key="opening.type" class="">
+              <div>
+                <div>{{ getOpeningName(opening.type) }}</div>
+                <div class="text-muted-foreground flex flex-row items-center justify-between">
+                  <span>{{ opening.width }} мм <span class="text-xs">✕</span> {{ opening.height }} мм</span>
+                  <span v-if="!['blind-glazing', 'triangle'].includes(opening.type)">{{ opening.doors }} ств.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Сводка по заказу</h3>
+            <div class="flex justify-between mb-2">
+              <p>Всего</p>
+              <p>{{ currencyFormatter(itemsStore.total_price.with_discount) }}</p>
+            </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4 flex justify-between items-center">
+              <p class="text-lg font-semibold">Итого</p>
+              <p class="text-xl font-semibold">
+                {{ currencyFormatter(itemsStore.total_price.with_discount) }}
+              </p>
+            </div>
+          </div>
 
-					<form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
-						<h3 class="text-lg font-semibold">Информация о клиенте</h3>
+          <form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+            <h3 class="text-lg font-semibold">Информация о клиенте</h3>
 
-						<div>
-							<Label class="inline-block mb-2"> Фамилия <span class="text-destructive dark:text-red-500">*</span> </Label>
-							<Input type="text" v-model="snp.surname" placeholder="Иванов" required />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Фамилия<span class="text-destructive dark:text-red-500">*</span></Label>
+              <Input type="text" v-model="snp.surname" placeholder="Иванов" required />
+            </div>
 
-						<div>
-							<Label class="inline-block mb-2"> Имя <span class="text-destructive dark:text-red-500">*</span> </Label>
-							<Input type="text" v-model="snp.name" placeholder="Иван" required />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Имя<span class="text-destructive dark:text-red-500">*</span></Label>
+              <Input type="text" v-model="snp.name" placeholder="Иван" required />
+            </div>
 
-						<div>
-							<Label class="inline-block mb-2">Отчество</Label>
-							<Input type="text" v-model="snp.patronymic" placeholder="Иванович" />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Отчество</Label>
+              <Input type="text" v-model="snp.patronymic" placeholder="Иванович" />
+            </div>
 
-						<div>
-							<Label class="inline-block mb-2"> Адрес <span class="text-destructive dark:text-red-500">*</span> </Label>
-							<Input type="text" v-model="order_info.address" placeholder="г. Москва, ул. Пушкинская, д. 1" required />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Адрес<span class="text-destructive dark:text-red-500">*</span></Label>
+              <Input type="text" v-model="order_info.address" placeholder="г. Москва, ул. Пушкинская, д. 1" required />
+            </div>
 
-						<div>
-							<Label class="inline-block mb-2"> Email <span class="text-destructive dark:text-red-500">*</span> </Label>
-							<Input type="email" v-model="order_info.email" placeholder="email@mail.ru" required />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Email<span class="text-destructive dark:text-red-500">*</span></Label>
+              <Input type="email" v-model="order_info.email" placeholder="email@mail.ru" required />
+            </div>
 
-						<div>
-							<Label class="inline-block mb-2"> Телефон <span class="text-destructive dark:text-red-500">*</span> </Label>
-							<Input type="tel" v-model="order_info.phone" v-maska="'+7 (###) ###-##-##'" placeholder="+7 (999) 999-99-99" required />
-						</div>
+            <div>
+              <Label class="inline-block mb-2">Телефон<span class="text-destructive dark:text-red-500">*</span></Label>
+              <Input type="tel" v-model="order_info.phone" v-maska="'+7 (###) ###-##-##'" placeholder="+7 (999) 999-99-99" required />
+            </div>
 
-						<div>
-							<Button type="submit">Оформить заказ</Button>
-							<p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+            <div v-if="itemsStore.cartItems[386]" class="flex items-center justify-between">
+              <Label class="inline-block mb-2">Цвет<span class="text-destructive dark:text-red-500">*</span></Label>
+
+              <div>
+                <Popover v-model:open="open">
+                  <PopoverTrigger as-child>
+                    <Button variant="outline" type="button" :aria-expanded="open">
+                      <svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle :style="{ fill: selectedRALColor?.HEX }" cx="50" cy="50" r="45" />
+                      </svg>
+                      <span>{{ selectedRALColor?.name || "Выбрать цвет" }}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <Command>
+                      <CommandInput placeholder="Найти цвет" />
+                      <CommandList>
+                        <CommandItem
+                          v-for="colorName in Object.keys(RAL.classic)"
+                          :key="colorName"
+                          :value="RAL.classic[colorName]"
+                          @select="() => { selectedRALColor = { name: colorName, HEX: RAL.classic[colorName].HEX, }; open = false }"
+                          class="gap-2"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <circle :style="{ fill: RAL.classic[colorName].HEX }" cx="50" cy="50" r="45" />
+                          </svg>
+                          <span>{{ colorName }}</span>
+                        </CommandItem>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div>
+              <Button type="submit">Оформить заказ</Button>
+              <p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue"
+import { ref, watch, computed, onMounted } from "vue"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
@@ -9,18 +9,38 @@ import Input from "../ui/input/Input.vue"
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 
-const basePrice = itemsStore.total_price.with_discount
-const allOpeningsArea = ref(openingsStore.openings.reduce((acc, opening) => acc + opening.width * opening.height, 0) / 1000000)
-const percentage = ref(0)
-const sliderValue = ref([0])
+const basePrice = computed(() => itemsStore.total_price.with_discount)
+const allOpeningsArea = computed(() => openingsStore.openings.reduce((acc, o) => acc + o.width * o.height, 0) / 1_000_000)
 
-const markupPrice = computed({
-	get() { return Math.floor(basePrice * (1 + percentage.value / 100)) },
-	set(newPrice: number) { percentage.value = basePrice === 0 ? 0 : (newPrice / basePrice - 1) * 100 },
+// ---------- HELPER FUNCTIONS ----------
+const totalPriceFromPercentage = (percentage: number) => basePrice.value * (1 + percentage / 100)
+const percentageFromTotalPrice = (price: number) => basePrice.value === 0 ? 0 : (price / basePrice.value - 1) * 100
+
+// ----- LOCAL REF FOR THE INPUT -----
+const typedTotalPrice = ref(0);
+
+onMounted(() => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
+
+watch(typedTotalPrice, (newVal) => { itemsStore.markupPercentage = percentageFromTotalPrice(newVal) })
+
+watch(() => itemsStore.markupPercentage, (newPercent) => {
+	typedTotalPrice.value = Math.round(totalPriceFromPercentage(newPercent))
 })
 
-watch(sliderValue, ([val]) => { percentage.value = val })
-watch(percentage, (val) => { sliderValue.value = [val] })
+// ----- WATCH BASE PRICE CHANGES -----
+watch(basePrice, () => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
+
+// ----- SLIDER BINDING -----
+const sliderValue = computed({
+	get() { return [itemsStore.markupPercentage] },
+	set([val]) { itemsStore.markupPercentage = parseFloat(val.toFixed(2)) },
+})
+
+const pricePerM2 = computed(() => {
+	const area = allOpeningsArea.value
+	if (!area) return 0
+	return typedTotalPrice.value / area
+})
 </script>
 
 <template>
@@ -32,20 +52,26 @@ watch(percentage, (val) => { sliderValue.value = [val] })
 				<div>Закупочная цена:</div>
 				<div class="font-bold">{{ currencyFormatter(basePrice) }}</div>
 			</div>
+
 			<div class="flex justify-between gap-4 mb-4">
 				<div>Наценка:</div>
-				<div class="font-bold">{{ percentage.toFixed(2) }}%</div>
+				<div class="font-bold">{{ itemsStore.markupPercentage.toFixed(2) }}%</div>
 			</div>
+
 			<div class="flex justify-between gap-4 mb-4">
-				<Slider v-model="sliderValue" :min="-50" :max="50" :step="1" />
+				<Slider v-model="sliderValue" :min="-50" :max="50" :step="0.1" />
 			</div>
+
 			<div class="flex justify-between gap-4 mb-4">
 				<div>Цена с наценкой за м<sup>2</sup>:</div>
-				<div class="font-bold">{{ currencyFormatter(markupPrice / allOpeningsArea) }}/м<sup>2</sup></div>
+				<div class="font-bold">{{ currencyFormatter(pricePerM2) }}/м<sup>2</sup></div>
 			</div>
+
 			<div class="flex justify-between items-center gap-4">
-				<div>Цена с наценкой <b>{{ percentage.toFixed(2) }}%</b>:</div>
-				<Input v-model="markupPrice" type="number" class="w-24 md:w-32" />
+				<div>
+					Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(2) }}%</b>:
+				</div>
+				<Input v-model="typedTotalPrice" type="number" class="w-24 md:w-32" />
 			</div>
 		</div>
 	</div>

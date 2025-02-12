@@ -50,6 +50,7 @@ class OrderController extends Controller
             'cart_items'   => 'required|array',
             'openings'     => 'required|array',
             'total_price'  => 'required|numeric',
+            'ral_code'     => 'string',
         ]);
 
         try {
@@ -244,6 +245,7 @@ class OrderController extends Controller
             'customer_address'  => $data['address'],
             'customer_email'    => $data['email'],
             'total_price'       => $data['total_price'],
+            'ral_code'          => $data['ral_code'],
         ]);
 
         $order->order_number = '6-' . $order->id;

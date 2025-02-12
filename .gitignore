@@ -19,5 +19,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/public/storage
-/pbulic/hot
+/public

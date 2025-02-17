@@ -1,383 +1,392 @@
+@php
+$svg = '<svg
+    width="29"
+    height="106"
+    viewBox="0 0 34 86"
+    xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- 
+    Scaled so the shape fits a 34×86 box.
+    Font size is smaller so text remains legible.
+  -->
+
+  <!-- 1) Main vertical line (originally 95,108 → 95,523) -->
+  <line
+    x1="19.40" y1="17.14"
+    x2="19.40" y2="106"
+    stroke="black"
+    stroke-width="0.8"
+  />
+
+  <!-- 2) Short horizontal line near top (95,108 → 123,108) -->
+  <line
+    x1="19.40"  y1="17.14"
+    x2="23.85"  y2="17.14"
+    stroke="black"
+    stroke-width="0.8"
+  />
+
+  <!-- 3) Long horizontal line across the middle (0,340 → 156,340) -->
+  <line
+    x1="4.26"   y1="60"
+    x2="29.11"  y2="60"
+    stroke="black"
+    stroke-width="0.8"
+  />
+
+  <!-- 4) Angled line (top-right slant) (123,108 → 15.406,0.406) -->
+  <line
+    x1="23.85"  y1="17.14"
+    x2="6.71"   y2="0.06"
+    stroke="black"
+    stroke-width="0.8"
+  />
+
+  <rect
+    x="19.40"   y="60"
+    width="6.71"  height="6.71"
+    fill="none"
+    stroke="black"
+    stroke-width="0.8"
+  />
+
+  <!-- 6) Labels (scaled down, smaller font-size) -->
+
+  <!-- “1000” around mid-vertical -->
+  <text
+    x="-3" y="18"
+    transform="rotate(-90)"
+    font-family="sans-serif"
+    font-size="6"
+    text-anchor="end"
+  >
+    1000
+  </text>
+
+  <!-- “500” near lower vertical -->
+  <text
+    x="-50.00" y="18"
+    transform="rotate(-90)"
+    font-family="sans-serif"
+    font-size="6"
+    text-anchor="end"
+  >
+    500
+  </text>
+
+  <!-- “55” near the middle horizontal line -->
+  <text
+    x="39.00" y="57"
+    font-family="sans-serif"
+    font-size="6"
+    text-anchor="end"
+  >
+    55
+  </text>
+
+  <!-- “⌀ 12” near the angled line -->
+  <text
+    x="10" y="-7"
+    transform="rotate(45)"
+    font-family="sans-serif"
+    font-size="6"
+  >
+    ⌀ 12
+  </text>
+</svg>
+';
+$openings = [
+    [
+        'type' => 'left',
+        'width' => 5000,
+        'height' => 2700,
+        'doors' => 3,
+    ],
+    [
+        'type' => 'left',
+        'width' => 5000,
+        'height' => 2700,
+        'doors' => 4,
+    ],
+    [
+        'type' => 'right',
+        'width' => 8000,
+        'height' => 3000,
+        'doors' => 8,
+    ],
+    [
+        'type' => 'center',
+        'width' => 16000,
+        'height' => 4000,
+        'doors' => 10,
+    ],
+    [
+        'type' => 'center',
+        'width' => 4500,
+        'height' => 2600,
+        'doors' => 4,
+    ],
+];
+$openingName = [
+    'left' => 'Левый проем',
+    'right' => 'Правый проем',
+    'center' => 'Центральный проем',
+    'inner-left' => 'Входная группа левая',
+    'inner-right' => 'Входная группа правая',
+    'blind-glazing' => 'Глухое остекление',
+    'triangle' => 'Треугольник',
+]
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title></title>
-    <style>
-        @page {
-            margin: 10px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title></title>
+<style>
+    @page {
+        margin: 10px;
+    }
+    .no-break {
+        page-break-inside: avoid; 
+        break-inside: avoid;
+    }
 
-        h1,
-        h2,
-        h3,
-        h4 {
-            font-size: 12px;
-            margin: 0;
-        }
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-size: 12px;
+        margin: 0;
+    }
 
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            margin: 0;
-            padding: 0;
-            font-size: 12px;
-        }
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            /* margin-bottom: 10px;
-            margin-top: 10px; */
-            font-size: 10px !important;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        /* margin-bottom: 10px;
+        margin-top: 10px; */
+        font-size: 10px !important;
+    }
 
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 4px;
-            text-align: left;
-            font-weight: normal;
-        }
+    table th,
+    table td {
+        border: 1px solid #ddd;
+        padding: 4px;
+        text-align: left;
+        font-weight: normal;
+    }
 
-        table th {
-            background-color: #f2f2f2;
-        }
+    table th {
+        background-color: #f2f2f2;
+    }
 
-        .nowrap {
-            white-space: nowrap;
-        }
+    .nowrap {
+        white-space: nowrap;
+    }
 
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-        }
+    .footer {
+        text-align: center;
+        margin-top: 20px;
+    }
 
-        .bold {
-            font-weight: bold;
-        }
+    .bold {
+        font-weight: bold;
+    }
 
-        .center {
-            text-align: center;
-        }
+    .center {
+        text-align: center;
+    }
 
-        .inline-block {
-            display: inline-block;
-        }
+    .inline-block {
+        display: inline-block;
+    }
 
-        .glass-top {
-            border: 1px solid rgb(0, 195, 255);
-            width: 86px;
-            height: 8px;
-            display: inline-block;
-            position: relative;
-        }
+    .glass-top {
+        border: 1px solid rgb(0, 195, 255);
+        width: 74px;
+        height: 8px;
+        display: inline-block;
+        position: relative;
+    }
 
-        .inner-view .glass-top {
-            width: 68px;
-            height: 140px;
-            position: relative;
-            font-size:8px;
-        }
-    </style>
+    .inner-view .glass-top {
+        width: 68px;
+        height: 140px;
+        position: relative;
+        font-size:8px;
+    }
+</style>
 </head>
 
 <body>
-    <h2>Документ стекла</h2>
-    <table>
-        <tbody>
-            <tr>
-                <td class="">№ Заявки</td>
-                <td class="bold center">6-123-TK</td>
-                <td class="">ТЕЛЕФОН</td>
-                <td class=" center">79893639325</td>
-                <td class="">ФИО</td>
-                <td class=" center">Филатов В.И.</td>
-                <td class="">ГОРОД</td>
-                <td class=" center">Баксан</td>
-            </tr>
-            <tr>
-                <td class="">Кол-во проемов</td>
-                <td class="bold center">3</td>
-                <td class="">Стекло</td>
-                <td class="bold center">M1</td>
-                <td class="">RAL</td>
-                <td class="bold center">8024</td>
-                <td class="">Кол-во стекол</td>
-                <td class="bold center">30</td>
-            </tr>
-        </tbody>
-    </table>
+<h2>Документ стекла</h2>
+<table>
+    <tbody>
+        <tr>
+            <td class="">№ Заявки</td>
+            <td class="bold center">6-123-TK</td>
+            <td class="">ТЕЛЕФОН</td>
+            <td class=" center">79893639325</td>
+            <td class="">ФИО</td>
+            <td class=" center">Филатов В.И.</td>
+            <td class="">ГОРОД</td>
+            <td class=" center">Баксан</td>
+        </tr>
+        <tr>
+            <td class="">Кол-во проемов</td>
+            <td class="bold center">3</td>
+            <td class="">Стекло</td>
+            <td class="bold center">M1</td>
+            <td class="">RAL</td>
+            <td class="bold center">8024</td>
+            <td class="">Кол-во стекол</td>
+            <td class="bold center">30</td>
+        </tr>
+    </tbody>
+</table>
 
-    <br>
+<br>
 
-    <div>
-        @foreach ([1,2,3] as $key => $value)
+<div>
+    @for ($oindex = 0; $oindex < count($openings); $oindex++)
+    @php
+        //central opening
+        $opening = $openings[$oindex];
+        $stvorki = $opening['doors'];
+        $gap = $opening['type'] == 'center' ? 119 : 130;
+        $doorsGap = [
+            'start' => 85,
+            'end' => 17,
+        ];
+        
+        $overlaps = $stvorki - 1;
+        $middle = intval(($overlaps * 13) / $stvorki);
+        $edges = intval(($overlaps * 13 - $middle * $stvorki) / 2 + $middle);
+        
+        $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
+        
+        $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
+        
+        $shirinaStvorok = [];
+    @endphp
+    <div class="no-break">
         <table>
             <tbody>
                 <tr>
-                    <td class="">Открывание правый 2 стекла</td>
+                    <td class="">{{ $openingName[$opening['type']] }} на {{ $opening['doors'] }} ств.</td>
                     <td class="">Проем №</td>
-                    <td class="bold center">1</td>
+                    <td class="bold center">{{ $oindex + 1 }}</td>
                     <td class="">Высота</td>
-                    <td class="bold center">3000</td>
+                    <td class="bold center">{{ $opening['height'] }}</td>
                     <td class="">Ширина</td>
-                    <td class="bold center">1500</td>
+                    <td class="bold center">{{ $opening['width'] }}</td>
                     <td>* По наименьшему размеру без учета завалов в проеме!</td>
                 </tr>
         </table>
         
         <br>
-
+    
         <div class="center" style="font-size: 10px;margin-top:6px;">
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
-                <div class="inline-block">
-                    <div>Стекло 5</div>
-                    <div class="glass-top"></div>
+            @if ($opening['type'] == 'center')
+                @for ($openingDoorsIndex = $stvorki / 2; $openingDoorsIndex >= 1; $openingDoorsIndex--)
+                @php
+                    $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
+                    
+                    if ($openingDoorsIndex == $stvorki / 2) {
+                        $temp += $doorsGap['start'];
+                    } else if ($openingDoorsIndex == 1) {
+                        $temp += $doorsGap['end'];
+                    }
+                    
+                    $shirinaStvorok[$openingDoorsIndex] = intval($temp);
+                    $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp);
+                @endphp
+                <div style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
+                    <div class="inline-block">
+                        <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
+                        <div class="glass-top"></div>
+                    </div>
+                    <div class="inline-block" style="width: calc(6px + {{ ($stvorki / 2 - $openingDoorsIndex) * 110 }});"></div>
+                    <div class="inline-block">
+                        <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
+                        <div class="glass-top"></div>
+                    </div>
                 </div>
-                <div class="inline-block" style="width: 6px;"></div>
-                <div class="inline-block">
-                    <div>Стекло 6</div>
-                    <div class="glass-top"></div>
+            @endfor
+            @elseif ($opening['type'] == 'left' || $opening['type'] == 'right')
+                @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki; $openingDoorsIndex++)
+                @php
+                    $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
+                    
+                    if ($openingDoorsIndex == $stvorki) {
+                        $temp += $doorsGap['start'];
+                    } else if ($openingDoorsIndex == 1) {
+                        $temp += $doorsGap['end'];
+                    }
+                    
+                    $shirinaStvorok[$openingDoorsIndex] = intval($temp);
+                @endphp
+                <div style="margin-left: {{ $opening['type'] == 'left' ? (($stvorki % 2) ? 0 : 55) : -55 }};display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
+                    @if ($stvorki / 2 > $openingDoorsIndex - 1)
+                        @if ($opening['type'] == 'right')
+                            <div class="inline-block" style="width: calc({{ abs(($openingDoorsIndex - 1) * 110 - intval($stvorki / 2) * 110) }});"></div>
+                        @endif
+                    @endif
+                    
+                    @if ($stvorki / 2 <= $openingDoorsIndex - 1 && $opening['type'] == 'left')
+                        <div class="inline-block" style="width: calc({{ (($openingDoorsIndex - 1) - intval($stvorki / 2)) * 110 }});"></div>
+                    @endif
+                    <div class="inline-block">
+                        {{-- <div>{{ abs(($openingDoorsIndex - 1) * 110 - intval($stvorki / 2) * 110) }} | {{ ($openingDoorsIndex - 1) * 110 }}</div> --}}
+                        <div>СТ{{ $openingDoorsIndex }}</div>
+                        <div class="glass-top"></div>
+                    </div>
+                    @if ($stvorki / 2 <= $openingDoorsIndex - 1)
+                        @if ($opening['type'] == 'right')
+                            <div class="inline-block" style="width: calc({{ (($openingDoorsIndex - 1) - intval($stvorki / 2)) * 110 }});"></div>
+                        @endif
+                    @endif
+                    
+                    @if ($stvorki / 2 > $openingDoorsIndex - 1 && $opening['type'] == 'left')
+                        <div class="inline-block" style="width: calc({{ abs(($openingDoorsIndex - 1) * 110 - intval($stvorki / 2) * 110) }});"></div>
+                    @endif
                 </div>
-            </div>
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
-                <div class="inline-block">
-                    <div>Стекло 4</div>
-                    <div class="glass-top"></div>
-                </div>
-                <div class="inline-block" style="width: calc(6px + 144px);"></div>
-                <div class="inline-block">
-                    <div>Стекло 7</div>
-                    <div class="glass-top"></div>
-                </div>
-            </div>
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
-                <div class="inline-block">
-                    <div>Стекло 3</div>
-                    <div class="glass-top"></div>
-                </div>
-                <div class="inline-block" style="width: calc(6px + 288px);"></div>
-                <div class="inline-block">
-                    <div>Стекло 8</div>
-                    <div class="glass-top"></div>
-                </div>
-            </div>
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
-                <div class="inline-block">
-                    <div>Стекло 2</div>
-                    <div class="glass-top"></div>
-                </div>
-                <div class="inline-block" style="width: calc(6px + 432px);"></div>
-                <div class="inline-block">
-                    <div>Стекло 9</div>
-                    <div class="glass-top"></div>
-                </div>
-            </div>
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: space-between;margin-top:-16px;width:100%;">
-                <div class="inline-block">
-                    <div>Стекло 1</div>
-                    <div class="glass-top"></div>
-                </div>
-                <div class="inline-block" style="width: calc(6px + 576px);"></div>
-                <div class="inline-block">
-                    <div>Стекло 10</div>
-                    <div class="glass-top"></div>
-                </div>
-            </div>
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-bottom:0px;width:100%;">
-                <div class="inline-block" style="margin-top:calc(-5 * 10px)">ВИД ИЗНУТРИ</div>
-            </div>
-    
+            @endfor
+            @endif
         </div>
     
-        <br>
-    
-        <div class="center inner-view" style="font-size: 10px;">
-            <div
-                style="display: flex; justify-content: center;align-items:center;justify-content: center;gap:16px;margin-bottom:0px;">
-                <div class="inline-block">
-                    <div>Стекло 1</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
+        <div class="center inner-view" style="font-size: 10px;margin-top:20px;">
+            <div style="display: flex; justify-content: center;align-items:center;justify-content: center;gap:16px;margin-bottom:0px;">
+                {{-- @php
+                    $for_temp = [
+                        'start' => $opening['type'] == 'right' ? $stvorki : 1,
+                        'end' => $opening['type'] == 'right' ? 1 : $stvorki
+                    ]
+                @endphp
+                @for ($i = $for_temp['start']; $i <= $for_temp['end']; $i = $opening['type'] == 'right' ? $i - 1 : $i + 1) --}}
+                @for ($i = 1; $i <= $stvorki; $i++)
+                    <div class="inline-block">
+                        <div>СТ{{ $i }}</div>
+                        <div class="glass-top" style="">
+                            <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$i] }}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 2</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 3</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 4</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 5</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-    
-                        @php
-                        $svg = '<svg
-        width="29"
-        height="106"
-        viewBox="0 0 34 86"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-      <!-- 
-        Scaled so the shape fits a 34×86 box.
-        Font size is smaller so text remains legible.
-      -->
-    
-      <!-- 1) Main vertical line (originally 95,108 → 95,523) -->
-      <line
-        x1="19.40" y1="17.14"
-        x2="19.40" y2="106"
-        stroke="black"
-        stroke-width="0.8"
-      />
-    
-      <!-- 2) Short horizontal line near top (95,108 → 123,108) -->
-      <line
-        x1="19.40"  y1="17.14"
-        x2="23.85"  y2="17.14"
-        stroke="black"
-        stroke-width="0.8"
-      />
-    
-      <!-- 3) Long horizontal line across the middle (0,340 → 156,340) -->
-      <line
-        x1="4.26"   y1="60"
-        x2="29.11"  y2="60"
-        stroke="black"
-        stroke-width="0.8"
-      />
-    
-      <!-- 4) Angled line (top-right slant) (123,108 → 15.406,0.406) -->
-      <line
-        x1="23.85"  y1="17.14"
-        x2="6.71"   y2="0.06"
-        stroke="black"
-        stroke-width="0.8"
-      />
-    
-      <rect
-        x="19.40"   y="60"
-        width="6.71"  height="6.71"
-        fill="none"
-        stroke="black"
-        stroke-width="0.8"
-      />
-    
-      <!-- 6) Labels (scaled down, smaller font-size) -->
-    
-      <!-- “1000” around mid-vertical -->
-      <text
-        x="-3" y="18"
-        transform="rotate(-90)"
-        font-family="sans-serif"
-        font-size="6"
-        text-anchor="end"
-      >
-        1000
-      </text>
-    
-      <!-- “500” near lower vertical -->
-      <text
-        x="-50.00" y="18"
-        transform="rotate(-90)"
-        font-family="sans-serif"
-        font-size="6"
-        text-anchor="end"
-      >
-        500
-      </text>
-    
-      <!-- “55” near the middle horizontal line -->
-      <text
-        x="39.00" y="57"
-        font-family="sans-serif"
-        font-size="6"
-        text-anchor="end"
-      >
-        55
-      </text>
-    
-      <!-- “⌀ 12” near the angled line -->
-      <text
-        x="10" y="-7"
-        transform="rotate(45)"
-        font-family="sans-serif"
-        font-size="6"
-      >
-        ⌀ 12
-      </text>
-    </svg>
-    ';
-                        @endphp
-                        <img src="data:image/jpeg;base64,{{ base64_encode($svg) }}" style="position: absolute;bottom:0;right:0;width:26px;height:90px">
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 6</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 7</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 8</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 9</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
-                <div class="inline-block">
-                    <div>Стекло 10</div>
-                    <div class="glass-top" style="">
-                        <span style="position: absolute;top: 50%;left: -10px;transform: rotate(-90deg);">4000мм</span>
-                        <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">2700мм</span>
-                    </div>
-                </div>
+                @endfor
             </div>
         </div>
-        @endforeach
     </div>
+    @endfor
+</div>
 </body>
 
 </html>

@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -54,11 +55,8 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
     
-    Route::get('/app/account/settings', function () {
-        return Inertia::render('App/Account/Settings', [
-            'user' => Auth::user(),
-        ]);
-    })->name('app.account.settings');
+    Route::get('/app/account/settings', [UserController::class, 'show'])->name('app.account.settings');
+    Route::post('/app/account/settings', [UserController::class, 'update'])->name('app.account.settings.update');
 });
 
 /*

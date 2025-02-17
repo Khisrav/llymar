@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, EllipsisVertical, Printer, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, EllipsisVertical, Printer, Ruler, ScrollText } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -48,7 +48,7 @@ const downloadCommercialOffer = async () => {
         }
 
         const response = await axios.post('/orders/commercial-offer', formData, {
-            responseType: 'blob', // Important: set responseType to 'blob'
+            responseType: 'blob',
             headers: { 'Content-Type': 'application/json' }
         })
 
@@ -80,7 +80,7 @@ const downloadListPDF = async () => {
         }
     
         const response = await axios.post('/orders/list-pdf-from-calc', formData, {
-            responseType: 'blob', // Important: set responseType to 'blob'
+            responseType: 'blob', 
             headers: { 'Content-Type': 'application/json' }
         })
     
@@ -91,9 +91,37 @@ const downloadListPDF = async () => {
         link.setAttribute('download', `list_${new Date().toISOString().split('T')[0]}.pdf`)
         document.body.appendChild(link)
         link.click()
+        
+        link.parentNode.removeChild(link)
     } catch (error) {
         console.error('Error downloading the PDF:', error)
         alert('Ошибка скачивания PDF')
+    }
+}
+
+const downloadSketchPDF = async () => {
+    try {
+        const formData = {
+            openings: openingsStore.openings,
+        }
+    
+        const response = await axios.post('/app/order/sketch', formData, {
+            responseType: 'blob',
+            headers: { 'Content-Type': 'application/json' }
+        })
+    
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+    
+        link.href = url
+        link.setAttribute('download', `sketch_${new Date().toISOString().split('T')[0]}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        
+        link.parentNode.removeChild(link)
+    } catch (error) {
+            console.error('Error downloading the PDF:', error)
+            alert('Ошибка скачивания PDF')
     }
 }
 </script>
@@ -121,6 +149,10 @@ const downloadListPDF = async () => {
                         <DropdownMenuItem @click="downloadListPDF">
                             <ScrollText class="size-4" />
                             <span>Перечень</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="downloadSketchPDF">
+                            <Ruler class="size-4" />
+                            <span>Чертеж</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

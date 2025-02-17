@@ -95,38 +95,38 @@ $svg = '<svg
   </text>
 </svg>
 ';
-$openings = [
-    [
-        'type' => 'left',
-        'width' => 5000,
-        'height' => 2700,
-        'doors' => 3,
-    ],
-    [
-        'type' => 'left',
-        'width' => 5000,
-        'height' => 2700,
-        'doors' => 4,
-    ],
-    [
-        'type' => 'right',
-        'width' => 8000,
-        'height' => 3000,
-        'doors' => 8,
-    ],
-    [
-        'type' => 'center',
-        'width' => 16000,
-        'height' => 4000,
-        'doors' => 10,
-    ],
-    [
-        'type' => 'center',
-        'width' => 4500,
-        'height' => 2600,
-        'doors' => 4,
-    ],
-];
+// $openings = [
+//     [
+//         'type' => 'left',
+//         'width' => 5000,
+//         'height' => 2700,
+//         'doors' => 3,
+//     ],
+//     [
+//         'type' => 'left',
+//         'width' => 5000,
+//         'height' => 2700,
+//         'doors' => 4,
+//     ],
+//     [
+//         'type' => 'right',
+//         'width' => 8000,
+//         'height' => 3000,
+//         'doors' => 8,
+//     ],
+//     [
+//         'type' => 'center',
+//         'width' => 16000,
+//         'height' => 4000,
+//         'doors' => 10,
+//     ],
+//     [
+//         'type' => 'center',
+//         'width' => 4500,
+//         'height' => 2600,
+//         'doors' => 4,
+//     ],
+// ];
 $openingName = [
     'left' => 'Левый проем',
     'right' => 'Правый проем',

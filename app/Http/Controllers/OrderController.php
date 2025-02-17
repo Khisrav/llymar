@@ -217,9 +217,15 @@ class OrderController extends Controller
      */
     public static function sketchPDF(Request $request)
     {
-        $pdf = Pdf::loadView('orders.sketch_pdf')
-                  ->setPaper('a4', 'portrait')
-                  ->setOptions(['isRemoteEnabled' => true]);
+        $request->validate([
+            'openings' => 'required|array',
+        ]);
+    
+        $pdf = Pdf::loadView('orders.sketch_pdf', [
+            'openings' => $request->openings,
+        ])
+        ->setPaper('a4', 'portrait')
+        ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
 

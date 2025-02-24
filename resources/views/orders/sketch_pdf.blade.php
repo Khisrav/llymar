@@ -268,14 +268,19 @@ $openingName = [
             'end' => 17,
         ];
         
-        $overlaps = $stvorki - 1;
-        $middle = intval(($overlaps * 13) / $stvorki);
-        $edges = intval(($overlaps * 13 - $middle * $stvorki) / 2 + $middle);
+        $overlaps = $stvorki / ($opening['type'] == 'center' ? 2 : 1) - 1;
+        $middle = intval(($overlaps * 13) / ($stvorki / ($opening['type'] == 'center' ? 2 : 1)));
+        
+        if ($opening['type'] == 'center') {
+            $edges = intval(($overlaps * 13 - $middle * ($stvorki / 2 - 2)) / 2);
+        } else {
+            $edges = intval(($overlaps * 13 - $middle * ($stvorki - 2)) / 2);
+        }
         
         $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
         
         $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
-        
+
         $shirinaStvorok = [];
     @endphp
     <div class="no-break">
@@ -297,7 +302,7 @@ $openingName = [
     
         <div class="center" style="font-size: 10px;margin-top:6px;">
             @if ($opening['type'] == 'center')
-                @for ($openingDoorsIndex = $stvorki / 2; $openingDoorsIndex >= 1; $openingDoorsIndex--)
+                @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++)
                 @php
                     $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
                     
@@ -312,18 +317,20 @@ $openingName = [
                 @endphp
                 <div style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
                     <div class="inline-block">
+                        {{-- <div>С{{ $middle }} | К{{ $edges }} |  </div> --}}
                         <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
                         <div class="glass-top"></div>
                     </div>
                     <div class="inline-block" style="width: calc(6px + {{ ($stvorki / 2 - $openingDoorsIndex) * 110 }});"></div>
                     <div class="inline-block">
+                        {{-- <div>С{{ $middle }} | К{{ $edges }}</div> --}}
                         <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
                         <div class="glass-top"></div>
                     </div>
                 </div>
             @endfor
             @elseif ($opening['type'] == 'left' || $opening['type'] == 'right')
-                @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki; $openingDoorsIndex++)
+                @for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--)
                 @php
                     $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
                     
@@ -346,6 +353,7 @@ $openingName = [
                         <div class="inline-block" style="width: calc({{ (($openingDoorsIndex - 1) - intval($stvorki / 2)) * 110 }});"></div>
                     @endif
                     <div class="inline-block">
+                        {{-- <div>С{{ $middle }} | К{{ $edges }}</div> --}}
                         {{-- <div>{{ abs(($openingDoorsIndex - 1) * 110 - intval($stvorki / 2) * 110) }} | {{ ($openingDoorsIndex - 1) * 110 }}</div> --}}
                         <div>СТ{{ $openingDoorsIndex }}</div>
                         <div class="glass-top"></div>

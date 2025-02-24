@@ -231,6 +231,20 @@ class OrderController extends Controller
 
         return $pdf->stream($pdfName);
     }
+    
+    public static function sketcherPage($order_id) {
+        // $request->validate([
+        //     'order_id' => 'required|integer',
+        // ]);
+        
+        $order = Order::findOrFail($order_id);
+        $openings = $order->orderOpenings;
+        
+        return Inertia::render('App/Order/Sketcher', [
+            'order' => $order,
+            'openings' => $openings,
+        ]);
+    }
 
     /* -------------------------------------------------------------------------
      *  PRIVATE & PROTECTED METHODS

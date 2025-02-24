@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/account/settings', [UserController::class, 'show'])->name('app.account.settings');
     Route::post('/app/account/settings', [UserController::class, 'update'])->name('app.account.settings.update');
     
+    Route::get('/app/orders/sketcher/{order_id}', [OrderController::class, 'sketcherPage'])->name('app.sketcher');
     Route::post('/app/order/sketch', [OrderController::class, 'sketchPDF'])->name('app.sketch');
 });
 

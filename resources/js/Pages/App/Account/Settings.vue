@@ -61,7 +61,7 @@ const updateUser = () => {
 			    <div>
 			        <Label class="font-bold">Фактический адрес</Label>
     			    <p class="text-sm text-muted-foreground mb-4">Фактический адрес необходим для доставки товаров и документов.</p>
-    			    <Input v-model="form.company" type="text" class="shadow-sm" />
+    			    <Input v-model="form.address" type="text" class="shadow-sm" />
 			    </div>
 			</div>
 

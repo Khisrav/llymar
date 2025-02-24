@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
-import { ArrowLeft, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon } from "lucide-vue-next";
+import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon } from "lucide-vue-next";
 import { ref, computed } from "vue";
 import { Order, Pagination } from "../../lib/types";
 import Table from "../../Components/ui/table/Table.vue";
@@ -37,6 +37,10 @@ const formatDate = (dateString: string) => {
 declare const window: any;
 const downloadListPDF = (order_id: number) => {
 	return window.open("/orders/" + order_id + "/list-pdf", "_blank").focus();
+}
+
+const visitSketcherPage = (order_id: number) => {
+	window.location.href = "/app/orders/sketcher/" + order_id;
 }
 </script>
 
@@ -102,6 +106,10 @@ const downloadListPDF = (order_id: number) => {
 								            <DropdownMenuItem>
 								                    <ReceiptRussianRubleIcon class="size-4" />
 								                    <span>Счет PDF</span>
+								            </DropdownMenuItem>
+								            <DropdownMenuItem @click="visitSketcherPage(order.id)">
+								                <DraftingCompassIcon class="size-4" />
+								                <span>Чертеж</span>
 								            </DropdownMenuItem>
 								        </DropdownMenuContent>
 								    </DropdownMenu>

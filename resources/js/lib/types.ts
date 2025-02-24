@@ -19,6 +19,7 @@ export interface OpeningImages {
 }
 
 export interface Opening {
+    id?: number;
     name?: string;
     doors: number;
     width: number;

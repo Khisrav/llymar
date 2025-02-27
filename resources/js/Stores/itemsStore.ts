@@ -185,11 +185,19 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
                 
         servicesID.forEach(serviceID => {
-            //386 & 388 это покраска и распил соответственно
-            if  ([386, 388].includes(serviceID)) {
-                console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
+            //388 это распил
+            if  ([388].includes(serviceID)) {
+                // console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
                 cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) }
             } 
+            else if (serviceID == 386) {
+                let q = 0
+                const m_p_ = [390, 391, 392, 393, 394, 395, 400, 401, 402, 407, 408]
+                m_p_.forEach(mp => {
+                    q += cartItems.value[mp]?.quantity || 0
+                })
+                cartItems.value[serviceID] = { quantity: q }
+            }
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
                 cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { width, height }) => {

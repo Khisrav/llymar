@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use App\Models\OrderOpening;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -74,21 +75,30 @@ class OpeningsRelationManager extends RelationManager
                         'triangle' => 'Треугольник',
                     ])
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextInputColumn::make('doors')
+                Tables\Columns\TextColumn::make('doors')
                     ->label('Створки')
                     ->sortable()
-                    ->type('number')
+                    ->suffix(' ств.')
+                    // ->type('number')
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextInputColumn::make('height')
-                    ->label('Высота (мм)')
+                Tables\Columns\TextColumn::make('height')
+                    ->label('Высота')
                     ->sortable()
-                    ->type('number')
+                    ->suffix('мм')
+                    // ->type('number')
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextInputColumn::make('width')
-                    ->label('Ширина (мм)')
+                Tables\Columns\TextColumn::make('width')
+                    ->label('Ширина')
                     ->sortable()
-                    ->type('number')
+                    ->suffix('мм')
+                    // ->type('number')
                     ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('Параметры')
+                    ->wrap()
+                    ->formatStateUsing(function (OrderOpening $record) {
+                        return 'a: ' . $record->a . 'мм, b: ' . $record->b . 'мм, c: ' . $record->c . 'мм, d: ' . $record->d . 'мм, e: ' . $record->e . 'мм, f: ' . $record->f . 'мм, g: ' . $record->g . 'мм, i: ' . $record->i . 'мм';
+                    }),
             ])
             ->filters([
                 //
@@ -97,7 +107,7 @@ class OpeningsRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

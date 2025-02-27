@@ -136,6 +136,8 @@ $openingName = [
     'blind-glazing' => 'Глухое остекление',
     'triangle' => 'Треугольник',
 ]
+
+$glass_counter = 0;
 @endphp
 <!DOCTYPE html>
 <html lang="en">

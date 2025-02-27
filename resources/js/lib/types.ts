@@ -25,6 +25,16 @@ export interface Opening {
     width: number;
     height: number;
     type: keyof OpeningType;
+    
+    //parameters
+    a?: number;
+    b?: number;
+    c?: number;
+    d?: number;
+    e?: number;
+    f?: number;
+    g?: number;
+    i?: number;
 }
 
 export interface Item {

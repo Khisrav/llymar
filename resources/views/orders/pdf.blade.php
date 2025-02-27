@@ -119,7 +119,6 @@
         <thead>
             <tr>
                 <th>№</th>
-                <th>Арт.</th>
                 <th>Картинка</th>
                 <th>Деталь</th>
                 <th>Кол-во</th>
@@ -134,18 +133,16 @@
             @foreach($orderItems as $item)
                 <tr>
                     <td>{{ ++$count }}</td>
-                    <td>{{ $item->item->vendor_code ?? '-' }}</td>
                     <td>
                         <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" width="48">
                     </td>
-                    <td>{{ $item->item->name }}</td>
+                    <td>{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
                     <td>{{ $item->quantity }} {{ $item->item->unit }}</td>
                     <td>{{ number_format($item->itemTotalPrice / $item->quantity, 0, '.', ' ') }} ₽</td>
                     <td>{{ number_format($item->itemTotalPrice, 0, '.', ' ') }} ₽</td>
                 </tr>
             @endforeach
             <tr>
-                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>

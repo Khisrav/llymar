@@ -1,1 +1,1 @@
-export const getImageSource = (image: string): string => `/storage${image.startsWith('/') ? '' : '/'}${image}`;
+export const getImageSource = (image: string): string => image ? `/storage${image.startsWith('/') ? '' : '/'}${image}` : 'https://fakeimg.pl/400x300/e0e0e0/bababa?text=llymar'

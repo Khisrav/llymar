@@ -5,24 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OrderOpening extends Model
+class OpeningParameters extends Model
 {
-    protected $fillable = [
-        'order_id',
-        'name',
-        'type',
-        'doors',
-        'width',
-        'height',
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'f',
-        'g',
-        'i',
-    ];
+    protected $fillable = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i'];
     
     /**
      * Relationship: OrderOpening belongs to an Order.

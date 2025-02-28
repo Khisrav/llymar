@@ -66,7 +66,8 @@ Route::middleware(['auth'])->group(function () {
 /*
  *  SOCIALITE ROUTES
  */
-Route::get('login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
-Route::get('login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
+Route::get('/login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
+Route::get('/login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
+Route::get('/logout', [SocialiteController::class, 'logout'])->name('logout');
 
 require __DIR__.'/auth.php';

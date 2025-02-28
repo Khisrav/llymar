@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
-use Illuminate\Support\Str;
-use App\Models\AuthProvider;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use App\Models\AuthProvider;
+use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
@@ -39,7 +37,9 @@ class SocialiteController extends Controller
 
     protected function findUser($socialiteUser, $provider)
     {
-        $authProvider = AuthProvider::where('provider', $provider)->where('provider_id', $socialiteUser->id)->first();
+        $authProvider = AuthProvider::where('provider', $provider)
+            ->where('provider_id', $socialiteUser->id)
+            ->first();
 
         if ($authProvider) {
             return User::find($authProvider->user_id);
@@ -47,18 +47,24 @@ class SocialiteController extends Controller
 
         $user = User::where('email', $socialiteUser->email)->first();
 
-        if (!$user) {
-            // User does not exist in the users table
-            return null;
-        }
+        if (!$user) { return null; }
 
-        // Create a new AuthProvider entry
         AuthProvider::create([
-            'provider' => $provider,
+            'provider'    => $provider,
             'provider_id' => $socialiteUser->id,
-            'user_id' => $user->id,
+            'user_id'     => $user->id,
         ]);
 
         return $user;
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }

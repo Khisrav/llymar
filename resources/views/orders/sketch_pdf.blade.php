@@ -135,7 +135,7 @@ $openingName = [
     'inner-right' => 'Входная группа правая',
     'blind-glazing' => 'Глухое остекление',
     'triangle' => 'Треугольник',
-]
+];
 
 $glass_counter = 0;
 @endphp

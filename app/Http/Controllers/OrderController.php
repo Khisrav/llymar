@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Category;
@@ -14,154 +16,140 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
     /**
-     * Display a listing of the user's orders.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Inertia\Response
+     * Display a listing of the authenticated user's orders.
      */
     public function index(Request $request)
     {
+        $orders = Order::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return Inertia::render('App/History', [
-            'orders' => Order::where('user_id', auth()->id())
-                ->orderBy('created_at', 'desc')
-                ->paginate(10),
+            'orders' => $orders,
         ]);
     }
 
     /**
-     * Store a newly created order in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Store a newly created order.
      */
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name'         => 'required|string|max:255',
-            'phone'        => 'required|string',
-            'address'      => 'required|string',
-            'email'        => 'required|email',
-            'cart_items'   => 'required|array',
-            'openings'     => 'required|array',
-            'total_price'  => 'required|numeric',
-            'ral_code'     => 'string',
+            'name'        => 'required|string|max:255',
+            'phone'       => 'required|string',
+            'address'     => 'required|string',
+            'email'       => 'required|email',
+            'cart_items'  => 'required|array',
+            'openings'    => 'required|array',
+            'total_price' => 'required|numeric',
+            'ral_code'    => 'string|nullable',
         ]);
 
         try {
-            DB::beginTransaction();
+            // Wrap the order creation and associated items in a DB transaction.
+            $order = DB::transaction(function () use ($fields) {
+                $order = $this->createOrder($fields);
+                $this->createOrderItems($order, $fields['cart_items']);
+                $this->createOrderOpenings($order, $fields['openings']);
+                return $order;
+            });
 
-            $order = $this->createOrder($fields);
-
-            $this->createOrderItems($order, $fields['cart_items']);
-
-            $this->createOrderOpenings($order, $fields['openings']);
-
-            DB::commit();
-
+            // Send Telegram notification after transaction commit.
             $this->notifyViaTelegram($order);
 
             return redirect()->route('app.history');
         } catch (\Exception $e) {
-            DB::rollBack();
-
             Log::error("Order creation failed", [
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString(),
             ]);
-
-            return back()->withErrors(['error' => 'Order creation failed. Please try again later.']);
+            return back()->withErrors([
+                'error' => 'Order creation failed. Please try again later.',
+            ]);
         }
     }
 
     /**
-     * Generate and download PDF for an existing order.
-     *
-     * @param  int  $orderId
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * Generate and download PDF for a saved order.
      */
-    public static function listPDF($orderId)
+    public static function listPDF(int $orderId)
     {
-        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($orderId);
+        $order = Order::with(['orderOpenings', 'orderItems.item'])
+            ->findOrFail($orderId);
 
         $data = self::preparePdfData($order);
         $pdf = Pdf::loadView('orders.pdf', $data)
-                  ->setPaper('a4', 'portrait')
-                  ->setOptions(['isRemoteEnabled' => true]);
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "order_{$order->order_number}_" . date('Y-m-d') . ".pdf";
-
         return $pdf->download($pdfName);
     }
 
     /**
-     * Generate and download PDF without persisting an order (e.g., from a calculator).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * Generate and download PDF for a temporary order (e.g., from a calculator).
      */
     public static function listFromCalcPDF(Request $request)
     {
         $fields = $request->validate([
-            'name'         => 'required|string|max:255',
-            'phone'        => 'required|string',
-            'address'      => 'required|string',
-            'email'        => 'required|email',
-            'cart_items'   => 'required|array',
-            'openings'     => 'required|array',
-            'total_price'  => 'required|numeric',
+            'name'        => 'required|string|max:255',
+            'phone'       => 'required|string',
+            'address'     => 'required|string',
+            'email'       => 'required|email',
+            'cart_items'  => 'required|array',
+            'openings'    => 'required|array',
+            'total_price' => 'required|numeric',
         ]);
 
-        // Create a temporary Order model instance (not persisted)
+        // Create a temporary Order instance (not persisted)
         $order = new Order([
-            'user_id'           => auth()->id(),
-            'customer_name'     => $fields['name'],
-            'customer_phone'    => $fields['phone'],
-            'customer_address'  => $fields['address'],
-            'customer_email'    => $fields['email'],
-            'total_price'       => $fields['total_price'],
+            'user_id'          => auth()->id(),
+            'customer_name'    => $fields['name'],
+            'customer_phone'   => $fields['phone'],
+            'customer_address' => $fields['address'],
+            'customer_email'   => $fields['email'],
+            'total_price'      => $fields['total_price'],
         ]);
 
-        // Build a mock list of order items
-        $orderItems = collect($fields['cart_items'])->map(function ($item, $itemID) {
+        // Map cart items to include item details and computed total price.
+        $orderItems = array_map(function ($item, $itemID) {
+            $product = Item::findOrFail($itemID);
             return (object)[
-                'item_id' => $itemID,
-                'item'    => Item::findOrFail($itemID),
-                'quantity' => $item['quantity'],
+                'item_id'        => $itemID,
+                'item'           => $product,
+                'quantity'       => $item['quantity'],
+                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID),
             ];
-        })->toArray();
+        }, $fields['cart_items'], array_keys($fields['cart_items']));
 
-        // Build a mock list of openings
-        $orderOpenings = collect($fields['openings'])->map(function ($opening) {
+        // Map openings.
+        $orderOpenings = array_map(function ($opening) {
             return (object)[
                 'type'   => $opening['type'],
                 'doors'  => $opening['doors'],
                 'width'  => $opening['width'],
                 'height' => $opening['height'],
             ];
-        })->toArray();
+        }, $fields['openings']);
 
         $data = self::preparePdfData($order, $orderItems, $orderOpenings);
-
         $pdf = Pdf::loadView('orders.pdf', $data)
-                  ->setPaper('a4', 'portrait')
-                  ->setOptions(['isRemoteEnabled' => true]);
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "order_" . ($order->order_number ?? 'temp') . "_" . date('Y-m-d') . ".pdf";
-
         return $pdf->download($pdfName);
     }
 
     /**
      * Generate and download a commercial offer PDF.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Response
      */
     public static function commercialOfferPDF(Request $request)
     {
@@ -178,7 +166,6 @@ class OrderController extends Controller
         ]);
 
         $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
-
         $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;
 
         $user = auth()->user();
@@ -191,14 +178,14 @@ class OrderController extends Controller
         });
 
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', [
-            'offer'                 => $offer,
-            'offer_additionals_price' => $offerAdditionalsPrice,
-            'offer_openings_price'  => $offerOpeningsPrice,
-            'wholesaleFactor'       => $wholesaleFactor,
-            'reductionFactors'      => $reductionFactors,
-        ])
-        ->setPaper('a4', 'portrait')
-        ->setOptions(['isRemoteEnabled' => true]);
+                'offer'                   => $offer,
+                'offer_additionals_price' => $offerAdditionalsPrice,
+                'offer_openings_price'    => $offerOpeningsPrice,
+                'wholesaleFactor'         => $wholesaleFactor,
+                'reductionFactors'        => $reductionFactors,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "offer_" . ($request->order_number ?? 'temp') . "_" . date('Y-m-d') . ".pdf";
         $pdfContent = $pdf->output();
@@ -210,64 +197,89 @@ class OrderController extends Controller
     }
 
     /**
-     * Generate and view a sketch PDF (streams it to the browser).
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * Generate and download a sketch PDF.
      */
     public static function sketchPDF(Request $request)
     {
         $request->validate([
             'openings' => 'required|array',
         ]);
-    
+        
+        if ($request->saveData == true) {
+            self::saveSketch($request);
+        }
+
         $pdf = Pdf::loadView('orders.sketch_pdf', [
-            'openings' => $request->openings,
-        ])
-        ->setPaper('a4', 'portrait')
-        ->setOptions(['isRemoteEnabled' => true]);
+                'openings' => $request->openings,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
-
-        return $pdf->stream($pdfName);
+        return $pdf->download($pdfName);
     }
-    
-    public static function sketcherPage($order_id) {
-        // $request->validate([
-        //     'order_id' => 'required|integer',
-        // ]);
-        
+
+    /**
+     * Render the sketcher page with the order and its openings.
+     */
+    public static function sketcherPage(int $order_id)
+    {
         $order = Order::findOrFail($order_id);
         $openings = $order->orderOpenings;
-        
+
         return Inertia::render('App/Order/Sketcher', [
-            'order' => $order,
+            'order'    => $order,
             'openings' => $openings,
         ]);
     }
 
-    /* -------------------------------------------------------------------------
-     *  PRIVATE & PROTECTED METHODS
-     * ------------------------------------------------------------------------- */
+    /**
+     * Save sketch data for a specific order opening.
+     */
+    public static function saveSketch(Request $request)
+    {
+        $validated = $request->validate([
+            'openings' => 'required|array',
+            // 'openings.*.id' => 'required|integer|exists:order_openings,id',
+        ]);
+        
+        Log::info($validated);
+    
+        $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i'];
+    
+        foreach ($validated['openings'] as $openingData) {
+            $orderOpening = OrderOpening::findOrFail($openingData['id']);
+            foreach ($openingData as $key => $value) {
+                if (in_array($key, $allowedKeys)) {
+                    $orderOpening->{$key} = is_array($value) ? $value[0] : $value;
+                }
+            }
+            Log::info($orderOpening);
+            $orderOpening->save();
+        }
+    
+        // return redirect()->route('app.history');
+    }
+
+
+    /* ------------------------ PRIVATE METHODS ------------------------ */
 
     /**
-     * Create and return a new Order model.
-     *
-     * @param  array  $data
-     * @return \App\Models\Order
+     * Create and return a new Order.
      */
     private function createOrder(array $data): Order
     {
         $order = Order::create([
-            'user_id'           => auth()->id(),
-            'customer_name'     => $data['name'],
-            'customer_phone'    => $data['phone'],
-            'customer_address'  => $data['address'],
-            'customer_email'    => $data['email'],
-            'total_price'       => $data['total_price'],
-            'ral_code'          => $data['ral_code'],
+            'user_id'          => auth()->id(),
+            'customer_name'    => $data['name'],
+            'customer_phone'   => $data['phone'],
+            'customer_address' => $data['address'],
+            'customer_email'   => $data['email'],
+            'total_price'      => $data['total_price'],
+            'ral_code'         => $data['ral_code'] ?? null,
         ]);
 
+        // Generate a simple order number.
         $order->order_number = '6-' . $order->id;
         $order->save();
 
@@ -275,11 +287,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Create order items.
-     *
-     * @param  \App\Models\Order  $order
-     * @param  array  $cartItems
-     * @return void
+     * Create order items from cart data.
      */
     private function createOrderItems(Order $order, array $cartItems): void
     {
@@ -293,15 +301,11 @@ class OrderController extends Controller
     }
 
     /**
-     * Create order openings.
-     *
-     * @param  \App\Models\Order  $order
-     * @param  array  $openings
-     * @return void
+     * Create order openings from the provided array.
      */
     private function createOrderOpenings(Order $order, array $openings): void
     {
-        $orderOpenings = collect($openings)->map(function ($opening) use ($order) {
+        $orderOpenings = array_map(function ($opening) use ($order) {
             return [
                 'order_id'   => $order->id,
                 'name'       => '',
@@ -312,30 +316,29 @@ class OrderController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-        })->toArray();
+        }, $openings);
 
         OrderOpening::insert($orderOpenings);
     }
 
     /**
-     * Send a notification via Telegram for a created order.
-     *
-     * @param  \App\Models\Order  $order
-     * @return bool
+     * Send a notification via Telegram for a new order.
      */
     private function notifyViaTelegram(Order $order): bool
     {
         $botToken = config('services.telegram.bot_token', env('TELEGRAM_BOT_TOKEN'));
         $chatId   = config('services.telegram.chat_id', env('TELEGRAM_CHAT_ID'));
 
-        $message  = "<b>Новый заказ №{$order->order_number}</b>\n\n";
-        $message .= "ФИО получателя: {$order->customer_name}\n";
-        $message .= "Телефон: <a href='tel:{$order->customer_phone}'>{$order->customer_phone}</a>\n\n";
+        $message = "<b>Новый заказ №{$order->order_number}</b>\n\n" .
+                   "ФИО получателя: {$order->customer_name}\n" .
+                   "Телефон: <a href='tel:{$order->customer_phone}'>{$order->customer_phone}</a>\n\n";
+
         if ($order->comment) {
             $message .= "<u>Комментарий:</u> <i>{$order->comment}</i>\n";
         }
-        $message .= "<u>Общая стоимость: </u> <code>{$order->total_price}₽</code>\n\n";
-        $message .= "<a href='" . url("/orders/" . $order->id . "/invoice-pdf") . "'>Ссылка на PDF</a>";
+
+        $message .= "<u>Общая стоимость: </u> <code>{$order->total_price}₽</code>\n\n" .
+                    "<a href='" . url("/orders/{$order->id}/invoice-pdf") . "'>Ссылка на PDF</a>";
 
         try {
             $response = Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
@@ -350,47 +353,43 @@ class OrderController extends Controller
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString(),
             ]);
-
             return false;
         }
     }
 
     /**
-     * Prepare data for the main PDF generation.
-     *
-     * @param  \App\Models\Order  $order
-     * @param  array|null         $orderItems
-     * @param  array|null         $orderOpenings
-     * @return array
+     * Prepare data for PDF generation.
      */
-    private static function preparePdfData(Order $order, array $orderItems = null, array $orderOpenings = null): array
-    {
-        // If $orderItems is null, it means we are generating PDF for a saved order
+    private static function preparePdfData(
+        Order $order,
+        ?array $orderItems = null,
+        ?array $orderOpenings = null
+    ): array {
+        // Prepare order items.
         if (is_null($orderItems)) {
             $orderItems = $order->orderItems->map(function ($orderItem) {
-                return (object) [
-                    'item_id'         => $orderItem->item_id,
-                    'item'            => $orderItem->item,
-                    'quantity'        => $orderItem->quantity,
-                    'itemTotalPrice'  => $orderItem->quantity * Item::itemPrice($orderItem->item_id),
+                return (object)[
+                    'item_id'        => $orderItem->item_id,
+                    'item'           => $orderItem->item,
+                    'quantity'       => $orderItem->quantity,
+                    'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id),
                 ];
             })->toArray();
         } else {
-            // Otherwise, we're generating PDF for a temporary order
-            $orderItems = collect($orderItems)->map(function ($item) {
-                return (object) [
-                    'item_id'         => $item->item_id,
-                    'item'            => $item->item,
-                    'quantity'        => $item->quantity,
-                    'itemTotalPrice'  => $item->quantity * Item::itemPrice($item->item_id),
+            $orderItems = array_map(function ($item) {
+                return (object)[
+                    'item_id'        => $item->item_id,
+                    'item'           => $item->item,
+                    'quantity'       => $item->quantity,
+                    'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id),
                 ];
-            })->toArray();
+            }, $orderItems);
         }
 
-        // If $orderOpenings is null, it means we are generating PDF for a saved order
+        // Prepare order openings.
         if (is_null($orderOpenings)) {
             $orderOpenings = $order->orderOpenings->map(function ($opening) {
-                return (object) [
+                return (object)[
                     'type'   => $opening->type,
                     'doors'  => $opening->doors,
                     'width'  => $opening->width,
@@ -398,15 +397,14 @@ class OrderController extends Controller
                 ];
             })->toArray();
         } else {
-            // Otherwise, we're generating PDF for a temporary order
-            $orderOpenings = collect($orderOpenings)->map(function ($opening) {
-                return (object) [
+            $orderOpenings = array_map(function ($opening) {
+                return (object)[
                     'type'   => $opening->type,
                     'doors'  => $opening->doors,
                     'width'  => $opening->width,
                     'height' => $opening->height,
                 ];
-            })->toArray();
+            }, $orderOpenings);
         }
 
         return [
@@ -418,9 +416,6 @@ class OrderController extends Controller
 
     /**
      * Calculate the price of additional items and services for a commercial offer.
-     *
-     * @param  array  $offer
-     * @return float
      */
     private static function calculateOfferAdditionalsPrice(array $offer): float
     {
@@ -434,8 +429,7 @@ class OrderController extends Controller
             }
         }
 
-        $services = $offer['services'] ?? [];
-        foreach ($services as $service) {
+        foreach ($offer['services'] ?? [] as $service) {
             if (isset($offer['cart_items'][$service['id']])) {
                 $price = Item::itemPrice($service['id']);
                 $quantity = $offer['cart_items'][$service['id']]['quantity'];

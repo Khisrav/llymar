@@ -59,13 +59,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/app/account/settings', [UserController::class, 'update'])->name('app.account.settings.update');
     
     Route::get('/app/orders/sketcher/{order_id}', [OrderController::class, 'sketcherPage'])->name('app.sketcher');
-    Route::post('/app/order/sketch', [OrderController::class, 'sketchPDF'])->name('app.sketch');
+    Route::post('/app/order/sketch/download', [OrderController::class, 'sketchPDF'])->name('app.sketch');
+    Route::post('/app/order/sketch/save', [OrderController::class, 'saveSketch'])->name('app.save.sketch');
 });
 
 /*
  *  SOCIALITE ROUTES
  */
-Route::get('login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
-Route::get('login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
+Route::get('/login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
+Route::get('/login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
+Route::get('/logout', [SocialiteController::class, 'logout'])->name('logout');
 
 require __DIR__.'/auth.php';

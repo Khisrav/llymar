@@ -19,40 +19,102 @@ class OpeningsRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('order_id')
-                    ->required()
-                    ->label('ID заказа')
-                    ->disabled()
-                    ->maxLength(255),
-                Forms\Components\Select::make('type')
-                    ->required()
-                    ->label('Тип проема')
-                    ->native(false)
-                    ->options([
-                        'left' => 'Левый проем',
-                        'right' => 'Правый проем',
-                        'center' => 'Центральный проем',
-                        'inner-left' => 'Входная группа левая',
-                        'inner-right' => 'Входная группа правая',
-                        'blind-glazing' => 'Глухое остекление',
-                        'triangle' => 'Треугольник',
-                    ]),
-                Forms\Components\TextInput::make('doors')
-                    ->required()
-                    ->label('Кол-во створок')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('width')
-                    ->required()
-                    ->label('Ширина (мм)')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('height')
-                    ->required()
-                    ->label('Высота (мм)')
-                    ->maxLength(255),
-            ]);
+        return $form->schema([
+            // Basic opening fields
+            Forms\Components\Fieldset::make('Основные данные')
+                ->schema([
+                    Forms\Components\TextInput::make('order_id')
+                        ->label('ID заказа')
+                        ->disabled()
+                        ->maxLength(255),
+    
+                    Forms\Components\Select::make('type')
+                        ->label('Тип проема')
+                        ->native(false)
+                        ->options([
+                            'left'           => 'Левый проем',
+                            'right'          => 'Правый проем',
+                            'center'         => 'Центральный проем',
+                            'inner-left'     => 'Входная группа левая',
+                            'inner-right'    => 'Входная группа правая',
+                            'blind-glazing'  => 'Глухое остекление',
+                            'triangle'       => 'Треугольник',
+                        ])
+                        ->required(),
+    
+                    Forms\Components\TextInput::make('doors')
+                        ->label('Кол-во створок')
+                        ->required()
+                        ->maxLength(255),
+    
+                    Forms\Components\TextInput::make('width')
+                        ->label('Ширина (мм)')
+                        ->required()
+                        ->maxLength(255),
+    
+                    Forms\Components\TextInput::make('height')
+                        ->label('Высота (мм)')
+                        ->required()
+                        ->maxLength(255),
+                ]),
+    
+            // Opening parameter fields (a, b, c, d, e, f, g, i)
+            Forms\Components\Fieldset::make('Параметры проема')
+                ->schema([
+                    Forms\Components\Grid::make(4) // 4 columns
+                        ->schema([
+                            Forms\Components\TextInput::make('a')
+                                ->label('a (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('b')
+                                ->label('b (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('c')
+                                ->label('c (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('d')
+                                ->label('d (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('e')
+                                ->label('e (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('f')
+                                ->label('f (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('g')
+                                ->label('g (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('i')
+                                ->label('i (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                        ]),
+                ]),
+        ]);
     }
+
 
     public function table(Table $table): Table
     {
@@ -104,16 +166,16 @@ class OpeningsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }

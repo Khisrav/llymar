@@ -161,7 +161,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (LEFT_RIGHT.includes(type) ? doors - 2 : 0), 0),
             L26: () => openings.reduce((acc, { doors }) => acc + doors * 2, 0),
             L501: () => (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2,
-            L502: () => (getItemQuantity('L2') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2),
+            L502: () => (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2),
             L503: () => getItemQuantity('L26') * 2 + 2 + getItemQuantity('L21') + 2
         }
 

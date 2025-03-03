@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
@@ -27,6 +28,19 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
     protected static ?string $navigationLabel = 'Заказы';
+    
+    public static function getEloquentQuery(): Builder
+    {
+        $parent_user = auth()->user();
+        $child_users = User::where('parent_id', $parent_user->id)->pluck('id')->toArray();
+    
+        if ($parent_user->hasRole('Super-Admin')) {
+            return parent::getEloquentQuery();
+        }
+    
+        // Include only records that have child user IDs
+        return parent::getEloquentQuery()->whereIn('user_id', $child_users);
+    }
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -221,7 +235,7 @@ class OrderResource extends Resource
     {
         return [
             'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
+            // 'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }

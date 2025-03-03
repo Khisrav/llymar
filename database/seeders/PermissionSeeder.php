@@ -93,14 +93,15 @@ class PermissionSeeder extends Seeder
             'view order',
             'create order',
             'update order',
-            'update order status',
+            // 'update order status',
             'delete order',
             'appoint order manager',
             
             
             'view-any user',
             'view user',
-            'create user manager',
+            'create user',
+            // 'create user manager',
             'update user',
             'delete user',
             
@@ -117,7 +118,7 @@ class PermissionSeeder extends Seeder
             'access app calculator',
             'view-any order',
             'view order',
-            'update order status',
+            // 'update order status',
             
             'view-any user',
             'view user',

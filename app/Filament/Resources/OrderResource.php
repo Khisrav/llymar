@@ -113,8 +113,6 @@ class OrderResource extends Resource
             ]);
     }
 
-
-
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
@@ -125,7 +123,7 @@ class OrderResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('order_number')
-                    ->label('№ заказа')
+                    ->label('№')
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),

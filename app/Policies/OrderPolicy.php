@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Log;
 
 class OrderPolicy
 {
@@ -13,6 +14,8 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
+        Log::info($user->roles()->pluck('name'));
+        Log::info($user->can('view-any order'));
         if ($user->can('view-any order')) { return true; }
         return false;
     }
@@ -22,6 +25,7 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
+        Log::info($user->can('view order'));
         if ($user->can('view order')) { return true; }
         return false;
     }

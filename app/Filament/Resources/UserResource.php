@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
 use App\Models\WholesaleFactor;
 use Closure;
@@ -22,13 +23,32 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationLabel = 'Пользователи';
+    
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
+        if ($user->hasRole('Super-Admin')) return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->where('parent_id', $user->id);
+    }
+    
+    public static function getNavigationLabel(): string
+    {
+        $user = auth()->user();
+        
+        if ($user->hasRole('Super-Admin')) return 'Пользователи';
+        else if ($user->hasRole('Operator')) return 'Менеджеры';
+        else if ($user->hasRole('Manager')) return 'Дилеры';
+        
+        return 'Пользователи';
+    }
 
     public static function form(Form $form): Form
     {
@@ -38,6 +58,8 @@ class UserResource extends Resource
                     ->columns(2)
                     ->collapsible()
                     ->schema([
+                        Forms\Components\Hidden::make('parent_id')
+                            ->default(auth()->user()->id),
                         Forms\Components\TextInput::make('name')
                             ->label('ФИО')
                             ->required(),
@@ -51,41 +73,46 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('company')
                             ->label('Организация/Компания')
                             ->required(),
-                        Grid::make(10)
+                        Grid::make(9)
                             ->schema([
+                                Forms\Components\TextInput::make('password')
+                                    ->label('Пароль')
+                                    ->password()
+                                    ->required()
+                                    ->hiddenOn('edit')
+                                    ->columnSpan(3),
                                 Forms\Components\TextInput::make('telegram')
                                     ->label('Ник в Telegram')
-                                    // ->required()
                                     ->startsWith('@')
                                     ->placeholder('@user')
-                                    ->columnSpan(2),
+                                    ->columnSpan(3),
                                 Forms\Components\TextInput::make('phone')
                                     ->label('Телефон')
                                     ->mask('+7 (999) 999 99-99')
                                     ->required()
-                                    ->columnSpan(2),
-                                    
-                                Forms\Components\Select::make('role')
-                                    ->label('Роль')
-                                    ->options([
-                                        'admin' => 'Администратор',
-                                        'manager' => 'Менеджер',
-                                        'user' => 'Пользователь',
-                                    ])
+                                    ->columnSpan(3),
+
+                                Forms\Components\Select::make('roles')
+                                    ->label('Роли')
+                                    ->relationship('roles', 'name')
+                                    ->preload()
                                     ->required()
-                                    ->columnSpan(2),
+                                    ->native(false)
+                                    ->hidden(function () {
+                                        return !auth()->user()->hasRole('Super-Admin');
+                                    })
+                                    ->columnSpan(3),
                                     
                                 Forms\Components\Select::make('reduction_factor_key')
                                     ->label('Коэффициент уменьшения')
                                     ->native(true)
                                     ->options(function () {
-                                        // Dynamically generate 'KU1', 'KU2', ..., 'KU10'
                                         return array_combine(
                                             array_map(fn($key) => 'KU' . $key, range(1, 10)),
                                             array_map(fn($key) => 'KU' . $key, range(1, 10))
                                         );
                                     })
-                                    ->columnSpan(2),
+                                    ->columnSpan(3),
                                 
                                 Forms\Components\Select::make('wholesale_factor_key')
                                     ->label('Оптовый коэффициент')
@@ -94,7 +121,7 @@ class UserResource extends Resource
                                         // Retrieve key-value pairs (e.g., name => value) from the WholesaleFactors model
                                         return \App\Models\WholesaleFactor::query()->pluck('name', 'name')->toArray();
                                     })
-                                    ->columnSpan(2),
+                                    ->columnSpan(3),
                                 ]), 
                                              
                     ]),
@@ -106,35 +133,36 @@ class UserResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('inn')
                                     ->label('ИНН')
-                                    ->columnSpan(1)
-                                    ->required(),
+                                    ->columnSpan(1),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('kpp')
                                     ->label('КПП')
-                                    ->columnSpan(1)
-                                    ->required(),
+                                    ->columnSpan(1),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('current_account')
                                     ->columnSpan(2)
-                                    ->label('Расчетный счет')
-                                    ->required(),
+                                    ->label('Расчетный счет'),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('correspondent_account')
                                     ->columnSpan(2)
-                                    ->label('Корреспондентский счет')
-                                    ->required(),
+                                    ->label('Корреспондентский счет'),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('bik')
                                     ->columnSpan(2)
-                                    ->label('БИК')
-                                    ->required(),
+                                    ->label('БИК'),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('bank')
                                     ->columnSpan(2)
-                                    ->label('Банк')
-                                    ->required(),
+                                    ->label('Банк'),
+                                    // ->required(),
                                 Forms\Components\TextInput::make('legal_address')
                                     ->columnSpan(2)
-                                    ->label('Юридический адрес')
-                                    ->required(),
+                                    ->label('Юридический адрес'),
+                                    // ->required(),
                         ])
                     ])
-            ]);
+                            ]);
+            
     }
 
     public static function table(Table $table): Table
@@ -157,24 +185,12 @@ class UserResource extends Resource
                     ->label('Телефон')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\SelectColumn::make('role')
-                    ->label('Роль')
-                    ->searchable()
-                    ->options([
-                        'admin' => 'Администратор',
-                        'manager' => 'Менеджер',
-                        'user' => 'Пользователь',
-                    ])
-                    ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('role')
+                SelectFilter::make('roles')
                     ->label('Роль')
-                    ->options([
-                        'admin' => 'Администратор',
-                        'manager' => 'Менеджер',
-                        'user' => 'Пользователь',
-                    ]),
+                    ->native(false)
+                    ->relationship('roles', 'name')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -189,7 +205,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            OrdersRelationManager::class,
         ];
     }
 

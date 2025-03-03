@@ -7,11 +7,12 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -37,6 +38,7 @@ class User extends Authenticatable
         'bank',
         'legal_address',
         'telegram',
+        'parent_id',
     ];
 
     /**
@@ -64,7 +66,8 @@ class User extends Authenticatable
     
     protected function canAccessPanel(): bool
     {
-        return true;
+        if ($this->can('access admin panel')) { return true; }
+        return false;
     }
     
     /**

@@ -8,10 +8,15 @@ use App\Models\LlymarCalculatorItem;
 use App\Models\WholesaleFactor;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class AppCalculatorController extends Controller
 {
     public function index() {
+        if (!auth()->user()->can('access app calculator')) {
+            return redirect()->route('app.home');
+        }
+    
         return Inertia::render('App/Calculator', [
             'items' => $this->getCalculatorItems(),
             'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),

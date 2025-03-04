@@ -134,5 +134,12 @@ class PermissionSeeder extends Seeder
             'access app history',
             'access app cart',
         ]);
+        
+        $workman = Role::create(['name' => 'Workman']);
+        $workman->givePermissionTo([
+            'access admin panel',
+            'view-any order',
+            'update order', // means he should be able to change status and nothing else
+        ]);
     }
 }

@@ -130,8 +130,8 @@ class OrderResource extends Resource
 
     public static function table(Tables\Table $table): Tables\Table
     {
-
-        if (auth()->user()->hasRole('Super-Admin') || auth()->user()->hasRole('Operator')) {
+        $user = auth()->user();
+        if ($user->hasRole('Super-Admin') || $user->hasRole('Operator') || $user->hasRole('Workman')) {
             $StatusColumn = SelectColumn::make('status')
                 ->label('Статус')
                 ->sortable()
@@ -145,7 +145,8 @@ class OrderResource extends Resource
                     'archived' => 'Архивирован',
                     'completed' => 'Завершен',
                     'unknown' => 'Неизвестно',
-                ]);
+                ])
+                ->toggleable(isToggledHiddenByDefault: false);
         } else {
             $StatusColumn = TextColumn::make('status')
                 ->label('Статус')
@@ -234,7 +235,8 @@ class OrderResource extends Resource
                         ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-document-currency-dollar'),
-                    ActionsDeleteAction::make(),
+                    ActionsDeleteAction::make()
+                        ->hidden(!$user->hasRole('Super-Admin')),
                 ])
             ])
             ->bulkActions([

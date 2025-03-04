@@ -195,6 +195,11 @@ class OrderResource extends Resource
                     ->label('Телефон')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('ral_code')
+                    ->label('Цвет')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('total_price')
                     ->label('Цена')
                     ->money('RUB')

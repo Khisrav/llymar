@@ -98,7 +98,7 @@ class UserResource extends Resource
                                     ->preload()
                                     ->required()
                                     ->native(false)
-                                    // ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                                    ->hidden(!auth()->user()->hasRole('Super-Admin'))
                                     ->columnSpan(3),
                                     
                                 Forms\Components\Select::make('reduction_factor_key')

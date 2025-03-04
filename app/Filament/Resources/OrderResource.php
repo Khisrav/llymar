@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
+use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
@@ -129,6 +130,50 @@ class OrderResource extends Resource
 
     public static function table(Tables\Table $table): Tables\Table
     {
+        $user = auth()->user();
+        if ($user->hasRole('Super-Admin') || $user->hasRole('Operator') || $user->hasRole('Workman')) {
+            $StatusColumn = SelectColumn::make('status')
+                ->label('Статус')
+                ->sortable()
+                ->searchable()
+                ->options([
+                    'created' => 'Создан',
+                    'paid' => 'Оплачен',
+                    'expired' => 'Просрочен',
+                    'assembled' => 'Собран',
+                    'sent' => 'Отправлен',
+                    'archived' => 'Архивирован',
+                    'completed' => 'Завершен',
+                    'unknown' => 'Неизвестно',
+                ])
+                ->toggleable(isToggledHiddenByDefault: false);
+        } else {
+            $StatusColumn = TextColumn::make('status')
+                ->label('Статус')
+                ->badge()
+                ->color(fn (string $state): string => match($state) {
+                    'created' => 'info',
+                    'paid' => 'primary',
+                    'expired' => 'danger',
+                    'assembled' => 'gray',
+                    'sent' => 'warning',
+                    'completed' => 'success',
+                    'archived' => 'gray',
+                    'unknown' => 'danger',
+                })
+                ->formatStateUsing(fn (string $state): string => match($state) {
+                    'created' => 'Создан',
+                    'paid' => 'Оплачен',
+                    'expired' => 'Просрочен',
+                    'assembled' => 'Собран',
+                    'sent' => 'Отправлен',
+                    'completed' => 'Завершен',
+                    'archived' => 'Архивирован',
+                    'unknown' => 'Неизвестно',
+                    default => $state,
+                })
+                ->toggleable(isToggledHiddenByDefault: false);
+        }
         return $table
             ->columns([
                 TextColumn::make('id')
@@ -150,6 +195,11 @@ class OrderResource extends Resource
                     ->label('Телефон')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('ral_code')
+                    ->label('Цвет')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('total_price')
                     ->label('Цена')
                     ->money('RUB')
@@ -160,35 +210,12 @@ class OrderResource extends Resource
                     ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('status')
-                    ->label('Статус')
-                    ->badge()
-                    ->color(fn (string $state): string => match($state) {
-                        'created' => 'info',
-                        'paid' => 'primary',
-                        'expired' => 'danger',
-                        'assembled' => 'gray',
-                        'sent' => 'warning',
-                        'completed' => 'success',
-                        'archived' => 'gray',
-                        'unknown' => 'danger',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match($state) {
-                        'created' => 'Создан',
-                        'paid' => 'Оплачен',
-                        'expired' => 'Просрочен',
-                        'assembled' => 'Собран',
-                        'sent' => 'Отправлен',
-                        'completed' => 'Завершен',
-                        'archived' => 'Архивирован',
-                        'unknown' => 'Неизвестно',
-                        default => $state,
-                    })
-                    ->toggleable(isToggledHiddenByDefault: false),
+                $StatusColumn,
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
+                    ->label('Статус')
+                    ->native(false)
                     ->options([
                         'created' => 'Создан',
                         'paid' => 'Оплачен',
@@ -213,7 +240,8 @@ class OrderResource extends Resource
                         ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-document-currency-dollar'),
-                    ActionsDeleteAction::make(),
+                    ActionsDeleteAction::make()
+                        ->hidden(!$user->hasRole('Super-Admin')),
                 ])
             ])
             ->bulkActions([

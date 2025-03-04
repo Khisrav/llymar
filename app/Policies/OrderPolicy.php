@@ -4,8 +4,6 @@ namespace App\Policies;
 
 use App\Models\Order;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Log;
 
 class OrderPolicy
 {
@@ -14,10 +12,7 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        Log::info($user->roles()->pluck('name'));
-        Log::info($user->can('view-any order'));
-        if ($user->can('view-any order')) { return true; }
-        return false;
+        return $user->can('view-any order');
     }
 
     /**
@@ -25,9 +20,7 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        Log::info($user->can('view order'));
-        if ($user->can('view order')) { return true; }
-        return false;
+        return $user->can('view order');
     }
 
     /**
@@ -35,8 +28,7 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        if ($user->can('create order')) { return true; }
-        return false;
+        return $user->can('create order');
     }
 
     /**
@@ -44,8 +36,7 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        if ($user->can('update order')) { return true; }
-        return false;
+        return $user->can('update order');
     }
 
     /**
@@ -53,8 +44,7 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        if ($user->can('delete order')) { return true; }
-        return false;
+        return $user->can('delete order');
     }
 
     /**

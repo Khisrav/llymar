@@ -66,8 +66,7 @@ class User extends Authenticatable
     
     protected function canAccessPanel(): bool
     {
-        if ($this->can('access admin panel')) { return true; }
-        return false;
+        return $this->can('access admin panel');
     }
     
     /**

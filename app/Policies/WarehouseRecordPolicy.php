@@ -2,26 +2,26 @@
 
 namespace App\Policies;
 
-use App\Models\Item;
 use App\Models\User;
+use App\Models\WarehouseRecord;
 use Illuminate\Auth\Access\Response;
 
-class ItemPolicy
+class WarehouseRecordPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view-any item');
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Item $item): bool
+    public function view(User $user, WarehouseRecord $warehouseRecord): bool
     {
-        return $user->can('view item');
+        return false;
     }
 
     /**
@@ -29,29 +29,29 @@ class ItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create item');
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Item $item): bool
+    public function update(User $user, WarehouseRecord $warehouseRecord): bool
     {
-        return $user->can('update item');
+        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Item $item): bool
+    public function delete(User $user, WarehouseRecord $warehouseRecord): bool
     {
-        return $user->can('delete item');
+        return false;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Item $item): bool
+    public function restore(User $user, WarehouseRecord $warehouseRecord): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ItemPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Item $item): bool
+    public function forceDelete(User $user, WarehouseRecord $warehouseRecord): bool
     {
         return false;
     }

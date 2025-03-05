@@ -116,7 +116,7 @@ class OrderResource extends Resource
                                     ->label('Адрес')
                                     ->required()
                                     ->maxLength(255)
-                                    ->columnSpan(6), // Full width
+                                    ->columnSpan(6), 
             
                                 Textarea::make('comment')
                                     ->label('Комментарий заказчика')
@@ -265,6 +265,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             // 'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'view' => Pages\ViewOrder::route('/{record}'),
         ];
     }
 }

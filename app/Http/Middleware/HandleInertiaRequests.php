@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -30,15 +31,35 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+    
+        if (!$user) {
+            Log::info('No authenticated user.');
+            return [
+                ...parent::share($request),
+                'auth' => ['user' => null],
+                'ziggy' => fn () => [
+                    ...(new Ziggy)->toArray(),
+                    'location' => $request->url(),
+                ],
+                'can_access_app_calculator' => false,
+                'can_access_admin_panel' => false,
+                'can_access_app_cart' => false,
+            ];
+        }
+    
+        Log::info('User:', ['user' => $user->id, 'permissions' => $user->getPermissionsViaRoles()->pluck('name')]);
+    
         return [
             ...parent::share($request),
-            'auth' => [
-                'user' => $request->user(),
-            ],
+            'auth' => ['user' => $user],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'can_access_app_calculator' => $user->can('access app calculator'),
+            'can_access_admin_panel' => $user->can('access admin panel'),
+            'can_access_app_cart' => $user->can('access app cart'),
         ];
     }
 }

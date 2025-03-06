@@ -141,7 +141,8 @@ class PermissionSeeder extends Seeder
         $workman->givePermissionTo([
             'access admin panel',
             'view-any order',
-            'update order', // means he should be able to change status and nothing else
+            'view order',
+            // 'update order', // means he should be able to change status and nothing else
         ]);
         
         //user with id 1 should be super admin

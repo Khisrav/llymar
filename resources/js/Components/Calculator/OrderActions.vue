@@ -9,7 +9,7 @@ import DropdownMenuSeparator from "../ui/dropdown-menu/DropdownMenuSeparator.vue
 import DropdownMenuItem from "../ui/dropdown-menu/DropdownMenuItem.vue"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import { useItemsStore } from "../../Stores/itemsStore"
-import { Link, router } from "@inertiajs/vue3"
+import { Link, router, usePage } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
@@ -18,6 +18,8 @@ import { computed, ref } from "vue"
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
+
+const { can_access_app_cart } = usePage().props as any
 
 // SNP for Surname Name Patronymic
 const snp = ref({
@@ -156,7 +158,7 @@ const downloadSketchPDF = async () => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Link href="/app/cart">
+                <Link href="/app/cart" v-if="can_access_app_cart">
                     <Button>
                         <span class="text-base">В корзину</span>
                         <ArrowRightIcon class="size-4" />

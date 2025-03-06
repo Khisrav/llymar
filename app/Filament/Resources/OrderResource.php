@@ -35,7 +35,7 @@ class OrderResource extends Resource
         $parent_user = auth()->user();
         $child_users = User::where('parent_id', $parent_user->id)->pluck('id')->toArray();
     
-        if ($parent_user->hasRole('Super-Admin')) {
+        if ($parent_user->hasRole('Super-Admin') || $parent_user->hasRole('Workman')) {
             return parent::getEloquentQuery();
         }
     
@@ -175,6 +175,13 @@ class OrderResource extends Resource
                 ->toggleable(isToggledHiddenByDefault: false);
         }
         return $table
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                if (auth()->user()->hasRole('Workman')) {
+                    return $query->whereIn('status', ['assembled', 'paid']);
+                }
+                
+                return $query;
+            })
             ->columns([
                 TextColumn::make('id')
                     ->label('ID')

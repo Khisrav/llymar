@@ -34,7 +34,6 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
     
         if (!$user) {
-            Log::info('No authenticated user.');
             return [
                 ...parent::share($request),
                 'auth' => ['user' => null],
@@ -47,9 +46,7 @@ class HandleInertiaRequests extends Middleware
                 'can_access_app_cart' => false,
             ];
         }
-    
-        Log::info('User:', ['user' => $user->id, 'permissions' => $user->getPermissionsViaRoles()->pluck('name')]);
-    
+        
         return [
             ...parent::share($request),
             'auth' => ['user' => $user],

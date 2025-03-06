@@ -8,9 +8,8 @@ import { Link } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
 import { usePage } from "@inertiajs/vue3"
 
-const { user, can_access_app_calculator } = usePage().props as any
-console.log(usePage().props)
-console.log(can_access_app_calculator)
+const { can_access_app_calculator, can_access_admin_panel } = usePage().props as any
+const { user } = usePage().props.auth as any
 
 const navigationMenu = computed(() => {
     const menu = [
@@ -23,6 +22,13 @@ const navigationMenu = computed(() => {
     }
 
     return menu
+})
+
+const username = computed(() => {
+    let firstName = user.name.split(' ')[0], lastName = user.name.split(' ')[1]
+    
+    if (!lastName) return firstName
+    return firstName + ' ' + lastName[0] + '.'
 })
 </script>
 
@@ -65,9 +71,9 @@ const navigationMenu = computed(() => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Мой аккаунт</DropdownMenuLabel>
+                    <DropdownMenuLabel>{{ username }}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem v-if="can_access_admin_panel">
                         <Link href="/admin">Админка</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>

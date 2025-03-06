@@ -35,7 +35,7 @@ class OrderResource extends Resource
         $parent_user = auth()->user();
         $child_users = User::where('parent_id', $parent_user->id)->pluck('id')->toArray();
     
-        if ($parent_user->hasRole('Super-Admin')) {
+        if ($parent_user->hasRole('Super-Admin') || $parent_user->hasRole('Workman')) {
             return parent::getEloquentQuery();
         }
     
@@ -116,7 +116,7 @@ class OrderResource extends Resource
                                     ->label('Адрес')
                                     ->required()
                                     ->maxLength(255)
-                                    ->columnSpan(6), // Full width
+                                    ->columnSpan(6), 
             
                                 Textarea::make('comment')
                                     ->label('Комментарий заказчика')
@@ -175,6 +175,13 @@ class OrderResource extends Resource
                 ->toggleable(isToggledHiddenByDefault: false);
         }
         return $table
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                if (auth()->user()->hasRole('Workman')) {
+                    return $query->whereIn('status', ['assembled', 'paid']);
+                }
+                
+                return $query;
+            })
             ->columns([
                 TextColumn::make('id')
                     ->label('ID')
@@ -265,6 +272,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             // 'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'view' => Pages\ViewOrder::route('/{record}'),
         ];
     }
 }

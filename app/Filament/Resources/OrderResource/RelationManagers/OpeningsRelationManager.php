@@ -118,16 +118,30 @@ class OpeningsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return $table
-            ->recordTitleAttribute('order_id')
-            ->columns([
-                // Tables\Columns\TextColumn::make('order_id'),
-                Tables\Columns\SelectColumn::make('type')
-                    ->label('Тип проема')
-                    ->searchable()
-                    ->selectablePlaceholder(false)
-                    // ->options(Opening::all()->pluck('name', 'type')),
-                    ->options([
+        $user = auth()->user();
+        if ($user->hasRole('Super-Admin') || $user->hasRole('Operator')) {
+            $OpeningTypeColumn = Tables\Columns\SelectColumn::make('type')
+                ->label('Тип проема')
+                ->searchable()
+                ->selectablePlaceholder(false)
+                // ->options(Opening::all()->pluck('name', 'type')),
+                ->options([
+                    'left' => 'Левый проем',
+                    'right' => 'Правый проем',
+                    'center' => 'Центральный проем',
+                    'inner-left' => 'Входная группа левая',
+                    'inner-right' => 'Входная группа правая',
+                    'blind-glazing' => 'Глухое остекление',
+                    'triangle' => 'Треугольник',
+                ])
+                ->toggleable(isToggledHiddenByDefault: false);
+        } else {
+            $OpeningTypeColumn = Tables\Columns\TextColumn::make('type')
+                ->label('Тип проема')
+                ->searchable()
+                ->sortable()
+                ->formatStateUsing(function (OrderOpening $record) {
+                    $types = [
                         'left' => 'Левый проем',
                         'right' => 'Правый проем',
                         'center' => 'Центральный проем',
@@ -135,8 +149,16 @@ class OpeningsRelationManager extends RelationManager
                         'inner-right' => 'Входная группа правая',
                         'blind-glazing' => 'Глухое остекление',
                         'triangle' => 'Треугольник',
-                    ])
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ];
+                    return $types[$record->type];
+                })
+                ->toggleable(isToggledHiddenByDefault: false);
+        }
+        return $table
+            ->recordTitleAttribute('order_id')
+            ->columns([
+                // Tables\Columns\TextColumn::make('order_id'),
+                $OpeningTypeColumn,
                 Tables\Columns\TextColumn::make('doors')
                     ->label('Створки')
                     ->sortable()

@@ -5,21 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Item;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 use App\Models\LlymarCalculatorItem;
 use App\Models\WholesaleFactor;
 
 class AppCartController extends Controller
 {
     public function index() {
+        $user = auth()->user();
+        if (!$user->can('access app cart')) {
+            return redirect()->route('app.home');
+        }
+        
         return Inertia::render('App/Cart', [
             'items' => $this->getCalculatorItems(),
             'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
-            'user' => auth()->user(),
+            'user' => $user,
             'categories' => Category::all()->toArray(),
-            'wholesale_factor' => WholesaleFactor::where('name', auth()->user()->wholesale_factor_key)->first(),
+            'wholesale_factor' => WholesaleFactor::where('name', $user->wholesale_factor_key)->first(),
         ]);
     }
     

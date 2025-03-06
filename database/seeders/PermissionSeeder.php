@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -71,6 +72,7 @@ class PermissionSeeder extends Seeder
         // Create roles and assign permissions
         //create super admin
         $superAdmin = Role::create(['name' => 'Super-Admin']);
+        $superAdmin->givePermissionTo($permissions);
         
         $operator = Role::create(['name' => 'Operator']);
         $operator->givePermissionTo([
@@ -141,5 +143,9 @@ class PermissionSeeder extends Seeder
             'view-any order',
             'update order', // means he should be able to change status and nothing else
         ]);
+        
+        //user with id 1 should be super admin
+        $user = User::find(1);
+        $user->assignRole($superAdmin);
     }
 }

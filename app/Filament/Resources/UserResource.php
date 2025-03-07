@@ -43,8 +43,7 @@ class UserResource extends Resource
     {
         $user = auth()->user();
         
-        if ($user->hasRole('Super-Admin')) return 'Пользователи';
-        else if ($user->hasRole('Operator')) return 'Менеджеры';
+        if ($user->hasRole('Operator')) return 'Менеджеры';
         else if ($user->hasRole('Manager')) return 'Дилеры';
         
         return 'Пользователи';
@@ -58,8 +57,19 @@ class UserResource extends Resource
                     ->columns(2)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\Hidden::make('parent_id')
-                            ->default(auth()->user()->id),
+                        Forms\Components\Select::make('parent_id')
+                            ->label('Родитель')
+                            ->native(false)
+                            ->searchable()
+                            ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                            ->options(function () {
+                                // $users = User::all()->map(function ($user) {
+                                //     return sprintf('%s - %s', $user->id, $user->name);
+                                // });
+                                // return $users->all();
+                                return User::all()->pluck('name', 'id');
+                            })
+                            ->required(),
                         Forms\Components\TextInput::make('name')
                             ->label('ФИО')
                             ->required(),
@@ -72,6 +82,14 @@ class UserResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('company')
                             ->label('Организация/Компания')
+                            ->required(),
+                        Forms\Components\TextInput::make('reward_fee')
+                            ->label('Комиссия')
+                            ->postfix('%')
+                            ->type('number')
+                            // ->step(1)
+                            ->minValue(0)
+                            ->maxValue(100)
                             ->required(),
                         Grid::make(9)
                             ->schema([
@@ -170,19 +188,29 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Имя')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('role')
+                    ->label('Роль')
+                    ->searchable()
+                    ->formatStateUsing(fn (Model $record) => $record->getRoleNames()->first())
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 SelectFilter::make('roles')

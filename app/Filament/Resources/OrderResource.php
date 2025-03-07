@@ -152,24 +152,25 @@ class OrderResource extends Resource
                 ->label('Статус')
                 ->badge()
                 ->color(fn (string $state): string => match($state) {
-                    'created' => 'info',
-                    'paid' => 'primary',
-                    'expired' => 'danger',
-                    'assembled' => 'gray',
-                    'sent' => 'warning',
-                    'completed' => 'success',
-                    'archived' => 'gray',
-                    'unknown' => 'danger',
+                    'created' => 'gray', 
+                    'paid' => 'green',         
+                    'expired' => 'red',        
+                    'assembled' => 'teal',    
+                    'sent' => 'indigo',        
+                    'completed' => 'emerald', 
+                    'archived' => 'yellow',   
+                    'unknown' => 'fuchsia',  
+                    default => 'info',
                 })
                 ->formatStateUsing(fn (string $state): string => match($state) {
                     'created' => 'Создан',
                     'paid' => 'Оплачен',
-                    'expired' => 'Просрочен',
+                    'expired' => 'Не оплачен',
                     'assembled' => 'Собран',
                     'sent' => 'Отправлен',
                     'completed' => 'Завершен',
                     'archived' => 'Архивирован',
-                    'unknown' => 'Неизвестно',
+                    'unknown' => 'Претензия ТК',
                     default => $state,
                 })
                 ->toggleable(isToggledHiddenByDefault: false);
@@ -226,11 +227,12 @@ class OrderResource extends Resource
                     ->options([
                         'created' => 'Создан',
                         'paid' => 'Оплачен',
-                        'expired' => 'Просрочен',
+                        'expired' => 'Не оплачен',
                         'assembled' => 'Собран',
                         'sent' => 'Отправлен',
                         'completed' => 'Выполнен',
                         'archived' => 'Архивирован',
+                        'unknown' => 'Претензия ТК',
                     ]),
             ])
             ->defaultSort('created_at', 'desc')

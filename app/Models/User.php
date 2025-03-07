@@ -43,6 +43,7 @@ class User extends Authenticatable implements FilamentUser
         'legal_address',
         'telegram',
         'parent_id',
+        'reward_fee',
     ];
 
     /**

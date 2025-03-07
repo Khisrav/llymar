@@ -80,7 +80,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
-                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
+                L1: {2 : 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
                 L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
             },
             right: {
@@ -123,7 +123,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 return acc + a * b
             }, 0),
             L4: () => getItemQuantity('L3'),
-            L5: () => Math.floor((openings.reduce((acc, { width }) => acc + width - 1800, 0)) / 1000 + 3),
+            L5: () => Math.floor((openings.reduce((acc, { width }) => (acc + width - 1800) / 1000 + 3, 0))),
+            // (ширина - 1800) / 1000 + 3
             L6: () => openings.length * 6,
             L8: () => openings.reduce((acc, { type, doors }) => {
                 if (LEFT_RIGHT.includes(type)) return acc + (doors * 2 - 2)

@@ -54,15 +54,10 @@ class ItemResource extends Resource
                             ->type('number')
                             ->prefix('₽')
                             ->required(),
-                        // Forms\Components\TextInput::make('retail_price')
-                        //     ->label('Розница, ₽')
-                        //     ->type('number')
-                        //     ->prefix('₽')
-                        //     ->required(),
                         Forms\Components\Select::make('unit')
                             ->label('Единица измерения')
                             ->native(false)
-                            ->options(['шт.' => 'шт.', 'кг' => 'кг', 'м' => 'м', 'м.п.' => 'м.п.', 'м.кв.' => 'м.кв.', 'мм' => 'мм', 'створ.' => 'створ.'])
+                            ->options(['шт.' => 'шт.', 'кг' => 'кг', 'м' => 'м', 'м.п.' => 'м.п.', 'м²' => 'м²', 'мм' => 'мм', 'створ.' => 'створ.'])
                             ->required(),
                         Forms\Components\Select::make('category_id')                    
                             ->label('Категория')

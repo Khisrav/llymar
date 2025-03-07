@@ -25,6 +25,7 @@
             border: 1px solid #ddd;
             padding: 4px;
             text-align: left;
+            text-align: center;
         }
         .table th {
             background-color: #f2f2f2;
@@ -79,7 +80,7 @@
             <tbody>
                 @foreach($orderOpenings as $opening)
                     <tr>
-                        <td>
+                        <td style="text-align: left !important;">
                             @switch($opening->type)
                                 @case('left')
                                     Левый проем
@@ -118,12 +119,12 @@
     <table class="table">
         <thead>
             <tr>
-                <th>№</th>
-                <th>Картинка</th>
-                <th>Деталь</th>
-                <th>Кол-во</th>
-                <th>Цена</th>
-                <th>Итого</th>
+                <th class="nowrap">№</th>
+                <th class="nowrap">Картинка</th>
+                <th class="nowrap">Деталь</th>
+                <th class="nowrap">Кол-во</th>
+                <th class="nowrap">Цена</th>
+                <th class="nowrap">Итого</th>
             </tr>
         </thead>
         <tbody>
@@ -132,14 +133,16 @@
             @endphp
             @foreach($orderItems as $item)
                 <tr>
-                    <td>{{ ++$count }}</td>
-                    <td>
-                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" width="48">
+                    <td class="nowrap">{{ ++$count }}</td>
+                    <td class="nowrap">
+                        @if ($item->item->img != null)
+                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" width="48">
+                        @endif
                     </td>
-                    <td>{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
-                    <td>{{ $item->quantity }} {{ $item->item->unit }}</td>
-                    <td>{{ number_format($item->itemTotalPrice / $item->quantity, 0, '.', ' ') }} ₽</td>
-                    <td>{{ number_format($item->itemTotalPrice, 0, '.', ' ') }} ₽</td>
+                    <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
+                    <td class="nowrap">{{  number_format((float)$item->quantity, 2, '.', '') }} {{ $item->item->unit }}</td>
+                    <td class="nowrap">{{ number_format($item->itemTotalPrice / $item->quantity, 0, '.', ' ') }} ₽</td>
+                    <td class="nowrap">{{ number_format($item->itemTotalPrice, 0, '.', ' ') }} ₽</td>
                 </tr>
             @endforeach
             <tr>

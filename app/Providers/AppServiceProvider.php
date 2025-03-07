@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -30,5 +32,23 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('Super-Admin') ? true : null;
         });
+        
+        FilamentColor::register([
+            'red' => Color::Red,
+            'blue' => Color::Blue,
+            'green' => Color::Green,
+            'yellow' => Color::Yellow,
+            'purple' => Color::Purple,
+            'orange' => Color::Orange,
+            'pink' => Color::Pink,
+            'gray' => Color::Gray,
+            'cyan' => Color::Cyan,
+            'emerald' => Color::Emerald,
+            'teal' => Color::Teal,
+            'indigo' => Color::Indigo,
+            'violet' => Color::Violet,
+            'lime' => Color::Lime,
+            'fuchsia' => Color::Fuchsia,
+        ]);
     }
 }

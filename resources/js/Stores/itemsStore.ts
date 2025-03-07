@@ -176,9 +176,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (glassID == -1) return
         
         cartItems.value[glassID] = {
-            quantity: openingsStore.openings.reduce((acc, { width, height }) => {
+            quantity: parseFloat((openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height
-            }, 0) / 1000000
+            }, 0) / 1000000).toFixed(2))
         }
     }
     
@@ -195,9 +195,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
             } 
             else if (serviceID == 386) {
                 let q = 0
-                const m_p_ = [390, 391, 392, 393, 394, 395, 400, 401, 402, 407, 408]
+                const m_p_ = [390, 391, 392, 393, 394, 395, 396, 397]
                 m_p_.forEach(mp => {
-                    q += cartItems.value[mp]?.quantity || 0
+                    if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
+                    else q += cartItems.value[mp]?.quantity || 0
                 })
                 cartItems.value[serviceID] = { quantity: q }
             }

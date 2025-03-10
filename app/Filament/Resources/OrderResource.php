@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -239,6 +240,7 @@ class OrderResource extends Resource
             ->actions([
                 // Tables\Actions\EditAction::make(),
                 ActionGroup::make([
+                    EditAction::make(),
                     Action::make('list_pdf')
                         ->label('Перечень PDF')
                         ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
@@ -250,6 +252,7 @@ class OrderResource extends Resource
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-document-currency-dollar'),
                     ActionsDeleteAction::make()
+                        ->requiresConfirmation()
                         ->hidden(!$user->hasRole('Super-Admin')),
                 ])
             ])

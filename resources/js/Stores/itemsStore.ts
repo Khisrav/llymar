@@ -123,7 +123,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 return acc + a * b
             }, 0),
             L4: () => getItemQuantity('L3'),
-            L5: () => Math.floor((openings.reduce((acc, { width }) => (acc + width - 1800) / 1000 + 3, 0))),
+            L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
+                if (type === 'triangle' || type === 'blind-glazing') return acc
+                return acc + Math.floor((width - 1800) / 1000 + 3)
+            }, 0))),
             // (ширина - 1800) / 1000 + 3
             L6: () => openings.length * 6,
             L8: () => openings.reduce((acc, { type, doors }) => {

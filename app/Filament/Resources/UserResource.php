@@ -3,28 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
-use App\Models\WholesaleFactor;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Split;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Log;
-use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -32,20 +24,78 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     
+    protected static $countries = [
+        "" => [],
+        "Армения" => [
+            "Арагацотн", "Арарат", "Армавир", "Гегаркуник", "Котайк",
+            "Лори", "Ширак", "Сюник", "Тавуш", "Вайоц Дзор", "Ереван"
+        ],
+        "Беларусь" => [
+            "Брестская область", "Гомельская область", "Гродненская область",
+            "Минская область", "Могилевская область", "Витебская область", "Минск"
+        ],
+        "Казахстан" => [
+            "Акмолинская область", "Актюбинская область", "Алматинская область",
+            "Атырауская область", "Восточно-Казахстанская область",
+            "Жамбылская область", "Карагандинская область", "Костанайская область",
+            "Кызылординская область", "Мангистауская область",
+            "Северо-Казахстанская область", "Павлодарская область",
+            "Туркестанская область", "Западно-Казахстанская область", "Алматы",
+            "Астана", "Шымкент"
+        ],
+        "Киргизия" => [
+            "Баткенская область", "Чуйская область", "Джалал-Абадская область",
+            "Нарынская область", "Ошская область", "Таласская область",
+            "Иссык-Кульская область", "Бишкек", "Ош"
+        ],
+        "Россия" => [
+            "Республика Адыгея", "Республика Башкортостан", "Республика Бурятия",
+            "Республика Алтай", "Республика Дагестан", "Республика Ингушетия",
+            "Кабардино-Балкарская Республика", "Республика Калмыкия",
+            "Карачаево-Черкесская Республика", "Республика Карелия",
+            "Республика Коми", "Республика Марий Эл", "Республика Мордовия",
+            "Республика Саха (Якутия)", "Республика Северная Осетия-Алания",
+            "Республика Татарстан", "Республика Тыва", "Удмуртская Республика",
+            "Республика Хакасия", "Чеченская Республика", "Чувашская Республика",
+            "Алтайский край", "Забайкальский край", "Камчатский край",
+            "Краснодарский край", "Красноярский край", "Пермский край",
+            "Приморский край", "Ставропольский край", "Хабаровский край",
+            "Амурская область", "Архангельская область", "Астраханская область",
+            "Белгородская область", "Брянская область", "Владимирская область",
+            "Волгоградская область", "Вологодская область", "Воронежская область",
+            "Ивановская область", "Иркутская область", "Калининградская область",
+            "Калужская область", "Кемеровская область", "Кировская область",
+            "Костромская область", "Курганская область", "Курская область",
+            "Ленинградская область", "Липецкая область", "Магаданская область",
+            "Московская область", "Мурманская область", "Нижегородская область",
+            "Новгородская область", "Новосибирская область", "Омская область",
+            "Оренбургская область", "Орловская область", "Пензенская область",
+            "Псковская область", "Ростовская область", "Рязанская область",
+            "Самарская область", "Саратовская область", "Сахалинская область",
+            "Свердловская область", "Смоленская область", "Тамбовская область",
+            "Тверская область", "Томская область", "Тульская область",
+            "Тюменская область", "Ульяновская область", "Челябинская область",
+            "Ярославская область", "Москва", "Санкт-Петербург", "Севастополь",
+            "Еврейская автономная область", "Ненецкий автономный округ",
+            "Ханты-Мансийский автономный округ", "Чукотский автономный округ",
+            "Ямало-Ненецкий автономный округ"
+        ]
+    ];
+
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
         if ($user->hasRole('Super-Admin')) return parent::getEloquentQuery();
         return parent::getEloquentQuery()->where('parent_id', $user->id);
     }
-    
+
     public static function getNavigationLabel(): string
     {
         $user = auth()->user();
-        
+
         if ($user->hasRole('Operator')) return 'Менеджеры';
         else if ($user->hasRole('Manager')) return 'Дилеры';
-        
+
         return 'Пользователи';
     }
 
@@ -63,10 +113,6 @@ class UserResource extends Resource
                             ->searchable()
                             ->hidden(!auth()->user()->hasRole('Super-Admin'))
                             ->options(function () {
-                                // $users = User::all()->map(function ($user) {
-                                //     return sprintf('%s - %s', $user->id, $user->name);
-                                // });
-                                // return $users->all();
                                 return User::all()->pluck('name', 'id');
                             })
                             ->required(),
@@ -87,10 +133,32 @@ class UserResource extends Resource
                             ->label('Комиссия')
                             ->postfix('%')
                             ->type('number')
-                            // ->step(1)
                             ->minValue(0)
                             ->maxValue(100)
                             ->required(),
+                        Forms\Components\Select::make('country')
+                            ->label('Страна')
+                            ->native(false)
+                            ->required()
+                            ->reactive()
+                            ->searchable()
+                            ->options([
+                                'Армения' => 'Армения',
+                                'Беларусь' => 'Беларусь',
+                                'Казахстан' => 'Казахстан',
+                                'Киргизия' => 'Киргизия',
+                                'Россия' => 'Россия',
+                            ])
+                            ->live(),
+                        Forms\Components\Select::make('region')
+                            ->label('Регион')
+                            ->native(false)
+                            ->required()
+                            ->searchable()
+                            ->selectablePlaceholder(false)
+                            ->options(function (Get $get) {
+                                return self::$countries[$get('country')];
+                            }),
                         Grid::make(9)
                             ->schema([
                                 Forms\Components\TextInput::make('password')
@@ -109,7 +177,6 @@ class UserResource extends Resource
                                     ->mask('+7 (999) 999 99-99')
                                     ->required()
                                     ->columnSpan(3),
-
                                 Forms\Components\Select::make('roles')
                                     ->label('Роли')
                                     ->relationship('roles', 'name')
@@ -118,7 +185,6 @@ class UserResource extends Resource
                                     ->native(false)
                                     ->hidden(!auth()->user()->hasRole('Super-Admin'))
                                     ->columnSpan(3),
-                                    
                                 Forms\Components\Select::make('reduction_factor_key')
                                     ->label('Коэффициент уменьшения')
                                     ->native(true)
@@ -129,17 +195,14 @@ class UserResource extends Resource
                                         );
                                     })
                                     ->columnSpan(3),
-                                
                                 Forms\Components\Select::make('wholesale_factor_key')
                                     ->label('Оптовый коэффициент')
                                     ->native(true)
                                     ->options(function () {
-                                        // Retrieve key-value pairs (e.g., name => value) from the WholesaleFactors model
                                         return \App\Models\WholesaleFactor::query()->pluck('name', 'name')->toArray();
                                     })
                                     ->columnSpan(3),
-                                ]), 
-                                             
+                            ]),
                     ]),
                 Section::make('Реквизиты')
                     ->columns(2)
@@ -150,35 +213,27 @@ class UserResource extends Resource
                                 Forms\Components\TextInput::make('inn')
                                     ->label('ИНН')
                                     ->columnSpan(1),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('kpp')
                                     ->label('КПП')
                                     ->columnSpan(1),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('current_account')
                                     ->columnSpan(2)
                                     ->label('Расчетный счет'),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('correspondent_account')
                                     ->columnSpan(2)
                                     ->label('Корреспондентский счет'),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('bik')
                                     ->columnSpan(2)
                                     ->label('БИК'),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('bank')
                                     ->columnSpan(2)
                                     ->label('Банк'),
-                                    // ->required(),
                                 Forms\Components\TextInput::make('legal_address')
                                     ->columnSpan(2)
                                     ->label('Юридический адрес'),
-                                    // ->required(),
-                        ])
+                            ])
                     ])
-                            ]);
-            
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -216,7 +271,21 @@ class UserResource extends Resource
                 SelectFilter::make('roles')
                     ->label('Роль')
                     ->native(false)
-                    ->relationship('roles', 'name')
+                    ->relationship('roles', 'name'),
+                SelectFilter::make('country')
+                    ->label('Страна')
+                    ->native(false)
+                    ->options([
+                        'Армения' => 'Армения',
+                        'Беларусь' => 'Беларусь',
+                        'Казахстан' => 'Казахстан',
+                        'Киргизия' => 'Киргизия',
+                        'Россия' => 'Россия',
+                    ]),
+                SelectFilter::make('region')
+                    ->label('Регион')
+                    ->native(false)
+                    ->options(self::$countries),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -1,52 +1,70 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from "@inertiajs/vue3";
-import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
-import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon } from "lucide-vue-next";
-import { ref, computed } from "vue";
-import { Order, Pagination } from "../../lib/types";
-import Table from "../../Components/ui/table/Table.vue";
-import TableHeader from "../../Components/ui/table/TableHeader.vue";
-import TableRow from "../../Components/ui/table/TableRow.vue";
-import TableHead from "../../Components/ui/table/TableHead.vue";
-import TableBody from "../../Components/ui/table/TableBody.vue";
-import TableCell from "../../Components/ui/table/TableCell.vue";
-import { currencyFormatter } from "../../Utils/currencyFormatter";
-import Button from "../../Components/ui/button/Button.vue";
-import StatusBadge from "../../Components/StatusBadge.vue";
-import DropdownMenuTrigger from "../../Components/ui/dropdown-menu/DropdownMenuTrigger.vue";
-import DropdownMenuContent from "../../Components/ui/dropdown-menu/DropdownMenuContent.vue";
-import DropdownMenuItem from "../../Components/ui/dropdown-menu/DropdownMenuItem.vue";
-import DropdownMenu from "../../Components/ui/dropdown-menu/DropdownMenu.vue";
-import DropdownMenuLabel from "../../Components/ui/dropdown-menu/DropdownMenuLabel.vue";
-import DropdownMenuSeparator from "../../Components/ui/dropdown-menu/DropdownMenuSeparator.vue";
+import { Head, Link, usePage } from "@inertiajs/vue3"
+import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
+import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon } from "lucide-vue-next"
+import { ref, computed } from "vue"
+import { Order, Pagination } from "../../lib/types"
+import Table from "../../Components/ui/table/Table.vue"
+import TableHeader from "../../Components/ui/table/TableHeader.vue"
+import TableRow from "../../Components/ui/table/TableRow.vue"
+import TableHead from "../../Components/ui/table/TableHead.vue"
+import TableBody from "../../Components/ui/table/TableBody.vue"
+import TableCell from "../../Components/ui/table/TableCell.vue"
+import { currencyFormatter } from "../../Utils/currencyFormatter"
+import Button from "../../Components/ui/button/Button.vue"
+import StatusBadge from "../../Components/StatusBadge.vue"
+import DropdownMenuTrigger from "../../Components/ui/dropdown-menu/DropdownMenuTrigger.vue"
+import DropdownMenuContent from "../../Components/ui/dropdown-menu/DropdownMenuContent.vue"
+import DropdownMenuItem from "../../Components/ui/dropdown-menu/DropdownMenuItem.vue"
+import DropdownMenu from "../../Components/ui/dropdown-menu/DropdownMenu.vue"
+import DropdownMenuLabel from "../../Components/ui/dropdown-menu/DropdownMenuLabel.vue"
+import DropdownMenuSeparator from "../../Components/ui/dropdown-menu/DropdownMenuSeparator.vue"
+import axios from "axios"
+import { toast } from "vue-sonner"
+import { Toaster } from "../../Components/ui/sonner"
 
-const page = usePage();
-const orders = ref(page.props.orders.data as Order[]);
-const pagination = ref(page.props.orders.links as Pagination[]);
+const page = usePage() as any
+const orders = ref(page.props.orders.data as Order[])
+const pagination = ref(page.props.orders.links as Pagination[])
 
-const hasOrders = computed(() => orders.value.length > 0);
+const hasOrders = computed(() => orders.value.length > 0)
 
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString("ru-RU", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
-	});
-};
+	})
+}
 
-declare const window: any;
+declare const window: any
 const downloadListPDF = (order_id: number) => {
-	return window.open("/orders/" + order_id + "/list-pdf", "_blank").focus();
+	return window.open("/orders/" + order_id + "/list-pdf", "_blank").focus()
 }
 
 const visitSketcherPage = (order_id: number) => {
-	window.location.href = "/app/orders/sketcher/" + order_id;
+	window.location.href = "/app/orders/sketcher/" + order_id
+}
+
+const deleteOrder = (order_id: number) => {
+	axios.delete("/app/order/" + order_id + "/delete").then(() => {
+		// window.location.href = "/app/history"
+		console.log('deleted')
+		toast("Заказ успешно удален")
+		//refresh page
+		window.location.reload()
+	}).catch((error) => {
+		console.error(error)
+		toast("Произошла ошибка при удалении заказа")
+	})
 }
 </script>
 
 <template>
 	<Head title="История заказов" />
 	<AuthenticatedHeaderLayout />
+	
+	<Toaster />
 
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
@@ -95,7 +113,7 @@ const visitSketcherPage = (order_id: number) => {
 								        <DropdownMenuContent>
 								            <DropdownMenuLabel>Действия</DropdownMenuLabel>
 								            <DropdownMenuSeparator />
-								            <DropdownMenuItem>
+								            <DropdownMenuItem @click="deleteOrder(order.id)">
 								                    <TrashIcon class="size-4" />
 								                    <span>Удалить</span>
 								            </DropdownMenuItem>

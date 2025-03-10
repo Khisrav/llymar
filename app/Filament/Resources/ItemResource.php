@@ -113,6 +113,7 @@ class ItemResource extends Resource
                 Tables\Columns\TextInputColumn::make('purchase_price')
                     ->label('Закупка, ₽')
                     ->searchable()
+                    ->type('number')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 // Tables\Columns\TextInputColumn::make('retail_price')
@@ -142,6 +143,7 @@ class ItemResource extends Resource
                     ->label('Категория')
                     ->multiple()
                     ->options(Category::all()->pluck('name', 'id')),
+                
             ])
             ->actions([
                 // Tables\Actions\DeleteAction::make(),

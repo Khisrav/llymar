@@ -130,6 +130,22 @@ class PermissionSeeder extends Seeder
             'delete user',
         ]);
         
+        $agent = Role::create(['name' => 'Agent']);
+        $agent->givePermissionTo([
+            'access admin panel',
+            'access app calculator',
+            'view-any order',
+            'view order',
+            // 'update order status',
+            
+            'view-any user',
+            'view user',
+            'create user',
+            // 'create user manager',
+            'update user',
+            'delete user',
+        ]);
+        
         $dealer = Role::create(['name' => 'Dealer']);
         $dealer->givePermissionTo([
             'access app calculator',

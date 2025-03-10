@@ -75,7 +75,36 @@ class OrderController extends Controller
             ]);
         }
     }
-
+    
+    /**
+     * Destroy the specified order.
+     */
+    public function destroy(Request $request, $order_id)
+    {
+        // Find the order
+        $order = Order::findOrFail($order_id);
+    
+        // Get the authenticated user
+        $user = auth()->user();
+    
+        // Check if the order can be deleted
+        if ($order->user_id !== $user->id || in_array($order->status, ['paid', 'sent']) || !$user->can('delete order')) {
+            return response()->json([
+                'message' => 'You do not have permission to delete this order.',
+                'success' => false
+            ], 403);
+        }
+    
+        // Delete the order
+        $order->delete();
+    
+        // Redirect to the order history page
+        return response()->json([
+            'message' => 'Order deleted successfully',
+            'success' => true
+        ]);
+    }
+    
     /**
      * Generate and download PDF for a saved order.
      */

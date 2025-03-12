@@ -49,7 +49,7 @@ class OrderItemsRelationManager extends RelationManager
             ->columns([
                 // Add ImageColumn here
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Image')
+                    ->label('Картинка')
                     ->getStateUsing(function (Model $record) {
                         $item = Item::find($record->item_id);
                         return $item ? $item->img : null; 

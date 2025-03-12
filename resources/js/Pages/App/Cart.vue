@@ -1,58 +1,55 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { ShoppingCartIcon, ArrowLeft } from "lucide-vue-next";
-import { Head, Link, usePage } from "@inertiajs/vue3";
-import { router } from "@inertiajs/vue3";
-import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
-import Button from "../../Components/ui/button/Button.vue";
-import { useItemsStore } from "../../Stores/itemsStore";
-import { Category, Item, OpeningType, User, WholesaleFactor } from "../../lib/types";
-import CartItem from "../../Components/Cart/CartItem.vue";
-import { currencyFormatter } from "../../Utils/currencyFormatter";
-import Input from "../../Components/ui/input/Input.vue";
-import Label from "../../Components/ui/label/Label.vue";
-import { vMaska } from "maska/vue";
-import { useOpeningStore } from "../../Stores/openingsStore";
+import { computed, ref } from "vue"
+import { ShoppingCartIcon, ArrowLeft } from "lucide-vue-next"
+import { Head, Link, usePage } from "@inertiajs/vue3"
+import { router } from "@inertiajs/vue3"
+import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
+import Button from "../../Components/ui/button/Button.vue"
+import { useItemsStore } from "../../Stores/itemsStore"
+import { Category, Item, OpeningType, User, WholesaleFactor } from "../../lib/types"
+import CartItem from "../../Components/Cart/CartItem.vue"
+import { currencyFormatter } from "../../Utils/currencyFormatter"
+import Input from "../../Components/ui/input/Input.vue"
+import Label from "../../Components/ui/label/Label.vue"
+import { vMaska } from "maska/vue"
+import { useOpeningStore } from "../../Stores/openingsStore"
 import { RAL } from "ral-colors/index.js";
-import Popover from "../../Components/ui/popover/Popover.vue";
-import PopoverContent from "../../Components/ui/popover/PopoverContent.vue";
-import Command from "../../Components/ui/command/Command.vue";
-import CommandInput from "../../Components/ui/command/CommandInput.vue";
-import CommandList from "../../Components/ui/command/CommandList.vue";
-import CommandItem from "../../Components/ui/command/CommandItem.vue";
-import PopoverTrigger from "../../Components/ui/popover/PopoverTrigger.vue";
-import CommandGroup from "../../Components/ui/command/CommandGroup.vue";
+import Popover from "../../Components/ui/popover/Popover.vue"
+import PopoverContent from "../../Components/ui/popover/PopoverContent.vue"
+import Command from "../../Components/ui/command/Command.vue"
+import CommandInput from "../../Components/ui/command/CommandInput.vue"
+import CommandList from "../../Components/ui/command/CommandList.vue"
+import CommandItem from "../../Components/ui/command/CommandItem.vue"
+import PopoverTrigger from "../../Components/ui/popover/PopoverTrigger.vue"
+import CommandGroup from "../../Components/ui/command/CommandGroup.vue"
 
-const itemsStore = useItemsStore();
-const openingsStore = useOpeningStore();
-const open = ref(false);
-const selectedRALColor = ref({
-	name: "Выбрать цвет",
-	HEX: "none",
-});
+const itemsStore = useItemsStore()
+const openingsStore = useOpeningStore()
+const open = ref(false)
+const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
 
-itemsStore.items = usePage().props.items as Item[];
-itemsStore.additional_items = usePage().props.additional_items as Item[];
-itemsStore.glasses = usePage().props.glasses as Item[];
-itemsStore.services = usePage().props.services as Item[];
-itemsStore.user = usePage().props.user as User;
-itemsStore.categories = usePage().props.categories as Category[];
-itemsStore.wholesale_factor = usePage().props.wholesale_factor as WholesaleFactor;
+itemsStore.items = usePage().props.items as Item[]
+itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
+itemsStore.glasses = usePage().props.glasses as Item[]
+itemsStore.services = usePage().props.services as Item[]
+itemsStore.user = usePage().props.user as User
+itemsStore.categories = usePage().props.categories as Category[]
+itemsStore.wholesale_factor = usePage().props.wholesale_factor as WholesaleFactor
 
-itemsStore.initiateCartItems();
+itemsStore.initiateCartItems()
 
-const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number));
+const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number))
 
-const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null;
+const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null
 
-const getOpeningName = (type: OpeningType): string => openingsStore.openingTypes[type];
+const getOpeningName = (type: OpeningType): string => openingsStore.openingTypes[type]
 
 // SNP for Surname Name Patronymic
 const snp = ref({
 	surname: itemsStore.user.name.split(" ")[0],
 	name: itemsStore.user.name.split(" ")[1],
 	patronymic: itemsStore.user.name.split(" ")[2],
-});
+})
 
 const order_info = computed(() => ({
 	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
@@ -60,7 +57,7 @@ const order_info = computed(() => ({
 	address: itemsStore.user.address,
 	email: itemsStore.user.email,
 	color: "",
-}));
+}))
 
 const checkout = () => {
 	const formData = {
@@ -71,24 +68,24 @@ const checkout = () => {
 		cart_items: itemsStore.cartItems,
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,
-		ral_code: selectedRALColor.value.name,
-	};
+		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
+	}
 
-	if (selectedRALColor.value.HEX === "none") {
-		alert("Выберите цвет");
-		return;
+	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
+		alert("Выберите цвет")
+		return
 	}
 
 	router.post("/app/checkout", formData as any, {
 		onSuccess: () => {
-			sessionStorage.removeItem("openings");
-			sessionStorage.removeItem("cartItems");
+			sessionStorage.removeItem("openings")
+			sessionStorage.removeItem("cartItems")
 		},
 		onError: (errors: any) => {
-			console.log(errors);
+			console.log(errors)
 		},
-	});
-};
+	})
+}
 </script>
 
 <template>

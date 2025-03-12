@@ -18,7 +18,7 @@ const themeToggler = () => {
 </script>
 
 <template>
-<Button variant="secondary" size="icon" @click="themeToggler" class="rounded-full">
+<Button variant="outline" size="icon" @click="themeToggler" class="rounded-full">
     <svg
         class="w-6 h-6"
         :class="[isDarkMode ? 'hidden' : '']"

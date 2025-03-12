@@ -18,7 +18,7 @@ class AppCartController extends Controller
         
         return Inertia::render('App/Cart', [
             'items' => $this->getCalculatorItems(),
-            'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
+            'additional_items' => $this->getAdditionalItems(),
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
             'user' => $user,
@@ -46,6 +46,16 @@ class AppCartController extends Controller
         
         if ($items->isNotEmpty()) {
             return $items;
+        }
+        
+        return [];
+    }
+    
+    protected function getAdditionalItems() {
+        $items = Item::where('is_for_llymar', true)->get();
+        
+        if ($items->isNotEmpty()) {
+            return $items->groupBy('category_id')->toArray();
         }
         
         return [];

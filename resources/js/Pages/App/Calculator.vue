@@ -11,9 +11,9 @@ import CommercialOfferFields from '../../Components/Calculator/CommercialOfferFi
 import CustomPricing from '../../Components/Calculator/CustomPricing.vue';
 
 const itemsStore = useItemsStore();
-
+console.log(usePage().props.additional_items)
 itemsStore.items = usePage().props.items as Item[]
-itemsStore.additional_items = usePage().props.additional_items as Item[]
+itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User

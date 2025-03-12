@@ -19,7 +19,7 @@ class AppCalculatorController extends Controller
     
         return Inertia::render('App/Calculator', [
             'items' => $this->getCalculatorItems(),
-            'additional_items' => Item::where('is_for_llymar', true)->get()->toArray(),
+            'additional_items' => $this->getAdditionalItems(),
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
             'user' => auth()->user(),
@@ -47,6 +47,16 @@ class AppCalculatorController extends Controller
         
         if ($items->isNotEmpty()) {
             return $items;
+        }
+        
+        return [];
+    }
+    
+    protected function getAdditionalItems() {
+        $items = Item::where('is_for_llymar', true)->get();
+        
+        if ($items->isNotEmpty()) {
+            return $items->groupBy('category_id')->toArray();
         }
         
         return [];

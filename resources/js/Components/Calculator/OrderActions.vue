@@ -132,7 +132,10 @@ const downloadSketchPDF = async () => {
     <div class="h-6 md:h-10"></div>
     <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 bg-white dark:bg-slate-900 p-2 sm:p-4 border sm:rounded-xl md:rounded-2xl shadow-sm">
         <div class="flex items-center justify-between">
-            <span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</span>
+            <div class="flex flex-col">
+                <span class="text-xs font-thin text-muted-foreground">Закупочная цена:</span>
+                <span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</span>
+            </div>
 
             <div class="flex gap-2 md:gap-4 items-center">
                 <DropdownMenu>

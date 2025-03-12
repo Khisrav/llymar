@@ -4,7 +4,7 @@
 			<MinusIcon />
 		</Button>
 		<Input v-model="doors" class="hidden" type="number" />
-		<span>{{ doors }} шт.</span>
+		<span>{{ doors }} {{ unit ? unit : "шт." }}</span>
 		<Button variant="outline" :disabled="doors >= props.max" class="rounded-full" size="icon" @click="increment">
 			<PlusIcon />
 		</Button>
@@ -21,6 +21,7 @@ const props = defineProps<{
 	min: number;
 	max: number;
 	step: number;
+	unit?: string;
 }>();
 
 const doors = defineModel<number>({ default: 0 });

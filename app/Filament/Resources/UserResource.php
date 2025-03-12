@@ -187,7 +187,7 @@ class UserResource extends Resource
                                     ->columnSpan(3),
                                 Forms\Components\Select::make('reduction_factor_key')
                                     ->label('Коэффициент уменьшения')
-                                    ->native(true)
+                                    ->native(false)
                                     ->options(function () {
                                         return array_combine(
                                             array_map(fn($key) => 'KU' . $key, range(1, 10)),
@@ -197,7 +197,7 @@ class UserResource extends Resource
                                     ->columnSpan(3),
                                 Forms\Components\Select::make('wholesale_factor_key')
                                     ->label('Оптовый коэффициент')
-                                    ->native(true)
+                                    ->native(false)
                                     ->options(function () {
                                         return \App\Models\WholesaleFactor::query()->pluck('name', 'name')->toArray();
                                     })

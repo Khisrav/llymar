@@ -51,7 +51,8 @@ class ItemResource extends Resource
                             ->label('Артикул'),
                         Forms\Components\TextInput::make('purchase_price')
                             ->label('Закупка, ₽')
-                            ->type('number')
+                            ->numeric()
+                            ->inputMode('decimal')
                             ->prefix('₽')
                             ->required(),
                         Forms\Components\Select::make('unit')

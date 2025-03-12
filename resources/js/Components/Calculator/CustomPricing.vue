@@ -10,7 +10,7 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 
 const basePrice = computed(() => itemsStore.total_price.with_discount)
-const allOpeningsArea = computed(() => openingsStore.openings.reduce((acc, o) => acc + o.width * o.height, 0) / 1_000_000)
+const allOpeningsArea = computed(() => openingsStore.openings.reduce((acc, o) => acc + o.width * o.height, 0) / 1000000)
 
 // ---------- HELPER FUNCTIONS ----------
 const totalPriceFromPercentage = (percentage: number) => basePrice.value * (1 + percentage / 100)

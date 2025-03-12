@@ -16,7 +16,9 @@ import { PlusIcon } from "lucide-vue-next";
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find((glass) => glass.id === itemsStore.selectedGlassID) || null);
 
-watch(() => itemsStore.selectedGlassID, (newID) => {
+watch(
+	() => itemsStore.selectedGlassID,
+	(newID) => {
 		selectedGlass.value = itemsStore.glasses.find((glass) => glass.id === newID) || null;
 	}
 );
@@ -37,8 +39,7 @@ const toggleSelection = (serviceId: number) => {
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-8">
-			<div
-				class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
+			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
 				<p class="font-semibold mb-2">Стекло</p>
 				<div class="flex flex-col md:flex-row gap-2 md:gap-4 justify-between">
 					<div class="flex-1 basis-2/3 overflow-hidden">
@@ -56,21 +57,16 @@ const toggleSelection = (serviceId: number) => {
 						<div v-if="selectedGlass" class="flex flex-col justify-between mt-2">
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Цена:</span>
-								<span v-if="selectedGlass" class="font-bold text-accent-foreground"> {{
-									currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{
-										selectedGlass.unit }} </span>
+								<span v-if="selectedGlass" class="font-bold text-accent-foreground"> {{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }} </span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Кол-во:</span>
-								<span v-if="selectedGlass" class="font-bold text-accent-foreground"> {{
-									itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit
-									}} </span>
+								<span v-if="selectedGlass" class="font-bold text-accent-foreground"> {{ itemsStore.cartItems[itemsStore.selectedGlassID].quantity }} {{ selectedGlass.unit }} </span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Итого:</span>
 								<span v-if="selectedGlass" class="font-bold text-accent-foreground">
-									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) *
-										itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
+									{{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID) * itemsStore.cartItems[itemsStore.selectedGlassID].quantity) }}
 								</span>
 							</div>
 						</div>
@@ -81,8 +77,7 @@ const toggleSelection = (serviceId: number) => {
 				</div>
 			</div>
 
-			<div
-				class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
+			<div class="p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
 				<div v-if="itemsStore.services.length" class="flex flex-col gap-2">
 					<div>
 						<span class="font-semibold">Услуги</span>
@@ -91,7 +86,8 @@ const toggleSelection = (serviceId: number) => {
 						<div class="flex flex-row gap-4 justify-between border rounded-lg p-2 w-full text-sm">
 							<div>
 								<p class="font-semibold">
-									<span class="font-mono">{{ service.vendor_code ? service.vendor_code + " - " : "" }}</span>{{ service.name }}
+									<span class="font-mono">{{ service.vendor_code ? service.vendor_code + " - " : "" }}</span
+									>{{ service.name }}
 								</p>
 								<p class="text-muted-foreground text-xs">{{ currencyFormatter(itemsStore.itemPrice(service.id)) }}/{{ service.unit }}</p>
 							</div>
@@ -111,34 +107,29 @@ const toggleSelection = (serviceId: number) => {
 			</div>
 		</div>
 
-		<div
-			class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mt-4 transition-all duration-1000">
-			<div v-for="item in itemsStore.additional_items" :key="item.vendor_code"
-				class="flex flex-col justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
-				<p class="font-medium mb-2 md:mb-4 text-sm md:text-base">
-					<span>{{ item.vendor_code ? item.vendor_code + " - " : "" }} {{ item.name }}</span>
-				</p>
-				<div class="flex flex-row gap-2 md:gap-4">
-					<div class="basis-1/3">
-						<img :src="getImageSource(item.img as string)" class="rounded-md w-full" />
-					</div>
-					<div class="basis-2/3 flex flex-col justify-between gap-2">
-						<div class="flex justify-between items-center text-sm text-muted-foreground">
-							<span>Цена:</span>
-							<span class="font-bold text-accent-foreground">{{
-								currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
+		<div class="flex flex-col gap-2 md:gap-4 mt-4 transition-all duration-1000">
+			<div v-for="(categoryItems, categoryId) in itemsStore.additional_items" :key="categoryId" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
+				<div v-for="item in categoryItems" :key="item.vendor_code" class="flex flex-col justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
+					<p class="font-medium mb-2 md:mb-4 text-sm md:text-base">
+						<span>{{ item.vendor_code ? item.vendor_code + " - " : "" }} {{ item.name }}</span>
+					</p>
+					<div class="flex flex-row gap-2 md:gap-4">
+						<div class="basis-1/3">
+							<img :src="getImageSource(item.img as string)" class="rounded-md w-full" />
 						</div>
-						<div class="flex justify-between items-center text-sm text-muted-foreground">
-							<span>Итого:</span>
-							<span class="font-bold text-accent-foreground">{{
-								currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0))
-							}}</span>
-						</div>
-						<div>
-							<QuantitySelector v-if="itemsStore.cartItems[item.id]" :min="0" :max="100" :step="1" v-model="itemsStore.cartItems[item.id].quantity" />
-							<Button v-else class="w-full" @click="() => (itemsStore.cartItems[item.id] = { quantity: 1 })">
-								<PlusIcon /> Добавить
-							</Button>
+						<div class="basis-2/3 flex flex-col justify-between gap-2">
+							<div class="flex justify-between items-center text-sm text-muted-foreground">
+								<span>Цена:</span>
+								<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
+							</div>
+							<div class="flex justify-between items-center text-sm text-muted-foreground">
+								<span>Итого:</span>
+								<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
+							</div>
+							<div>
+								<QuantitySelector v-if="itemsStore.cartItems[item.id]" :min="0" :max="100" :step="1" :unit="item.unit" v-model="itemsStore.cartItems[item.id].quantity" />
+								<Button v-else class="w-full" @click="() => (itemsStore.cartItems[item.id] = { quantity: 1 })"> <PlusIcon /> Добавить </Button>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -8,7 +8,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const openingsStore = useOpeningStore()
 
     const items = ref<Item[]>([])
-    const additional_items = ref<Item[]>([])
+    const additional_items = ref<{ [key: number]: Item[] }>([])
     const glasses = ref<Item[]>([])
     const services = ref<Item[]>([])
     const cartItems = ref<{ [key: number]: CartItem }>({})
@@ -65,7 +65,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
         } else { selectedServicesID.value = [] }
   
         if (!sessionStorage.getItem('cartItems')) {
-            const allItems = [...items.value, ...additional_items.value]
+            // const allItems = [...items.value, ...additional_items.value]
+            const allItems = [...items.value]
+            
+            Object.keys(additional_items.value).forEach(key => {
+                allItems.push(...additional_items.value[+key])
+            })
+            
             allItems.forEach(item => {
                 cartItems.value[item.id] = { quantity: 0 }
             })
@@ -238,7 +244,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const total_price = computed(() => {
         let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
-        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        const allItems = [...items.value, ...glasses.value, ...services.value]
+        
+        Object.keys(additional_items.value).forEach(key => {
+            allItems.push(...additional_items.value[+key])
+        })
 
         allItems.forEach(item => {
             const quantity = cartItems.value[item.id]?.quantity || 0
@@ -256,7 +267,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
     })
     
     const getItemInfo = (id: number) => {
-        const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+        const allItems = [...items.value, ...glasses.value, ...services.value]
+        
+        Object.keys(additional_items.value).forEach(key => {
+            allItems.push(...additional_items.value[+key])
+        })
+        
         const item = allItems.find(i => i.id === id)
         return item
     }

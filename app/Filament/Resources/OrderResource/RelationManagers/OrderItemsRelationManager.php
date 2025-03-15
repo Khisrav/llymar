@@ -47,7 +47,6 @@ class OrderItemsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('order_id')
             ->columns([
-                // Add ImageColumn here
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Картинка')
                     ->getStateUsing(function (Model $record) {

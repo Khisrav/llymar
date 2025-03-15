@@ -148,6 +148,8 @@
             </tr>
         </tbody>
     </table>
+    
+    {{-- {{ $additional_items }} --}}
 
     {{-- <h2>Доп. детали</h2> --}}
     <table class="table">
@@ -226,7 +228,7 @@
 
             <tr>
                 <td colspan="5" style="text-align: right">Итого:</td>
-                <td><b>{{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
+                <td class="nowrap"><b>{{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>
     </table>

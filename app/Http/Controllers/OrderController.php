@@ -193,6 +193,15 @@ class OrderController extends Controller
             'total_price'       => 'required|numeric',
             'markup_percentage' => 'required|numeric',
         ]);
+        
+        $additional_items = [];
+        
+        foreach ($offer['additional_items'] as $item_group) {
+            $additional_items[] = $item_group[0];
+        }
+        
+        // Log::info($additional_items);
+        $offer['additional_items'] = $additional_items;
 
         $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
         $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;
@@ -208,6 +217,7 @@ class OrderController extends Controller
 
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', [
                 'offer'                   => $offer,
+                'additional_items'        => $additional_items,
                 'offer_additionals_price' => $offerAdditionalsPrice,
                 'offer_openings_price'    => $offerOpeningsPrice,
                 'wholesaleFactor'         => $wholesaleFactor,
@@ -390,10 +400,10 @@ class OrderController extends Controller
      * Prepare data for PDF generation.
      */
     private static function preparePdfData(
-        Order $order,
-        ?array $orderItems = null,
-        ?array $orderOpenings = null
-    ): array {
+            Order $order,
+            ?array $orderItems = null,
+            ?array $orderOpenings = null
+        ): array {
         // Prepare order items.
         if (is_null($orderItems)) {
             $orderItems = $order->orderItems->map(function ($orderItem) {
@@ -449,14 +459,37 @@ class OrderController extends Controller
     private static function calculateOfferAdditionalsPrice(array $offer): float
     {
         $offerAdditionalsPrice = 0;
+        
+        Log::info($offer['additional_items']);
 
         foreach ($offer['additional_items'] as $item) {
+            Log::info($offer['cart_items']);
+            Log::info($item);
             if (isset($offer['cart_items'][$item['id']])) {
                 $price = Item::itemPrice($item['id']);
                 $quantity = $offer['cart_items'][$item['id']]['quantity'];
                 $offerAdditionalsPrice += $price * $quantity;
             }
         }
+        
+        // [2025-03-14 18:42:53] local.INFO: array (
+        //     0 => 
+        //     array (
+        //       'id' => 1,
+        //       'vendor_code' => 'qwe',
+        //       'name' => 'Петля стекло-стекло открывание наружу без реза уплотнителя без крышек 180˚ ХРОМ',
+        //       'img' => '/items/ee305079-c426-48c7-9852-a3d750dc99c5.jpeg',
+        //       'purchase_price' => 1501.123,
+        //       'unit' => 'м.п.',
+        //       'category_id' => 7,
+        //       'created_at' => NULL,
+        //       'updated_at' => '2025-03-12T21:54:10.000000Z',
+        //       'is_for_llymar' => 1,
+        //       'discount' => 0,
+        //       'quantity_in_warehouse' => 28,
+        //     ),
+        //   ) 
+        // why do i get this error ERROR: Undefined array key "id" if in logs i can clearly see that id exists?
 
         foreach ($offer['services'] ?? [] as $service) {
             if (isset($offer['cart_items'][$service['id']])) {

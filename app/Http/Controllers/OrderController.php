@@ -471,25 +471,6 @@ class OrderController extends Controller
                 $offerAdditionalsPrice += $price * $quantity;
             }
         }
-        
-        // [2025-03-14 18:42:53] local.INFO: array (
-        //     0 => 
-        //     array (
-        //       'id' => 1,
-        //       'vendor_code' => 'qwe',
-        //       'name' => 'Петля стекло-стекло открывание наружу без реза уплотнителя без крышек 180˚ ХРОМ',
-        //       'img' => '/items/ee305079-c426-48c7-9852-a3d750dc99c5.jpeg',
-        //       'purchase_price' => 1501.123,
-        //       'unit' => 'м.п.',
-        //       'category_id' => 7,
-        //       'created_at' => NULL,
-        //       'updated_at' => '2025-03-12T21:54:10.000000Z',
-        //       'is_for_llymar' => 1,
-        //       'discount' => 0,
-        //       'quantity_in_warehouse' => 28,
-        //     ),
-        //   ) 
-        // why do i get this error ERROR: Undefined array key "id" if in logs i can clearly see that id exists?
 
         foreach ($offer['services'] ?? [] as $service) {
             if (isset($offer['cart_items'][$service['id']])) {

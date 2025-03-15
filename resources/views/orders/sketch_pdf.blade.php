@@ -319,14 +319,12 @@ $glass_counter = 0;
                 @endphp
                 <div style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
                     <div class="inline-block">
-                        {{-- <div>С{{ $middle }} | К{{ $edges }} |  </div> --}}
-                        <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
+                        <div>СТ{{ $openingDoorsIndex }}</div>
                         <div class="glass-top"></div>
                     </div>
                     <div class="inline-block" style="width: calc(6px + {{ ($stvorki / 2 - $openingDoorsIndex) * 110 }});"></div>
                     <div class="inline-block">
-                        {{-- <div>С{{ $middle }} | К{{ $edges }}</div> --}}
-                        <div>СТ{{ $stvorki / 2 - $openingDoorsIndex + 1 }}</div>
+                        <div>СТ{{ $stvorki - $openingDoorsIndex + 1 }}</div>
                         <div class="glass-top"></div>
                     </div>
                 </div>
@@ -355,9 +353,11 @@ $glass_counter = 0;
                         <div class="inline-block" style="width: calc({{ (($openingDoorsIndex - 1) - intval($stvorki / 2)) * 110 }});"></div>
                     @endif
                     <div class="inline-block">
-                        {{-- <div>С{{ $middle }} | К{{ $edges }}</div> --}}
-                        {{-- <div>{{ abs(($openingDoorsIndex - 1) * 110 - intval($stvorki / 2) * 110) }} | {{ ($openingDoorsIndex - 1) * 110 }}</div> --}}
-                        <div>СТ{{ $openingDoorsIndex }}</div>
+                        @if ($opening['type'] == 'left')
+                            <div>СТ{{ $openingDoorsIndex }}</div>
+                        @else
+                            <div>СТ{{ $stvorki - $openingDoorsIndex + 1 }}</div>
+                        @endif
                         <div class="glass-top"></div>
                     </div>
                     @if ($stvorki / 2 <= $openingDoorsIndex - 1)

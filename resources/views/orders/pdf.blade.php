@@ -151,7 +151,7 @@
                 <td></td>
                 <td></td>
                 <td><b>Сумма:</b></td>
-                <td><b>{{ number_format($order->total_price, 0, '.', ' ') }} ₽</b></td>
+                <td class="nowrap"><b>{{ number_format($order->total_price, 0, '.', ' ') }} ₽</b></td>
             </tr>
         </tbody>
     </table>

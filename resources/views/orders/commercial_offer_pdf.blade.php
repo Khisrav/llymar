@@ -59,14 +59,14 @@
     <table>
         <tbody>
             <tr>
-                <td>
+                <td style="border:none">
                     <div style='font-size:14px;font-weight:semibold;'>
                         <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
                         <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
                     </div>
                 </td>
-                <td style="text-align: right">
-                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.png'))) }}" alt="" style="height:30px;width:auto">
+                <td style="text-align: right;border:none">
+                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
                 </td>
             </tr>
         </tbody>

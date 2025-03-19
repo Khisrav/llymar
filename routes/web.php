@@ -24,8 +24,8 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
-// Route::get('/orders/sketch', [OrderController::class, 'sketchPDF'])
-//     ->name('orders.sketch_pdf');
+Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
+    ->name('orders.sketch_pdf');
 // Route::get('/orders/sketch', function() {
 //     return view('orders.sketch_pdf');
 // })->name('orders.sketch_pdf');

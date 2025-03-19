@@ -170,8 +170,8 @@ const saveAndDownload = async () => {
 
 					<!-- Action buttons -->
 					<div>
-						<Button type="button" class="w-full mb-4" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить и закрыть </Button>
-						<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <DownloadIcon class="mr-2 h-4 w-4" /> Сохранить и скачать PDF </Button>
+						<Button type="button" class="w-full mb-4" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
+						<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <DownloadIcon class="mr-2 h-4 w-4" /> Скачать PDF </Button>
 					</div>
 				</div>
 			</div>

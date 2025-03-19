@@ -107,7 +107,7 @@ const downloadSketchPDF = async () => {
             openings: openingsStore.openings,
         }
     
-        const response = await axios.post('/app/order/sketch', formData, {
+        const response = await axios.post('/orders/sketch', formData, {
             responseType: 'blob',
             headers: { 'Content-Type': 'application/json' }
         })

@@ -200,7 +200,6 @@ class OrderController extends Controller
             $additional_items[] = $item_group[0];
         }
         
-        // Log::info($additional_items);
         $offer['additional_items'] = $additional_items;
 
         $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
@@ -281,9 +280,7 @@ class OrderController extends Controller
             'openings' => 'required|array',
             // 'openings.*.id' => 'required|integer|exists:order_openings,id',
         ]);
-        
-        Log::info($validated);
-    
+            
         $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i'];
     
         foreach ($validated['openings'] as $openingData) {
@@ -293,7 +290,6 @@ class OrderController extends Controller
                     $orderOpening->{$key} = is_array($value) ? $value[0] : $value;
                 }
             }
-            Log::info($orderOpening);
             $orderOpening->save();
         }
     
@@ -459,12 +455,8 @@ class OrderController extends Controller
     private static function calculateOfferAdditionalsPrice(array $offer): float
     {
         $offerAdditionalsPrice = 0;
-        
-        Log::info($offer['additional_items']);
 
         foreach ($offer['additional_items'] as $item) {
-            Log::info($offer['cart_items']);
-            Log::info($item);
             if (isset($offer['cart_items'][$item['id']])) {
                 $price = Item::itemPrice($item['id']);
                 $quantity = $offer['cart_items'][$item['id']]['quantity'];

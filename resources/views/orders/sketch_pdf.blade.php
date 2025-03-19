@@ -264,10 +264,10 @@ $glass_counter = 0;
         //central opening
         $opening = $openings[$oindex];
         $stvorki = $opening['doors'];
-        $gap = $opening['type'] == 'center' ? 119 : 130;
+        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 130;
         $doorsGap = [
-            'start' => 85,
-            'end' => 17,
+            'start' => $opening['e'] + $opening['g'],
+            'end' => $opening['b'],
         ];
         
         $overlaps = $stvorki / ($opening['type'] == 'center' ? 2 : 1) - 1;

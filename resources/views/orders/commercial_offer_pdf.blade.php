@@ -46,11 +46,31 @@
     </style>
 </head>
 <body>
-    <div style='font-size:14px;font-weight:semibold;text-align:center;margin-bottom:12px'>
-        <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
-        <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
-    </div>
+    {{-- <div style="display: flex; justify-content: space-between;align-items:center;margin-bottom:12px">
+        <div>
+            <img src="{{ base_path('public/assets/logo.png') }}" alt="" style="height:30px;width:auto">
+        </div>
+        <div style='font-size:14px;font-weight:semibold;text-align:center;'>
+            <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
+            <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
+        </div>
+    </div> --}}
     {{-- <p>{{ now()->format('d.m.Y') }}</p> --}}
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <div style='font-size:14px;font-weight:semibold;'>
+                        <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
+                        <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
+                    </div>
+                </td>
+                <td style="text-align: right">
+                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.png'))) }}" alt="" style="height:30px;width:auto">
+                </td>
+            </tr>
+        </tbody>
+    </table>
     
     <table>
         <thead>

@@ -30,6 +30,11 @@ const toggleSelection = (serviceId: number) => {
 		itemsStore.selectedServicesID.push(serviceId);
 	}
 };
+
+const step = (category_id: number) => {
+	if (category_id == 30) return 3
+	return 1
+}
 </script>
 
 <template>
@@ -127,7 +132,7 @@ const toggleSelection = (serviceId: number) => {
 								<span class="font-bold text-primary">{{ currencyFormatter(itemsStore.itemPrice(item.id) * (itemsStore.cartItems[item.id] ? itemsStore.cartItems[item.id].quantity : 0)) }}</span>
 							</div>
 							<div>
-								<QuantitySelector v-if="itemsStore.cartItems[item.id]" :min="0" :max="100" :step="1" :unit="item.unit" v-model="itemsStore.cartItems[item.id].quantity" />
+								<QuantitySelector v-if="itemsStore.cartItems[item.id]" :min="0" :max="100" :step="step(categoryId)" :unit="item.unit" v-model="itemsStore.cartItems[item.id].quantity" />
 								<Button v-else class="w-full" @click="() => (itemsStore.cartItems[item.id] = { quantity: 1 })"> <PlusIcon /> Добавить </Button>
 							</div>
 						</div>

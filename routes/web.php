@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppCalculatorController;
 use App\Http\Controllers\AppCartController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
@@ -69,6 +70,6 @@ Route::middleware(['auth'])->group(function () {
  */
 Route::get('/login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');
 Route::get('/login/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('socialite.callback');
-Route::get('/logout', [SocialiteController::class, 'logout'])->name('logout');
+Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
 require __DIR__.'/auth.php';

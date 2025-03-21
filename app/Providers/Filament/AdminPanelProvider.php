@@ -17,6 +17,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -65,6 +66,12 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Калькулятор')
                     ->url('/app/calculator')
                     ->icon('heroicon-o-calculator'),
+            ])
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Настройки')
+                    ->collapsed()
+                    ->icon('heroicon-o-cog-6-tooth')
             ]);
     }
 }

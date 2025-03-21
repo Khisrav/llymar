@@ -280,4 +280,9 @@ class OrderResource extends Resource
             'view' => Pages\ViewOrder::route('/{record}'),
         ];
     }
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'created')->count();
+    }
 }

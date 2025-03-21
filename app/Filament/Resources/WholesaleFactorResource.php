@@ -18,8 +18,8 @@ class WholesaleFactorResource extends Resource
     protected static ?string $model = WholesaleFactor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
-    
     protected static ?string $navigationLabel = 'Оптовые коэффициенты';
+    protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
     {

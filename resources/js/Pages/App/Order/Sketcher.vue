@@ -8,7 +8,7 @@ import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
 import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
 import Label from "../../../Components/ui/label/Label.vue";
 import Button from "../../../Components/ui/button/Button.vue";
-import { DownloadIcon, SaveIcon } from "lucide-vue-next";
+import { CircleHelpIcon, DownloadIcon, SaveIcon } from "lucide-vue-next";
 import { Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { toast } from "vue-sonner";
@@ -63,6 +63,50 @@ onMounted(() => {
 });
 
 const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
+const currentOpening: any = computed(() => openings.value.find((opening) => opening.id === selectedOpeningID.value));
+const getOpeningSketchDimensions = (doorIndex: number) => {
+	let gap = currentOpening.value.type == 'center' ? sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0] + 3 : 130;
+    let doorsGap = {
+		start: sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0],
+		end: sketch_vars.value[selectedOpeningID.value].b[0],
+	};
+    let overlaps = currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1) - 1;
+	let middle = Math.floor((overlaps * 13) / (currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1)));
+	let edges = currentOpening.value.type == 'center' ? Math.floor((overlaps * 13 - middle * (currentOpening.value.doors / 2 - 2)) / 2) : Math.floor((overlaps * 13 - middle * (currentOpening.value.doors - 2)) / 2);
+	let y = currentOpening.value.width / (currentOpening.value.type == 'center' ? 2 : 1) - gap;
+	let z = y / (currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1));
+	let shirinaStvorok = [];
+	
+	if (currentOpening.value.type == 'center') {
+		for (let i = 1; i <= currentOpening.value.doors / 2; i++) {
+			let temp = z + (i == currentOpening.value.doors / 2 || i == 1 ? edges : middle);
+			if (i == 1) {
+				temp += doorsGap['end'];
+			} else if (i == currentOpening.value.doors / 2) {
+				temp += doorsGap['start'];
+			}
+			
+			shirinaStvorok[i] = Math.floor(temp);
+			shirinaStvorok[currentOpening.value.doors - i + 1] = Math.floor(temp);
+		}
+	} else if (currentOpening.value.type == 'left' || currentOpening.value.type == 'right') {
+		for (let i = 1; i <= currentOpening.value.doors; i++) {
+			let temp = z + (i == currentOpening.value.doors || i == 1 ? edges : middle);
+			if (i == 1) {
+				temp += doorsGap['end'];
+			} else if (i == currentOpening.value.doors) {
+				temp += doorsGap['start'];
+			}
+			
+			shirinaStvorok[i] = Math.floor(temp);
+		}
+	}
+
+	return {
+		width: shirinaStvorok[doorIndex],
+		height: currentOpening.value.height - 103,
+	}
+}
 
 const combinedOpenings = computed(() => {
 	return openings.value.map((opening) => {
@@ -114,6 +158,8 @@ const saveAndDownload = async () => {
 		console.error("Failed to download PDF:", error);
 	}
 };
+
+const showSketchReference = ref(false);
 </script>
 
 <template>
@@ -154,12 +200,28 @@ const saveAndDownload = async () => {
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
 				<!-- Sketch reference image -->
 				<div class="col-span-9">
-					<img src="/assets/sketch-reference.png" class="w-full" alt="Sketch reference" />
+					<div v-show="showSketchReference">
+						<img src="/assets/sketch-reference.png" class="w-full" alt="Sketch reference" />
+					</div>
+					<div class="text-center">
+						<div v-for="i in currentOpening?.doors" :key="i" class=" mx-1 inline-block">
+							<span class="text-xs">СТ{{ i }}</span>
+							<div class="glass col-span-1 aspect-[9/16]">
+								<span style="position: absolute;top: 50%;left: -8px;transform: rotate(-90deg);" class="text-xs">{{ getOpeningSketchDimensions(i).height }}</span>
+	                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);" class="text-xs">{{ getOpeningSketchDimensions(i).width }}</span>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<!-- Sketch parameters and actions -->
 				<div class="col-span-9 md:col-span-3 p-4 rounded-lg border">
-					<h3 class="text-xl mb-4 text-muted-foreground font-semibold">Параметры проема</h3>
+					<div class="flex items-center justify-between mb-4 gap-4">
+						<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
+						<Button :variant="showSketchReference ? 'default' : 'outline'" size="icon" @click="showSketchReference = !showSketchReference">
+							<CircleHelpIcon class="h-4 w-4" />
+						</Button>
+					</div>
 
 					<!-- Loop through the current sketch variables and render a slider for each -->
 					<div v-for="(value, key) in currentSketch" :key="key" class="flex flex-col gap-2 pb-4">
@@ -178,3 +240,13 @@ const saveAndDownload = async () => {
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.glass {
+    border: 1px solid rgb(0, 195, 255);
+    /* width: 74px; */
+    height: 146px;
+    /* display: inline-block; */
+    position: relative;
+}
+</style>

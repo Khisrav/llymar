@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,6 +19,8 @@ class CompanyResource extends Resource
     protected static ?string $model = Company::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Организации';
+    protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
     {
@@ -31,7 +34,39 @@ class CompanyResource extends Resource
     {
         return $table
             ->columns([
-                //
+                // 'short_name', 
+                // 'full_name', 
+                // 'boss', 
+                // 'boss_title', 
+                // 'legal_address', 
+                // 'email', 
+                // 'phone', 
+                // 'website', 
+                // 'current_account', 
+                // 'correspondent_account', 
+                // 'bank_name', 
+                // 'bank_address', 
+                // 'bik',
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('short_name')
+                    ->label('Короткое название')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('full_name')
+                    ->label('Полное название')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('boss')
+                    ->label('Руководитель')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //

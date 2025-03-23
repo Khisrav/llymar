@@ -206,7 +206,7 @@ const showSketchReference = ref(false);
 					<div class="text-center">
 						<div v-for="i in currentOpening?.doors" :key="i" class=" mx-1 inline-block">
 							<span class="text-xs">СТ{{ i }}</span>
-							<div class="glass col-span-1 aspect-[9/16]">
+							<div class="glass border border-blue-300 h-36 relative col-span-1 aspect-[9/16]">
 								<span style="position: absolute;top: 50%;left: -8px;transform: rotate(-90deg);" class="text-xs">{{ getOpeningSketchDimensions(i).height }}</span>
 	                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);" class="text-xs">{{ getOpeningSketchDimensions(i).width }}</span>
 							</div>
@@ -240,13 +240,3 @@ const showSketchReference = ref(false);
 		</div>
 	</div>
 </template>
-
-<style scoped>
-.glass {
-    border: 1px solid rgb(0, 195, 255);
-    /* width: 74px; */
-    height: 146px;
-    /* display: inline-block; */
-    position: relative;
-}
-</style>

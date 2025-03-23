@@ -133,7 +133,7 @@ const step = (category_id: number) => {
 							</div>
 							<div>
 								<QuantitySelector v-if="itemsStore.cartItems[item.id]" :min="0" :max="100" :step="step(categoryId)" :unit="item.unit" v-model="itemsStore.cartItems[item.id].quantity" />
-								<Button v-else class="w-full" @click="() => (itemsStore.cartItems[item.id] = { quantity: 1 })"> <PlusIcon /> Добавить </Button>
+								<Button v-else class="w-full" @click="() => (itemsStore.cartItems[item.id] = { quantity: step(categoryId) })"> <PlusIcon /> Добавить </Button>
 							</div>
 						</div>
 					</div>

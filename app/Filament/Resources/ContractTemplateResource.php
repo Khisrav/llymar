@@ -22,7 +22,7 @@ class ContractTemplateResource extends Resource
 {
     protected static ?string $model = ContractTemplate::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
     protected static ?string $navigationLabel = 'Шаблоны договоров';
     protected static ?string $navigationGroup = 'Настройки';
 
@@ -51,6 +51,10 @@ class ContractTemplateResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->searchable()
@@ -71,12 +75,6 @@ class ContractTemplateResource extends Resource
                     ->url(fn (ContractTemplate $record) => Storage::url($record->attachment))
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                // Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 

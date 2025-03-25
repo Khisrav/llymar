@@ -18,7 +18,7 @@ class CompanyResource extends Resource
 {
     protected static ?string $model = Company::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $navigationLabel = 'Организации';
     protected static ?string $navigationGroup = 'Настройки';
 
@@ -34,19 +34,6 @@ class CompanyResource extends Resource
     {
         return $table
             ->columns([
-                // 'short_name', 
-                // 'full_name', 
-                // 'boss', 
-                // 'boss_title', 
-                // 'legal_address', 
-                // 'email', 
-                // 'phone', 
-                // 'website', 
-                // 'current_account', 
-                // 'correspondent_account', 
-                // 'bank_name', 
-                // 'bank_address', 
-                // 'bik',
                 TextColumn::make('id')
                     ->label('ID')
                     ->searchable()

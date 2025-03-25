@@ -129,9 +129,25 @@ export interface CommercialOffer {
         phone: string;
     }
 }
-
+// $table->string('counterparty_type');
+// $table->string('counterparty_fullname');
+// $table->string('counterparty_phone');
+// $table->unsignedBigInteger('template_id');
+// $table->date('date')->default('');
+// $table->string('department_code');
+// $table->string('index');
+// $table->string('factory');
+// $table->string('installation_address');
+// $table->integer('price')->default(0);
+// $table->integer('advance_payment_percentage')->default(0);
+// //...
 export interface Contract {
     counterparty_type: 'Физ. лицо' | 'Юр. лицо' | 'ИП';
+    counterparty_fullname: string;
+    counterparty_phone_1: string;
+    counterparty_phone_2?: string;
+    counterparty_ceo_title?: string;
+    
     company_performer_id: number;
     template_id: number;
     number: string;
@@ -141,9 +157,6 @@ export interface Contract {
     index: string;
     factory: string;
     installation_address: string;
-    ceo_fullname: string;
-    phone_1: string;
-    phone_2?: string;
     price: number;
 
     inn?: string;
@@ -151,6 +164,5 @@ export interface Contract {
     ogrnip?: string;
     email?: string;
     legal_address?: string;
-    ceo_title?: string;
     ogrn?: string;
 }

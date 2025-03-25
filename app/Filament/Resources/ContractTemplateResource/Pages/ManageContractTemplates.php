@@ -9,11 +9,13 @@ use Filament\Resources\Pages\ManageRecords;
 class ManageContractTemplates extends ManageRecords
 {
     protected static string $resource = ContractTemplateResource::class;
+    
+    protected static ?string $title = 'Шаблоны договоров';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
 }

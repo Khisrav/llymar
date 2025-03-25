@@ -6,12 +6,17 @@ use App\Filament\Resources\ContractTemplateResource\Pages;
 use App\Filament\Resources\ContractTemplateResource\RelationManagers;
 use App\Models\ContractTemplate;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class ContractTemplateResource extends Resource
 {
@@ -25,7 +30,20 @@ class ContractTemplateResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Hidden::make('user_id')
+                    ->default(fn () => auth()->id())
+                    ->required(),
+                TextInput::make('name')
+                    ->label('Название шаблона')
+                    ->required(),
+                Textarea::make('description')
+                    ->label('Описание'),
+                FileUpload::make('attachment')
+                    ->label('Шаблон договора Word')
+                    ->downloadable()
+                    ->maxSize(1024 * 16) // 16MB
+                    ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+                    ->required(),
             ]);
     }
 
@@ -33,14 +51,27 @@ class ContractTemplateResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Название')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Описание')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('download')
+                    ->label('Скачать')
+                    ->color('success')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn (ContractTemplate $record) => Storage::url($record->attachment))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

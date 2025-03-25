@@ -129,3 +129,28 @@ export interface CommercialOffer {
         phone: string;
     }
 }
+
+export interface Contract {
+    counterparty_type: 'Физ. лицо' | 'Юр. лицо' | 'ИП';
+    company_performer_id: number;
+    template_id: number;
+    number: string;
+    date: string;
+    company: string;
+    department_code: number;
+    index: string;
+    factory: string;
+    installation_address: string;
+    ceo_fullname: string;
+    phone_1: string;
+    phone_2?: string;
+    price: number;
+
+    inn?: string;
+    kpp?: string;
+    ogrnip?: string;
+    email?: string;
+    legal_address?: string;
+    ceo_title?: string;
+    ogrn?: string;
+}

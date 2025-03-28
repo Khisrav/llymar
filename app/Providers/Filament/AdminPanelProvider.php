@@ -70,7 +70,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Настройки')
-                    ->collapsed()
+                    // ->collapsed()
                     ->icon('heroicon-o-cog-6-tooth')
             ]);
     }

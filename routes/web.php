@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +64,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/app/order/sketch/download', [OrderController::class, 'sketchPDF'])->name('app.sketch');
     Route::post('/app/order/sketch/save', [OrderController::class, 'saveSketch'])->name('app.save.sketch');
     Route::delete('/app/order/{order_id}/delete', [OrderController::class, 'destroy'])->name('app.order.delete');
+    
+    Route::get('/app/contract', [ContractController::class, 'index'])->name('app.contract');
 });
 
 /*

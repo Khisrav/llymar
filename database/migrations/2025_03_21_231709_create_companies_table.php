@@ -15,17 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('short_name');
             $table->string('full_name');
-            $table->string('boss');
+            $table->string('boss_name');
             $table->string('boss_title');
             $table->string('legal_address');
             $table->string('email');
-            // $table->string('phone');
+            $table->string('phone');
             $table->string('website');
-            $table->string('current_account');
-            $table->string('correspondent_account');
-            $table->string('bank_name');
-            $table->string('bank_address');
-            $table->string('bik');
+            $table->string('inn');
+            $table->string('kpp');
+            $table->string('ogrn');
             $table->timestamps();
         });
     }

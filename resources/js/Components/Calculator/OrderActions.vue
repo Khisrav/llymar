@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, EllipsisVertical, Printer, Ruler, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, EllipsisVertical, FilePenIcon, Printer, Ruler, ScrollText } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -14,6 +14,13 @@ import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
 import { computed, ref } from "vue"
+import Dialog from "../ui/dialog/Dialog.vue"
+import DialogTrigger from "../ui/dialog/DialogTrigger.vue"
+import DialogContent from "../ui/dialog/DialogContent.vue"
+import DialogHeader from "../ui/dialog/DialogHeader.vue"
+import DialogTitle from "../ui/dialog/DialogTitle.vue"
+import DialogDescription from "../ui/dialog/DialogDescription.vue"
+import DialogFooter from "../ui/dialog/DialogFooter.vue"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -158,6 +165,12 @@ const downloadSketchPDF = async () => {
                         <DropdownMenuItem @click="downloadSketchPDF">
                             <Ruler class="size-4" />
                             <span>Чертеж</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link href="/app/contract" class="w-full flex gap-2 items-center">
+                                <FilePenIcon class="size-4" />
+                                <span>Договор</span>
+                            </Link>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

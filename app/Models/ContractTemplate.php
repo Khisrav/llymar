@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContractTemplate extends Model
 {
@@ -12,15 +13,30 @@ class ContractTemplate extends Model
         'name',
         'description',
         'attachment',
+        'fields',
+    ];
+    
+    protected $casts = [
+        'fields' => 'array',
     ];
 
     /**
-     * Relationship: Order belongs to a User.
+     * Relationship: ContractTemplate belongs to a User.
      *
      * @return BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    
+    /**
+     * Relationship: ContractTemplate has many Contract.
+     *
+     * @return HasMany
+    */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
     }
 }

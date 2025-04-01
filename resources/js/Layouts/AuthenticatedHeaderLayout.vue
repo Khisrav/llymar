@@ -74,7 +74,7 @@ const username = computed(() => {
                     <DropdownMenuLabel>{{ username }}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem v-if="can_access_admin_panel">
-                        <Link href="/admin">Админка</Link>
+                        <a href="/admin" target="_blank">Админка</a>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Link href="/app/account/settings">Настройки</Link>

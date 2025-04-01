@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListContracts extends ListRecords
 {
     protected static string $resource = ContractResource::class;
+    protected static ?string $title = 'Договоры';
 
     protected function getHeaderActions(): array
     {

@@ -160,7 +160,7 @@
                     </td>
                     <td>{{ $opening['type'] != 'blind-glazing' && $opening['type'] != 'triangle' ? $opening['doors'] . ' ств.' : '-' }}</td>
                     <td>{{ $opening['width'] }}мм x {{ $opening['height'] }}мм</td>
-                    <td>{{ ($opening['width'] * $opening['height']) / 1000000 }}м<sup>2</sup></td>
+                    <td>{{ number_format(($opening['width'] * $opening['height']) / 1000000, 2, '.', ' ') }}м<sup>2</sup></td>
                 </tr>
             @endforeach
             <tr>
@@ -201,7 +201,7 @@
                             <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item['img'][0] != '/' ? '/' : '') . $item['img']))) }}" alt="" width="48">
                         </td>
                         <td style="text-align: left !important">@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
-                        <td class="nowrap">{{ $quantity }} {{ $item['unit'] }}</td>
+                        <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $item['unit'] }}</td>
                         <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
                         <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
                     </tr>
@@ -221,7 +221,7 @@
                             <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($service['img'][0] != '/' ? '/' : '') . $service['img']))) }}" alt="" width="48">
                         </td>
                         <td style="text-align: left !important">@if ($service['vendor_code']) {{ $service['vendor_code'] . ' - ' }} @endif {{ $service['name'] }}</td>
-                        <td class="nowrap">{{ $quantity }} {{ $service['unit'] }}</td>
+                        <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $service['unit'] }}</td>
                         <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
                         <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
                     </tr>
@@ -240,7 +240,7 @@
                         <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($offer['glass']['img'][0] != '/' ? '/' : '') . $offer['glass']['img']))) }}" alt="" width="48">
                     </td>
                     <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
-                    <td class="nowrap">{{ $quantity }} {{ $offer['glass']['unit'] }}</td>
+                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
                     <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
                     <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
                 </tr>

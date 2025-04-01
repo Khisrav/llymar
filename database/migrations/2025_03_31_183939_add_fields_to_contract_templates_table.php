@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contracts', function (Blueprint $table) {
-            $table->id();
-            $table->string('number');
-            $table->timestamps();
+        Schema::table('contract_templates', function (Blueprint $table) {
+            $table->json('fields')->nullable();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contracts');
+        Schema::table('contract_templates', function (Blueprint $table) {
+            //
+        });
     }
 };

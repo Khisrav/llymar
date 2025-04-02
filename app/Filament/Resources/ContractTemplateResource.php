@@ -65,8 +65,8 @@ class ContractTemplateResource extends Resource
                                 ->required()
                                 ->helperText(new HtmlString("
                                 <div class='text-xs'>
-                                    <div>Выбранные переменные должны пристуствовать в файле шаблона. <br>Список доступных переменных:</div>
-                                    <table>
+                                    <div>Выбранные переменные должны пристуствовать в файле шаблона. <br><br></div>
+                                    <table cellpadding='5'>
                                         <thead><tr><th><b>Переменная</b></th><th><b>Описание</b></th></tr></thead>
                                         <tbody>
                                             <tr><td><code>template_id</code></td><td>ID шаблона</td></tr>

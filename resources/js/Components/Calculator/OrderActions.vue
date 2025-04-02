@@ -162,16 +162,16 @@ const downloadSketchPDF = async () => {
                             <ScrollText class="size-4" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem @click="downloadSketchPDF">
+                        <!-- <DropdownMenuItem @click="downloadSketchPDF">
                             <Ruler class="size-4" />
                             <span>Чертеж</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        </DropdownMenuItem> -->
+                        <!-- <DropdownMenuItem>
                             <Link href="/app/contract" class="w-full flex gap-2 items-center">
                                 <FilePenIcon class="size-4" />
                                 <span>Договор</span>
                             </Link>
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> -->
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link href="/app/cart" v-if="can_access_app_cart">

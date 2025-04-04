@@ -49,7 +49,7 @@ const downloadCommercialOffer = async () => {
             manufacturer: commercialOfferStore.commercialOffer.manufacturer,
             openings: openingsStore.openings,
             additional_items: itemsStore.additional_items,
-            glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID),
+            glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || [],
             services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
@@ -107,32 +107,6 @@ const downloadListPDF = async () => {
         alert('Ошибка скачивания PDF')
     }
 }
-
-const downloadSketchPDF = async () => {
-    try {
-        const formData = {
-            openings: openingsStore.openings,
-        }
-    
-        const response = await axios.post('/orders/sketch', formData, {
-            responseType: 'blob',
-            headers: { 'Content-Type': 'application/json' }
-        })
-    
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-    
-        link.href = url
-        link.setAttribute('download', `sketch_${new Date().toISOString().split('T')[0]}.pdf`)
-        document.body.appendChild(link)
-        link.click()
-        
-        link.parentNode.removeChild(link)
-    } catch (error) {
-            console.error('Error downloading the PDF:', error)
-            alert('Ошибка скачивания PDF')
-    }
-}
 </script>
 
 <template>
@@ -161,16 +135,6 @@ const downloadSketchPDF = async () => {
                         <DropdownMenuItem @click="downloadListPDF">
                             <ScrollText class="size-4" />
                             <span>Перечень</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem @click="downloadSketchPDF">
-                            <Ruler class="size-4" />
-                            <span>Чертеж</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link href="/app/contract" class="w-full flex gap-2 items-center">
-                                <FilePenIcon class="size-4" />
-                                <span>Договор</span>
-                            </Link>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

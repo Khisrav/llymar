@@ -228,7 +228,7 @@
                 @endif
             @endforeach
 
-            @if (isset($offer['cart_items'][$offer['glass']['id']]))
+            @if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']]))
                 @php
                     $price = App\Models\Item::itemPrice($offer['glass']['id']) * $markupPercentage;
                     $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];

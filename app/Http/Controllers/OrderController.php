@@ -188,7 +188,7 @@ class OrderController extends Controller
             'openings'          => 'required|array',
             'additional_items'  => 'required|array',
             'services'          => 'array',
-            'glass'             => 'required|array',
+            'glass'             => 'array',
             'cart_items'        => 'required|array',
             'total_price'       => 'required|numeric',
             'markup_percentage' => 'required|numeric',
@@ -206,21 +206,13 @@ class OrderController extends Controller
         $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;
 
         $user = auth()->user();
-        $wholesaleFactor = Cache::remember("wholesale_factor_{$user->wholesale_factor_key}", 60, function () use ($user) {
-            return WholesaleFactor::where('name', $user->wholesale_factor_key)->first();
-        });
-
-        $reductionFactors = Cache::remember("reduction_factors_{$offer['glass']['category_id']}", 60, function () use ($offer) {
-            return Category::find($offer['glass']['category_id'])->reduction_factors;
-        });
-
+        
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', [
                 'offer'                   => $offer,
                 'additional_items'        => $additional_items,
                 'offer_additionals_price' => $offerAdditionalsPrice,
                 'offer_openings_price'    => $offerOpeningsPrice,
-                'wholesaleFactor'         => $wholesaleFactor,
-                'reductionFactors'        => $reductionFactors,
+                'glass'                   => $offer['glass'],
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);

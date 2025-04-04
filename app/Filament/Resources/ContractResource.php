@@ -64,6 +64,7 @@ class ContractResource extends Resource
                             ->required(),
                         DatePicker::make('date')
                             ->label('Дата')
+                            ->native(false)
                             ->required(),
                         Split::make([
                             TextInput::make('department_code')

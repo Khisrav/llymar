@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class Item extends Model
 {
+    //начиная с апреля 2025 items это warehouse, т.е. детали это уже не каталог, а склад деталей
     protected $fillable = [
         'name',
         'purchase_price',
@@ -27,6 +28,14 @@ class Item extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+    
+    /**
+     * Relationship to WarehouseRecord model.
+     */
+    public function warehouseRecords()
+    {
+        return $this->hasMany(WarehouseRecord::class);
     }
 
     /**

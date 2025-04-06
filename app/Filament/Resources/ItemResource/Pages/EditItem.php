@@ -10,7 +10,7 @@ class EditItem extends EditRecord
 {
     protected static string $resource = ItemResource::class;
     
-    protected static ?string $title = 'Просмотр детали';
+    protected static ?string $title = 'Просмотр номенклатуры';
 
     protected function getHeaderActions(): array
     {

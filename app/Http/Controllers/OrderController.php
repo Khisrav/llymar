@@ -194,13 +194,13 @@ class OrderController extends Controller
             'markup_percentage' => 'required|numeric',
         ]);
         
-        $additional_items = [];
+        $additional_items = $offer['additional_items'];
         
-        foreach ($offer['additional_items'] as $item_group) {
-            $additional_items[] = $item_group[0];
-        }
+        // foreach ($offer['additional_items'] as $item_group) {
+        //     $additional_items[] = $item_group[0];
+        // }
         
-        $offer['additional_items'] = $additional_items;
+        // $offer['additional_items'] = $additional_items;
 
         $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
         $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;

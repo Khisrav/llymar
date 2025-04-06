@@ -25,6 +25,7 @@ class WarehouseRecordResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationLabel = 'Записи склада';
+    protected static ?string $navigationGroup = 'Склад';
 
     public static function form(Form $form): Form
     {

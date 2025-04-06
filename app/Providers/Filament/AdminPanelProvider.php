@@ -69,8 +69,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
+                    ->label('Склад')
+                    ->collapsed()
+                    ->icon('heroicon-o-truck'),
+                NavigationGroup::make()
                     ->label('Настройки')
-                    // ->collapsed()
+                    ->collapsed()
                     ->icon('heroicon-o-cog-6-tooth')
             ])
             ->spa();

@@ -27,10 +27,10 @@ class ItemResource extends Resource
 
     // protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Детали';
-    protected ?string $title = 'Детали';
-    protected ?string $heading = 'Детали';
-    protected ?string $subheading = 'Детали';
+    protected static ?string $navigationLabel = 'Склад номенклатур';
+    protected ?string $title = 'Склад номенклатур';
+    protected ?string $heading = 'Склад номенклатур';
+    protected ?string $subheading = 'Склад номенклатур';
 
     public static function form(Form $form): Form
     {

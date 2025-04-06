@@ -48,7 +48,7 @@ const downloadCommercialOffer = async () => {
             customer: commercialOfferStore.commercialOffer.customer,
             manufacturer: commercialOfferStore.commercialOffer.manufacturer,
             openings: openingsStore.openings,
-            additional_items: itemsStore.additional_items,
+            additional_items: Object.values(itemsStore.additional_items).flat(),
             glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || [],
             services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,

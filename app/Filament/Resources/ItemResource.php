@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Filament\Resources\ItemResource\RelationManagers\WarehouseRecordsRelationManager;
 use Illuminate\Database\Eloquent\Model;
 
 class ItemResource extends Resource
@@ -24,13 +25,14 @@ class ItemResource extends Resource
     protected static ?string $model = Item::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationGroup = 'Склад';
 
     // protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Склад номенклатур';
-    protected ?string $title = 'Склад номенклатур';
-    protected ?string $heading = 'Склад номенклатур';
-    protected ?string $subheading = 'Склад номенклатур';
+    protected static ?string $navigationLabel = 'Номенклатуры';
+    protected ?string $title = 'Номенклатуры';
+    protected ?string $heading = 'Номенклатуры';
+    protected ?string $subheading = 'Номенклатуры';
 
     public static function form(Form $form): Form
     {
@@ -135,8 +137,12 @@ class ItemResource extends Resource
                     ->label('LLYMAR')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('quantity_in_warehouse')
-                    ->label('На складе')
+                    ->label('В наличии')
+                    ->badge()
+                    // if quantity is 0 then gray, if more than 0 then green, if less than 0 then red
+                    ->color(fn (Model $record) => $record->quantity_in_warehouse == 0 ? 'gray' : ($record->quantity_in_warehouse > 0 ? 'green' : 'red'))
                     ->suffix(fn (Model $record) => ' ' . Item::find($record->id)->unit)
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
@@ -160,7 +166,7 @@ class ItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            WarehouseRecordsRelationManager::class,
         ];
     }
 

@@ -29,6 +29,14 @@ class Item extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    
+    /**
+     * Relationship to WarehouseRecord model.
+     */
+    public function warehouseRecords()
+    {
+        return $this->hasMany(WarehouseRecord::class);
+    }
 
     /**
      * Calculate the item price based on the user's wholesale factor

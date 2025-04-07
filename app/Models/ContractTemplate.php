@@ -13,6 +13,7 @@ class ContractTemplate extends Model
         'name',
         'description',
         'attachment',
+        'attachment_original_filename',
         'fields',
     ];
     

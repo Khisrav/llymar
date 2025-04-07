@@ -10,7 +10,7 @@ class ListWholesaleFactors extends ListRecords
 {
     protected static string $resource = WholesaleFactorResource::class;
     
-    protected static ?string $title = 'Оптовые коэффициенты';
+    protected static ?string $title = 'Группы коэффициентов';
 
     protected function getHeaderActions(): array
     {

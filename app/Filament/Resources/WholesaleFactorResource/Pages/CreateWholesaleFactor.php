@@ -10,5 +10,5 @@ class CreateWholesaleFactor extends CreateRecord
 {
     protected static string $resource = WholesaleFactorResource::class;
     
-    protected static ?string $title = 'Создать оптовый коэффициент';
+    protected static ?string $title = 'Создать группу коэффициентов';
 }

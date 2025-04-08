@@ -24,7 +24,7 @@ class AppCalculatorController extends Controller
             'services' => $this->getServices(),
             'user' => auth()->user(),
             'categories' => Category::all()->toArray(),
-            'wholesale_factor' => WholesaleFactor::where('name', auth()->user()->wholesale_factor_key)->first(),
+            'wholesale_factor' => WholesaleFactor::where('group_name', auth()->user()->wholesale_factor_key)->first(),
         ]);
     }
     

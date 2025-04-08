@@ -185,21 +185,21 @@ class UserResource extends Resource
                                     ->native(false)
                                     ->hidden(!auth()->user()->hasRole('Super-Admin'))
                                     ->columnSpan(3),
-                                Forms\Components\Select::make('reduction_factor_key')
-                                    ->label('Коэффициент уменьшения')
-                                    ->native(false)
-                                    ->options(function () {
-                                        return array_combine(
-                                            array_map(fn($key) => 'KU' . $key, range(1, 10)),
-                                            array_map(fn($key) => 'KU' . $key, range(1, 10))
-                                        );
-                                    })
-                                    ->columnSpan(3),
+                                // Forms\Components\Select::make('reduction_factor_key')
+                                //     ->label('Коэффициент уменьшения')
+                                //     ->native(false)
+                                //     ->options(function () {
+                                //         return array_combine(
+                                //             array_map(fn($key) => 'KU' . $key, range(1, 10)),
+                                //             array_map(fn($key) => 'KU' . $key, range(1, 10))
+                                //         );
+                                //     })
+                                //     ->columnSpan(3),
                                 Forms\Components\Select::make('wholesale_factor_key')
-                                    ->label('Оптовый коэффициент')
+                                    ->label('Группа коэффициентов')
                                     ->native(false)
                                     ->options(function () {
-                                        return \App\Models\WholesaleFactor::query()->pluck('name', 'name')->toArray();
+                                        return \App\Models\WholesaleFactor::query()->pluck('group_name', 'group_name')->toArray();
                                     })
                                     ->columnSpan(3),
                             ]),

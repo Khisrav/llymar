@@ -10,7 +10,7 @@ class EditWholesaleFactor extends EditRecord
 {
     protected static string $resource = WholesaleFactorResource::class;
     
-    protected static ?string $title = 'Просмотр коэффициента';
+    protected static ?string $title = 'Просмотр группы коэффициентов';
 
     protected function getHeaderActions(): array
     {

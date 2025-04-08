@@ -103,6 +103,11 @@ class OrdersRelationManager extends RelationManager
             ->defaultSort('created_at', 'desc')
             ->actions([
                 // Tables\Actions\EditAction::make(),
+                Action::make('view')
+                    ->label('Просмотр')
+                    ->url(fn (Order $record) => route(auth()->user()->can('update order') ? 'filament.admin.resources.orders.edit' : 'filament.admin.resources.orders.view', $record->id))
+                    // ->openUrlInNewTab()
+                    ->icon('heroicon-o-eye'),
                 ActionGroup::make([
                     Action::make('list_pdf')
                         ->label('Перечень PDF')

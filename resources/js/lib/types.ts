@@ -63,8 +63,8 @@ export interface User {
     phone?: string;
     company?: string;
     discount: number;
-    reduction_factor_key?: string;
-    wholesale_factor_keey?: string;
+    // reduction_factor_key?: string;
+    wholesale_factor_key?: string;
     inn?: string;
     kpp?: string;
     bik?: string;
@@ -110,8 +110,10 @@ export interface ReductionFactor {
 }
 
 export interface WholesaleFactor {
+    group_name: string;
     name: string;
     value: number;
+    reduction_factor_key: string;
 }
 
 export interface CommercialOffer {
@@ -129,18 +131,7 @@ export interface CommercialOffer {
         phone: string;
     }
 }
-// $table->string('counterparty_type');
-// $table->string('counterparty_fullname');
-// $table->string('counterparty_phone');
-// $table->unsignedBigInteger('template_id');
-// $table->date('date')->default('');
-// $table->string('department_code');
-// $table->string('index');
-// $table->string('factory');
-// $table->string('installation_address');
-// $table->integer('price')->default(0);
-// $table->integer('advance_payment_percentage')->default(0);
-// //...
+
 export interface Contract {
     counterparty_type: 'Физ. лицо' | 'Юр. лицо' | 'ИП';
     counterparty_fullname: string;

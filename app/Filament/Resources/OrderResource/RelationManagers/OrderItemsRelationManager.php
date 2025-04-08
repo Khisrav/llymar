@@ -74,7 +74,7 @@ class OrderItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('price')
                     ->label('Цена')
                     ->state(function (Model $record) {
-                        $item = Item::where('id', $record->item_id)->first();
+                        // $item = Item::where('id', $record->item_id)->first();
                         return number_format($record->itemTotalPrice() / $record->quantity, 0, '.', ' ') . ' ₽';
                     })
                     ->toggleable(isToggledHiddenByDefault: false),

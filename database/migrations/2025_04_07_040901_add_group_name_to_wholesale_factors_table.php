@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('wholesale_factors', function (Blueprint $table) {
-            $table->string('group_name');
+            $table->string('group_name')->unique();
         });
     }
 

@@ -33,9 +33,16 @@ class WholesaleFactorResource extends Resource
                     ->label('Ключ оптового коэффициента')
                     ->startsWith('OPT')
                     ->required(),
-                Forms\Components\TextInput::make('reduction_factor_key')
+                Forms\Components\Select::make('reduction_factor_key')
                     ->label('Ключ коэффициента уменьшения')
-                    ->startsWith('KU')
+                    ->native(false)
+                    ->options(function () {
+                        return array_combine(
+                            array_map(fn($key) => 'KU' . $key, range(1, 10)),
+                            array_map(fn($key) => 'KU' . $key, range(1, 10))
+                        );
+                    })
+                    ->selectablePlaceholder(false)
                     ->required(),
                 Forms\Components\TextInput::make('value')
                     ->label('Значение оптового коэффициента')

@@ -123,8 +123,6 @@
                 <th class="nowrap">Картинка</th>
                 <th class="nowrap">Деталь</th>
                 <th class="nowrap">Кол-во</th>
-                {{-- <th class="nowrap">Цена</th> --}}
-                {{-- <th class="nowrap">Итого</th> --}}
             </tr>
         </thead>
         <tbody>
@@ -141,23 +139,9 @@
                     </td>
                     <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
                     <td class="nowrap">{{  number_format((float)$item->quantity, 2, '.', '') }} {{ $item->item->unit }}</td>
-                    {{-- <td class="nowrap">{{ number_format($item->itemTotalPrice / $item->quantity, 0, '.', ' ') }} ₽</td> --}}
-                    {{-- <td class="nowrap">{{ number_format($item->itemTotalPrice, 0, '.', ' ') }} ₽</td> --}}
                 </tr>
             @endforeach
-            {{-- <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td><b>Сумма:</b></td>
-                <td class="nowrap"><b>{{ number_format($order->total_price, 0, '.', ' ') }} ₽</b></td>
-            </tr> --}}
         </tbody>
     </table>
-
-    {{-- <div class="footer">
-        <p>Дата генерации файла: {{ now()->format('d-m-Y H:i:s') }}</p>
-    </div> --}}
 </body>
 </html>

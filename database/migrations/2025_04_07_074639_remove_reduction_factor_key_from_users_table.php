@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('reduction_factor_key');
+            //check if reduction_factor_key column exists
+            if (Schema::hasColumn('users', 'reduction_factor_key')) {
+                $table->dropColumn('reduction_factor_key');
+            }
         });
     }
 

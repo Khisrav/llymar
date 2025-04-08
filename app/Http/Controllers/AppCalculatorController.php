@@ -13,18 +13,18 @@ use Illuminate\Support\Facades\Redirect;
 class AppCalculatorController extends Controller
 {
     public function index() {
-        if (!auth()->user()->can('access app calculator')) {
-            return redirect()->route('app.home');
-        }
+        $user = auth()->user();
+        
+        if (!$user->can('access app calculator')) return redirect()->route('app.home');
     
         return Inertia::render('App/Calculator', [
             'items' => $this->getCalculatorItems(),
             'additional_items' => $this->getAdditionalItems(),
             'glasses' => $this->getGlasses(),
             'services' => $this->getServices(),
-            'user' => auth()->user(),
+            'user' => $user,
             'categories' => Category::all()->toArray(),
-            'wholesale_factor' => WholesaleFactor::where('group_name', auth()->user()->wholesale_factor_key)->first(),
+            'wholesale_factor' => WholesaleFactor::where('group_name', $user->wholesale_factor_key)->first(),
         ]);
     }
     
@@ -45,9 +45,7 @@ class AppCalculatorController extends Controller
         
         $items = Item::whereIn('id', $llymar_calculator_items->pluck('item_id'))->get();
         
-        if ($items->isNotEmpty()) {
-            return $items;
-        }
+        if ($items->isNotEmpty()) return $items;
         
         return [];
     }

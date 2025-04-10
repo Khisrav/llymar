@@ -139,7 +139,6 @@ class ItemResource extends Resource
                 Tables\Columns\TextColumn::make('quantity_in_warehouse')
                     ->label('В наличии')
                     ->badge()
-                    // if quantity is 0 then gray, if more than 0 then green, if less than 0 then red
                     ->color(fn (Model $record) => $record->quantity_in_warehouse == 0 ? 'gray' : ($record->quantity_in_warehouse > 0 ? 'green' : 'red'))
                     ->suffix(fn (Model $record) => ' ' . Item::find($record->id)->unit)
                     ->sortable()

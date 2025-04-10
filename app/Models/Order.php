@@ -26,20 +26,25 @@ class Order extends Model
     public static function boot()
     {
         parent::boot();
-        
+    
         static::updated(function ($model) {
-            Log::info('Order updated');
-            Log::info($model->orderItems);
-            
-            if ($model->status == 'expired')
-            foreach ($model->orderItems as $orderItem) {
-                WarehouseRecord::create([
-                    'item_id' => $orderItem->item_id,
-                    'quantity' => $orderItem->quantity,
-                ]);
+            if ($model->status == 'expired') {
+                WarehouseRecord::where('order_id', $model->id)->delete();
+            } else {
+                $orderItems = $model->orderItems;
+                $warehouseRecords = WarehouseRecord::where('order_id', $model->id)->get()->keyBy('item_id');
+    
+                foreach ($orderItems as $orderItem) {
+                    if (isset($warehouseRecords[$orderItem->item_id])) {
+                        $warehouseRecord = $warehouseRecords[$orderItem->item_id];
+                        $warehouseRecord->quantity = $orderItem->quantity;
+                        $warehouseRecord->save();
+                    }
+                }
             }
         });
     }
+
 
     /**
      * Relationship: Order belongs to a User.

@@ -26,15 +26,14 @@ class OrderItem extends Model
         static::created(function ($model) {
             WarehouseRecord::create([
                 'item_id'  => $model->item_id,
+                'order_id' => $model->order_id,
                 'quantity' => -$model->quantity,
             ]);
         });
         
         static::deleted(function ($model) {
-            WarehouseRecord::create([
-                'item_id'  => $model->item_id,
-                'quantity' => $model->quantity,
-            ]);
+            //delete warehouse record where order_id and item_id match
+            WarehouseRecord::where('order_id', $model->order_id)->where('item_id', $model->item_id)->delete();
         });
     }
 

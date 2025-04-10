@@ -41,14 +41,17 @@ class WarehouseRecordsRelationManager extends RelationManager
                     ->label('Количество')
                     ->sortable()
                     ->suffix(fn (Model $record) => ' ' . Item::find($record->item_id)->unit)
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Тип записи')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state > 0 ? 'Приход' : 'Расход')
-                    ->color(fn (string $state): string => $state > 0 ? 'success' : 'danger')
+                    ->color(fn (Model $record) => $record->quantity == 0 ? 'gray' : ($record->quantity > 0 ? 'green' : 'red'))
                     ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создан')
+                    ->sortable()
+                    ->since()
+                    ->dateTimeTooltip()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

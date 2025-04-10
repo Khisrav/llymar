@@ -237,7 +237,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (!item) return 0;
         
         const category = categories.value.find(c => c.id === item?.category_id)
-        const ku = category?.reduction_factors?.find(ku => ku.key === wholesale_factor.value.reduction_factor_key)
+        const ku = category?.reduction_factors?.find(ku => ku.key === wholesale_factor.value?.reduction_factor_key)
         
         return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
     }

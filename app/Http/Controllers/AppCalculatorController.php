@@ -25,6 +25,7 @@ class AppCalculatorController extends Controller
             'user' => $user,
             'categories' => Category::all()->toArray(),
             'wholesale_factor' => WholesaleFactor::where('group_name', $user->wholesale_factor_key)->first(),
+            'factor_groups' => WholesaleFactor::all()->toArray(),
         ]);
     }
     

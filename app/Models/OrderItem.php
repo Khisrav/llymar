@@ -27,6 +27,7 @@ class OrderItem extends Model
             WarehouseRecord::create([
                 'item_id'  => $model->item_id,
                 'order_id' => $model->order_id,
+                'warehouse_id' => 0, //should retrieve (user->company_id)->warehouse_id 
                 'quantity' => -$model->quantity,
             ]);
         });

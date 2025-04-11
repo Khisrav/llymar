@@ -7,10 +7,18 @@ import Label from '../ui/label/Label.vue'
 import { useCommercialOfferStore } from '../../Stores/commercialOfferStore'
 import { useItemsStore } from '../../Stores/itemsStore'
 import { vMaska } from 'maska/vue'
+import Select from '../ui/select/Select.vue'
+import SelectTrigger from '../ui/select/SelectTrigger.vue'
+import SelectValue from '../ui/select/SelectValue.vue'
+import SelectContent from '../ui/select/SelectContent.vue'
+import SelectItem from '../ui/select/SelectItem.vue'
+import { usePage } from '@inertiajs/vue3'
 
 const isCommercialOfferHidden = ref(true)
 const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
+
+const factor_groups = ref(usePage().props.factor_groups as any)
 
 commercialOfferStore.commercialOffer.manufacturer = {
     title: 'Информация о производителе',
@@ -18,6 +26,8 @@ commercialOfferStore.commercialOffer.manufacturer = {
     company: itemsStore.user.company || '',
     phone: itemsStore.user.phone || '',
 }
+
+commercialOfferStore.commercialOffer.wholesale_factor_key = itemsStore.wholesale_factor?.group_name
 </script>
 
 <template>
@@ -55,7 +65,6 @@ commercialOfferStore.commercialOffer.manufacturer = {
             </div>
             
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
-                <!-- <h4 class="font-semibold text-muted-foreground">Информация о производителе</h4> -->
                 <Input v-model="commercialOfferStore.commercialOffer.manufacturer.title" class="w-full font-semibold" />
                 <div>
                     <div class="mb-4">
@@ -69,6 +78,18 @@ commercialOfferStore.commercialOffer.manufacturer = {
                     <div class="flex items-center justify-between md:gap-4">
                         <span>Почта: </span>
                         <span class="font-semibold">{{ itemsStore.user.email }}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between md:gap-4">
+                        <Label class="mb-2 block">Группа коэффициентов: </Label>
+                        <Select>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Выберите группу коэффициентов" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for=""
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

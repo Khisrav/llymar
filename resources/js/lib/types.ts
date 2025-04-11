@@ -129,7 +129,8 @@ export interface CommercialOffer {
         manufacturer: string;
         company: string;
         phone: string;
-    }
+    },
+    wholesale_factor_key?: string;
 }
 
 export interface Contract {

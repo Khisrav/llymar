@@ -20,6 +20,9 @@ const navigationMenu = computed(() => {
     if (can_access_app_calculator) {
         menu.push({ title: 'Калькулятор', to: '/app/calculator' })
     }
+    if (can_access_admin_panel) {
+        menu.push({ title: 'Админка', to: '/admin' })
+    }
 
     return menu
 })
@@ -74,9 +77,6 @@ const username = computed(() => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{{ username }}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem v-if="can_access_admin_panel">
-                        <a href="/admin" target="_blank">Админка</a>
-                    </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Link href="/app/account/settings">Настройки</Link>
                     </DropdownMenuItem>

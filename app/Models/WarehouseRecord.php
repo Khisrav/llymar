@@ -9,6 +9,8 @@ class WarehouseRecord extends Model
 {
     protected $fillable = [
         'item_id',
+        'order_id',
+        'warehouse_id',
         'quantity',
     ];
     

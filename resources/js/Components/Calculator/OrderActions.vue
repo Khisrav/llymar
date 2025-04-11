@@ -111,7 +111,7 @@ const downloadListPDF = async () => {
 
 <template>
     <div class="h-6 md:h-10"></div>
-    <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 bg-white dark:bg-slate-900 p-2 sm:p-4 border sm:rounded-xl md:rounded-2xl shadow-sm">
+    <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 backdrop-blur-sm p-2 sm:p-4 bg-white/75 dark:bg-slate-900/75 ring-1 ring-black/5 sm:rounded-xl md:rounded-2xl shadow-sm">
         <div class="flex items-center justify-between">
             <div class="flex flex-col">
                 <span class="text-xs font-thin text-muted-foreground">Закупочная цена:</span>

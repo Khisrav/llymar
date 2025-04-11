@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import Button from '../ui/button/Button.vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import Input from '../ui/input/Input.vue'
@@ -7,30 +7,54 @@ import Label from '../ui/label/Label.vue'
 import { useCommercialOfferStore } from '../../Stores/commercialOfferStore'
 import { useItemsStore } from '../../Stores/itemsStore'
 import { vMaska } from 'maska/vue'
+import Select from '../ui/select/Select.vue'
+import SelectTrigger from '../ui/select/SelectTrigger.vue'
+import SelectValue from '../ui/select/SelectValue.vue'
+import SelectContent from '../ui/select/SelectContent.vue'
+import SelectItem from '../ui/select/SelectItem.vue'
+import { usePage } from '@inertiajs/vue3'
 
 const isCommercialOfferHidden = ref(true)
 const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
 
+const factor_groups = ref(usePage().props.factor_groups as any[])
+const selected_factor_group = ref(itemsStore.user.wholesale_factor_key)
+
+//if selected_factor_group changed
+watch(selected_factor_group, (new_value, old_value) => {
+    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.key === new_value)
+})
+
+// Initialize manufacturer info
 commercialOfferStore.commercialOffer.manufacturer = {
     title: 'Информация о производителе',
     manufacturer: itemsStore.user.company || '',
     company: itemsStore.user.company || '',
     phone: itemsStore.user.phone || '',
 }
+
+// Initialize factor group
+commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
+
+// Watch for factor group changes
+watch(selected_factor_group, (newValue) => {
+    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
+})
 </script>
 
 <template>
     <div class="border p-2 md:p-4 rounded-2xl bg-background">
         <div class="flex items-center">
-			<h2 class="text-xl font-bold text-muted-foreground">Коммерческое предложение</h2>
+            <h2 class="text-xl font-bold text-muted-foreground">Коммерческое предложение</h2>
             <Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="isCommercialOfferHidden = !isCommercialOfferHidden">
                 <Eye v-if="!isCommercialOfferHidden" class="size-6" />
                 <EyeOff v-else class="size-6" />
             </Button>
-		</div>
-		
+        </div>
+
         <div v-show="!isCommercialOfferHidden" class="grid md:grid-cols-2 gap-2 md:gap-4 mt-4">
+            <!-- Customer Information -->
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
                 <h4 class="font-semibold text-muted-foreground">Информация о клиенте</h4>
                 <div>
@@ -45,33 +69,57 @@ commercialOfferStore.commercialOffer.manufacturer = {
                 
                 <div>
                     <Label class="mb-2 block">Телефон:</Label>
-                    <Input v-maska="'+7 (###) ###-##-##'" v-model="commercialOfferStore.commercialOffer.customer.phone" class="w-full" placeholder="Москва, ул. Пушкина 123, №11" />
+                    <Input v-maska="'+7 (###) ###-##-##'" 
+                           v-model="commercialOfferStore.commercialOffer.customer.phone" 
+                           class="w-full" 
+                           placeholder="+7 (999) 999-99-99" />
                 </div>
                 
                 <div>
                     <Label class="mb-2 block">Примечание:</Label>
-                    <textarea v-model="commercialOfferStore.commercialOffer.customer.comment" class="w-full block border rounded p-2 text-sm" placeholder="Примечание"></textarea>
+                    <textarea v-model="commercialOfferStore.commercialOffer.customer.comment" 
+                              class="w-full block border rounded p-2 text-sm" 
+                              placeholder="Примечание"></textarea>
                 </div>
             </div>
-            
+
+            <!-- Manufacturer Information -->
             <div class="bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10 p-2 md:p-4 space-y-2 md:space-y-4">
-                <!-- <h4 class="font-semibold text-muted-foreground">Информация о производителе</h4> -->
-                <Input v-model="commercialOfferStore.commercialOffer.manufacturer.title" class="w-full font-semibold" />
+                <Input v-model="commercialOfferStore.commercialOffer.manufacturer.title" 
+                       class="w-full font-semibold" />
                 <div>
                     <div class="mb-4">
                         <Label class="mb-2 block">Производитель:</Label>
-                        <Input v-model="commercialOfferStore.commercialOffer.manufacturer.manufacturer" class="w-full" placeholder="" />
+                        <Input v-model="commercialOfferStore.commercialOffer.manufacturer.manufacturer" 
+                               class="w-full" 
+                               placeholder="Название компании" />
                     </div>
-                    <div class="flex items-center justify-between md:gap-4">
-                        <span>Телефон: </span>
-                        <span class="font-semibold">{{ itemsStore.user.phone }}</span>
+                    
+                    <div class="mb-4">
+                        <Label class="mb-2 block">Телефон:</Label>
+                        <Input v-maska="'+7 (###) ###-##-##'"
+                               v-model="commercialOfferStore.commercialOffer.manufacturer.phone"
+                               class="w-full"
+                               placeholder="+7 (999) 999-99-99" />
                     </div>
-                    <div class="flex items-center justify-between md:gap-4">
-                        <span>Почта: </span>
-                        <span class="font-semibold">{{ itemsStore.user.email }}</span>
+
+                    <div class="mb-4">
+                        <Label class="mb-2 block">Группа коэффициентов:</Label>
+                        <Select v-model="selected_factor_group">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Выберите группу" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="factor_group in factor_groups" 
+                                           :key="factor_group.id" 
+                                           :value="factor_group.group_name">
+                                    {{ factor_group.group_name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>
-		</div>
+        </div>
     </div>
 </template>

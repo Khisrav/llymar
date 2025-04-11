@@ -45,7 +45,7 @@ const pricePerM2 = computed(() => {
 
 <template>
 	<div class="border p-2 md:p-4 rounded-2xl bg-background w-full max-w-md mx-auto">
-		<h2 class="text-xl font-bold text-muted-foreground block">Расчет стоимости</h2>
+		<h2 class="text-xl font-bold text-muted-foreground block">Стоимость для КП</h2>
 
 		<div class="mt-2">
 			<div class="flex justify-between gap-4 mb-4">

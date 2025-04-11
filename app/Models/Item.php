@@ -57,9 +57,7 @@ class Item extends Model
         // Retrieve the wholesale factor and reduction factor key
         $wholesaleFactor = WholesaleFactor::where('group_name', $user_wholesale_factor_key);
         $reductionFactorKey = $wholesaleFactor->value('reduction_factor_key');
-    
-        Log::info("wholesale_factor_key: {$user_wholesale_factor_key}, reduction_factor_key: {$reductionFactorKey}");
-    
+        
         // Cache the wholesale factor value for 60 minutes
         $wholesaleFactorValue = Cache::remember(
             "wholesale_factor_value_{$user_wholesale_factor_key}",

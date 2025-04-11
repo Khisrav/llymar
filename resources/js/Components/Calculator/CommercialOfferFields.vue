@@ -21,11 +21,6 @@ const commercialOfferStore = useCommercialOfferStore()
 const factor_groups = ref(usePage().props.factor_groups as any[])
 const selected_factor_group = ref(itemsStore.user.wholesale_factor_key)
 
-//if selected_factor_group changed
-watch(selected_factor_group, (new_value, old_value) => {
-    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.key === new_value)
-})
-
 // Initialize manufacturer info
 commercialOfferStore.commercialOffer.manufacturer = {
     title: 'Информация о производителе',
@@ -40,6 +35,7 @@ commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_grou
 // Watch for factor group changes
 watch(selected_factor_group, (newValue) => {
     commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
+    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
 })
 </script>
 

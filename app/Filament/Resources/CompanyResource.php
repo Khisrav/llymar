@@ -26,7 +26,7 @@ class CompanyResource extends Resource
     protected static ?string $model = Company::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationLabel = 'Организации';
+    protected static ?string $navigationLabel = 'Контрагенты';
     protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
@@ -37,11 +37,12 @@ class CompanyResource extends Resource
                 Section::make('')
                     ->schema([
                         Select::make('type')
-                            ->label('Тип предприятия')
+                            ->label('Тип контрагента')
                             ->options([
                                 'performer' => 'Исполнитель',
                                 'factory' => 'Завод',
                                 'supplier' => 'Поставщик',
+                                'customer' => 'Заказчик',
                             ])
                             ->default('performer')
                             ->native(false)
@@ -128,6 +129,7 @@ class CompanyResource extends Resource
             'performer' => 'Исполнитель',
             'factory' => 'Завод',
             'supplier' => 'Поставщик',
+            'customer' => 'Заказчик',
         ];
         
         return $table
@@ -138,7 +140,7 @@ class CompanyResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('type')
-                    ->label('Тип предприятия')
+                    ->label('Тип контрагента')
                     // ->searchable()
                     // ->sortable()
                     ->html()

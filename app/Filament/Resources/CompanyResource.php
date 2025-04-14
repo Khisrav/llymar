@@ -6,6 +6,7 @@ use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Filament\Resources\CompanyResource\RelationManagers\CompanyBillsRelationManager;
 use App\Models\Company;
+use App\Models\Warehouse;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -78,6 +79,13 @@ class CompanyResource extends Resource
                             ->label('Email')
                             ->type('email')
                             ->required(),
+                        Select::make('warehouse_id')
+                            ->label('Склад')
+                            ->options(Warehouse::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->native(false)
+                            ->selectablePlaceholder(false)
+                            ->required(),
                         TextInput::make('phone')
                             ->label('Телефон')
                             ->mask('+7 (999) 999 99-99')
@@ -118,7 +126,7 @@ class CompanyResource extends Resource
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->required(),
-                    ])->columns(3),
+                    ])->columns(4),
             ]);
     }
 

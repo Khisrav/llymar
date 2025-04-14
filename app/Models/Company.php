@@ -23,6 +23,7 @@ class Company extends Model
         'ogrn',
         'vat',
         'type',
+        'warehouse_id',
     ];
     
     /**

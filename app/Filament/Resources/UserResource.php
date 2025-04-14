@@ -127,7 +127,7 @@ class UserResource extends Resource
                             ->label('Фактический адрес')
                             ->required(),
                         Forms\Components\TextInput::make('company')
-                            ->label('Организация/Компания')
+                            ->label('Контрагент')
                             ->required(),
                         Forms\Components\TextInput::make('reward_fee')
                             ->label('Комиссия')

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WarehouseRecordResource\Pages;
 use App\Filament\Resources\WarehouseRecordResource\RelationManagers;
 use App\Models\Item;
+use App\Models\Warehouse;
 use App\Models\WarehouseRecord;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
@@ -14,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -64,10 +66,16 @@ class WarehouseRecordResource extends Resource
                     ->wrap()
                     ->getStateUsing(fn (Model $record) => Item::find($record->item_id)->name)
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('order_id')
+                    ->label('ID заказа')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('quantity')
                     ->label('Кол-во')
                     ->sortable()
+                    ->badge()
                     ->suffix(fn (Model $record) => ' ' . Item::find($record->item_id)->unit)
+                    ->color(fn (Model $record) => $record->quantity == 0 ? 'gray' : ($record->quantity > 0 ? 'green' : 'red'))
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('created_at')
                     ->label('Создан')
@@ -77,7 +85,18 @@ class WarehouseRecordResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
-                //
+                SelectFilter::make('item_id')
+                    ->label('Деталь')
+                    ->native(false)
+                    ->searchable()
+                    ->optionsLimit(20)
+                    ->options(Item::all()->pluck('name', 'id')->toArray()),
+                SelectFilter::make('warehouse_id')
+                    ->label('Склад')
+                    ->native(false)
+                    ->searchable()
+                    ->optionsLimit(10)
+                    ->options(Warehouse::all()->pluck('name', 'id')->toArray()),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([

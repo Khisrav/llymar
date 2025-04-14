@@ -6,6 +6,7 @@ use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Filament\Resources\CompanyResource\RelationManagers\CompanyBillsRelationManager;
 use App\Models\Company;
+use App\Models\Warehouse;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -26,7 +27,7 @@ class CompanyResource extends Resource
     protected static ?string $model = Company::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationLabel = 'Организации';
+    protected static ?string $navigationLabel = 'Контрагенты';
     protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
@@ -37,11 +38,12 @@ class CompanyResource extends Resource
                 Section::make('')
                     ->schema([
                         Select::make('type')
-                            ->label('Тип предприятия')
+                            ->label('Тип контрагента')
                             ->options([
                                 'performer' => 'Исполнитель',
                                 'factory' => 'Завод',
                                 'supplier' => 'Поставщик',
+                                'customer' => 'Заказчик',
                             ])
                             ->default('performer')
                             ->native(false)
@@ -76,6 +78,13 @@ class CompanyResource extends Resource
                         TextInput::make('email')
                             ->label('Email')
                             ->type('email')
+                            ->required(),
+                        Select::make('warehouse_id')
+                            ->label('Склад')
+                            ->options(Warehouse::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->native(false)
+                            ->selectablePlaceholder(false)
                             ->required(),
                         TextInput::make('phone')
                             ->label('Телефон')
@@ -117,7 +126,7 @@ class CompanyResource extends Resource
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->required(),
-                    ])->columns(3),
+                    ])->columns(4),
             ]);
     }
 
@@ -128,6 +137,7 @@ class CompanyResource extends Resource
             'performer' => 'Исполнитель',
             'factory' => 'Завод',
             'supplier' => 'Поставщик',
+            'customer' => 'Заказчик',
         ];
         
         return $table
@@ -138,7 +148,7 @@ class CompanyResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('type')
-                    ->label('Тип предприятия')
+                    ->label('Тип контрагента')
                     // ->searchable()
                     // ->sortable()
                     ->html()

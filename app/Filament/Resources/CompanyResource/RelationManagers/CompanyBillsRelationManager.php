@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class CompanyBillsRelationManager extends RelationManager
 {
     protected static string $relationship = 'companyBills';
-    protected static ?string $title = 'Счета организации';
+    protected static ?string $title = 'Счета контрагента';
     
     protected function mutateFormDataBeforeSave(array $data): array
     {

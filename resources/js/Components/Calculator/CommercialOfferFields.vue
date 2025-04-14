@@ -18,9 +18,6 @@ const isCommercialOfferHidden = ref(true)
 const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const factor_groups = ref(usePage().props.factor_groups as any[])
-const selected_factor_group = ref(itemsStore.user.wholesale_factor_key)
-
 // Initialize manufacturer info
 commercialOfferStore.commercialOffer.manufacturer = {
     title: 'Информация о производителе',
@@ -30,13 +27,13 @@ commercialOfferStore.commercialOffer.manufacturer = {
 }
 
 // Initialize factor group
-commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
+// commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
 
 // Watch for factor group changes
-watch(selected_factor_group, (newValue) => {
-    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
-    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
-})
+// watch(selected_factor_group, (newValue) => {
+//     commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
+//     itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
+// })
 </script>
 
 <template>
@@ -99,7 +96,7 @@ watch(selected_factor_group, (newValue) => {
                                placeholder="+7 (999) 999-99-99" />
                     </div>
 
-                    <div class="mb-4">
+                    <!-- <div class="mb-4">
                         <Label class="mb-2 block">Группа коэффициентов:</Label>
                         <Select v-model="selected_factor_group">
                             <SelectTrigger class="w-full">
@@ -113,7 +110,7 @@ watch(selected_factor_group, (newValue) => {
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

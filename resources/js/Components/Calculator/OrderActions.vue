@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, EllipsisVertical, FilePenIcon, Printer, Ruler, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, BadgePercentIcon, EllipsisVertical, FilePenIcon, Printer, Ruler, ScrollText } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -13,20 +13,23 @@ import { Link, router, usePage } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
-import { computed, ref } from "vue"
-import Dialog from "../ui/dialog/Dialog.vue"
-import DialogTrigger from "../ui/dialog/DialogTrigger.vue"
-import DialogContent from "../ui/dialog/DialogContent.vue"
-import DialogHeader from "../ui/dialog/DialogHeader.vue"
-import DialogTitle from "../ui/dialog/DialogTitle.vue"
-import DialogDescription from "../ui/dialog/DialogDescription.vue"
-import DialogFooter from "../ui/dialog/DialogFooter.vue"
+import { computed, ref, watch } from "vue"
+import DropdownMenuSub from "../ui/dropdown-menu/DropdownMenuSub.vue"
+import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.vue"
+import { DropdownMenuPortal } from "radix-vue"
+import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const { can_access_app_cart } = usePage().props as any
+const factor_groups = ref(usePage().props.factor_groups as any[])
+const selected_factor_group = ref(itemsStore.user.wholesale_factor_key)
+
+//init
+commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
+
+const { can_access_app_cart, can_access_wholesale_factors } = usePage().props as any
 
 // SNP for Surname Name Patronymic
 const snp = ref({
@@ -107,6 +110,11 @@ const downloadListPDF = async () => {
         alert('Ошибка скачивания PDF')
     }
 }
+
+watch(selected_factor_group, (newValue) => {
+    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
+    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
+})
 </script>
 
 <template>
@@ -127,7 +135,9 @@ const downloadListPDF = async () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                        
                         <DropdownMenuSeparator />
+                        
                         <DropdownMenuItem @click="downloadCommercialOffer">
                             <Printer class="size-4" />
                             <span>Печать КП</span>
@@ -136,6 +146,18 @@ const downloadListPDF = async () => {
                             <ScrollText class="size-4" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
+                                                
+                        <DropdownMenuSub v-if="can_access_wholesale_factors">
+                            <DropdownMenuSubTrigger class="w-full flex gap-2 hover:text-white">
+                                <BadgePercentIcon class="size-4" />
+                                <span>Коэффициенты</span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem v-for="factor_group in factor_groups" :key="factor_group.group_name" @click="selected_factor_group = factor_group.group_name" :class="{ 'bg-accent': factor_group.group_name === selected_factor_group }" class="mb-1">{{ factor_group.group_name }}</DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link href="/app/cart" v-if="can_access_app_cart">

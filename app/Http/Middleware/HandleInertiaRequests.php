@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                 'can_access_app_calculator' => false,
                 'can_access_admin_panel' => false,
                 'can_access_app_cart' => false,
+                'can_access_wholesale_factors' => false,
             ];
         }
         
@@ -57,6 +58,7 @@ class HandleInertiaRequests extends Middleware
             'can_access_app_calculator' => $user->can('access app calculator'),
             'can_access_admin_panel' => $user->can('access admin panel'),
             'can_access_app_cart' => $user->can('access app cart'),
+            'can_access_wholesale_factors' => $user->can('access wholesale-factors'),
         ];
     }
 }

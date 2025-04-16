@@ -37,6 +37,14 @@ class Item extends Model
     {
         return $this->hasMany(WarehouseRecord::class);
     }
+    
+    /**
+     * Relationship to ItemProperty model.
+     */
+    public function itemProperties()
+    {
+        return $this->hasMany(ItemProperty::class);
+    }
 
     /**
      * Calculate the item price based on the user's wholesale factor

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Filament\Resources\ItemResource\RelationManagers\ItemPropertiesRelationManager;
 use App\Filament\Resources\ItemResource\RelationManagers\WarehouseRecordsRelationManager;
 use Illuminate\Database\Eloquent\Model;
 
@@ -166,6 +167,7 @@ class ItemResource extends Resource
     {
         return [
             WarehouseRecordsRelationManager::class,
+            ItemPropertiesRelationManager::class,
         ];
     }
 

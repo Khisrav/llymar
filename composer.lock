@@ -4,8 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "018210031a0f1db1c8fd22f5b12a7502",
+    "content-hash": "f9fdc295c11f47af175bf1fa3fd3010f",
     "packages": [
+        {
+            "name": "adamasantares/dxf",
+            "version": "0.1.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/KOYU-Tech/DXF-Creator-for-PHP.git",
+                "reference": "22a161139e1cd96ad2506da8792d002c94d01432"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/KOYU-Tech/DXF-Creator-for-PHP/zipball/22a161139e1cd96ad2506da8792d002c94d01432",
+                "reference": "22a161139e1cd96ad2506da8792d002c94d01432",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "adamasantares\\dxf\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Konstantin Kutsevalov",
+                    "email": "konstantin@kutsevalov.name"
+                }
+            ],
+            "description": "A simple DXF creator for PHP",
+            "homepage": "https://github.com/KOYU-Tech/DXF-Creator-for-PHP#readme",
+            "keywords": [
+                "dxf",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/KOYU-Tech/DXF-Creator-for-PHP/issues",
+                "source": "https://github.com/KOYU-Tech/DXF-Creator-for-PHP/tree/0.1.6"
+            },
+            "time": "2023-10-22T13:45:59+00:00"
+        },
         {
             "name": "anourvalar/eloquent-serialize",
             "version": "1.2.27",
@@ -1215,6 +1260,46 @@
                 }
             ],
             "time": "2024-12-27T00:36:43+00:00"
+        },
+        {
+            "name": "enjoping/dxfighter",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Anecho/DXFighter.git",
+                "reference": "f8b7fee8d7a51f87af02f1906147c5387031710d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Anecho/DXFighter/zipball/f8b7fee8d7a51f87af02f1906147c5387031710d",
+                "reference": "f8b7fee8d7a51f87af02f1906147c5387031710d",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpcheckstyle/phpcheckstyle": "^0.14.7",
+                "phpunit/phpunit": "^7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DXFighter\\": "",
+                    "DXFighter\\lib\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Joe Pietler",
+                    "email": "enjoping@gmail.com"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/Anecho/DXFighter/tree/master"
+            },
+            "time": "2020-04-13T17:23:22+00:00"
         },
         {
             "name": "filament/actions",

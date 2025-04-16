@@ -11,6 +11,99 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 
+use DXFighter\DXFighter;
+use DXFighter\lib\Polyline;
+use DXFighter\lib\Text;
+use DXFighter\lib\Line;
+use DXFighter\lib\Ellipse;
+use DXFighter\lib\Circle;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
+Route::get('/dxf', function (Request $request) {
+    // Parse the payload data
+    $data = $request->json()->all();
+
+    // Initialize DXFighter
+    $dxf = new DXFighter();
+
+    // Process polylines from payload
+    if (isset($data['polylines'])) {
+        foreach ($data['polylines'] as $polylineData) {
+            $polyline = new Polyline();
+            $polyline->setFlag(0, 1);
+            $polyline->setColor($polylineData['color'] ?? 98);
+            foreach ($polylineData['points'] as $point) {
+                $polyline->addPoint([$point['x'], $point['y'], $point['z'] ?? 0]);
+            }
+            $dxf->addEntity($polyline);
+        }
+    }
+
+    // Process texts from payload
+    if (isset($data['texts'])) {
+        foreach ($data['texts'] as $textData) {
+            $text = new Text($textData['content'], [$textData['x'], $textData['y'], $textData['z'] ?? 0], $textData['height']);
+            $dxf->addEntity($text);
+        }
+    }
+
+    // Process lines from payload
+    if (isset($data['lines'])) {
+        foreach ($data['lines'] as $lineData) {
+            $line = new Line([$lineData['start']['x'], $lineData['start']['y'], $lineData['start']['z'] ?? 0], [$lineData['end']['x'], $lineData['end']['y'], $lineData['end']['z'] ?? 0]);
+            $line->setColor($lineData['color'] ?? 240);
+            $dxf->addEntity($line);
+        }
+    }
+
+    // Process circles from payload
+    if (isset($data['circles'])) {
+        Log::info($data['circles']);
+        foreach ($data['circles'] as $circleData) {
+            Log::info($circleData);
+            $circle = new Ellipse(
+                [
+                    $circleData['centerPoint']['X'], 
+                    $circleData['centerPoint']['Y'], 
+                    $circleData['centerPoint']['z'] ?? 0
+                ], [
+                    $circleData['radius'] + $circleData['centerPoint']['X'], 
+                    $circleData['radius'] + $circleData['centerPoint']['Y'], 
+                    $circleData['centerPoint']['z'] ?? 0
+                ], $circleData['radius']);
+            $dxf->addEntity($circle);
+        }
+    }
+
+    // Process rectangles from payload
+    if (isset($data['rects'])) {
+        foreach ($data['rects'] as $rectData) {
+            $lines = [
+                $rectData['line1'],
+                $rectData['line2'],
+                $rectData['line3'],
+                $rectData['line4']
+            ];
+            foreach ($lines as $lineData) {
+                $line = new Line([$lineData['firstPoint']['X'], $lineData['firstPoint']['Y'], 0], [$lineData['secondPoint']['X'], $lineData['secondPoint']['Y'], 0]);
+                $dxf->addEntity($line);
+            }
+        }
+    }
+
+    // Define the file path
+    $filePath = storage_path('app/output.dxf');
+
+    // Save the DXF file
+    $dxf->saveAs($filePath);
+
+    // Return the file as a downloadable response
+    return response()->download($filePath)/*->deleteFileAfterSend(true)*/;
+});
+
+
 /*
  *  PUBLIC ROUTES
  */
@@ -19,6 +112,7 @@ Route::get('/', function () {
         'canLogin' => Route::has('auth'),
     ]);
 });
+
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');

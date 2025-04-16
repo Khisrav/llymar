@@ -16,7 +16,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const categories = ref<Category[]>([])
     const wholesale_factor = ref<WholesaleFactor>()
     const markupPercentage = ref(0)
-    
+
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -26,20 +26,20 @@ export const useItemsStore = defineStore('itemsStore', () => {
         updateGlassQuantity(newSelectedGlassID)
         calculate()
     }, { deep: true })
-    
+
     watch(selectedServicesID, (newSelectedServicesID) => {
         sessionStorage.setItem('selectedServicesID', JSON.stringify(newSelectedServicesID))
         updateServicesQuantity(newSelectedServicesID)
         calculate()
     }, { deep: true })
-    
+
     watch(cartItems, (newCartItems) => {
         Object.keys(newCartItems).forEach(key => {
             if (newCartItems[+key].quantity === 0) {
                 delete newCartItems[+key]
             }
         })
-    
+
         sessionStorage.setItem('cartItems', JSON.stringify(newCartItems))
     }, { deep: true })
 
@@ -51,7 +51,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (sessionStorage.getItem('cartItems')) {
             cartItems.value = JSON.parse(sessionStorage.getItem('cartItems') as string)
         }
-  
+
         if (sessionStorage.getItem('selectedGlassID')) {
             selectedGlassID.value = JSON.parse(sessionStorage.getItem('selectedGlassID') as string)
         } else {
@@ -59,19 +59,19 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 selectedGlassID.value = glasses.value[0].id
             }
         }
-  
+
         if (sessionStorage.getItem('selectedServicesID')) {
-          selectedServicesID.value = JSON.parse(sessionStorage.getItem('selectedServicesID') as string)
+            selectedServicesID.value = JSON.parse(sessionStorage.getItem('selectedServicesID') as string)
         } else { selectedServicesID.value = [] }
-  
+
         if (!sessionStorage.getItem('cartItems')) {
             // const allItems = [...items.value, ...additional_items.value]
             const allItems = [...items.value]
-            
+
             Object.keys(additional_items.value).forEach(key => {
                 allItems.push(...additional_items.value[+key])
             })
-            
+
             allItems.forEach(item => {
                 cartItems.value[item.id] = { quantity: 0 }
             })
@@ -86,7 +86,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
-                L1: {2 : 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
+                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
                 L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
             },
             right: {
@@ -115,20 +115,57 @@ export const useItemsStore = defineStore('itemsStore', () => {
         const openings = openingsStore.openings
 
         const quantityMap: { [key: string]: () => number } = {
-            L1: () => openings.reduce((acc, { type, width, doors }) => {
-                let a = Math.ceil(width / 1000 / 3) * 3
-                let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
-                // let c = (((width / 1000) % 3) ? 3 : 0)
-                return acc + a * b
-            }, 0),
-            L2: () => getItemQuantity('L1'),
-            L3: () => openings.reduce((acc, { type, width, doors }) => {
-                let a = Math.ceil(width / 1000 / 3) * 3
-                let b = L1_L3_multiplier(vendor_code as 'L1' | 'L3', doors, type)
-                // let c = (((width / 1000) % 3) ? 3 : 0)
-                return acc + a * b
-            }, 0),
-            L4: () => getItemQuantity('L3'),
+            L1: () => {
+                const res = openings.reduce(
+                    (acc, { width, type, doors }) => {
+                        // If adding the opening does not exceed 6000, include it in the current group.
+                        if (acc.group + width <= 6000) {
+                            // For a new group, record type and doors.
+                            if (acc.group === 0) {
+                                acc.groupType = type;
+                                acc.groupDoors = doors;
+                            }
+                            acc.group += width;
+                        } else {
+                            // Finalize the current group: convert total width to a rounded value and multiply.
+                            acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", acc.groupDoors, acc.groupType);
+                            // Start a new group with the current opening.
+                            acc.group = width;
+                            acc.groupType = type;
+                            acc.groupDoors = doors;
+                        }
+                        return acc;
+                    },
+                    { total: 0, group: 0, groupType: "", groupDoors: 0 }
+                );
+                // Finalize any remaining group.
+                return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", res.groupDoors, res.groupType) : 0);
+            },
+            L2: () => getItemQuantity("L1"),
+            L3: () => {
+                const res = openings.reduce(
+                    (acc, { width, type, doors }) => {
+                        if (acc.group + width <= 6000) {
+                            if (acc.group === 0) {
+                                acc.groupType = type;
+                                acc.groupDoors = doors;
+                            }
+                            acc.group += width;
+                        } else {
+                            acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", acc.groupDoors, acc.groupType);
+                            acc.group = width;
+                            acc.groupType = type;
+                            acc.groupDoors = doors;
+                        }
+                        return acc;
+                    },
+                    { total: 0, group: 0, groupType: "", groupDoors: 0 }
+                );
+                return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", res.groupDoors, res.groupType) : 0);
+            },
+            L4: () => getItemQuantity("L3"),
+
+
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
                 if (type === 'triangle' || type === 'blind-glazing') return acc
                 return acc + Math.floor((width - 1800) / 1000 + 3)
@@ -182,27 +219,27 @@ export const useItemsStore = defineStore('itemsStore', () => {
         glasses.value.forEach(glass => {
             delete cartItems.value[glass.id]
         })
-        
+
         if (glassID == -1) return
-        
+
         cartItems.value[glassID] = {
             quantity: parseFloat((openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height
             }, 0) / 1000000).toFixed(2))
         }
     }
-    
+
     const updateServicesQuantity = (servicesID: number[]) => {
         services.value.forEach(service => {
             delete cartItems.value[service.id]
         })
-                
+
         servicesID.forEach(serviceID => {
             //388 это распил
-            if  ([388].includes(serviceID)) {
+            if ([388].includes(serviceID)) {
                 // console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
                 cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) }
-            } 
+            }
             else if (serviceID == 386) {
                 let q = 0
                 const m_p_ = [390, 391, 392, 393, 394, 395, 396, 397, 363, 425, 426];
@@ -214,9 +251,11 @@ export const useItemsStore = defineStore('itemsStore', () => {
             }
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
-                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { width, height }) => {
-                    return acc + width * height
-                }, 0) / 1000000 }
+                cartItems.value[serviceID] = {
+                    quantity: openingsStore.openings.reduce((acc, { width, height }) => {
+                        return acc + width * height
+                    }, 0) / 1000000
+                }
             }
         })
     }
@@ -230,15 +269,15 @@ export const useItemsStore = defineStore('itemsStore', () => {
         updateGlassQuantity(selectedGlassID.value)
         updateServicesQuantity(selectedServicesID.value)
     }
-    
+
     const itemPrice = (item_id: number): number => {
         const item = getItemInfo(item_id)
-        
+
         if (!item) return 0;
-        
+
         const category = categories.value.find(c => c.id === item?.category_id)
         const ku = category?.reduction_factors?.find(ku => ku.key === wholesale_factor.value?.reduction_factor_key)
-        
+
         return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
     }
 
@@ -246,16 +285,16 @@ export const useItemsStore = defineStore('itemsStore', () => {
         let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
         // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
         const allItems = [...items.value, ...glasses.value, ...services.value]
-        
+
         Object.keys(additional_items.value).forEach(key => {
             allItems.push(...additional_items.value[+key])
         })
 
         allItems.forEach(item => {
             const quantity = cartItems.value[item.id]?.quantity || 0
-            
+
             if (!quantity) return
-            
+
             totalPriceWithoutDiscount += 0
             totalPriceWithDiscount += itemPrice(item.id) * quantity
         })
@@ -265,15 +304,15 @@ export const useItemsStore = defineStore('itemsStore', () => {
             with_discount: totalPriceWithDiscount
         }
     })
-    
+
     const getItemInfo = (id: number) => {
         // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
         const allItems = [...items.value, ...glasses.value, ...services.value]
-        
+
         Object.keys(additional_items.value).forEach(key => {
             allItems.push(...additional_items.value[+key])
         })
-        
+
         const item = allItems.find(i => i.id === id)
         return item
     }

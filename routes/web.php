@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
 use DXFighter\DXFighter;
@@ -72,7 +73,7 @@ Route::get('/dxf', function (Request $request) {
                     $circleData['radius'] + $circleData['centerPoint']['X'], 
                     $circleData['radius'] + $circleData['centerPoint']['Y'], 
                     $circleData['centerPoint']['z'] ?? 0
-                ], $circleData['radius']);
+                ], 1);
             $dxf->addEntity($circle);
         }
     }
@@ -120,11 +121,19 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
-Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
-    ->name('orders.sketch_pdf');
-// Route::get('/orders/sketch', function() {
-//     return view('orders.sketch_pdf');
-// })->name('orders.sketch_pdf');
+// Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
+//     ->name('orders.sketch_pdf');
+Route::get('/orders/sketch', function() {
+    // return view('orders.sketch_pdf');
+    $pdf = Pdf::loadView('orders.sketch_pdf', [
+        // 'openings' => $request->openings,
+    ])
+    ->setPaper('a4', 'portrait')
+    ->setOptions(['isRemoteEnabled' => true]);
+
+    $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
+    return $pdf->stream($pdfName);
+})->name('orders.sketch_pdf');
 
 Route::get('/auth', function() {
     if (Auth::check()) {

@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 class ItemPropertiesRelationManager extends RelationManager
 {
     protected static string $relationship = 'itemProperties';
+    protected static ?string $title = 'Свойства';
 
     public function form(Form $form): Form
     {

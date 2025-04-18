@@ -95,38 +95,78 @@ $svg = '<svg
   </text>
 </svg>
 ';
-// $openings = [
-//     [
-//         'type' => 'left',
-//         'width' => 5000,
-//         'height' => 2700,
-//         'doors' => 3,
-//     ],
-//     [
-//         'type' => 'left',
-//         'width' => 5000,
-//         'height' => 2700,
-//         'doors' => 4,
-//     ],
-//     [
-//         'type' => 'right',
-//         'width' => 8000,
-//         'height' => 3000,
-//         'doors' => 8,
-//     ],
-//     [
-//         'type' => 'center',
-//         'width' => 16000,
-//         'height' => 4000,
-//         'doors' => 10,
-//     ],
-//     [
-//         'type' => 'center',
-//         'width' => 4500,
-//         'height' => 2600,
-//         'doors' => 4,
-//     ],
-// ];
+$openings = [
+    [
+        'type' => 'left',
+        'width' => 5000,
+        'height' => 2700,
+        'doors' => 3,
+        "a" => 14,
+        "b" => 17,
+        "c" => 13,
+        "d" => 12,
+        "e" => 30,
+        "f" => 6,
+        "g" => 55,
+        "i" => 550
+    ],
+    [
+        'type' => 'left',
+        'width' => 5000,
+        'height' => 2700,
+        'doors' => 4,
+        "a" => 14,
+        "b" => 17,
+        "c" => 13,
+        "d" => 12,
+        "e" => 30,
+        "f" => 6,
+        "g" => 55,
+        "i" => 550
+    ],
+    [
+        'type' => 'right',
+        'width' => 8000,
+        'height' => 3000,
+        'doors' => 8,
+        "a" => 14,
+        "b" => 17,
+        "c" => 13,
+        "d" => 12,
+        "e" => 30,
+        "f" => 6,
+        "g" => 55,
+        "i" => 550
+    ],
+    [
+        'type' => 'center',
+        'width' => 16000,
+        'height' => 4000,
+        'doors' => 10,
+        "a" => 14,
+        "b" => 17,
+        "c" => 13,
+        "d" => 12,
+        "e" => 30,
+        "f" => 6,
+        "g" => 55,
+        "i" => 550
+    ],
+    [
+        'type' => 'center',
+        'width' => 4500,
+        'height' => 2600,
+        'doors' => 4,
+        "a" => 14,
+        "b" => 17,
+        "c" => 13,
+        "d" => 12,
+        "e" => 30,
+        "f" => 6,
+        "g" => 55,
+        "i" => 550
+    ],
+];
 $openingName = [
     'left' => 'Левый проем',
     'right' => 'Правый проем',
@@ -215,9 +255,25 @@ $glass_counter = 0;
     .glass-top {
         border: 1px solid rgb(0, 195, 255);
         width: 74px;
-        height: 8px;
+        height: 12px;
         display: inline-block;
         position: relative;
+    }
+    .glass-top div {
+        margin-top: -1px;
+        /* border:1px solid black; */
+        /* display: flex; */
+        width: 100%;
+        height: 12px;
+        /* text-align: left; */
+        /* /* justify-content: space-between; */
+        position: absolute;
+    }
+    .glass-top p {
+        display: inline-block;
+        position: relative;
+        right: 0;
+        color: #ec4949;
     }
 
     .inner-view .glass-top {
@@ -225,6 +281,10 @@ $glass_counter = 0;
         height: 140px;
         position: relative;
         font-size:8px;
+    }
+    
+    .small {
+        font-size: 6px;
     }
 </style>
 </head>
@@ -302,7 +362,7 @@ $glass_counter = 0;
         
         <br>
     
-        <div class="center" style="font-size: 10px;margin-top:6px;">
+        <div class="center" style="font-size: 10px;margin-top:12px;">
             @if ($opening['type'] == 'center')
                 @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++)
                 @php
@@ -313,18 +373,58 @@ $glass_counter = 0;
                     } else if ($openingDoorsIndex == 1) {
                         $temp += $doorsGap['end'];
                     }
-                    
-                    $shirinaStvorok[$openingDoorsIndex] = intval($temp);
-                    $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp);
+                    $temp2 = 0;
+                    // $temp2 = ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2) ? -1 : 0);
+                    // if ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2)) {
+                    //     $temp2 = -0.5;
+                    // }
+                                        
+                    $shirinaStvorok[$openingDoorsIndex] = intval($temp + $temp2);
+                    $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp + $temp2);
                 @endphp
                 <div style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
                     <div class="inline-block">
-                        <div>СТ{{ $openingDoorsIndex }}</div>
-                        <div class="glass-top"></div>
+                        <div>СТ{{ $glass_counter + $openingDoorsIndex }}</div>
+                        <div class="glass-top">
+                            <div>
+                                <p class="small">
+                                    @switch($openingDoorsIndex)
+                                        @case(1)
+                                            L19
+                                            @break
+                                        @default
+                                            L19/21
+                                    @endswitch
+                                </p>
+                                <p class="small" style="width:calc(100% - 50px)"></p>
+                                <p class="small">
+                                    @if ($opening['type'] == 'left')
+                                        @switch($openingDoorsIndex)
+                                            @case(1)
+                                                L18
+                                                @break
+                                            @case($stvorki)
+                                                L16
+                                                @break
+                                            @default
+                                                L18/22
+                                        @endswitch
+                                    @else
+                                        @switch($openingDoorsIndex)
+                                            @case($stvorki)
+                                                L16
+                                                @break
+                                            @default
+                                                L16/21
+                                        @endswitch
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     <div class="inline-block" style="width: calc(6px + {{ ($stvorki / 2 - $openingDoorsIndex) * 110 }});"></div>
                     <div class="inline-block">
-                        <div>СТ{{ $stvorki - $openingDoorsIndex + 1 }}</div>
+                        <div>СТ{{ $glass_counter + $stvorki - $openingDoorsIndex + 1 }}</div>
                         <div class="glass-top"></div>
                     </div>
                 </div>
@@ -354,11 +454,59 @@ $glass_counter = 0;
                     @endif
                     <div class="inline-block">
                         @if ($opening['type'] == 'left')
-                            <div>СТ{{ $openingDoorsIndex }}</div>
+                            <div>СТ{{ $glass_counter + $openingDoorsIndex }}</div>
                         @else
-                            <div>СТ{{ $stvorki - $openingDoorsIndex + 1 }}</div>
+                            <div>СТ{{ $glass_counter + $stvorki - $openingDoorsIndex + 1 }}</div>
                         @endif
-                        <div class="glass-top"></div>
+                        <div class="glass-top">
+                            <div>
+                                <p class="small">
+                                    @if ($opening['type'] == 'left')
+                                        @switch($openingDoorsIndex)
+                                            @case(1)
+                                                L19
+                                                @break
+                                            @default
+                                                L19/21
+                                        @endswitch
+                                    @else
+                                        @switch($openingDoorsIndex)
+                                            @case(1)
+                                                L19
+                                                @break
+                                            @case($stvorki)
+                                                L15
+                                                @break
+                                            @default
+                                                L15/22
+                                        @endswitch
+                                    @endif
+                                </p>
+                                <p class="small" style="width:calc(100% - 50px)"></p>
+                                <p class="small">
+                                    @if ($opening['type'] == 'left')
+                                        @switch($openingDoorsIndex)
+                                            @case(1)
+                                                L18
+                                                @break
+                                            @case($stvorki)
+                                                L16
+                                                @break
+                                            @default
+                                                L18/22
+                                        @endswitch
+                                    @else
+                                        @switch($openingDoorsIndex)
+                                            @case($stvorki)
+                                                L16
+                                                @break
+                                            @default
+                                                L16/21
+                                        @endswitch
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     @if ($stvorki / 2 <= $openingDoorsIndex - 1)
                         @if ($opening['type'] == 'right')
@@ -374,7 +522,7 @@ $glass_counter = 0;
             @endif
         </div>
     
-        <div class="center inner-view" style="font-size: 10px;margin-top:20px;">
+        <div class="center inner-view" style="font-size: 10px;margin-top:24px;">
             <div style="display: flex; justify-content: center;align-items:center;justify-content: center;gap:16px;margin-bottom:0px;">
                 {{-- @php
                     $for_temp = [
@@ -385,7 +533,7 @@ $glass_counter = 0;
                 @for ($i = $for_temp['start']; $i <= $for_temp['end']; $i = $opening['type'] == 'right' ? $i - 1 : $i + 1) --}}
                 @for ($i = 1; $i <= $stvorki; $i++)
                     <div class="inline-block">
-                        <div>СТ{{ $i }}</div>
+                        <div>СТ{{ $i + $glass_counter }}</div>
                         <div class="glass-top" style="">
                             <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
                             <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$i] }}</span>
@@ -395,6 +543,9 @@ $glass_counter = 0;
             </div>
         </div>
     </div>
+    @php
+        $glass_counter += $stvorki
+    @endphp
     @endfor
 </div>
 </body>

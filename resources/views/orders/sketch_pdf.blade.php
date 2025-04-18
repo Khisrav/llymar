@@ -393,32 +393,25 @@ $glass_counter = 0;
                                         @case(1)
                                             L19
                                             @break
+                                            @case($stvorki / 2)
+                                                L15
+                                                @break
                                         @default
-                                            L19/21
+                                            L15/22
                                     @endswitch
                                 </p>
                                 <p class="small" style="width:calc(100% - 50px)"></p>
                                 <p class="small">
-                                    @if ($opening['type'] == 'left')
-                                        @switch($openingDoorsIndex)
-                                            @case(1)
-                                                L18
-                                                @break
-                                            @case($stvorki)
-                                                L16
-                                                @break
-                                            @default
-                                                L18/22
-                                        @endswitch
-                                    @else
-                                        @switch($openingDoorsIndex)
-                                            @case($stvorki)
-                                                L16
-                                                @break
-                                            @default
-                                                L16/21
-                                        @endswitch
-                                    @endif
+                                    @switch($openingDoorsIndex)
+                                        @case(1)
+                                            L16/21
+                                            @break
+                                        @case($stvorki / 2)
+                                            L17
+                                            @break
+                                        @default
+                                            L16/21
+                                    @endswitch
                                 </p>
                             </div>
                         </div>
@@ -426,7 +419,35 @@ $glass_counter = 0;
                     <div class="inline-block" style="width: calc(6px + {{ ($stvorki / 2 - $openingDoorsIndex) * 110 }});"></div>
                     <div class="inline-block">
                         <div>СТ{{ $glass_counter + $stvorki - $openingDoorsIndex + 1 }}</div>
-                        <div class="glass-top"></div>
+                        <div class="glass-top">
+                            <div>
+                                <p class="small">
+                                    @switch($openingDoorsIndex)
+                                        @case($stvorki / 2)
+                                            L20
+                                            @break
+                                        @case(1)
+                                            L19/21
+                                            @break
+                                        @default
+                                            L19/21
+                                    @endswitch
+                                </p>
+                                <p class="small" style="width:calc(100% - 50px)"></p>
+                                <p class="small">
+                                    @switch($openingDoorsIndex)
+                                        @case(1)
+                                            L16
+                                            @break
+                                        @case($stvorki / 2)
+                                            L18
+                                            @break
+                                        @default
+                                            L18/22
+                                    @endswitch
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endfor
@@ -525,13 +546,6 @@ $glass_counter = 0;
     
         <div class="center inner-view" style="font-size: 10px;margin-top:24px;">
             <div style="display: flex; justify-content: center;align-items:center;justify-content: center;gap:16px;margin-bottom:0px;">
-                {{-- @php
-                    $for_temp = [
-                        'start' => $opening['type'] == 'right' ? $stvorki : 1,
-                        'end' => $opening['type'] == 'right' ? 1 : $stvorki
-                    ]
-                @endphp
-                @for ($i = $for_temp['start']; $i <= $for_temp['end']; $i = $opening['type'] == 'right' ? $i - 1 : $i + 1) --}}
                 @for ($i = 1; $i <= $stvorki; $i++)
                     <div class="inline-block">
                         <div>СТ{{ $i + $glass_counter }}</div>
@@ -550,5 +564,4 @@ $glass_counter = 0;
     @endfor
 </div>
 </body>
-
 </html>

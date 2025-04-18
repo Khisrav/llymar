@@ -73,7 +73,7 @@ Route::get('/dxf', function (Request $request) {
                     $circleData['radius'] + $circleData['centerPoint']['X'], 
                     $circleData['radius'] + $circleData['centerPoint']['Y'], 
                     $circleData['centerPoint']['z'] ?? 0
-                ], $circleData['radius']);
+                ], 1);
             $dxf->addEntity($circle);
         }
     }

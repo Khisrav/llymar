@@ -363,6 +363,7 @@ $glass_counter = 0;
         <br>
     
         <div class="center" style="font-size: 10px;margin-top:12px;">
+            <div style="color:#ec4949">УЛИЦА</div>
             @if ($opening['type'] == 'center')
                 @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++)
                 @php
@@ -482,7 +483,7 @@ $glass_counter = 0;
                                         @endswitch
                                     @endif
                                 </p>
-                                <p class="small" style="width:calc(100% - 50px)"></p>
+                                <p class="small" style="width:calc(100% - 50px);height:10px;"></p>
                                 <p class="small">
                                     @if ($opening['type'] == 'left')
                                         @switch($openingDoorsIndex)

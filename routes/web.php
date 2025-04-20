@@ -24,7 +24,85 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/dxf', function (Request $request) {
     // Parse the payload data
-    $data = $request->json()->all();
+    // $data = $request->json()->all();
+    $data = json_decode('{
+  "lines": [],
+  "circles": [
+    {
+      "centerPoint": {
+        "X": 177.87610619469027,
+        "Y": -68.8329646017699
+      },
+      "radius": 6.182035113831143,
+      "shapeStyle": 0
+    },
+    {
+      "centerPoint": {
+        "X": 150.87610619469027,
+        "Y": -68.8329646017699
+      },
+      "radius": 10.182035113831143,
+      "shapeStyle": 0
+    }
+  ],
+  "rects": [
+    {
+      "line1": {
+        "firstPoint": {
+          "X": 105.30973451327434,
+          "Y": -47.594026548672566
+        },
+        "secondPoint": {
+          "X": 154.86725663716814,
+          "Y": -47.594026548672566
+        },
+        "shapeStyle": 0
+      },
+      "line2": {
+        "firstPoint": {
+          "X": 154.86725663716814,
+          "Y": -47.594026548672566
+        },
+        "secondPoint": {
+          "X": 154.86725663716814,
+          "Y": -85.11615044247787
+        },
+        "shapeStyle": 0
+      },
+      "line3": {
+        "firstPoint": {
+          "X": 154.86725663716814,
+          "Y": -85.11615044247787
+        },
+        "secondPoint": {
+          "X": 105.30973451327434,
+          "Y": -85.11615044247787
+        },
+        "shapeStyle": 0
+      },
+      "line4": {
+        "firstPoint": {
+          "X": 105.30973451327434,
+          "Y": -85.11615044247787
+        },
+        "secondPoint": {
+          "X": 105.30973451327434,
+          "Y": -47.594026548672566
+        },
+        "shapeStyle": 0
+      },
+      "style": 0
+    }
+  ],
+  "arcs": [],
+  "splines": [],
+  "hatches": [],
+  "texts": [],
+  "dims": [],
+  "dims2": [],
+  "dims3": [],
+  "arrows": []
+}', true);
 
     // Initialize DXFighter
     $dxf = new DXFighter();
@@ -63,17 +141,18 @@ Route::get('/dxf', function (Request $request) {
     if (isset($data['circles'])) {
         Log::info($data['circles']);
         foreach ($data['circles'] as $circleData) {
-            Log::info($circleData);
-            $circle = new Ellipse(
-                [
-                    $circleData['centerPoint']['X'], 
-                    $circleData['centerPoint']['Y'], 
-                    $circleData['centerPoint']['z'] ?? 0
-                ], [
-                    $circleData['radius'] + $circleData['centerPoint']['X'], 
-                    $circleData['radius'] + $circleData['centerPoint']['Y'], 
-                    $circleData['centerPoint']['z'] ?? 0
-                ], 1);
+            // Log::info($circleData);
+            // $circle = new Ellipse(
+            //     [
+            //         $circleData['centerPoint']['X'], 
+            //         $circleData['centerPoint']['Y'], 
+            //         $circleData['centerPoint']['z'] ?? 0
+            //     ], [
+            //         $circleData['radius'] + $circleData['centerPoint']['X'], 
+            //         $circleData['radius'] + $circleData['centerPoint']['Y'], 
+            //         $circleData['centerPoint']['z'] ?? 0
+            //     ], 1);
+            $circle = new Circle([$circleData['centerPoint']['X'], $circleData['centerPoint']['Y'], $circleData['centerPoint']['z'] ?? 0], $circleData['radius']);
             $dxf->addEntity($circle);
         }
     }

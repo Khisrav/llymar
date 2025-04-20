@@ -17,6 +17,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const wholesale_factor = ref<WholesaleFactor>()
     const markupPercentage = ref(0)
 
+    const factor_groups = ref<WholesaleFactor[]>([])
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -334,5 +335,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
         wholesale_factor,
         itemPrice,
         markupPercentage,
+        factor_groups,
     }
 })

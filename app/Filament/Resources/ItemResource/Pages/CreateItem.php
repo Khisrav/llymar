@@ -10,5 +10,5 @@ class CreateItem extends CreateRecord
 {
     protected static string $resource = ItemResource::class;
     
-    protected static ?string $title = 'Добавить номенклатуру';
+    protected static ?string $title = 'Добавить товар';
 }

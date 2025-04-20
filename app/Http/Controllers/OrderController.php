@@ -192,6 +192,7 @@ class OrderController extends Controller
             'cart_items'        => 'required|array',
             'total_price'       => 'required|numeric',
             'markup_percentage' => 'required|numeric',
+            'wholesale_factor'  => 'required|array',
         ]);
         
         $additional_items = $offer['additional_items'];
@@ -450,7 +451,7 @@ class OrderController extends Controller
 
         foreach ($offer['additional_items'] as $item) {
             if (isset($offer['cart_items'][$item['id']])) {
-                $price = Item::itemPrice($item['id']);
+                $price = Item::itemPrice($item['id'], $offer['wholesale_factor']['group_name']);
                 $quantity = $offer['cart_items'][$item['id']]['quantity'];
                 $offerAdditionalsPrice += $price * $quantity;
             }
@@ -458,14 +459,14 @@ class OrderController extends Controller
 
         foreach ($offer['services'] ?? [] as $service) {
             if (isset($offer['cart_items'][$service['id']])) {
-                $price = Item::itemPrice($service['id']);
+                $price = Item::itemPrice($service['id'], $offer['wholesale_factor']['group_name']);
                 $quantity = $offer['cart_items'][$service['id']]['quantity'];
                 $offerAdditionalsPrice += $price * $quantity;
             }
         }
 
         if (isset($offer['glass']['id'], $offer['cart_items'][$offer['glass']['id']])) {
-            $price = Item::itemPrice($offer['glass']['id']);
+            $price = Item::itemPrice($offer['glass']['id'], $offer['wholesale_factor']['group_name']);
             $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
             $offerAdditionalsPrice += $price * $quantity;
         }

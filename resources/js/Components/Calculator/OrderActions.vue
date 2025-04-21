@@ -18,16 +18,27 @@ import DropdownMenuSub from "../ui/dropdown-menu/DropdownMenuSub.vue"
 import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.vue"
 import { DropdownMenuPortal } from "radix-vue"
 import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
+import { WholesaleFactor } from "../../lib/types"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const factor_groups = ref(usePage().props.factor_groups as any[])
-const selected_factor_group = ref(itemsStore.user.wholesale_factor_key)
+itemsStore.factor_groups = usePage().props.factor_groups as WholesaleFactor[]
+sessionStorage.setItem('factor_groups', JSON.stringify(itemsStore.factor_groups))
+
+const factor_groups = ref(itemsStore.factor_groups)
+const selected_factor_group = ref(sessionStorage.getItem('selected_factor_group') || itemsStore.user.wholesale_factor_key)
 
 //init
 commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
+itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === selected_factor_group.value)
+
+watch(selected_factor_group, (newValue) => {
+    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
+    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
+    sessionStorage.setItem('selected_factor_group', newValue as string)
+})
 
 const { can_access_app_cart, can_access_wholesale_factors } = usePage().props as any
 
@@ -57,6 +68,7 @@ const downloadCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage.toFixed(2),
+            wholesale_factor: itemsStore.wholesale_factor
         }
 
         const response = await axios.post('/orders/commercial-offer', formData, {
@@ -110,11 +122,6 @@ const downloadListPDF = async () => {
         alert('Ошибка скачивания PDF')
     }
 }
-
-watch(selected_factor_group, (newValue) => {
-    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
-    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
-})
 </script>
 
 <template>

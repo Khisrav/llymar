@@ -1,100 +1,4 @@
 @php
-$svg = '<svg
-    width="29"
-    height="106"
-    viewBox="0 0 34 86"
-    xmlns="http://www.w3.org/2000/svg"
->
-  <!-- 
-    Scaled so the shape fits a 34×86 box.
-    Font size is smaller so text remains legible.
-  -->
-
-  <!-- 1) Main vertical line (originally 95,108 → 95,523) -->
-  <line
-    x1="19.40" y1="17.14"
-    x2="19.40" y2="106"
-    stroke="black"
-    stroke-width="0.8"
-  />
-
-  <!-- 2) Short horizontal line near top (95,108 → 123,108) -->
-  <line
-    x1="19.40"  y1="17.14"
-    x2="23.85"  y2="17.14"
-    stroke="black"
-    stroke-width="0.8"
-  />
-
-  <!-- 3) Long horizontal line across the middle (0,340 → 156,340) -->
-  <line
-    x1="4.26"   y1="60"
-    x2="29.11"  y2="60"
-    stroke="black"
-    stroke-width="0.8"
-  />
-
-  <!-- 4) Angled line (top-right slant) (123,108 → 15.406,0.406) -->
-  <line
-    x1="23.85"  y1="17.14"
-    x2="6.71"   y2="0.06"
-    stroke="black"
-    stroke-width="0.8"
-  />
-
-  <rect
-    x="19.40"   y="60"
-    width="6.71"  height="6.71"
-    fill="none"
-    stroke="black"
-    stroke-width="0.8"
-  />
-
-  <!-- 6) Labels (scaled down, smaller font-size) -->
-
-  <!-- “1000” around mid-vertical -->
-  <text
-    x="-3" y="18"
-    transform="rotate(-90)"
-    font-family="sans-serif"
-    font-size="6"
-    text-anchor="end"
-  >
-    1000
-  </text>
-
-  <!-- “500” near lower vertical -->
-  <text
-    x="-50.00" y="18"
-    transform="rotate(-90)"
-    font-family="sans-serif"
-    font-size="6"
-    text-anchor="end"
-  >
-    500
-  </text>
-
-  <!-- “55” near the middle horizontal line -->
-  <text
-    x="39.00" y="57"
-    font-family="sans-serif"
-    font-size="6"
-    text-anchor="end"
-  >
-    55
-  </text>
-
-  <!-- “⌀ 12” near the angled line -->
-  <text
-    x="10" y="-7"
-    transform="rotate(45)"
-    font-family="sans-serif"
-    font-size="6"
-  >
-    ⌀ 12
-  </text>
-</svg>
-';
 $openings = [
     [
         'type' => 'left',
@@ -178,6 +82,206 @@ $openingName = [
 ];
 
 $glass_counter = 0;
+
+function svgLeft($g, $i, $d, $mr) {
+    $svgLeft = '<svg
+        width="29"
+        height="106"
+        viewBox="0 0 34 86"
+        xmlns="http://www.w3.org/2000/svg"
+        >
+          <!-- Group for graphical elements -->
+          <g transform="scale(-1, 1) translate(-34, 0)">
+            <!-- 1) Main vertical line -->
+            <line
+              x1="19.40" y1="17.14"
+              x2="19.40" y2="106"
+              stroke="black"
+              stroke-width="0.8"
+            />
+        
+            <!-- 2) Short horizontal line near top -->
+            <line
+              x1="19.40"  y1="17.14"
+              x2="23.85"  y2="17.14"
+              stroke="black"
+              stroke-width="0.8"
+            />
+        
+            <!-- 3) Long horizontal line across the middle -->
+            <line
+              x1="4.26"   y1="60"
+              x2="29.11"  y2="60"
+              stroke="black"
+              stroke-width="0.8"
+            />
+        
+            <!-- 4) Angled line (top-right slant) -->
+            <line
+              x1="23.85"  y1="17.14"
+              x2="6.71"   y2="0.06"
+              stroke="black"
+              stroke-width="0.8"
+            />
+        
+            <rect
+              x="19.40"   y="60"
+              width="6.71"  height="6.71"
+              fill="none"
+              stroke="black"
+              stroke-width="0.8"
+            />
+          </g>
+        
+          <!-- 6) Labels (scaled down, smaller font-size) -->
+        
+          <!-- “1000” around mid-vertical -->
+          <text
+            x="-40" y="13"
+            transform="rotate(-90)"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="start"
+          >
+            ' . $mr . '
+          </text>
+        
+          <!-- “500” near lower vertical -->
+          <text
+            x="-90" y="13"
+            transform="rotate(-90)"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="start"
+          >
+            ' . $i . '
+          </text>
+        
+          <!-- “55” near the middle horizontal line -->
+          <text
+            x="20" y="58"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="start"
+          >
+            ' . $g . '
+          </text>
+        
+          <!-- “⌀ 12” near the angled line -->
+          <text
+            x="6" y="16"
+            transform="rotate(-45)"
+            font-family="sans-serif"
+            font-size="6"
+          >
+            ⌀ ' . $d . '
+          </text>
+        </svg>';
+    return $svgLeft;
+}
+
+function svgRight($g, $i, $d, $mr) {
+    $svgRight = '<svg
+        width="29"
+        height="106"
+        viewBox="0 0 34 86"
+        xmlns="http://www.w3.org/2000/svg"
+        >
+          <!-- 
+            Scaled so the shape fits a 34×86 box.
+            Font size is smaller so text remains legible.
+          -->
+        
+          <!-- 1) Main vertical line (originally 95,108 → 95,523) -->
+          <line
+            x1="19.40" y1="17.14"
+            x2="19.40" y2="106"
+            stroke="black"
+            stroke-width="0.8"
+          />
+        
+          <!-- 2) Short horizontal line near top (95,108 → 123,108) -->
+          <line
+            x1="19.40"  y1="17.14"
+            x2="23.85"  y2="17.14"
+            stroke="black"
+            stroke-width="0.8"
+          />
+        
+          <!-- 3) Long horizontal line across the middle (0,340 → 156,340) -->
+          <line
+            x1="4.26"   y1="60"
+            x2="29.11"  y2="60"
+            stroke="black"
+            stroke-width="0.8"
+          />
+        
+          <!-- 4) Angled line (top-right slant) (123,108 → 15.406,0.406) -->
+          <line
+            x1="23.85"  y1="17.14"
+            x2="6.71"   y2="0.06"
+            stroke="black"
+            stroke-width="0.8"
+          />
+        
+          <rect
+            x="19.40"   y="60"
+            width="6.71"  height="6.71"
+            fill="none"
+            stroke="black"
+            stroke-width="0.8"
+          />
+        
+          <!-- 6) Labels (scaled down, smaller font-size) -->
+        
+          <!-- “1000” around mid-vertical -->
+          <text
+            x="7" y="18"
+            transform="rotate(-90)"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="end"
+          >
+            ' . $mr . '
+          </text>
+        
+          <!-- “500” near lower vertical -->
+          <text
+            x="-32.00" y="18"
+            transform="rotate(-90)"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="end"
+          >
+            ' . $i . '
+          </text>
+        
+          <!-- “55” near the middle horizontal line -->
+          <text
+            x="54" y="57"
+            font-family="sans-serif"
+            font-size="6"
+            text-anchor="end"
+          >
+            ' . $g . '
+          </text>
+        
+          <!-- “⌀ 12” near the angled line -->
+          <text
+            x="10" y="-7"
+            transform="rotate(45)"
+            font-family="sans-serif"
+            font-size="6"
+          >
+            ⌀ ' . $d . '
+          </text>
+        </svg>';
+    return $svgRight;
+}
+
+function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr = 900) {
+    return $direction == 'left' ? svgLeft($g, $i, $d, $mr) : svgRight($g, $i, $d, $mr);
+}
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -549,9 +653,21 @@ $glass_counter = 0;
                 @for ($i = 1; $i <= $stvorki; $i++)
                     <div class="inline-block">
                         <div>СТ{{ $i + $glass_counter }}</div>
-                        <div class="glass-top" style="">
-                            <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                        <div class="glass-top" style="position:relative">
+                            @if ($opening['type'] == 'left' || $opening['type'] == 'center' && $i > $stvorki / 2)
+                                <span style="position: absolute;top: 50%;right: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                            @else
+                                <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                            @endif
                             <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$i] }}</span>
+                            
+                            @if ($opening['type'] == 'left' && $i == 1 || $opening['type'] == 'right' && $i == $stvorki || $opening['type'] == 'center' && ($i - $stvorki / 2) <= 1 && ($i - $stvorki / 2) >= 0)
+                                @if ($opening['type'] == 'left' || $opening['type'] == 'center' && $i > $stvorki / 2)
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('left')) }}" alt="" height="86" style="position: absolute;bottom:0;left:-4px;">
+                                @else
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('right')) }}" alt="" height="86" style="position: absolute;bottom:0;right:0;">
+                                @endif
+                            @endif
                         </div>
                     </div>
                 @endfor

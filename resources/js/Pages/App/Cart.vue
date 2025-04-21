@@ -34,7 +34,14 @@ itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
-itemsStore.wholesale_factor = usePage().props.wholesale_factor as WholesaleFactor
+
+if (itemsStore.factor_groups.length === 0) {
+	itemsStore.factor_groups = sessionStorage.getItem('factor_groups') ? JSON.parse(sessionStorage.getItem('factor_groups') as string) : []
+}
+
+const selected_factor_group = ref(sessionStorage.getItem('selected_factor_group') || itemsStore.user.wholesale_factor_key)
+
+itemsStore.wholesale_factor = itemsStore.factor_groups.find(fg => fg.group_name === selected_factor_group.value)
 
 itemsStore.initiateCartItems()
 

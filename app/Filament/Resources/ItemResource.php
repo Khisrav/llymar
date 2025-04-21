@@ -30,16 +30,16 @@ class ItemResource extends Resource
 
     // protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Номенклатуры';
-    protected ?string $title = 'Номенклатуры';
-    protected ?string $heading = 'Номенклатуры';
-    protected ?string $subheading = 'Номенклатуры';
+    protected static ?string $navigationLabel = 'Товары';
+    protected ?string $title = 'Товары';
+    protected ?string $heading = 'Товары';
+    protected ?string $subheading = 'Товары';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Информация о детали')
+                Section::make('Информация о товаре')
                     ->columns([
                         'sm' => 2,
                         'md' => 3,
@@ -102,7 +102,7 @@ class ItemResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('img')
-                    ->label('Картинка')
+                    ->label('Изображ.')
                     ->width(86)
                     ->height('auto')
                     // ->url(fn ($record) => $record->img)

@@ -26,83 +26,83 @@ Route::get('/dxf', function (Request $request) {
     // Parse the payload data
     // $data = $request->json()->all();
     $data = json_decode('{
-  "lines": [],
-  "circles": [
-    {
-      "centerPoint": {
-        "X": 177.87610619469027,
-        "Y": -68.8329646017699
-      },
-      "radius": 6.182035113831143,
-      "shapeStyle": 0
-    },
-    {
-      "centerPoint": {
-        "X": 150.87610619469027,
-        "Y": -68.8329646017699
-      },
-      "radius": 10.182035113831143,
-      "shapeStyle": 0
-    }
-  ],
-  "rects": [
-    {
-      "line1": {
-        "firstPoint": {
-          "X": 105.30973451327434,
-          "Y": -47.594026548672566
+      "lines": [],
+      "circles": [
+        {
+          "centerPoint": {
+            "X": 177.87610619469027,
+            "Y": -68.8329646017699
+          },
+          "radius": 6.182035113831143,
+          "shapeStyle": 0
         },
-        "secondPoint": {
-          "X": 154.86725663716814,
-          "Y": -47.594026548672566
-        },
-        "shapeStyle": 0
-      },
-      "line2": {
-        "firstPoint": {
-          "X": 154.86725663716814,
-          "Y": -47.594026548672566
-        },
-        "secondPoint": {
-          "X": 154.86725663716814,
-          "Y": -85.11615044247787
-        },
-        "shapeStyle": 0
-      },
-      "line3": {
-        "firstPoint": {
-          "X": 154.86725663716814,
-          "Y": -85.11615044247787
-        },
-        "secondPoint": {
-          "X": 105.30973451327434,
-          "Y": -85.11615044247787
-        },
-        "shapeStyle": 0
-      },
-      "line4": {
-        "firstPoint": {
-          "X": 105.30973451327434,
-          "Y": -85.11615044247787
-        },
-        "secondPoint": {
-          "X": 105.30973451327434,
-          "Y": -47.594026548672566
-        },
-        "shapeStyle": 0
-      },
-      "style": 0
-    }
-  ],
-  "arcs": [],
-  "splines": [],
-  "hatches": [],
-  "texts": [],
-  "dims": [],
-  "dims2": [],
-  "dims3": [],
-  "arrows": []
-}', true);
+        {
+          "centerPoint": {
+            "X": 150.87610619469027,
+            "Y": -68.8329646017699
+          },
+          "radius": 10.182035113831143,
+          "shapeStyle": 0
+        }
+      ],
+      "rects": [
+        {
+          "line1": {
+            "firstPoint": {
+              "X": 105.30973451327434,
+              "Y": -47.594026548672566
+            },
+            "secondPoint": {
+              "X": 154.86725663716814,
+              "Y": -47.594026548672566
+            },
+            "shapeStyle": 0
+          },
+          "line2": {
+            "firstPoint": {
+              "X": 154.86725663716814,
+              "Y": -47.594026548672566
+            },
+            "secondPoint": {
+              "X": 154.86725663716814,
+              "Y": -85.11615044247787
+            },
+            "shapeStyle": 0
+          },
+          "line3": {
+            "firstPoint": {
+              "X": 154.86725663716814,
+              "Y": -85.11615044247787
+            },
+            "secondPoint": {
+              "X": 105.30973451327434,
+              "Y": -85.11615044247787
+            },
+            "shapeStyle": 0
+          },
+          "line4": {
+            "firstPoint": {
+              "X": 105.30973451327434,
+              "Y": -85.11615044247787
+            },
+            "secondPoint": {
+              "X": 105.30973451327434,
+              "Y": -47.594026548672566
+            },
+            "shapeStyle": 0
+          },
+          "style": 0
+        }
+      ],
+      "arcs": [],
+      "splines": [],
+      "hatches": [],
+      "texts": [],
+      "dims": [],
+      "dims2": [],
+      "dims3": [],
+      "arrows": []
+    }', true);
 
     // Initialize DXFighter
     $dxf = new DXFighter();
@@ -183,7 +183,6 @@ Route::get('/dxf', function (Request $request) {
     return response()->download($filePath)/*->deleteFileAfterSend(true)*/;
 });
 
-
 /*
  *  PUBLIC ROUTES
  */
@@ -216,7 +215,7 @@ Route::get('/orders/sketch', function() {
 
 Route::get('/auth', function() {
     if (Auth::check()) {
-        return redirect()->route('app.home');
+        return redirect()->route('app.history');
     }
     return Inertia::render('Auth/Index', [
         'canLogin' => Route::has('auth'),

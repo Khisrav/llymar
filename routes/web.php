@@ -199,19 +199,19 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
-// Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
-//     ->name('orders.sketch_pdf');
-Route::get('/orders/sketch', function() {
-    // return view('orders.sketch_pdf');
-    $pdf = Pdf::loadView('orders.sketch_pdf', [
-        // 'openings' => $request->openings,
-    ])
-    ->setPaper('a4', 'portrait')
-    ->setOptions(['isRemoteEnabled' => true]);
+Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
+    ->name('orders.sketch_pdf');
+// Route::get('/orders/sketch', function() {
+//     // return view('orders.sketch_pdf');
+//     $pdf = Pdf::loadView('orders.sketch_pdf', [
+//         // 'openings' => $request->openings,
+//     ])
+//     ->setPaper('a4', 'portrait')
+//     ->setOptions(['isRemoteEnabled' => true]);
 
-    $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
-    return $pdf->stream($pdfName);
-})->name('orders.sketch_pdf');
+//     $pdfName = "sketch_" . date('Y-m-d') . ".pdf";
+//     return $pdf->stream($pdfName);
+// })->name('orders.sketch_pdf');
 
 Route::get('/auth', function() {
     if (Auth::check()) {

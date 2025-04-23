@@ -20,9 +20,6 @@ const navigationMenu = computed(() => {
     if (can_access_app_calculator) {
         menu.push({ title: 'Калькулятор', to: '/app/calculator' })
     }
-    if (can_access_admin_panel) {
-        menu.push({ title: 'Админка', to: '/admin' })
-    }
 
     return menu
 })
@@ -45,6 +42,7 @@ const username = computed(() => {
             <Link v-for="item in navigationMenu" :key="item.title" :href="item.to" class="text-foreground transition-colors hover:text-foreground">
                 {{ item.title }}
             </Link>
+            <a v-if="can_access_admin_panel" href="/admin" target="_blank" class="text-foreground transition-colors hover:text-foreground">Админка</a>
         </nav>
         <Sheet>
             <SheetTrigger as-child>
@@ -61,6 +59,7 @@ const username = computed(() => {
                     <Link v-for="item in navigationMenu" :key="item.title" :href="item.to" class="text-foreground transition-colors hover:text-foreground">
                         {{ item.title }}
                     </Link>
+                    <a v-if="can_access_admin_panel" href="/admin" target="_blank" class="text-foreground transition-colors hover:text-foreground">Админка</a>
                 </nav>
             </SheetContent>
         </Sheet>

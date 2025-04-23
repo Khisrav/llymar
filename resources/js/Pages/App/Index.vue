@@ -292,7 +292,7 @@ import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.v
 					</g>
 				</g>
 			</svg>
-			<h1 class="text-3xl font-bold text-center text-muted-foreground">Дратуте! С чего начнем?</h1>
+			<h1 class="text-3xl font-bold text-center text-muted-foreground">Здравствуйте! С чего начнем?</h1>
 		</main>
 	</div>
 </template>

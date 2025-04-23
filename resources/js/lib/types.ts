@@ -35,6 +35,7 @@ export interface Opening {
     f?: number;
     g?: number;
     i?: number;
+    door_handle_item_id?: number;
 }
 
 export interface Item {

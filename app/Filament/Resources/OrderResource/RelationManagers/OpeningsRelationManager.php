@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use App\Models\Item;
 use App\Models\OrderOpening;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -58,7 +59,7 @@ class OpeningsRelationManager extends RelationManager
                         ->maxLength(255),
                 ]),
     
-            // Opening parameter fields (a, b, c, d, e, f, g, i)
+            // Opening parameter fields (a, b, c, d, e, f, g, i, door_handle_item_id)
             Forms\Components\Fieldset::make('Параметры проема')
                 ->schema([
                     Forms\Components\Grid::make(4) // 4 columns
@@ -110,6 +111,12 @@ class OpeningsRelationManager extends RelationManager
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
+    
+                            Forms\Components\Select::make('door_handle_item_id')
+                                ->label('Ручка')
+                                ->selectablePlaceholder(false)
+                                //all items with category id 29
+                                ->options(Item::where('category_id', 29)->pluck('name', 'id'))
                         ]),
                 ]),
         ]);
@@ -176,6 +183,24 @@ class OpeningsRelationManager extends RelationManager
                     ->sortable()
                     ->suffix('мм')
                     // ->type('number')
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\ImageColumn::make('door_handle_image')
+                    ->label('Фото ручки')
+                    ->width(64)
+                    ->height('auto')
+                    //get image url from item by door_handle_item_id
+                    ->getStateUsing(function (OrderOpening $record) {
+                        $item = Item::find($record->door_handle_item_id);
+                        return $item ? $item->img : null;
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('door_handle_item_id')
+                    ->label('Ручка')
+                    ->searchable()
+                    ->sortable()
+                    ->formatStateUsing(function (OrderOpening $record) {
+                        return Item::find($record->door_handle_item_id)->name;
+                    })
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('id')
                     ->label('Параметры')

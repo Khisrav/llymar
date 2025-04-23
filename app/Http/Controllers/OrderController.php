@@ -255,14 +255,28 @@ class OrderController extends Controller
      */
     public static function sketcherPage(int $order_id)
     {
-        $order = Order::findOrFail($order_id);
+        // Retrieve the order or fail if not found
+        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
+    
+        // Retrieve the openings related to the order
         $openings = $order->orderOpenings;
-
+    
+        // Retrieve the door handles associated with the order
+        $doorHandles = $order->orderItems
+            ->filter(function ($orderItem) {
+                return $orderItem->item->category_id == 29; // Filter by category_id for door handles
+            })
+            ->pluck('item'); // Extract the item from each order item
+        Log::info($doorHandles);
+    
+        // Render the Inertia page with the order, openings, and door handles
         return Inertia::render('App/Order/Sketcher', [
-            'order'    => $order,
-            'openings' => $openings,
+            'order'      => $order,
+            'openings'   => $openings,
+            'door_handles' => $doorHandles,
         ]);
     }
+
 
     /**
      * Save sketch data for a specific order opening.
@@ -274,7 +288,7 @@ class OrderController extends Controller
             // 'openings.*.id' => 'required|integer|exists:order_openings,id',
         ]);
             
-        $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i'];
+        $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'door_handle_item_id'];
     
         foreach ($validated['openings'] as $openingData) {
             $orderOpening = OrderOpening::findOrFail($openingData['id']);

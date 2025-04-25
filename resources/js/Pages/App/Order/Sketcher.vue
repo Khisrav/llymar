@@ -8,7 +8,7 @@ import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
 import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
 import Label from "../../../Components/ui/label/Label.vue";
 import Button from "../../../Components/ui/button/Button.vue";
-import { CircleHelpIcon, DownloadIcon, EraserIcon, SaveIcon } from "lucide-vue-next";
+import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SaveIcon } from "lucide-vue-next";
 import { Item, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { toast } from "vue-sonner";
@@ -20,11 +20,14 @@ import SelectValue from "../../../Components/ui/select/SelectValue.vue";
 import SelectContent from "../../../Components/ui/select/SelectContent.vue";
 import SelectItem from "../../../Components/ui/select/SelectItem.vue";
 import DoorHandleSVG from "../../../Components/Sketcher/DoorHandleSVG.vue";
+import SelectGroup from "../../../Components/ui/select/SelectGroup.vue";
+import SelectLabel from "../../../Components/ui/select/SelectLabel.vue";
 
 // Retrieve order and openings from Inertia props.
 const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
 const doorHandles = ref(usePage().props.door_handles as Item[]);
+const allDoorHandles = ref(usePage().props.all_door_handles as Item[]);
 const selectedOpeningID = ref<number>(0);
 const openingStore = useOpeningStore();
 
@@ -197,7 +200,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
-			<h2 class="text-3xl font-semibold mb-6">Чертальник</h2>
+			<h2 class="text-3xl font-semibold mb-6">Чертеж</h2>
 
 			<!-- Section to select an opening -->
 			<div class="mb-4">
@@ -207,17 +210,17 @@ const clearSelectedDoorHandles = (id?: number) => {
 						<p class="text-xs text-muted-foreground">Выберите проем, параметры которого вы хотите изменить</p>
 					</div>
 					<div>
-						<Button variant="outline" size="icon" @click="clearSelectedDoorHandles">
+						<!-- <Button variant="outline" size="icon" @click="clearSelectedDoorHandles">
 							<EraserIcon class="h-4 w-4" />
-						</Button>
+						</Button> -->
 					</div>
 				</div>
 
-				<RadioGroup v-model="selectedOpeningID" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
+				<RadioGroup v-model="selectedOpeningID as any" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
 					<div v-for="opening in openings" :key="opening.id" class="border rounded-lg p-2 md:p-4" :class="{ 'border-primary': opening.id === selectedOpeningID }">
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center gap-2">
-								<RadioGroupItem :value="opening.id" :id="`opening-${opening.id}`" />
+								<RadioGroupItem :value="opening.id as any" :id="`opening-${opening.id as number}`" />
 								<Label :for="`opening-${opening.id}`" class="w-full">
 									{{ openingStore.openingTypes[opening.type] }}
 								</Label>
@@ -230,15 +233,30 @@ const clearSelectedDoorHandles = (id?: number) => {
 
 						<div class="mt-2 flex items-center justify-between gap-2">
 							<div class="flex-1 overflow-hidden">
-								<Select v-model="selectedDoorHandles[opening.id]" @update:model-value="selectDoorHandle(opening.id, $event)">
+								<Select v-model="selectedDoorHandles[opening.id as number] as any" @update:model-value="selectDoorHandle(opening.id as number, $event as any)">
 									<SelectTrigger>
-										<SelectValue :placeholder="selectedDoorHandles[opening.id] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id])?.name : 'Выберите ручку'" />
+										<SelectValue :placeholder="selectedDoorHandles[opening.id as number] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id as number])?.name : 'Выберите ручку'" />
 									</SelectTrigger>
 	
 									<SelectContent class="max-w-xs sm:max-w-max">
-										<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id" :disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id] !== doorHandle.id">
-											{{ doorHandle.name }}
-										</SelectItem>
+										<SelectGroup>
+											<SelectLabel>Ручки заказа</SelectLabel>
+											<SelectItem  v-for="doorHandle in doorHandles" 
+												:key="doorHandle.id" 
+												:value="doorHandle.id as any"
+												:disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id"
+											>
+												{{ doorHandle.name }}
+											</SelectItem>
+										</SelectGroup>
+										<SelectGroup>
+											<SelectLabel>Все ручки</SelectLabel>
+											<SelectItem v-for="doorHandle in allDoorHandles"
+												:key="doorHandle.id"
+												:value="doorHandle.id as any"
+												:disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id"
+											>{{ doorHandle.name }}</SelectItem>
+										</SelectGroup>
 									</SelectContent>
 								</Select>
 							</div>
@@ -256,9 +274,12 @@ const clearSelectedDoorHandles = (id?: number) => {
 				<!-- Sketch reference image -->
 				<div class="col-span-9">
 					<div v-show="showSketchReference">
-						<img src="/assets/sketch-reference.png" class="w-full" alt="Sketch reference" />
+						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full" alt="Sketch reference" />
 					</div>
 					<div class="text-center">
+						<div class="text-red-400">
+							<span>Вид изнутри</span>
+						</div>
 						<div v-for="i in currentOpening?.doors" :key="i" class=" mx-1 inline-block">
 							<span class="text-xs">СТ{{ i }}</span>
 							<div class="glass border border-blue-300 h-36 relative col-span-1 aspect-[9/16]">
@@ -269,7 +290,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 										'right-[-6px]': currentOpening?.type == 'left' || currentOpening?.type == 'center' && i > currentOpening?.doors / 2
 									}"
 								>{{ getOpeningSketchDimensions(i).height }}</span>
-	                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);" class="text-xs">{{ getOpeningSketchDimensions(i).width }}</span>
+	                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);" class="text-xs">{{ getOpeningSketchDimensions(currentOpening?.type == 'left' ? currentOpening?.doors - i + 1 : i).width }}</span>
 	                            
 	                            <DoorHandleSVG 
 	                                v-if="currentOpening?.type == 'left' && i == 1" 
@@ -309,9 +330,12 @@ const clearSelectedDoorHandles = (id?: number) => {
 					</div>
 
 					<!-- Action buttons -->
-					<div>
-						<Button type="button" class="w-full mb-4" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
-						<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <DownloadIcon class="mr-2 h-4 w-4" /> Скачать PDF </Button>
+					<div class="flex flex-col gap-2">
+						<Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
+						<div class="flex flex-row gap-2 justify-between items-center">
+							<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
+							<Button type="button" class="w-full" variant="outline"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+						</div>
 					</div>
 				</div>
 			</div>

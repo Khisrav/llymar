@@ -42,14 +42,14 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name'        => 'required|string|max:255',
-            'phone'       => 'required|string',
-            'address'     => 'required|string',
-            'email'       => 'required|email',
+            'name'        => 'string|max:255',
+            'phone'       => 'string',
+            'address'     => 'string',
+            'email'       => 'email',
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
-            'ral_code'    => 'string|nullable',
+            'ral_code'    => 'nullable',
         ]);
 
         try {
@@ -255,25 +255,20 @@ class OrderController extends Controller
      */
     public static function sketcherPage(int $order_id)
     {
-        // Retrieve the order or fail if not found
         $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
     
-        // Retrieve the openings related to the order
         $openings = $order->orderOpenings;
+        
+        $doorHandles = Item::where('category_id', 29)->get();
+        $orderDoorHandles = $order->orderItems->filter(function ($orderItem) {
+            return $orderItem->item->category_id == 29;
+        })->pluck('item');
     
-        // Retrieve the door handles associated with the order
-        $doorHandles = $order->orderItems
-            ->filter(function ($orderItem) {
-                return $orderItem->item->category_id == 29; // Filter by category_id for door handles
-            })
-            ->pluck('item'); // Extract the item from each order item
-        Log::info($doorHandles);
-    
-        // Render the Inertia page with the order, openings, and door handles
         return Inertia::render('App/Order/Sketcher', [
             'order'      => $order,
             'openings'   => $openings,
-            'door_handles' => $doorHandles,
+            'door_handles' => $orderDoorHandles,
+            'all_door_handles' => $doorHandles,
         ]);
     }
 

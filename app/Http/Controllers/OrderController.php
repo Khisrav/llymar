@@ -42,14 +42,14 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name'        => 'required|string|max:255',
-            'phone'       => 'required|string',
-            'address'     => 'required|string',
-            'email'       => 'required|email',
+            'name'        => 'string|max:255',
+            'phone'       => 'string',
+            'address'     => 'string',
+            'email'       => 'email',
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
-            'ral_code'    => 'string|nullable',
+            'ral_code'    => 'nullable',
         ]);
 
         try {

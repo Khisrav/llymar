@@ -150,8 +150,8 @@ const checkout = () => {
 						</div>
 					</div>
 
-					<form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
-						<h3 class="text-lg font-semibold">Информация о клиенте</h3>
+					<form @submit.prevent="checkout" class="text-center bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+						<!-- <h3 class="text-lg font-semibold">Информация о клиенте</h3>
 
 						<div>
 							<Label class="inline-block mb-2">Фамилия<span class="text-destructive dark:text-red-500">*</span></Label>
@@ -181,10 +181,10 @@ const checkout = () => {
 						<div>
 							<Label class="inline-block mb-2">Телефон<span class="text-destructive dark:text-red-500">*</span></Label>
 							<Input type="tel" v-model="order_info.phone" v-maska="'+7 (###) ###-##-##'" placeholder="+7 (999) 999-99-99" required />
-						</div>
+						</div> -->
 
-						<div v-if="itemsStore.cartItems[386]" class="flex items-center justify-between">
-							<Label class="inline-block mb-2">Цвет<span class="text-destructive dark:text-red-500">*</span></Label>
+						<div v-if="itemsStore.cartItems[386]" class="flex items-center justify-center gap-4">
+							<Label class="inline-block">Цвет<span class="text-destructive dark:text-red-500">*</span></Label>
 
 							<div>
 								<Popover v-model:open="open">

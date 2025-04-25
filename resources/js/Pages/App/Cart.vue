@@ -53,25 +53,31 @@ const getOpeningName = (type: OpeningType): string => openingsStore.openingTypes
 
 // SNP for Surname Name Patronymic
 const snp = ref({
-	surname: itemsStore.user.name.split(" ")[0],
-	name: itemsStore.user.name.split(" ")[1],
-	patronymic: itemsStore.user.name.split(" ")[2],
+	// surname: itemsStore.user.name.split(" ")[0],
+	// name: itemsStore.user.name.split(" ")[1],
+	// patronymic: itemsStore.user.name.split(" ")[2],
+	surname: "",
+	name: "",
+	patronymic: "",
 })
 
 const order_info = computed(() => ({
 	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
-	phone: itemsStore.user.phone,
-	address: itemsStore.user.address,
-	email: itemsStore.user.email,
+	// phone: itemsStore.user.phone,
+	// address: itemsStore.user.address,
+	// email: itemsStore.user.email,
+	phone: '',
+	address: '',
+	email: '',
 	color: "",
 }))
 
 const checkout = () => {
 	const formData = {
-		name: order_info.value.name,
-		phone: order_info.value.phone,
-		address: order_info.value.address,
-		email: order_info.value.email,
+		// name: order_info.value.name,
+		// phone: order_info.value.phone,
+		// address: order_info.value.address,
+		// email: order_info.value.email,
 		cart_items: itemsStore.cartItems,
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,

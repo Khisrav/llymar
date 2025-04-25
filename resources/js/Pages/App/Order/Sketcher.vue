@@ -273,8 +273,8 @@ const clearSelectedDoorHandles = (id?: number) => {
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
 				<!-- Sketch reference image -->
 				<div class="col-span-9">
-					<div v-show="showSketchReference">
-						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full" alt="Sketch reference" />
+					<div v-show="showSketchReference" class="flex items-center justify-center mb-2">
+						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
 					</div>
 					<div class="text-center">
 						<div class="text-red-400">
@@ -282,7 +282,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 						</div>
 						<div v-for="i in currentOpening?.doors" :key="i" class=" mx-1 inline-block">
 							<span class="text-xs">СТ{{ i }}</span>
-							<div class="glass border border-blue-300 h-36 relative col-span-1 aspect-[9/16]">
+							<div class="glass border border-blue-300 h-24 sm:h-36 relative col-span-1 aspect-[9/16]">
 								<span  
 									class="text-xs absolute top-1/2 rotate-[-90deg]"
 									:class="{

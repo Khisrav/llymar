@@ -308,10 +308,10 @@ class OrderController extends Controller
     {
         $order = Order::create([
             'user_id'          => auth()->id(),
-            'customer_name'    => $data['name'],
-            'customer_phone'   => $data['phone'],
-            'customer_address' => $data['address'],
-            'customer_email'   => $data['email'],
+            'customer_name'    => $data['name'] ?? '',
+            'customer_phone'   => $data['phone'] ?? '',
+            'customer_address' => $data['address'] ?? '',
+            'customer_email'   => $data['email'] ?? '',
             'total_price'      => $data['total_price'],
             'ral_code'         => $data['ral_code'] ?? null,
         ]);

@@ -189,7 +189,6 @@ const downloadDXF = async () => {
 			}
 		);
 		
-		//download .dxf file
 		const fileBlob = new Blob([response.data], { type: "application/dxf" });
 		const fileURL = URL.createObjectURL(fileBlob);
 

@@ -79,38 +79,38 @@ const currentOpening = computed(() => openings.value.find((opening) => opening.i
 
 const getOpeningSketchDimensions = (doorIndex: number) => {
 	if (!currentOpening.value) return { width: 0, height: 0 };
-	
-	let gap = currentOpening.value.type == 'center' ? sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0] + 3 : 130;
-    let doorsGap = {
+
+	let gap = currentOpening.value.type == "center" ? sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0] + 3 : 130;
+	let doorsGap = {
 		start: sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0],
 		end: sketch_vars.value[selectedOpeningID.value].b[0],
 	};
-    let overlaps = currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1) - 1;
-	let middle = Math.floor((overlaps * 13) / (currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1)));
-	let edges = currentOpening.value.type == 'center' ? Math.floor((overlaps * 13 - middle * (currentOpening.value.doors / 2 - 2)) / 2) : Math.floor((overlaps * 13 - middle * (currentOpening.value.doors - 2)) / 2);
-	let y = currentOpening.value.width / (currentOpening.value.type == 'center' ? 2 : 1) - gap;
-	let z = y / (currentOpening.value.doors / (currentOpening.value.type == 'center' ? 2 : 1));
+	let overlaps = currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1) - 1;
+	let middle = Math.floor((overlaps * 13) / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1)));
+	let edges = currentOpening.value.type == "center" ? Math.floor((overlaps * 13 - middle * (currentOpening.value.doors / 2 - 2)) / 2) : Math.floor((overlaps * 13 - middle * (currentOpening.value.doors - 2)) / 2);
+	let y = currentOpening.value.width / (currentOpening.value.type == "center" ? 2 : 1) - gap;
+	let z = y / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1));
 	let shirinaStvorok = [];
 
-	if (currentOpening.value.type == 'center') {
+	if (currentOpening.value.type == "center") {
 		for (let i = 1; i <= currentOpening.value.doors / 2; i++) {
 			let temp = z + (i == currentOpening.value.doors / 2 || i == 1 ? edges : middle);
 			if (i == 1) {
-				temp += doorsGap['end'];
+				temp += doorsGap["end"];
 			} else if (i == currentOpening.value.doors / 2) {
-				temp += doorsGap['start'];
+				temp += doorsGap["start"];
 			}
 
 			shirinaStvorok[i] = Math.floor(temp);
 			shirinaStvorok[currentOpening.value.doors - i + 1] = Math.floor(temp);
 		}
-	} else if (currentOpening.value.type == 'left' || currentOpening.value.type == 'right') {
+	} else if (currentOpening.value.type == "left" || currentOpening.value.type == "right") {
 		for (let i = 1; i <= currentOpening.value.doors; i++) {
 			let temp = z + (i == currentOpening.value.doors || i == 1 ? edges : middle);
 			if (i == 1) {
-				temp += doorsGap['end'];
+				temp += doorsGap["end"];
 			} else if (i == currentOpening.value.doors) {
-				temp += doorsGap['start'];
+				temp += doorsGap["start"];
 			}
 
 			shirinaStvorok[i] = Math.floor(temp);
@@ -120,8 +120,8 @@ const getOpeningSketchDimensions = (doorIndex: number) => {
 	return {
 		width: shirinaStvorok[doorIndex],
 		height: currentOpening.value.height - 103,
-	}
-}
+	};
+};
 
 const combinedOpenings = computed(() => {
 	return openings.value.map((opening) => {
@@ -150,10 +150,12 @@ const saveAndClose = () => {
 const saveAndDownload = async () => {
 	try {
 		const response = await axios.post(
-			"/app/order/sketch/download", {
+			"/app/order/sketch/download",
+			{
 				openings: combinedOpenings.value,
 				saveData: true,
-			}, {
+			},
+			{
 				responseType: "blob",
 			}
 		);
@@ -174,6 +176,35 @@ const saveAndDownload = async () => {
 	}
 };
 
+const downloadDXF = async () => {
+	try {
+		const response = await axios.post(
+			`/orders/${order.value.id}/dxf`,
+			{
+				openings: combinedOpenings.value,
+				saveData: false,
+			},
+			{
+				responseType: "blob",
+			}
+		);
+
+		const fileBlob = new Blob([response.data], { type: "application/pdf" });
+		const fileURL = URL.createObjectURL(fileBlob);
+
+		const link = document.createElement("a");
+		link.href = fileURL;
+		link.setAttribute("download", "sketch.dxf");
+		document.body.appendChild(link);
+		link.click();
+
+		document.body.removeChild(link);
+		URL.revokeObjectURL(fileURL);
+	} catch (error) {
+		console.error("Failed to download DXF:", error);
+	}
+};
+
 const showSketchReference = ref(false);
 
 const isDoorHandleSelected = (doorHandleId: number) => {
@@ -185,7 +216,7 @@ const selectDoorHandle = (openingId: number, doorHandleId: number) => {
 };
 
 const clearSelectedDoorHandles = (id?: number) => {
-	if (!id) selectedDoorHandles.value = {}
+	if (!id) selectedDoorHandles.value = {};
 	else {
 		delete selectedDoorHandles.value[id];
 	}
@@ -237,25 +268,24 @@ const clearSelectedDoorHandles = (id?: number) => {
 									<SelectTrigger>
 										<SelectValue :placeholder="selectedDoorHandles[opening.id as number] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id as number])?.name : 'Выберите ручку'" />
 									</SelectTrigger>
-	
+
 									<SelectContent class="max-w-xs sm:max-w-max">
 										<SelectGroup>
 											<SelectLabel>Ручки заказа</SelectLabel>
-											<SelectItem  v-for="doorHandle in doorHandles" 
-												:key="doorHandle.id" 
-												:value="doorHandle.id as any"
-												:disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id"
-											>
+											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any" :disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id">
 												{{ doorHandle.name }}
 											</SelectItem>
 										</SelectGroup>
 										<SelectGroup>
 											<SelectLabel>Все ручки</SelectLabel>
-											<SelectItem v-for="doorHandle in allDoorHandles"
+											<SelectItem
+												v-for="doorHandle in allDoorHandles"
 												:key="doorHandle.id"
+												v-if="doorHandles.includes(doorHandle)"
 												:value="doorHandle.id as any"
 												:disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id"
-											>{{ doorHandle.name }}</SelectItem>
+												>{{ doorHandle.name }}</SelectItem
+											>
 										</SelectGroup>
 									</SelectContent>
 								</Select>
@@ -280,40 +310,32 @@ const clearSelectedDoorHandles = (id?: number) => {
 						<div class="text-red-400">
 							<span>Вид изнутри</span>
 						</div>
-						<div v-for="i in currentOpening?.doors" :key="i" class=" mx-1 inline-block">
+						<div v-for="i in currentOpening?.doors" :key="i" class="mx-1 inline-block">
 							<span class="text-xs">СТ{{ i }}</span>
 							<div class="glass border border-blue-300 h-24 sm:h-36 relative col-span-1 aspect-[9/16]">
-								<span  
+								<span
 									class="text-xs absolute top-1/2 rotate-[-90deg]"
 									:class="{
-										'left-[-8px]': currentOpening?.type == 'right' || currentOpening?.type == 'center' && i <= currentOpening?.doors / 2,
-										'right-[-6px]': currentOpening?.type == 'left' || currentOpening?.type == 'center' && i > currentOpening?.doors / 2
+										'left-[-8px]': currentOpening?.type == 'right' || (currentOpening?.type == 'center' && i <= currentOpening?.doors / 2),
+										'right-[-6px]': currentOpening?.type == 'left' || (currentOpening?.type == 'center' && i > currentOpening?.doors / 2),
 									}"
-								>{{ getOpeningSketchDimensions(i).height }}</span>
-	                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);" class="text-xs">{{ getOpeningSketchDimensions(currentOpening?.type == 'left' ? currentOpening?.doors - i + 1 : i).width }}</span>
-	                            
-	                            <DoorHandleSVG 
-	                                v-if="currentOpening?.type == 'left' && i == 1" 
-	                                type="left"
-	                                class="absolute top-1/2 left-1.5 transform -translate-y-1/2"
-	                            />
-	                            <DoorHandleSVG 
-	                                v-else-if="currentOpening?.type == 'right' && i == currentOpening?.doors" 
-	                                type="right"
-	                                class="absolute top-1/2 right-1.5 transform -translate-y-1/2"
-	                            />
-	                            <DoorHandleSVG 
-	                                v-else-if="currentOpening?.type == 'center' && (i == currentOpening?.doors / 2 || i == currentOpening?.doors / 2 + 1)" 
-	                                type="right"
-	                                class="absolute top-1/2 transform -translate-y-1/2"
-	                                :class="{ 'right-1.5': i == currentOpening?.doors / 2, 'left-1.5': i == currentOpening?.doors / 2 + 1 }"
-	                            />
+									>{{ getOpeningSketchDimensions(i).height }}</span
+								>
+								<span style="position: absolute; top: 0; left: 50%; transform: translateX(-50%)" class="text-xs">{{ getOpeningSketchDimensions(currentOpening?.type == "left" ? currentOpening?.doors - i + 1 : i).width }}</span>
+
+								<DoorHandleSVG v-if="currentOpening?.type == 'left' && i == 1" type="left" class="absolute top-1/2 left-1.5 transform -translate-y-1/2" />
+								<DoorHandleSVG v-else-if="currentOpening?.type == 'right' && i == currentOpening?.doors" type="right" class="absolute top-1/2 right-1.5 transform -translate-y-1/2" />
+								<DoorHandleSVG
+									v-else-if="currentOpening?.type == 'center' && (i == currentOpening?.doors / 2 || i == currentOpening?.doors / 2 + 1)"
+									type="right"
+									class="absolute top-1/2 transform -translate-y-1/2"
+									:class="{ 'right-1.5': i == currentOpening?.doors / 2, 'left-1.5': i == currentOpening?.doors / 2 + 1 }"
+								/>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Sketch parameters and actions -->
 				<div class="col-span-9 md:col-span-3 p-4 rounded-lg border">
 					<div class="flex items-center justify-between mb-4 gap-4">
 						<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
@@ -322,19 +344,17 @@ const clearSelectedDoorHandles = (id?: number) => {
 						</Button>
 					</div>
 
-					<!-- Loop through the current sketch variables and render a slider for each -->
 					<div v-for="(value, key) in currentSketch" :key="key" class="flex flex-col gap-2 pb-4">
 						<span class="font-medium">{{ key }}: {{ value[0] }}мм</span>
 						<Slider v-model="currentSketch[key]" :default-value="[sketch_constraints[key].default]" :min="sketch_constraints[key].start" :max="sketch_constraints[key].end" :step="sketch_constraints[key].interval" />
 						<span class="text-muted-foreground text-xs"> lorem ipsum dolor sit amet </span>
 					</div>
 
-					<!-- Action buttons -->
 					<div class="flex flex-col gap-2">
 						<Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
 						<div class="flex flex-row gap-2 justify-between items-center">
 							<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-							<Button type="button" class="w-full" variant="outline"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+							<Button type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
 						</div>
 					</div>
 				</div>

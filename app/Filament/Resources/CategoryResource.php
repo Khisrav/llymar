@@ -25,10 +25,10 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder-open';
     
-    protected static ?string $navigationLabel = 'Категории номенклатур';
-    protected ?string $title = 'Категории номенклатур';
-    protected ?string $heading = 'Категории номенклатур';
-    protected ?string $subheading = 'Категории номенклатур';
+    protected static ?string $navigationLabel = 'Категории товаров';
+    protected ?string $title = 'Категории товаров';
+    protected ?string $heading = 'Категории товаров';
+    protected ?string $subheading = 'Категории товаров';
     protected static ?string $navigationGroup = 'Склад';
 
     public static function form(Form $form): Form

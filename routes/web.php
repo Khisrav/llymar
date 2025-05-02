@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SketchController;
 use App\Http\Controllers\UserController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,8 @@ use DXFighter\lib\Circle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+
+Route::get('/test', [SketchController::class, 'generateDXF'])->name('test');
 
 Route::get('/dxf', function (Request $request) {
     // Parse the payload data
@@ -128,30 +131,10 @@ Route::get('/dxf', function (Request $request) {
         }
     }
 
-    // Process lines from payload
-    if (isset($data['lines'])) {
-        foreach ($data['lines'] as $lineData) {
-            $line = new Line([$lineData['start']['x'], $lineData['start']['y'], $lineData['start']['z'] ?? 0], [$lineData['end']['x'], $lineData['end']['y'], $lineData['end']['z'] ?? 0]);
-            $line->setColor($lineData['color'] ?? 240);
-            $dxf->addEntity($line);
-        }
-    }
-
     // Process circles from payload
     if (isset($data['circles'])) {
         Log::info($data['circles']);
         foreach ($data['circles'] as $circleData) {
-            // Log::info($circleData);
-            // $circle = new Ellipse(
-            //     [
-            //         $circleData['centerPoint']['X'], 
-            //         $circleData['centerPoint']['Y'], 
-            //         $circleData['centerPoint']['z'] ?? 0
-            //     ], [
-            //         $circleData['radius'] + $circleData['centerPoint']['X'], 
-            //         $circleData['radius'] + $circleData['centerPoint']['Y'], 
-            //         $circleData['centerPoint']['z'] ?? 0
-            //     ], 1);
             $circle = new Circle([$circleData['centerPoint']['X'], $circleData['centerPoint']['Y'], $circleData['centerPoint']['z'] ?? 0], $circleData['radius']);
             $dxf->addEntity($circle);
         }
@@ -201,6 +184,7 @@ Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOffe
     ->name('orders.commercial_offer_pdf');
 Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
     ->name('orders.sketch_pdf');
+Route::post('/orders/{order_id}/dxf', [SketchController::class, 'generateDXF']);
 // Route::get('/orders/sketch', function() {
 //     // return view('orders.sketch_pdf');
 //     $pdf = Pdf::loadView('orders.sketch_pdf', [

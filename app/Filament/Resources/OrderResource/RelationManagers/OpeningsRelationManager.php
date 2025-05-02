@@ -198,6 +198,7 @@ class OpeningsRelationManager extends RelationManager
                     ->label('Ручка')
                     ->searchable()
                     ->sortable()
+                    ->wrap()
                     ->formatStateUsing(function (OrderOpening $record) {
                         return Item::find($record->door_handle_item_id)->name;
                     })

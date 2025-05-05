@@ -44,7 +44,7 @@ const sketch_constraints: Record<string, Constraint> = {
 	b: { start: 17, end: 17, default: 17, interval: 1 },
 	c: { start: 13, end: 13, default: 13, interval: 1 },
 	d: { start: 6, end: 6, default: 6, interval: 1 },
-	e: { start: 100, end: 1100, default: 550, interval: 10 },
+	e: { start: 30, end: 1100, default: 30, interval: 1 },
 	f: { start: 5, end: 20, default: 14, interval: 1 },
 	g: { start: 5, end: 20, default: 14, interval: 1 },
 	i: { start: 5, end: 20, default: 14, interval: 1 },

@@ -28,6 +28,8 @@ const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
 const doorHandles = ref(usePage().props.door_handles as Item[]);
 const allDoorHandles = ref(usePage().props.all_door_handles as Item[]);
+const can_access_dxf = ref(usePage().props.can_access_dxf as any);
+
 const selectedOpeningID = ref<number>(0);
 const openingStore = useOpeningStore();
 
@@ -177,6 +179,12 @@ const saveAndDownload = async () => {
 };
 
 const downloadDXF = async () => {
+	if (!can_access_dxf) return
+	
+	try {
+		saveAndClose();
+	} catch (error) {}
+
 	try {
 		const response = await axios.post(
 			`/orders/${order.value.id}/dxf`,
@@ -270,22 +278,15 @@ const clearSelectedDoorHandles = (id?: number) => {
 									</SelectTrigger>
 
 									<SelectContent class="max-w-xs sm:max-w-max">
-										<SelectGroup>
-											<SelectLabel>Ручки заказа</SelectLabel>
-											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any" :disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id">
-												{{ doorHandle.name }}
-											</SelectItem>
-										</SelectGroup>
+										
 										<SelectGroup>
 											<SelectLabel>Все ручки</SelectLabel>
 											<SelectItem
 												v-for="doorHandle in allDoorHandles"
 												:key="doorHandle.id"
-												v-if="doorHandles.includes(doorHandle)"
-												:value="doorHandle.id as any"
-												:disabled="isDoorHandleSelected(doorHandle.id) && selectedDoorHandles[opening.id as number] !== doorHandle.id"
-												>{{ doorHandle.name }}</SelectItem
-											>
+												:value="doorHandle.id as any">
+												{{ doorHandle.name }}
+											</SelectItem>
 										</SelectGroup>
 									</SelectContent>
 								</Select>
@@ -354,7 +355,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 						<Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
 						<div class="flex flex-row gap-2 justify-between items-center">
 							<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-							<Button type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+							<Button v-if="can_access_dxf" type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
 						</div>
 					</div>
 				</div>

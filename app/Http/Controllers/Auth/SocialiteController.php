@@ -25,7 +25,7 @@ class SocialiteController extends Controller
 
             if ($authUser) {
                 Auth::login($authUser, true);
-                return redirect()->intended('/app');
+                return redirect()->intended('/app/history');
             }
 
             return redirect()->route('auth');

@@ -659,13 +659,15 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
                             @else
                                 <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
                             @endif
-                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$i] }}</span>
+                            <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$opening['type'] == 'left' ? $stvorki - $i + 1 : $i] }}</span>
                             
                             @if ($opening['type'] == 'left' && $i == 1 || $opening['type'] == 'right' && $i == $stvorki || $opening['type'] == 'center' && ($i - $stvorki / 2) <= 1 && ($i - $stvorki / 2) >= 0)
                                 @if ($opening['type'] == 'left' || $opening['type'] == 'center' && $i > $stvorki / 2)
-                                    <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('left')) }}" alt="" height="86" style="position: absolute;bottom:0;left:-4px;">
+                                    {{-- <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('left')) }}" alt="" height="86" style="position: absolute;bottom:0;left:-4px;"> --}}
+                                    <div style="position: absolute;bottom:46px;left:6px;width:4px;height:48px;border:1px solid rgb(0, 195, 255);"></div>
                                 @else
-                                    <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('right')) }}" alt="" height="86" style="position: absolute;bottom:0;right:0;">
+                                    {{-- <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('right')) }}" alt="" height="86" style="position: absolute;bottom:0;right:0;"> --}}
+                                    <div style="position: absolute;bottom:46px;right:6px;width:4px;height:48px;border:1px solid rgb(0, 195, 255);"></div>
                                 @endif
                             @endif
                         </div>

@@ -60,7 +60,7 @@ class HandleInertiaRequests extends Middleware
             'can_access_admin_panel' => $user->can('access admin panel'),
             'can_access_app_cart' => $user->can('access app cart'),
             'can_access_wholesale_factors' => $user->can('access wholesale-factors'),
-            'can_access_dxf' => $user->can('access dxf') || $user->hasRole('Super-Admin'),
+            'can_access_dxf' => $user->can('access dxf'),
         ];
     }
 }

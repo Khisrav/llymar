@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class Permission3Seeder extends Seeder
 {
@@ -12,7 +14,11 @@ class Permission3Seeder extends Seeder
      */
     public function run(): void
     {
-        //add DXF export permission to admin and operator by default (admin can revoke operator's permission)
+        Permission::create(['name' => 'can access dxf']);
+        // $superAdminRole = Role::where('name', 'Super-Admin')->first();
+        // $operatorRole = Role::where('name', 'Operator')->first();
         
+        // $superAdminRole->givePermissionTo('can access dxf');
+        // $operatorRole->givePermissionTo('can access dxf');
     }
 }

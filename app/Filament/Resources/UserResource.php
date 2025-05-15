@@ -266,6 +266,19 @@ class UserResource extends Resource
                     ->formatStateUsing(fn (Model $record) => $record->getRoleNames()->first())
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\ToggleColumn::make('can_access_dxf')
+                    ->label('Доступ к DXF')
+                    ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                    ->afterStateUpdated(function (Model $record, bool $state) {
+                        $user = User::find($record->id);
+                        if ($state == true) {
+                            $user->givePermissionTo('can access dxf');
+                        } else {
+                            $user->revokePermissionTo('can access dxf');
+                        }
+                        $user->save();
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 SelectFilter::make('roles')

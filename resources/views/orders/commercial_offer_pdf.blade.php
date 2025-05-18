@@ -1,3 +1,30 @@
+<?php
+function groupArraysByProperties($arrays, $properties) {
+    $grouped = array();
+    $indexedGrouped = array();
+
+    foreach ($arrays as $array) {
+        $key = array();
+        foreach ($properties as $property) {
+            if (isset($array[$property])) {
+                $key[] = $array[$property];
+            }
+        }
+        $key = implode('-', $key);
+
+        if (!isset($grouped[$key])) {
+            $grouped[$key] = array();
+        }
+        $grouped[$key][] = $array;
+    }
+
+    foreach ($grouped as $group) {
+        $indexedGrouped[] = $group;
+    }
+
+    return $indexedGrouped;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,16 +73,6 @@
     </style>
 </head>
 <body>
-    {{-- <div style="display: flex; justify-content: space-between;align-items:center;margin-bottom:12px">
-        <div>
-            <img src="{{ base_path('public/assets/logo.png') }}" alt="" style="height:30px;width:auto">
-        </div>
-        <div style='font-size:14px;font-weight:semibold;text-align:center;'>
-            <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
-            <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
-        </div>
-    </div> --}}
-    {{-- <p>{{ now()->format('d.m.Y') }}</p> --}}
     <table>
         <tbody>
             <tr>
@@ -101,15 +118,15 @@
         </tbody>
     </table>
 
-    {{-- <h2>Проемы</h2> --}}
     <table class="table">
         <thead>
             <tr>
                 <th>Картинка</th>
-                <th>Тип проема</th>
+                {{-- <th>Тип проема</th> --}}
                 <th>Кол-во створок</th>
                 <th>Ш х В</th>
                 <th>Площадь</th>
+                <th>Кол-во проемов</th>
             </tr>
         </thead>
         <tbody>
@@ -124,15 +141,17 @@
                     'inner-right' => '/assets/openings/openings-inner-right.jpg',
                     'blind-glazing' => '/assets/openings/openings-blind-glazing.jpg',
                     'triangle' => '/assets/openings/openings-triangle.jpg',
-                ]
+                ];
+                
+                $groupedOpenings = groupArraysByProperties($offer['openings'], ['doors', 'width', 'height', 'type']);
             @endphp
-            @foreach($offer['openings'] as $opening)
+            @foreach($groupedOpenings as $opening)
                 <tr>
                     <td>
-                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public' . $openingImage[$opening['type']]))) }}" alt="" width="86">
+                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public' . $openingImage[$opening[0]['type']]))) }}" alt="" width="86">
                     </td>
-                    <td>
-                        @switch($opening['type'])
+                    {{-- <td>
+                        @switch($opening[0]['type'])
                             @case('left')
                                 Левый проем
                                 @break
@@ -155,23 +174,18 @@
                                 Треугольник
                                 @break
                             @default
-                                {{ $opening['type'] }}
+                                {{ $opening[0]['type'] }}
                         @endswitch
-                    </td>
-                    <td>{{ $opening['type'] != 'blind-glazing' && $opening['type'] != 'triangle' ? $opening['doors'] . ' ств.' : '-' }}</td>
-                    <td>{{ $opening['width'] }}мм x {{ $opening['height'] }}мм</td>
-                    <td>{{ number_format(($opening['width'] * $opening['height']) / 1000000, 2, '.', ' ') }}м<sup>2</sup></td>
+                    </td> --}}
+                    <td>{{ $opening[0]['type'] != 'blind-glazing' && $opening[0]['type'] != 'triangle' ? $opening[0]['doors'] . ' ств.' : '-' }}</td>
+                    <td>{{ $opening[0]['width'] }}мм x {{ $opening[0]['height'] }}мм</td>
+                    <td>{{ number_format(($opening[0]['width'] * $opening[0]['height']) / 1000000, 2, '.', ' ') }}м<sup>2</sup></td>
+                    <td>{{ count($opening) }} шт.</td>
                 </tr>
             @endforeach
-            <tr>
-                <td colspan="5" style="text-align: right">Сумма: <b>{{ number_format($offer_openings_price * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
-            </tr>
         </tbody>
     </table>
     
-    {{-- {{ $additional_items }} --}}
-
-    {{-- <h2>Доп. детали</h2> --}}
     <table class="table">
         <thead>
             <tr>
@@ -179,21 +193,26 @@
                 <th>Картинка</th>
                 <th style="text-align: left !important">Наименование</th>
                 <th>Кол-во</th>
-                <th>Цена</th>
-                <th>Итого</th>
+                {{-- <th>Цена</th>
+                <th>Итого</th> --}}
             </tr>
         </thead>
         <tbody>
             @php
-                $count = 0;
+                $count = 1;
             @endphp
+            <tr>
+                <td>{{ $count }}</td>
+                <td></td>
+                <td style="text-align: left !important">Система безрамного остекления LLYMAR</td>
+                <td class="nowrap">{{ count($offer['openings']) }} шт.</td>
+            </tr>
             @foreach ($offer['additional_items'] as $item)
                 @if (isset($offer['cart_items'][$item['id']]))
                     @php
                         $price = App\Models\Item::itemPrice($item['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
                         $quantity = $offer['cart_items'][$item['id']]['quantity'];
                         $total = $price * $quantity;
-                        // $sum += $total;
                     @endphp
                     <tr>
                         <td>{{ ++$count }}</td>
@@ -202,8 +221,8 @@
                         </td>
                         <td style="text-align: left !important">@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
                         <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $item['unit'] }}</td>
-                        <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
+                        {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
+                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
                     </tr>
                 @endif
             @endforeach
@@ -222,8 +241,8 @@
                         </td>
                         <td style="text-align: left !important">@if ($service['vendor_code']) {{ $service['vendor_code'] . ' - ' }} @endif {{ $service['name'] }}</td>
                         <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $service['unit'] }}</td>
-                        <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
+                        {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
+                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
                     </tr>
                 @endif
             @endforeach
@@ -241,15 +260,15 @@
                     </td>
                     <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
                     <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
-                    <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                    <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td>
+                    {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
+                    <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
                 </tr>
             @endif
 
-            <tr>
+            {{-- <tr>
                 <td colspan="5" style="text-align: right">Итого:</td>
                 <td class="nowrap"><b>{{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
-            </tr>
+            </tr> --}}
         </tbody>
     </table>
 </body>

@@ -73,203 +73,186 @@ function groupArraysByProperties($arrays, $properties) {
     </style>
 </head>
 <body>
-    <table>
-        <tbody>
-            <tr>
-                <td style="border:none">
-                    <div style='font-size:14px;font-weight:semibold;'>
-                        <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
-                        <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
-                    </div>
-                </td>
-                <td style="text-align: right;border:none">
-                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Информация о клиенте</th>
-                <th>{{ $offer['manufacturer']['title'] }}</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr>
-                <td>Клиент: <b>{{ $offer['customer']['name'] }}</b></td>
-                <td>Производитель: <b>{{ $offer['manufacturer']['manufacturer'] }}</b></td>
-            </tr>
-            <tr>
-                <td>Адрес: <b>{{ $offer['customer']['address'] }}</b></td>
-                <td>Телефон: <b>{{ $offer['manufacturer']['phone'] }}</b></td>
-            </tr>
-            <tr>
-                <td>Телефон: <b>{{ $offer['customer']['phone'] }}</b></td>
-                <td></td>
-            </tr>
-            @if ($offer['customer']['comment'])
-                <tr>
-                    <td colspan="2"><b>Примечание:</b> {{ $offer['customer']['comment'] }}</td>
-                </tr>
-            @endif
-        </tbody>
-    </table>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Картинка</th>
-                {{-- <th>Тип проема</th> --}}
-                <th>Кол-во створок</th>
-                <th>Ш х В</th>
-                <th>Площадь</th>
-                <th>Кол-во проемов</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $markupPercentage = $offer['markup_percentage'] / 100 + 1;
+    <table style="table-layout: fixed;border:none;margin-top:0;" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td style="border:none">
+                <table style="margin-top:0;">
+                    <tbody>
+                        <tr>
+                            <td style="border:none">
+                                <div style='font-size:14px;font-weight:semibold;'>
+                                    <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
+                                    <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
+                                </div>
+                            </td>
+                            <td style="text-align: right;border:none">
+                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 
-                $openingImage = [
-                    'left' => '/assets/openings/openings-left.jpg',
-                    'right' => '/assets/openings/openings-right.jpg',
-                    'center' => '/assets/openings/openings-center.jpg',
-                    'inner-left' => '/assets/openings/openings-inner-left.jpg',
-                    'inner-right' => '/assets/openings/openings-inner-right.jpg',
-                    'blind-glazing' => '/assets/openings/openings-blind-glazing.jpg',
-                    'triangle' => '/assets/openings/openings-triangle.jpg',
-                ];
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Информация о клиенте</th>
+                            <th>{{ $offer['manufacturer']['title'] }}</th>
+                        </tr>
+                    </thead>
+            
+                    <tbody>
+                        <tr>
+                            <td>Клиент: <b>{{ $offer['customer']['name'] }}</b></td>
+                            <td>Производитель: <b>{{ $offer['manufacturer']['manufacturer'] }}</b></td>
+                        </tr>
+                        <tr>
+                            <td>Адрес: <b>{{ $offer['customer']['address'] }}</b></td>
+                            <td>Телефон: <b>{{ $offer['manufacturer']['phone'] }}</b></td>
+                        </tr>
+                        <tr>
+                            <td>Телефон: <b>{{ $offer['customer']['phone'] }}</b></td>
+                            <td></td>
+                        </tr>
+                        @if ($offer['customer']['comment'])
+                            <tr>
+                                <td colspan="2"><b>Примечание:</b> {{ $offer['customer']['comment'] }}</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Картинка</th>
+                            <th>Кол-во створок</th>
+                            <th>Ш х В</th>
+                            <th>Площадь</th>
+                            <th>Кол-во проемов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $markupPercentage = $offer['markup_percentage'] / 100 + 1;
+                            
+                            $openingImage = [
+                                'left' => '/assets/openings/openings-left.jpg',
+                                'right' => '/assets/openings/openings-right.jpg',
+                                'center' => '/assets/openings/openings-center.jpg',
+                                'inner-left' => '/assets/openings/openings-inner-left.jpg',
+                                'inner-right' => '/assets/openings/openings-inner-right.jpg',
+                                'blind-glazing' => '/assets/openings/openings-blind-glazing.jpg',
+                                'triangle' => '/assets/openings/openings-triangle.jpg',
+                            ];
+                            
+                            $groupedOpenings = groupArraysByProperties($offer['openings'], ['doors', 'width', 'height', 'type']);
+                        @endphp
+                        @foreach($groupedOpenings as $opening)
+                            <tr>
+                                <td>
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public' . $openingImage[$opening[0]['type']]))) }}" alt="" width="86">
+                                </td>
+                                <td>{{ $opening[0]['type'] != 'blind-glazing' && $opening[0]['type'] != 'triangle' ? $opening[0]['doors'] . ' ств.' : '-' }}</td>
+                                <td>{{ $opening[0]['width'] }}мм x {{ $opening[0]['height'] }}мм</td>
+                                <td>{{ number_format(($opening[0]['width'] * $opening[0]['height']) / 1000000, 2, '.', ' ') }}м<sup>2</sup></td>
+                                <td>{{ count($opening) }} шт.</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
                 
-                $groupedOpenings = groupArraysByProperties($offer['openings'], ['doors', 'width', 'height', 'type']);
-            @endphp
-            @foreach($groupedOpenings as $opening)
-                <tr>
-                    <td>
-                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public' . $openingImage[$opening[0]['type']]))) }}" alt="" width="86">
-                    </td>
-                    {{-- <td>
-                        @switch($opening[0]['type'])
-                            @case('left')
-                                Левый проем
-                                @break
-                            @case('right')
-                                Правый проем
-                                @break
-                            @case('center')
-                                Центральный проем
-                                @break
-                            @case('inner-left')
-                                Входная группа левая
-                                @break
-                            @case('inner-right')
-                                Входная группа правая
-                                @break
-                            @case('blind-glazing')
-                                Глухое остекление
-                                @break
-                            @case('triangle')
-                                Треугольник
-                                @break
-                            @default
-                                {{ $opening[0]['type'] }}
-                        @endswitch
-                    </td> --}}
-                    <td>{{ $opening[0]['type'] != 'blind-glazing' && $opening[0]['type'] != 'triangle' ? $opening[0]['doors'] . ' ств.' : '-' }}</td>
-                    <td>{{ $opening[0]['width'] }}мм x {{ $opening[0]['height'] }}мм</td>
-                    <td>{{ number_format(($opening[0]['width'] * $opening[0]['height']) / 1000000, 2, '.', ' ') }}м<sup>2</sup></td>
-                    <td>{{ count($opening) }} шт.</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>№</th>
-                <th>Картинка</th>
-                <th style="text-align: left !important">Наименование</th>
-                <th>Кол-во</th>
-                {{-- <th>Цена</th>
-                <th>Итого</th> --}}
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $count = 1;
-            @endphp
-            <tr>
-                <td>{{ $count }}</td>
-                <td></td>
-                <td style="text-align: left !important">Система безрамного остекления LLYMAR</td>
-                <td class="nowrap">{{ count($offer['openings']) }} шт.</td>
-            </tr>
-            @foreach ($offer['additional_items'] as $item)
-                @if (isset($offer['cart_items'][$item['id']]))
-                    @php
-                        $price = App\Models\Item::itemPrice($item['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
-                        $quantity = $offer['cart_items'][$item['id']]['quantity'];
-                        $total = $price * $quantity;
-                    @endphp
-                    <tr>
-                        <td>{{ ++$count }}</td>
-                        <td>
-                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item['img'][0] != '/' ? '/' : '') . $item['img']))) }}" alt="" width="48">
-                        </td>
-                        <td style="text-align: left !important">@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
-                        <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $item['unit'] }}</td>
-                        {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
-                    </tr>
-                @endif
-            @endforeach
-
-            @foreach ($offer['services'] as $service)
-                @if (isset($offer['cart_items'][$service['id']]))
-                    @php
-                        $price = App\Models\Item::itemPrice($service['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
-                        $quantity = $offer['cart_items'][$service['id']]['quantity'];
-                        $total = $price * $quantity;
-                    @endphp
-                    <tr>
-                        <td>{{ ++$count }}</td>
-                        <td>
-                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($service['img'][0] != '/' ? '/' : '') . $service['img']))) }}" alt="" width="48">
-                        </td>
-                        <td style="text-align: left !important">@if ($service['vendor_code']) {{ $service['vendor_code'] . ' - ' }} @endif {{ $service['name'] }}</td>
-                        <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $service['unit'] }}</td>
-                        {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                        <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
-                    </tr>
-                @endif
-            @endforeach
-
-            @if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']]))
-                @php
-                    $price = App\Models\Item::itemPrice($offer['glass']['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
-                    $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
-                    $total = $price * $quantity;
-                @endphp
-                <tr>
-                    <td>{{ ++$count }}</td>
-                    <td>
-                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($offer['glass']['img'][0] != '/' ? '/' : '') . $offer['glass']['img']))) }}" alt="" width="48">
-                    </td>
-                    <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
-                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
-                    {{-- <td class="nowrap">{{ number_format($price, 0, '.', ' ') }} ₽</td>
-                    <td class="nowrap">{{ number_format($total, 0, '.', ' ') }} ₽</td> --}}
-                </tr>
-            @endif
-
-            {{-- <tr>
-                <td colspan="5" style="text-align: right">Итого:</td>
-                <td class="nowrap"><b>{{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</b></td>
-            </tr> --}}
-        </tbody>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Картинка</th>
+                            <th style="text-align: left !important">Наименование</th>
+                            <th>Кол-во</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $count = 1;
+                        @endphp
+                        <tr>
+                            <td>{{ $count }}</td>
+                            <td></td>
+                            <td style="text-align: left !important">Система безрамного остекления LLYMAR</td>
+                            <td class="nowrap">{{ count($offer['openings']) }} шт.</td>
+                        </tr>
+                        @foreach ($offer['additional_items'] as $item)
+                            @if (isset($offer['cart_items'][$item['id']]))
+                                @php
+                                    $price = App\Models\Item::itemPrice($item['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                    $quantity = $offer['cart_items'][$item['id']]['quantity'];
+                                    $total = $price * $quantity;
+                                @endphp
+                                <tr>
+                                    <td>{{ ++$count }}</td>
+                                    <td>
+                                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item['img'][0] != '/' ? '/' : '') . $item['img']))) }}" alt="" width="48">
+                                    </td>
+                                    <td style="text-align: left !important">@if ($item['vendor_code']) {{ $item['vendor_code'] . ' - ' }} @endif {{ $item['name'] }}</td>
+                                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $item['unit'] }}</td>
+                                </tr>
+                            @endif
+                        @endforeach
+            
+                        @foreach ($offer['services'] as $service)
+                            @if (isset($offer['cart_items'][$service['id']]))
+                                @php
+                                    $price = App\Models\Item::itemPrice($service['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                    $quantity = $offer['cart_items'][$service['id']]['quantity'];
+                                    $total = $price * $quantity;
+                                @endphp
+                                <tr>
+                                    <td>{{ ++$count }}</td>
+                                    <td>
+                                        <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($service['img'][0] != '/' ? '/' : '') . $service['img']))) }}" alt="" width="48">
+                                    </td>
+                                    <td style="text-align: left !important">@if ($service['vendor_code']) {{ $service['vendor_code'] . ' - ' }} @endif {{ $service['name'] }}</td>
+                                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $service['unit'] }}</td>
+                                </tr>
+                            @endif
+                        @endforeach
+            
+                        @if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']]))
+                            @php
+                                $price = App\Models\Item::itemPrice($offer['glass']['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
+                                $total = $price * $quantity;
+                            @endphp
+                            <tr>
+                                <td>{{ ++$count }}</td>
+                                <td>
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($offer['glass']['img'][0] != '/' ? '/' : '') . $offer['glass']['img']))) }}" alt="" width="48">
+                                </td>
+                                <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
+                                <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </td>
+            <td style="vertical-align: top;border:none">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td style="border:none">
+                                {{-- <div style='font-size:14px;font-weight:semibold;'>
+                                    <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
+                                    <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
+                                </div> --}}
+                            </td>
+                            <td style="text-align: right;border:none">
+                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/hero.jpg'))) }}" alt="" width="100%">
+            </td>
+        </tr>
     </table>
 </body>
 </html>

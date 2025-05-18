@@ -215,7 +215,7 @@ class OrderController extends Controller
                 'offer_openings_price'    => $offerOpeningsPrice,
                 'glass'                   => $offer['glass'],
             ])
-            ->setPaper('a4', 'portrait')
+            ->setPaper('a4', 'landscape')
             ->setOptions(['isRemoteEnabled' => true]);
 
         $pdfName = "offer_" . ($request->order_number ?? 'temp') . "_" . date('Y-m-d') . ".pdf";

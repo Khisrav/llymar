@@ -8,7 +8,7 @@ import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
 import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
 import Label from "../../../Components/ui/label/Label.vue";
 import Button from "../../../Components/ui/button/Button.vue";
-import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SaveIcon } from "lucide-vue-next";
+import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, SaveIcon } from "lucide-vue-next";
 import { Item, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { toast } from "vue-sonner";
@@ -28,6 +28,7 @@ const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
 const doorHandles = ref(usePage().props.door_handles as Item[]);
 const allDoorHandles = ref(usePage().props.all_door_handles as Item[]);
+const customDoorHandles = ref<Item[]>([]);
 const can_access_dxf = ref(usePage().props.can_access_dxf as any);
 
 const selectedOpeningID = ref<number>(0);
@@ -42,14 +43,15 @@ interface Constraint {
 }
 
 const sketch_constraints: Record<string, Constraint> = {
-	a: { start: 5, end: 20, default: 14, interval: 1 },
-	b: { start: 17, end: 17, default: 17, interval: 1 },
+	a: { start: 3, end: 25, default: 14, interval: 1 },
+	b: { start: 14, end: 25, default: 17, interval: 1 },
 	c: { start: 13, end: 13, default: 13, interval: 1 },
-	d: { start: 6, end: 6, default: 6, interval: 1 },
-	e: { start: 30, end: 1100, default: 30, interval: 1 },
-	f: { start: 5, end: 20, default: 14, interval: 1 },
-	g: { start: 5, end: 20, default: 14, interval: 1 },
-	i: { start: 5, end: 20, default: 14, interval: 1 },
+	d: { start: 8, end: 55, default: 6, interval: 1 },
+	e: { start: 20, end: 80, default: 30, interval: 1 },
+	// f: { start: 5, end: 20, default: 14, interval: 1 },
+	g: { start: 30, end: 80, default: 55, interval: 1 },
+	i: { start: 20, end: 1000, default: 550, interval: 1 },
+	mp: { start: 100, end: 1000, default: 0, interval: 1 },
 };
 
 // Initialize reactive sketch_vars for each opening.
@@ -63,7 +65,7 @@ openings.value.forEach((opening: Opening) => {
 		c: [opening.c as number],
 		d: [opening.d as number],
 		e: [opening.e as number],
-		f: [opening.f as number],
+		// f: [opening.f as number],
 		g: [opening.g as number],
 		i: [opening.i as number],
 	};
@@ -140,12 +142,67 @@ const form = useForm({
 	openings: [] as Array<Record<string, any>>,
 });
 
-const saveAndClose = () => {
-	form.openings = combinedOpenings.value;
-	form.post("/app/order/sketch/save", {
-		preserveScroll: true,
-		onSuccess: () => toast("Сохранено"),
-	});
+const saveAndClose = (): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        form.openings = combinedOpenings.value;
+        form.post("/app/order/sketch/save", {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast("Сохранено");
+                resolve(true); // Resolve the promise on successful save
+            },
+            onError: (errors: any) => { // Catch errors from form.post
+                console.error("Failed to save sketch:", errors);
+                toast.error("Ошибка сохранения. Пожалуйста, проверьте консоль.");
+                reject(errors); // Reject the promise if save fails
+            },
+        });
+    });
+};
+
+const downloadDXF = async () => {
+    if (!can_access_dxf.value) { // Use .value for refs
+        toast.warning("У вас нет доступа для скачивания DXF.");
+        return;
+    }
+    
+    try {
+        // Wait for saveAndClose to complete successfully
+        await saveAndClose(); 
+        
+        // If saveAndClose was successful, proceed to download DXF
+        toast.info("Данные сохранены. Начинается загрузка DXF...");
+
+        const response = await axios.post(
+            `/orders/${order.value.id}/dxf`,
+            {
+                openings: combinedOpenings.value, // Send the latest data
+                saveData: false, // Data is already saved by saveAndClose
+            },
+            {
+                responseType: "blob",
+            }
+        );
+        
+        const fileBlob = new Blob([response.data], { type: "application/dxf" });
+        const fileURL = URL.createObjectURL(fileBlob);
+
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.setAttribute("download", `sketch_${order.value.id}.dxf`); // More specific filename
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        URL.revokeObjectURL(fileURL);
+        toast.success("DXF файл успешно загружен.");
+
+    } catch (error) {
+        console.error("Failed to save or download DXF:", error);
+        if (axios.isAxiosError(error)) {
+            toast.error("Ошибка при загрузке DXF файла.");
+        }
+    }
 };
 
 // Download request: send all openings data.
@@ -178,41 +235,6 @@ const saveAndDownload = async () => {
 	}
 };
 
-const downloadDXF = async () => {
-	if (!can_access_dxf) return
-	
-	try {
-		saveAndClose();
-	} catch (error) {}
-
-	try {
-		const response = await axios.post(
-			`/orders/${order.value.id}/dxf`,
-			{
-				openings: combinedOpenings.value,
-				saveData: false,
-			},
-			{
-				responseType: "blob",
-			}
-		);
-		
-		const fileBlob = new Blob([response.data], { type: "application/dxf" });
-		const fileURL = URL.createObjectURL(fileBlob);
-
-		const link = document.createElement("a");
-		link.href = fileURL;
-		link.setAttribute("download", "sketch.dxf");
-		document.body.appendChild(link);
-		link.click();
-
-		document.body.removeChild(link);
-		URL.revokeObjectURL(fileURL);
-	} catch (error) {
-		console.error("Failed to download DXF:", error);
-	}
-};
-
 const showSketchReference = ref(false);
 
 const isDoorHandleSelected = (doorHandleId: number) => {
@@ -229,6 +251,13 @@ const clearSelectedDoorHandles = (id?: number) => {
 		delete selectedDoorHandles.value[id];
 	}
 };
+
+// const addCustomDoorHandle = () => {
+// 	customDoorHandles.value.push({
+// 		name: "Кастомная ручка",
+		
+// 	})
+// }
 </script>
 
 <template>
@@ -241,17 +270,11 @@ const clearSelectedDoorHandles = (id?: number) => {
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<h2 class="text-3xl font-semibold mb-6">Чертеж</h2>
 
-			<!-- Section to select an opening -->
 			<div class="mb-4">
 				<div class="flex items-center justify-between gap-4">
 					<div>
 						<h3 class="text-xl font-semibold text-muted-foreground">Проемы заказа</h3>
 						<p class="text-xs text-muted-foreground">Выберите проем, параметры которого вы хотите изменить</p>
-					</div>
-					<div>
-						<!-- <Button variant="outline" size="icon" @click="clearSelectedDoorHandles">
-							<EraserIcon class="h-4 w-4" />
-						</Button> -->
 					</div>
 				</div>
 
@@ -302,7 +325,6 @@ const clearSelectedDoorHandles = (id?: number) => {
 			<Separator />
 
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
-				<!-- Sketch reference image -->
 				<div class="col-span-9">
 					<div v-show="showSketchReference" class="flex items-center justify-center mb-2">
 						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
@@ -337,27 +359,69 @@ const clearSelectedDoorHandles = (id?: number) => {
 					</div>
 				</div>
 
-				<div class="col-span-9 md:col-span-3 p-4 rounded-lg border">
-					<div class="flex items-center justify-between mb-4 gap-4">
-						<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
-						<Button :variant="showSketchReference ? 'default' : 'outline'" size="icon" @click="showSketchReference = !showSketchReference">
-							<CircleHelpIcon class="h-4 w-4" />
-						</Button>
-					</div>
-
-					<div v-for="(value, key) in currentSketch" :key="key" class="flex flex-col gap-2 pb-4">
-						<span class="font-medium">{{ key }}: {{ value[0] }}мм</span>
-						<Slider v-model="currentSketch[key]" :default-value="[sketch_constraints[key].default]" :min="sketch_constraints[key].start" :max="sketch_constraints[key].end" :step="sketch_constraints[key].interval" />
-						<span class="text-muted-foreground text-xs"> lorem ipsum dolor sit amet </span>
-					</div>
-
-					<div class="flex flex-col gap-2">
-						<Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button>
-						<div class="flex flex-row gap-2 justify-between items-center">
-							<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-							<Button v-if="can_access_dxf" type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+				<div class="col-span-9 md:col-span-3 space-y-4">
+					<div class="p-4 rounded-lg border">
+						<div class="flex items-center justify-between mb-4 gap-4">
+							<h3 class="text-xl text-muted-foreground font-semibold">Кастомные ручки</h3>
+							<Button variant="outline" size="icon" @click="showSketchReference = !showSketchReference">
+								<PlusIcon class="h-4 w-4" />
+							</Button>
 						</div>
 					</div>
+				
+					<div class="p-4 rounded-lg border">
+						<div class="flex items-center justify-between mb-4 gap-4">
+							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
+							<Button :variant="showSketchReference ? 'default' : 'outline'" size="icon" @click="showSketchReference = !showSketchReference">
+								<CircleHelpIcon class="h-4 w-4" />
+							</Button>
+						</div>
+	
+						<template v-for="(value, key) in currentSketch" :key="key">
+					        <div v-if="!['g', 'd', 'i', 'mp'].includes(key)"
+					             class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+					            <div class="">
+					                <span class="font-medium">{{ key }}: </span>
+					                <span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+					            </div>
+					            <Slider v-model="currentSketch[key]" 
+					                    :default-value="[sketch_constraints[key]?.default || 0]" 
+					                    :min="sketch_constraints[key]?.start || 0" 
+					                    :max="sketch_constraints[key]?.end || 100" 
+					                    :step="sketch_constraints[key]?.interval || 1" 
+					                    class="my-1"/>
+					        </div>
+					    </template>
+					    
+						<div class="flex items-center justify-between mb-4 gap-4">
+							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки</h3>
+						</div>
+	
+						<template v-for="(value, key) in currentSketch" :key="key">
+					        <div v-if="['g', 'd', 'i', 'mp'].includes(key)"
+					             class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+					            <div class="">
+					                <span class="font-medium">{{ key }}: </span>
+					                <span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+					            </div>
+					            <Slider v-model="currentSketch[key]" 
+					                    :default-value="[sketch_constraints[key]?.default || 0]" 
+					                    :min="sketch_constraints[key]?.start || 0" 
+					                    :max="sketch_constraints[key]?.end || 100" 
+					                    :step="sketch_constraints[key]?.interval || 1" 
+					                    class="my-1"/>
+					        </div>
+					    </template>
+					    
+					    <div class="flex flex-col gap-2">
+							<!-- <Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button> -->
+							<div class="flex flex-row gap-2 justify-between items-center">
+								<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
+								<Button v-if="can_access_dxf" type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+							</div>
+						</div>
+					</div>
+					
 				</div>
 			</div>
 		</div>

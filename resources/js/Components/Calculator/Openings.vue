@@ -13,6 +13,11 @@ import { doorsSelectLimiter } from "../../Utils/doorsSelectLimiter";
 import QuantitySelector from "../QuantitySelector.vue";
 import { useItemsStore } from "../../Stores/itemsStore";
 import Label from "../ui/label/Label.vue";
+import NumberField from "../ui/number-field/NumberField.vue";
+import NumberFieldContent from "../ui/number-field/NumberFieldContent.vue";
+import NumberFieldDecrement from "../ui/number-field/NumberFieldDecrement.vue";
+import NumberFieldInput from "../ui/number-field/NumberFieldInput.vue";
+import NumberFieldIncrement from "../ui/number-field/NumberFieldIncrement.vue";
 
 const openingStore = useOpeningStore();
 const itemsStore = useItemsStore();
@@ -88,6 +93,15 @@ watch(
 						<div class="gap-2 mt-2">
 							<label class="text-center mb-1 text-muted-foreground text-xs md:text-sm block">Кол-во створок:</label>
 							<QuantitySelector v-model="opening.doors" :min="doorsSelectLimiter(openingStore.openings[index].type).min" :max="doorsSelectLimiter(openingStore.openings[index].type).max" :step="doorsSelectLimiter(openingStore.openings[index].type).step" />
+							<!-- <QuantitySelector :min="1" :max="99" :step="1" /> -->
+							<NumberField @update="openingStore.addDuplicateOpening(index)" id="age" :default-value="1" :min="1" :max="99">
+							    <Label for="age" class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Кол-во проемов</Label>
+							    <NumberFieldContent>
+							        <NumberFieldDecrement />
+							        <NumberFieldInput />
+							        <NumberFieldIncrement />
+							    </NumberFieldContent>
+							</NumberField>
 						</div>
 					</div>
 				</div>

@@ -39,7 +39,7 @@ export interface Opening {
 }
 
 export interface Item {
-    id: number;
+    id?: number;
     vendor_code?: string;
     name: string;
     img?: string;

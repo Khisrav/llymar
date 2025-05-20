@@ -43,6 +43,11 @@ export const useOpeningStore = defineStore('openingStore', () => {
         })
     }
     
+    const addDuplicateOpening = (index: number) => {
+        console.log('addDuplicateOpening', index)
+        openings.value.splice(index + 1, 0, openings.value[index])
+    }
+    
     watch(openings, () => {
         sessionStorage.setItem('openings', JSON.stringify(openings.value))
     }, { deep: true })
@@ -69,5 +74,6 @@ export const useOpeningStore = defineStore('openingStore', () => {
         addOpening,
         removeOpening,
         setDefaultHeightToAll,
+        addDuplicateOpening,
     }
 })

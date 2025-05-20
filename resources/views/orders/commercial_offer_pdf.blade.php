@@ -230,6 +230,15 @@ function groupArraysByProperties($arrays, $properties) {
                                 <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
                                 <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
                             </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>Итого: </td>
+                                @php
+                                    Log::info($offer);
+                                @endphp
+                                <td class="nowrap">{{ number_format($offer['total_price'], 2, '.', ' ') }} ₽</td>
+                            </tr>
                         @endif
                     </tbody>
                 </table>

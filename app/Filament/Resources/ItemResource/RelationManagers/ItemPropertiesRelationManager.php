@@ -17,19 +17,19 @@ class ItemPropertiesRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('item_id')
-                    ->required()
-                    ->maxLength(255)
-                    ->disabled()
-                    ->default(fn ($operation) => $operation === 'create' ? $this->getOwnerRecord()->id : null),
-                Forms\Components\TextInput::make('name')
-                    ->label('Наименование')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('value')
-                    ->label('Значение')
-                    ->required()
-                    ->maxLength(255),
+                // Forms\Components\TextInput::make('item_id')
+                //     ->required()
+                //     ->maxLength(255)
+                //     ->disabled()
+                //     ->default(fn ($operation) => $operation === 'create' ? $this->getOwnerRecord()->id : null),
+                // Forms\Components\TextInput::make('name')
+                //     ->label('Наименование')
+                //     ->required()
+                //     ->maxLength(255),
+                // Forms\Components\TextInput::make('value')
+                //     ->label('Значение')
+                //     ->required()
+                //     ->maxLength(255),
             ]);
     }
 
@@ -43,7 +43,7 @@ class ItemPropertiesRelationManager extends RelationManager
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('value')
+                Tables\Columns\TextInputColumn::make('value')
                     ->label('Значение')
                     ->searchable()
                     ->sortable()
@@ -53,15 +53,15 @@ class ItemPropertiesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

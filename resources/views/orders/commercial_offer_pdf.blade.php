@@ -237,7 +237,7 @@ function groupArraysByProperties($arrays, $properties) {
                                 @php
                                     Log::info($offer);
                                 @endphp
-                                <td class="nowrap">{{ number_format($offer['total_price'] * markupPercentage, 2, '.', ' ') }} ₽</td>
+                                <td class="nowrap">{{ number_format($offer['total_price'] * $markupPercentage, 2, '.', ' ') }} ₽</td>
                             </tr>
                         @endif
                     </tbody>

@@ -86,7 +86,7 @@ function groupArraysByProperties($arrays, $properties) {
                                 </div>
                             </td>
                             <td style="text-align: right;border:none">
-                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
+                                {{-- <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto"> --}}
                             </td>
                         </tr>
                     </tbody>
@@ -237,7 +237,7 @@ function groupArraysByProperties($arrays, $properties) {
                                 @php
                                     Log::info($offer);
                                 @endphp
-                                <td class="nowrap">{{ number_format($offer['total_price'], 2, '.', ' ') }} ₽</td>
+                                <td class="nowrap">{{ number_format($offer['total_price'] * $offer['markup_percentage'], 2, '.', ' ') }} ₽</td>
                             </tr>
                         @endif
                     </tbody>

@@ -52,6 +52,15 @@ export interface Item {
     updated_at?: string | null;
 }
 
+export interface ItemProperty {
+    id?: number;
+    name: string;
+    value: string;
+    item_id: number;
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
 export interface CartItem {
     quantity: number;
 }

@@ -255,20 +255,30 @@ class OrderController extends Controller
      */
     public static function sketcherPage(int $order_id)
     {
-        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
+        $order = Order::with(['orderOpenings', 'orderItems.item.itemProperties'])
+            ->findOrFail($order_id);
     
         $openings = $order->orderOpenings;
-        
-        $doorHandles = Item::where('category_id', 29)->get();
-        $orderDoorHandles = $order->orderItems->filter(function ($orderItem) {
+    
+        $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
             return $orderItem->item->category_id == 29;
-        })->pluck('item');
+        });
+    
+        $orderDoorHandles = $doorHandleOrderItems->pluck('item');
+        $doorHandlesProperties = $doorHandleOrderItems->mapWithKeys(function ($orderItem) {
+            $item = $orderItem->item;
+            return [
+                $item->id => $item->itemProperties->pluck('value', 'name')->toArray()
+            ];
+        })->toArray();
+    
+        Log::info($doorHandlesProperties);
     
         return Inertia::render('App/Order/Sketcher', [
-            'order'      => $order,
-            'openings'   => $openings,
+            'order' => $order,
+            'openings' => $openings,
             'door_handles' => $orderDoorHandles,
-            'all_door_handles' => $doorHandles,
+            'door_handles_properties' => $doorHandlesProperties,
         ]);
     }
 

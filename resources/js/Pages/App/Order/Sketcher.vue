@@ -8,8 +8,8 @@ import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
 import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
 import Label from "../../../Components/ui/label/Label.vue";
 import Button from "../../../Components/ui/button/Button.vue";
-import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, SaveIcon } from "lucide-vue-next";
-import { Item, Opening, Order } from "../../../lib/types";
+import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, SaveIcon, TrashIcon } from "lucide-vue-next";
+import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { toast } from "vue-sonner";
 import { Toaster } from "../../../Components/ui/sonner";
@@ -22,13 +22,18 @@ import SelectItem from "../../../Components/ui/select/SelectItem.vue";
 import DoorHandleSVG from "../../../Components/Sketcher/DoorHandleSVG.vue";
 import SelectGroup from "../../../Components/ui/select/SelectGroup.vue";
 import SelectLabel from "../../../Components/ui/select/SelectLabel.vue";
+import Input from "../../../Components/ui/input/Input.vue";
+
+//add item_properties to Item
+interface ItemWithProperties extends Item {
+	properties: ItemProperty[];
+}
 
 // Retrieve order and openings from Inertia props.
 const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
-const doorHandles = ref(usePage().props.door_handles as Item[]);
-const allDoorHandles = ref(usePage().props.all_door_handles as Item[]);
-const customDoorHandles = ref<Item[]>([]);
+const doorHandles = ref(usePage().props.door_handles as ItemWithProperties[]);
+const doorHandlesProperties = ref(usePage().props.door_handles_properties as ItemProperty[]);
 const can_access_dxf = ref(usePage().props.can_access_dxf as any);
 
 const selectedOpeningID = ref<number>(0);
@@ -68,6 +73,7 @@ openings.value.forEach((opening: Opening) => {
 		// f: [opening.f as number],
 		g: [opening.g as number],
 		i: [opening.i as number],
+		mr: [100],
 	};
 	selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
 });
@@ -77,6 +83,15 @@ onMounted(() => {
 		selectedOpeningID.value = openings.value[0].id as number;
 	}
 });
+
+const getMR = (item_id: number): number => {
+	doorHandles.value.forEach((dh) => {
+		if (dh.id === item_id) {
+			// return dh.mr;
+		}
+	})
+	return 100
+}
 
 const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
 const currentOpening = computed(() => openings.value.find((opening) => opening.id === selectedOpeningID.value));
@@ -252,12 +267,41 @@ const clearSelectedDoorHandles = (id?: number) => {
 	}
 };
 
-// const addCustomDoorHandle = () => {
-// 	customDoorHandles.value.push({
-// 		name: "Кастомная ручка",
-		
-// 	})
-// }
+const addCustomDoorHandle = () => {
+	doorHandles.value.push({
+		id: -Date.now(),
+		name: "Своя ручка",
+		img: "",
+		purchase_price: 0,
+		discount: 0,
+		item_properties: [
+			{
+				id: -Date.now() - 1000,
+				item_id: -Date.now(),
+				name: "d",
+				value: "0",
+			},
+			{
+				id: -Date.now() - 1001,
+				item_id: -Date.now(),
+				name: "g",
+				value: "0",
+			},
+			{
+				id: -Date.now() - 1002,
+				item_id: -Date.now(),
+				name: "i",
+				value: "0",
+			},
+			{
+				id: -Date.now() - 1003,
+				item_id: -Date.now(),
+				name: "MP",
+				value: "0",
+			}
+		],
+	});
+}
 </script>
 
 <template>
@@ -303,13 +347,8 @@ const clearSelectedDoorHandles = (id?: number) => {
 									<SelectContent class="max-w-xs sm:max-w-max">
 										
 										<SelectGroup>
-											<SelectLabel>Все ручки</SelectLabel>
-											<SelectItem
-												v-for="doorHandle in allDoorHandles"
-												:key="doorHandle.id"
-												:value="doorHandle.id as any">
-												{{ doorHandle.name }}
-											</SelectItem>
+											<!-- <SelectLabel>Все ручки</SelectLabel> -->
+											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id":value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
 										</SelectGroup>
 									</SelectContent>
 								</Select>
@@ -361,12 +400,24 @@ const clearSelectedDoorHandles = (id?: number) => {
 
 				<div class="col-span-9 md:col-span-3 space-y-4">
 					<div class="p-4 rounded-lg border">
-						<div class="flex items-center justify-between mb-4 gap-4">
-							<h3 class="text-xl text-muted-foreground font-semibold">Кастомные ручки</h3>
-							<Button variant="outline" size="icon" @click="showSketchReference = !showSketchReference">
+						<div class="flex items-center justify-between gap-4">
+							<h3 class="text-xl text-muted-foreground font-semibold">Свои ручки</h3>
+							<Button variant="outline" size="icon" @click="addCustomDoorHandle">
 								<PlusIcon class="h-4 w-4" />
 							</Button>
 						</div>
+						<template v-for="doorHandle in doorHandles" :key="doorHandle.id">
+							<div v-if="doorHandle.id < 0" class="flex flex-col gap-1.5 mt-2">
+								<div class="flex items-center justify-between gap-2">
+									<div class="flex-1 overflow-hidden">
+										<Input v-model="doorHandle.name" class="h-9 text-sm" />
+									</div>
+									<Button variant="outline" size="icon">
+										<TrashIcon class="h-4 w-4" />
+									</Button>
+								</div>
+							</div>
+						</template>
 					</div>
 				
 					<div class="p-4 rounded-lg border">
@@ -418,6 +469,8 @@ const clearSelectedDoorHandles = (id?: number) => {
 							<div class="flex flex-row gap-2 justify-between items-center">
 								<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
 								<Button v-if="can_access_dxf" type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+								<!-- доступ к DXF -->
+								<!-- <Button v-else type="button" class="w-full" variant="outline" @click="toast('Нет доступа к DXF')"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button> -->
 							</div>
 						</div>
 					</div>

@@ -71,6 +71,7 @@ class ItemResource extends Resource
                         Forms\Components\FileUpload::make('img')
                             ->label('Картинка')
                             ->image()
+                            ->required()
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 null,
@@ -78,6 +79,7 @@ class ItemResource extends Resource
                                 '4:3',
                                 '1:1',
                             ])
+                            ->default('no-image.jpg')
                             ->directory('items'),
                         Forms\Components\Toggle::make('is_for_llymar')
                             ->label('Для LLYMAR')

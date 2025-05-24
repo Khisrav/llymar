@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, usePage, useForm } from "@inertiajs/vue3";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
 import Slider from "../../../Components/ui/slider/Slider.vue";
 import Separator from "../../../Components/ui/separator/Separator.vue";
@@ -8,7 +8,7 @@ import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
 import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
 import Label from "../../../Components/ui/label/Label.vue";
 import Button from "../../../Components/ui/button/Button.vue";
-import { CircleHelpIcon, DownloadIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, SaveIcon, TrashIcon } from "lucide-vue-next";
+import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, TrashIcon } from "lucide-vue-next";
 import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { toast } from "vue-sonner";
@@ -21,15 +21,12 @@ import SelectContent from "../../../Components/ui/select/SelectContent.vue";
 import SelectItem from "../../../Components/ui/select/SelectItem.vue";
 import DoorHandleSVG from "../../../Components/Sketcher/DoorHandleSVG.vue";
 import SelectGroup from "../../../Components/ui/select/SelectGroup.vue";
-import SelectLabel from "../../../Components/ui/select/SelectLabel.vue";
 import Input from "../../../Components/ui/input/Input.vue";
 
-//add item_properties to Item
 interface ItemWithProperties extends Item {
 	properties: ItemProperty[];
 }
 
-// Retrieve order and openings from Inertia props.
 const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
 const doorHandles = ref(usePage().props.door_handles as ItemWithProperties[]);
@@ -38,8 +35,8 @@ const can_access_dxf = ref(usePage().props.can_access_dxf as any);
 
 const selectedOpeningID = ref<number>(0);
 const openingStore = useOpeningStore();
+const showSketchReference = ref(false);
 
-// Define constraint interface and values.
 interface Constraint {
 	start: number;
 	end: number;
@@ -50,7 +47,7 @@ interface Constraint {
 const sketch_constraints: Record<string, Constraint> = {
 	a: { start: 3, end: 25, default: 14, interval: 1 },
 	b: { start: 14, end: 25, default: 17, interval: 1 },
-	c: { start: 13, end: 13, default: 13, interval: 1 },
+	// c: { start: 13, end: 13, default: 13, interval: 1 },
 	d: { start: 8, end: 55, default: 6, interval: 1 },
 	e: { start: 20, end: 80, default: 30, interval: 1 },
 	// f: { start: 5, end: 20, default: 14, interval: 1 },
@@ -59,21 +56,44 @@ const sketch_constraints: Record<string, Constraint> = {
 	mp: { start: 100, end: 1000, default: 0, interval: 1 },
 };
 
-// Initialize reactive sketch_vars for each opening.
 const sketch_vars = ref<Record<number, Record<string, number[]>>>({});
 const selectedDoorHandles = ref<Record<number, number | undefined>>({}); // Track selected door handles
+
+// Load custom door handles from localStorage
+const loadCustomDoorHandles = () => {
+	try {
+		const saved = localStorage.getItem('customDoorHandles');
+		if (saved) {
+			const customHandles = JSON.parse(saved);
+			// Add custom handles to the doorHandles array
+			doorHandles.value.push(...customHandles);
+		}
+	} catch (error) {
+		console.error('Error loading custom door handles:', error);
+	}
+};
+
+// Save custom door handles to localStorage
+const saveCustomDoorHandles = () => {
+	try {
+		const customHandles = doorHandles.value.filter(handle => handle.id < 0);
+		localStorage.setItem('customDoorHandles', JSON.stringify(customHandles));
+	} catch (error) {
+		console.error('Error saving custom door handles:', error);
+	}
+};
 
 openings.value.forEach((opening: Opening) => {
 	sketch_vars.value[opening.id as number] = {
 		a: [opening.a as number],
 		b: [opening.b as number],
-		c: [opening.c as number],
+		// c: [opening.c as number],
 		d: [opening.d as number],
 		e: [opening.e as number],
 		// f: [opening.f as number],
 		g: [opening.g as number],
 		i: [opening.i as number],
-		mr: [100],
+		mp: [100],
 	};
 	selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
 });
@@ -82,19 +102,52 @@ onMounted(() => {
 	if (openings.value.length > 0) {
 		selectedOpeningID.value = openings.value[0].id as number;
 	}
+	// Load custom door handles from localStorage
+	loadCustomDoorHandles();
 });
 
-const getMR = (item_id: number): number => {
-	doorHandles.value.forEach((dh) => {
-		if (dh.id === item_id) {
-			// return dh.mr;
-		}
-	})
-	return 100
-}
+const getHandleProperties = (item_id: number): { d: number, g: number, i: number, mp: number } => {
+    const item = doorHandles.value.find(dh => dh.id === item_id);
+
+    if (!item) {
+        throw new Error("Item not found");
+    }
+
+    const getPropertyValue = (name: string): number => {
+        const property = item.item_properties.find(p => p.name === name);
+        if (!property) {
+            throw new Error(`Property ${name} not found`);
+        }
+        const value = parseFloat(property.value);
+        if (isNaN(value)) {
+            throw new Error(`Property ${name} value is not a valid number`);
+        }
+        return value;
+    };
+
+    return {
+        d: getPropertyValue("d"),
+        g: getPropertyValue("g"),
+        i: getPropertyValue("i"),
+        mp: getPropertyValue("MP")
+    };
+};
 
 const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
 const currentOpening = computed(() => openings.value.find((opening) => opening.id === selectedOpeningID.value));
+
+// Check if slider should be disabled based on selected door handle's MP property
+const isSliderDisabled = computed(() => {
+	const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
+	if (!selectedHandleId) return false;
+	
+	try {
+		const handleProps = getHandleProperties(selectedHandleId);
+		return handleProps.mp !== 0;
+	} catch (error) {
+		return false;
+	}
+});
 
 const getOpeningSketchDimensions = (doorIndex: number) => {
 	if (!currentOpening.value) return { width: 0, height: 0 };
@@ -220,7 +273,6 @@ const downloadDXF = async () => {
     }
 };
 
-// Download request: send all openings data.
 const saveAndDownload = async () => {
 	try {
 		const response = await axios.post(
@@ -250,14 +302,22 @@ const saveAndDownload = async () => {
 	}
 };
 
-const showSketchReference = ref(false);
-
-const isDoorHandleSelected = (doorHandleId: number) => {
-	return Object.values(selectedDoorHandles.value).includes(doorHandleId);
-};
-
 const selectDoorHandle = (openingId: number, doorHandleId: number) => {
 	selectedDoorHandles.value[openingId] = doorHandleId;
+	
+	try {
+		const handleProps = getHandleProperties(doorHandleId);
+		
+		// If item properties are 0, use opening's properties
+		sketch_vars.value[openingId].d = [handleProps.d || sketch_vars.value[openingId].d[0]];
+		sketch_vars.value[openingId].g = [handleProps.g || sketch_vars.value[openingId].g[0]];
+		sketch_vars.value[openingId].i = [handleProps.i || sketch_vars.value[openingId].i[0]];
+		sketch_vars.value[openingId].mp = [handleProps.mp || sketch_vars.value[openingId].mp[0]];
+		
+		console.log(sketch_vars.value[openingId]);
+	} catch (error) {
+		console.error('Error setting door handle properties:', error);
+	}
 };
 
 const clearSelectedDoorHandles = (id?: number) => {
@@ -268,7 +328,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 };
 
 const addCustomDoorHandle = () => {
-	doorHandles.value.push({
+	const newHandle = {
 		id: -Date.now(),
 		name: "Своя ручка",
 		img: "",
@@ -279,7 +339,7 @@ const addCustomDoorHandle = () => {
 				id: -Date.now() - 1000,
 				item_id: -Date.now(),
 				name: "d",
-				value: "0",
+				value: "8",
 			},
 			{
 				id: -Date.now() - 1001,
@@ -297,11 +357,41 @@ const addCustomDoorHandle = () => {
 				id: -Date.now() - 1003,
 				item_id: -Date.now(),
 				name: "MP",
-				value: "0",
+				value: "100",
 			}
 		],
-	});
-}
+	};
+	
+	doorHandles.value.push(newHandle);
+	saveCustomDoorHandles();
+};
+
+const removeCustomDoorHandle = (handleId: number) => {
+	// Remove from doorHandles array
+	const index = doorHandles.value.findIndex(handle => handle.id === handleId);
+	if (index > -1) {
+		doorHandles.value.splice(index, 1);
+		
+		// Remove from selected handles if it was selected
+		Object.keys(selectedDoorHandles.value).forEach(openingId => {
+			if (selectedDoorHandles.value[parseInt(openingId)] === handleId) {
+				delete selectedDoorHandles.value[parseInt(openingId)];
+			}
+		});
+		
+		// Save to localStorage
+		saveCustomDoorHandles();
+	}
+};
+
+// Watch for changes in custom door handles and save to localStorage
+watch(
+	() => doorHandles.value.filter(handle => handle.id < 0),
+	() => {
+		saveCustomDoorHandles();
+	},
+	{ deep: true }
+);
 </script>
 
 <template>
@@ -348,7 +438,7 @@ const addCustomDoorHandle = () => {
 										
 										<SelectGroup>
 											<!-- <SelectLabel>Все ручки</SelectLabel> -->
-											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id":value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
+											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
 										</SelectGroup>
 									</SelectContent>
 								</Select>
@@ -412,7 +502,7 @@ const addCustomDoorHandle = () => {
 									<div class="flex-1 overflow-hidden">
 										<Input v-model="doorHandle.name" class="h-9 text-sm" />
 									</div>
-									<Button variant="outline" size="icon">
+									<Button variant="outline" size="icon" @click="removeCustomDoorHandle(doorHandle.id)">
 										<TrashIcon class="h-4 w-4" />
 									</Button>
 								</div>
@@ -439,7 +529,7 @@ const addCustomDoorHandle = () => {
 					                    :default-value="[sketch_constraints[key]?.default || 0]" 
 					                    :min="sketch_constraints[key]?.start || 0" 
 					                    :max="sketch_constraints[key]?.end || 100" 
-					                    :step="sketch_constraints[key]?.interval || 1" 
+					                    :step="sketch_constraints[key]?.interval || 1"
 					                    class="my-1"/>
 					        </div>
 					    </template>
@@ -460,6 +550,7 @@ const addCustomDoorHandle = () => {
 					                    :min="sketch_constraints[key]?.start || 0" 
 					                    :max="sketch_constraints[key]?.end || 100" 
 					                    :step="sketch_constraints[key]?.interval || 1" 
+					                    :disabled="isSliderDisabled"
 					                    class="my-1"/>
 					        </div>
 					    </template>

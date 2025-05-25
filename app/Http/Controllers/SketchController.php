@@ -112,10 +112,10 @@ class SketchController extends Controller
         $doorHandlePropertiesCache = [];
 
         $doorGap = 100; 
-        $defaultHandleDiameter = 12;
 
         foreach ($openings as $index => $opening) {
-            $defaultHandleMP = $opening['g'] - $opening['i'] ?? 0;
+            $defaultHandleMP = $opening['mp'] ?? $opening['g'] - $opening['i'];
+            $defaultHandleDiameter = $opening['d'] ?? 12;
             
             $openingType = $opening['type'] ?? null;
             $openingG = $opening['g'] ?? 0;
@@ -138,7 +138,8 @@ class SketchController extends Controller
                 }
                 $properties = $doorHandlePropertiesCache[$doorHandleItemId];
                 $doorHandleMP = $properties?->firstWhere('name', 'МР')?->value ?? $defaultHandleMP;
-                $doorHandleD = $properties?->firstWhere('name', 'd')?->value ?? $defaultHandleDiameter;
+                $doorHandleD = intval($properties?->firstWhere('name', 'd')?->value);
+                $doorHandleD = $doorHandleD && $doorHandleD != 0  ? $doorHandleD : $defaultHandleDiameter;
             }
 
             $numberOfDoors = $opening['doors'] ?? 0;
@@ -204,7 +205,8 @@ class SketchController extends Controller
 
             $calculatedCoordinates[] = $openingHoleSets;
         }
-
+        
+        Log::info('getHolesCoordinates: calculated coordinates: ' . json_encode($calculatedCoordinates));
         return $calculatedCoordinates;
     }
 

@@ -325,8 +325,8 @@ class SketchController extends Controller
 
                         $circle1 = new Circle($bottomHoleCenter, $radius);
                         $circle2 = new Circle($upperHoleCenter, $radius);
-                         $circle1->setColor(5); 
-                         $circle2->setColor(5); 
+                         $circle1->setColor(0); 
+                         $circle2->setColor(0); 
 
                         $dxf->addEntity($circle1);
                         $dxf->addEntity($circle2);

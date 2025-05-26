@@ -230,7 +230,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @endforeach
                     </tbody>
                 </table>
-                <p style="text-align: right">Итого: {{ number_format($offer['total_price'] * $markupPercentage, 2, '.', ' ') }} ₽</p>
+                <p style="text-align: right;font-size:14px;">Итого: {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
             </td>
             <td style="vertical-align: top;border:none">
                 <table>

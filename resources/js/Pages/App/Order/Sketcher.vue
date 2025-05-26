@@ -24,13 +24,13 @@ import SelectGroup from "../../../Components/ui/select/SelectGroup.vue";
 import Input from "../../../Components/ui/input/Input.vue";
 
 interface ItemWithProperties extends Item {
-	properties: ItemProperty[];
+	item_properties: ItemProperty[];
 }
 
 const order = ref(usePage().props.order as Order);
 const openings = ref(usePage().props.openings as Opening[]);
 const doorHandles = ref(usePage().props.door_handles as ItemWithProperties[]);
-const doorHandlesProperties = ref(usePage().props.door_handles_properties as ItemProperty[]);
+// const doorHandlesProperties = ref(usePage().props.door_handles_properties as ItemProperty[]);
 const can_access_dxf = ref(usePage().props.can_access_dxf as any);
 
 const selectedOpeningID = ref<number>(0);
@@ -62,24 +62,24 @@ const selectedDoorHandles = ref<Record<number, number | undefined>>({}); // Trac
 // Load custom door handles from localStorage
 const loadCustomDoorHandles = () => {
 	try {
-		const saved = localStorage.getItem('customDoorHandles');
+		const saved = localStorage.getItem("customDoorHandles");
 		if (saved) {
 			const customHandles = JSON.parse(saved);
 			// Add custom handles to the doorHandles array
 			doorHandles.value.push(...customHandles);
 		}
 	} catch (error) {
-		console.error('Error loading custom door handles:', error);
+		console.error("Error loading custom door handles:", error);
 	}
 };
 
 // Save custom door handles to localStorage
 const saveCustomDoorHandles = () => {
 	try {
-		const customHandles = doorHandles.value.filter(handle => handle.id < 0);
-		localStorage.setItem('customDoorHandles', JSON.stringify(customHandles));
+		const customHandles = doorHandles.value.filter((handle) => handle.id < 0);
+		localStorage.setItem("customDoorHandles", JSON.stringify(customHandles));
 	} catch (error) {
-		console.error('Error saving custom door handles:', error);
+		console.error("Error saving custom door handles:", error);
 	}
 };
 
@@ -93,7 +93,7 @@ openings.value.forEach((opening: Opening) => {
 		// f: [opening.f as number],
 		g: [opening.g as number],
 		i: [opening.i as number],
-		mp: [100],
+		mp: [opening.mp as number],
 	};
 	selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
 });
@@ -104,33 +104,57 @@ onMounted(() => {
 	}
 	// Load custom door handles from localStorage
 	loadCustomDoorHandles();
+
+	// Apply door handle properties to sketch_vars for each opening
+	openings.value.forEach((opening) => {
+		const handleId = opening.door_handle_item_id;
+
+		if (handleId) {
+			try {
+				const handleProps = getHandleProperties(handleId);
+				sketch_vars.value[opening.id as number] = {
+					...sketch_vars.value[opening.id as number],
+					d: [handleProps.d],
+					g: [handleProps.g],
+					i: [handleProps.i],
+					mp: [handleProps.mp],
+				};
+			} catch (error) {
+				console.error(`Error applying handle properties for opening ${opening.id}:`, error);
+			}
+		}
+	});
 });
 
-const getHandleProperties = (item_id: number): { d: number, g: number, i: number, mp: number } => {
-    const item = doorHandles.value.find(dh => dh.id === item_id);
+const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {
+	const item = doorHandles.value.find((dh) => dh.id === item_id);
 
-    if (!item) {
-        throw new Error("Item not found");
-    }
+	if (!item) {
+		throw new Error("Item not found");
+	}
 
-    const getPropertyValue = (name: string): number => {
-        const property = item.item_properties.find(p => p.name === name);
-        if (!property) {
-            throw new Error(`Property ${name} not found`);
-        }
-        const value = parseFloat(property.value);
-        if (isNaN(value)) {
-            throw new Error(`Property ${name} value is not a valid number`);
-        }
-        return value;
-    };
+	const getPropertyValue = (name: string): number => {
+		const property = item.item_properties.find((p) => p.name === name);
+		if (!property) {
+			throw new Error(`Property ${name} not found`);
+		}
+		const value = parseFloat(property.value);
+		if (isNaN(value)) {
+			throw new Error(`Property ${name} value is not a valid number`);
+		}
+		// Only apply constraints if they exist for this property
+		if (sketch_constraints[name]) {
+			return Math.min(Math.max(value, sketch_constraints[name].start), sketch_constraints[name].end);
+		}
+		return value;
+	};
 
-    return {
-        d: getPropertyValue("d"),
-        g: getPropertyValue("g"),
-        i: getPropertyValue("i"),
-        mp: getPropertyValue("MP")
-    };
+	return {
+		d: getPropertyValue("d"),
+		g: getPropertyValue("g"),
+		i: getPropertyValue("i"),
+		mp: getPropertyValue("MP"),
+	};
 };
 
 const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
@@ -140,7 +164,7 @@ const currentOpening = computed(() => openings.value.find((opening) => opening.i
 const isSliderDisabled = computed(() => {
 	const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
 	if (!selectedHandleId) return false;
-	
+
 	try {
 		const handleProps = getHandleProperties(selectedHandleId);
 		return handleProps.mp !== 0;
@@ -202,7 +226,11 @@ const combinedOpenings = computed(() => {
 		for (const key in updatedSketch) {
 			flatSketch[key] = updatedSketch[key][0];
 		}
-		return { ...opening, ...flatSketch, door_handle_item_id: selectedDoorHandles.value[opening.id as number] };
+		return {
+			...opening,
+			...flatSketch,
+			door_handle_item_id: selectedDoorHandles.value[opening.id as number],
+		};
 	});
 });
 
@@ -211,66 +239,67 @@ const form = useForm({
 });
 
 const saveAndClose = (): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        form.openings = combinedOpenings.value;
-        form.post("/app/order/sketch/save", {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast("Сохранено");
-                resolve(true); // Resolve the promise on successful save
-            },
-            onError: (errors: any) => { // Catch errors from form.post
-                console.error("Failed to save sketch:", errors);
-                toast.error("Ошибка сохранения. Пожалуйста, проверьте консоль.");
-                reject(errors); // Reject the promise if save fails
-            },
-        });
-    });
+	return new Promise((resolve, reject) => {
+		form.openings = combinedOpenings.value;
+		form.post("/app/order/sketch/save", {
+			preserveScroll: true,
+			onSuccess: () => {
+				toast("Сохранено");
+				resolve(true); // Resolve the promise on successful save
+			},
+			onError: (errors: any) => {
+				// Catch errors from form.post
+				console.error("Failed to save sketch:", errors);
+				toast.error("Ошибка сохранения. Пожалуйста, проверьте консоль.");
+				reject(errors); // Reject the promise if save fails
+			},
+		});
+	});
 };
 
 const downloadDXF = async () => {
-    if (!can_access_dxf.value) { // Use .value for refs
-        toast.warning("У вас нет доступа для скачивания DXF.");
-        return;
-    }
-    
-    try {
-        // Wait for saveAndClose to complete successfully
-        await saveAndClose(); 
-        
-        // If saveAndClose was successful, proceed to download DXF
-        toast.info("Данные сохранены. Начинается загрузка DXF...");
+	if (!can_access_dxf.value) {
+		// Use .value for refs
+		toast.warning("У вас нет доступа для скачивания DXF.");
+		return;
+	}
 
-        const response = await axios.post(
-            `/orders/${order.value.id}/dxf`,
-            {
-                openings: combinedOpenings.value, // Send the latest data
-                saveData: false, // Data is already saved by saveAndClose
-            },
-            {
-                responseType: "blob",
-            }
-        );
-        
-        const fileBlob = new Blob([response.data], { type: "application/dxf" });
-        const fileURL = URL.createObjectURL(fileBlob);
+	try {
+		// Wait for saveAndClose to complete successfully
+		await saveAndClose();
 
-        const link = document.createElement("a");
-        link.href = fileURL;
-        link.setAttribute("download", `sketch_${order.value.id}.dxf`); // More specific filename
-        document.body.appendChild(link);
-        link.click();
+		// If saveAndClose was successful, proceed to download DXF
+		toast.info("Данные сохранены. Начинается загрузка DXF...");
 
-        document.body.removeChild(link);
-        URL.revokeObjectURL(fileURL);
-        toast.success("DXF файл успешно загружен.");
+		const response = await axios.post(
+			`/orders/${order.value.id}/dxf`,
+			{
+				openings: combinedOpenings.value, // Send the latest data
+				saveData: false, // Data is already saved by saveAndClose
+			},
+			{
+				responseType: "blob",
+			}
+		);
 
-    } catch (error) {
-        console.error("Failed to save or download DXF:", error);
-        if (axios.isAxiosError(error)) {
-            toast.error("Ошибка при загрузке DXF файла.");
-        }
-    }
+		const fileBlob = new Blob([response.data], { type: "application/dxf" });
+		const fileURL = URL.createObjectURL(fileBlob);
+
+		const link = document.createElement("a");
+		link.href = fileURL;
+		link.setAttribute("download", `sketch_${order.value.id}.dxf`); // More specific filename
+		document.body.appendChild(link);
+		link.click();
+
+		document.body.removeChild(link);
+		URL.revokeObjectURL(fileURL);
+		toast.success("DXF файл успешно загружен.");
+	} catch (error) {
+		console.error("Failed to save or download DXF:", error);
+		if (axios.isAxiosError(error)) {
+			toast.error("Ошибка при загрузке DXF файла.");
+		}
+	}
 };
 
 const saveAndDownload = async () => {
@@ -304,19 +333,19 @@ const saveAndDownload = async () => {
 
 const selectDoorHandle = (openingId: number, doorHandleId: number) => {
 	selectedDoorHandles.value[openingId] = doorHandleId;
-	
+
 	try {
 		const handleProps = getHandleProperties(doorHandleId);
-		
+
 		// If item properties are 0, use opening's properties
 		sketch_vars.value[openingId].d = [handleProps.d || sketch_vars.value[openingId].d[0]];
 		sketch_vars.value[openingId].g = [handleProps.g || sketch_vars.value[openingId].g[0]];
 		sketch_vars.value[openingId].i = [handleProps.i || sketch_vars.value[openingId].i[0]];
 		sketch_vars.value[openingId].mp = [handleProps.mp || sketch_vars.value[openingId].mp[0]];
-		
+
 		console.log(sketch_vars.value[openingId]);
 	} catch (error) {
-		console.error('Error setting door handle properties:', error);
+		console.error("Error setting door handle properties:", error);
 	}
 };
 
@@ -358,27 +387,27 @@ const addCustomDoorHandle = () => {
 				item_id: -Date.now(),
 				name: "MP",
 				value: "100",
-			}
+			},
 		],
 	};
-	
+
 	doorHandles.value.push(newHandle);
 	saveCustomDoorHandles();
 };
 
 const removeCustomDoorHandle = (handleId: number) => {
 	// Remove from doorHandles array
-	const index = doorHandles.value.findIndex(handle => handle.id === handleId);
+	const index = doorHandles.value.findIndex((handle) => handle.id === handleId);
 	if (index > -1) {
 		doorHandles.value.splice(index, 1);
-		
+
 		// Remove from selected handles if it was selected
-		Object.keys(selectedDoorHandles.value).forEach(openingId => {
+		Object.keys(selectedDoorHandles.value).forEach((openingId) => {
 			if (selectedDoorHandles.value[parseInt(openingId)] === handleId) {
 				delete selectedDoorHandles.value[parseInt(openingId)];
 			}
 		});
-		
+
 		// Save to localStorage
 		saveCustomDoorHandles();
 	}
@@ -386,7 +415,7 @@ const removeCustomDoorHandle = (handleId: number) => {
 
 // Watch for changes in custom door handles and save to localStorage
 watch(
-	() => doorHandles.value.filter(handle => handle.id < 0),
+	() => doorHandles.value.filter((handle) => handle.id < 0),
 	() => {
 		saveCustomDoorHandles();
 	},
@@ -403,58 +432,76 @@ watch(
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<h2 class="text-3xl font-semibold mb-6">Чертеж</h2>
-
-			<div class="mb-4">
-				<div class="flex items-center justify-between gap-4">
-					<div>
-						<h3 class="text-xl font-semibold text-muted-foreground">Проемы заказа</h3>
-						<p class="text-xs text-muted-foreground">Выберите проем, параметры которого вы хотите изменить</p>
-					</div>
-				</div>
-
-				<RadioGroup v-model="selectedOpeningID as any" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
-					<div v-for="opening in openings" :key="opening.id" class="border rounded-lg p-2 md:p-4" :class="{ 'border-primary': opening.id === selectedOpeningID }">
-						<div class="flex flex-col gap-2">
-							<div class="flex items-center gap-2">
-								<RadioGroupItem :value="opening.id as any" :id="`opening-${opening.id as number}`" />
-								<Label :for="`opening-${opening.id}`" class="w-full">
-									{{ openingStore.openingTypes[opening.type] }}
-								</Label>
-							</div>
-							<div class="text-sm text-muted-foreground flex justify-between items-center italic">
-								<span> {{ opening.width }}мм <span class="text-xs">✕</span> {{ opening.height }}мм </span>
-								<span>{{ opening.doors }} ств.</span>
-							</div>
-						</div>
-
-						<div class="mt-2 flex items-center justify-between gap-2">
-							<div class="flex-1 overflow-hidden">
-								<Select v-model="selectedDoorHandles[opening.id as number] as any" @update:model-value="selectDoorHandle(opening.id as number, $event as any)">
-									<SelectTrigger>
-										<SelectValue :placeholder="selectedDoorHandles[opening.id as number] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id as number])?.name : 'Выберите ручку'" />
-									</SelectTrigger>
-
-									<SelectContent class="max-w-xs sm:max-w-max">
-										
-										<SelectGroup>
-											<!-- <SelectLabel>Все ручки</SelectLabel> -->
-											<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
-										</SelectGroup>
-									</SelectContent>
-								</Select>
-							</div>
-							<Button variant="outline" size="icon" @click="clearSelectedDoorHandles(opening.id)">
-								<EraserIcon class="h-4 w-4" />
-							</Button>
-						</div>
-					</div>
-				</RadioGroup>
-			</div>
-
-			<Separator />
-
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
 				<div class="col-span-9">
+
+					<div class="mb-4">
+						<div class="flex items-center justify-between gap-4">
+							<div>
+								<h3 class="text-xl font-semibold text-muted-foreground">Проемы заказа</h3>
+								<p class="text-xs text-muted-foreground">Выберите проем, параметры которого вы хотите изменить</p>
+							</div>
+						</div>
+
+						<RadioGroup v-model="selectedOpeningID as any" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
+							<div
+								v-for="opening in openings"
+								:key="opening.id"
+								class="border rounded-lg p-2 md:p-4"
+								:class="{
+									'border-primary': opening.id === selectedOpeningID,
+								}"
+							>
+								<div class="flex flex-col gap-2">
+									<div class="flex items-center gap-2">
+										<RadioGroupItem :value="opening.id as any" :id="`opening-${opening.id as number}`" />
+										<Label :for="`opening-${opening.id}`" class="w-full">
+											{{ openingStore.openingTypes[opening.type] }}
+										</Label>
+									</div>
+									<div class="text-sm text-muted-foreground flex justify-between items-center italic">
+										<span>
+											{{ opening.width }}мм
+											<span class="text-xs">✕</span>
+											{{ opening.height }}мм
+										</span>
+										<span>{{ opening.doors }} ств.</span>
+									</div>
+								</div>
+
+								<div class="mt-2 flex items-center justify-between gap-2">
+									<div class="flex-1 overflow-hidden">
+										<Select
+											v-model="selectedDoorHandles[opening.id as number] as any"
+											@update:model-value="
+                                                selectDoorHandle(
+                                                    opening.id as number,
+                                                    $event as any
+                                                )
+                                            "
+										>
+											<SelectTrigger>
+												<SelectValue :placeholder="selectedDoorHandles[opening.id as number] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id as number])?.name : 'Выберите ручку'" />
+											</SelectTrigger>
+
+											<SelectContent class="max-w-xs sm:max-w-max">
+												<SelectGroup>
+													<!-- <SelectLabel>Все ручки</SelectLabel> -->
+													<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
+												</SelectGroup>
+											</SelectContent>
+										</Select>
+									</div>
+									<Button variant="outline" size="icon" @click="clearSelectedDoorHandles(opening.id)">
+										<EraserIcon class="h-4 w-4" />
+									</Button>
+								</div>
+							</div>
+						</RadioGroup>
+					</div>
+
+					<Separator class="my-4" />
+
 					<div v-show="showSketchReference" class="flex items-center justify-center mb-2">
 						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
 					</div>
@@ -481,7 +528,10 @@ watch(
 									v-else-if="currentOpening?.type == 'center' && (i == currentOpening?.doors / 2 || i == currentOpening?.doors / 2 + 1)"
 									type="right"
 									class="absolute top-1/2 transform -translate-y-1/2"
-									:class="{ 'right-1.5': i == currentOpening?.doors / 2, 'left-1.5': i == currentOpening?.doors / 2 + 1 }"
+									:class="{
+										'right-1.5': i == currentOpening?.doors / 2,
+										'left-1.5': i == currentOpening?.doors / 2 + 1,
+									}"
 								/>
 							</div>
 						</div>
@@ -509,7 +559,7 @@ watch(
 							</div>
 						</template>
 					</div>
-				
+
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between mb-4 gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
@@ -517,45 +567,51 @@ watch(
 								<CircleHelpIcon class="h-4 w-4" />
 							</Button>
 						</div>
-	
+
 						<template v-for="(value, key) in currentSketch" :key="key">
-					        <div v-if="!['g', 'd', 'i', 'mp'].includes(key)"
-					             class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
-					            <div class="">
-					                <span class="font-medium">{{ key }}: </span>
-					                <span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
-					            </div>
-					            <Slider v-model="currentSketch[key]" 
-					                    :default-value="[sketch_constraints[key]?.default || 0]" 
-					                    :min="sketch_constraints[key]?.start || 0" 
-					                    :max="sketch_constraints[key]?.end || 100" 
-					                    :step="sketch_constraints[key]?.interval || 1"
-					                    class="my-1"/>
-					        </div>
-					    </template>
-					    
+							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+								<div class="">
+									<span class="font-medium">{{ key }}: </span>
+									<span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+								</div>
+								<Slider
+									v-model="currentSketch[key]"
+									:default-value="[sketch_constraints[key]?.default || 0]"
+									:min="sketch_constraints[key]?.start || 0"
+									:max="sketch_constraints[key]?.end || 100"
+									:step="sketch_constraints[key]?.interval || 1"
+									class="my-1"
+								/>
+							</div>
+						</template>
+
 						<div class="flex items-center justify-between mb-4 gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки</h3>
 						</div>
-	
+
 						<template v-for="(value, key) in currentSketch" :key="key">
-					        <div v-if="['g', 'd', 'i', 'mp'].includes(key)"
-					             class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
-					            <div class="">
-					                <span class="font-medium">{{ key }}: </span>
-					                <span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
-					            </div>
-					            <Slider v-model="currentSketch[key]" 
-					                    :default-value="[sketch_constraints[key]?.default || 0]" 
-					                    :min="sketch_constraints[key]?.start || 0" 
-					                    :max="sketch_constraints[key]?.end || 100" 
-					                    :step="sketch_constraints[key]?.interval || 1" 
-					                    :disabled="isSliderDisabled"
-					                    class="my-1"/>
-					        </div>
-					    </template>
-					    
-					    <div class="flex flex-col gap-2">
+							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+								<div
+									:class="{
+										'opacity-50': isSliderDisabled && (key == 'mp' || key == 'd'),
+									}"
+								>
+									<span class="font-medium">{{ key }}: </span>
+									<span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+								</div>
+								<Slider
+									v-model="currentSketch[key]"
+									:default-value="[sketch_constraints[key]?.default || 0]"
+									:min="sketch_constraints[key]?.start || 0"
+									:max="sketch_constraints[key]?.end || 100"
+									:step="sketch_constraints[key]?.interval || 1"
+									:disabled="isSliderDisabled && (key == 'mp' || key == 'd')"
+									class="my-1"
+								/>
+							</div>
+						</template>
+
+						<div class="flex flex-col gap-2">
 							<!-- <Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button> -->
 							<div class="flex flex-row gap-2 justify-between items-center">
 								<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
@@ -565,7 +621,6 @@ watch(
 							</div>
 						</div>
 					</div>
-					
 				</div>
 			</div>
 		</div>

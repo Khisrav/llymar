@@ -265,20 +265,20 @@ class OrderController extends Controller
         });
     
         $orderDoorHandles = $doorHandleOrderItems->pluck('item');
-        $doorHandlesProperties = $doorHandleOrderItems->mapWithKeys(function ($orderItem) {
-            $item = $orderItem->item;
-            return [
-                $item->id => $item->itemProperties->pluck('value', 'name')->toArray()
-            ];
-        })->toArray();
+        // $doorHandlesProperties = $doorHandleOrderItems->mapWithKeys(function ($orderItem) {
+        //     $item = $orderItem->item;
+        //     return [
+        //         $item->id => $item->itemProperties->pluck('value', 'name')->toArray()
+        //     ];
+        // })->toArray();
     
-        Log::info($doorHandlesProperties);
+        // Log::info($doorHandlesProperties);
     
         return Inertia::render('App/Order/Sketcher', [
             'order' => $order,
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
-            'door_handles_properties' => $doorHandlesProperties,
+            // 'door_handles_properties' => $doorHandlesProperties,
         ]);
     }
 

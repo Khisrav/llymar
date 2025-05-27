@@ -160,14 +160,14 @@ const getHandleProperties = (item_id: number): { d: number; g: number; i: number
 const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
 const currentOpening = computed(() => openings.value.find((opening) => opening.id === selectedOpeningID.value));
 
-// Check if slider should be disabled based on selected door handle's MP property
+// Check if slider should be disabled based on selected door handle's d, MP property
 const isSliderDisabled = computed(() => {
 	const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
 	if (!selectedHandleId) return false;
 
 	try {
 		const handleProps = getHandleProperties(selectedHandleId);
-		return handleProps.mp !== 0;
+		return selectedHandleId >= 0 && (handleProps.mp !== 0 || handleProps.d !== 0);
 	} catch (error) {
 		return false;
 	}
@@ -358,7 +358,7 @@ const clearSelectedDoorHandles = (id?: number) => {
 
 const addCustomDoorHandle = () => {
 	const newHandle = {
-		id: -Date.now(),
+		id: -Date.now() - (Math.random() % 1000),
 		name: "Своя ручка",
 		img: "",
 		purchase_price: 0,
@@ -418,6 +418,39 @@ watch(
 	() => doorHandles.value.filter((handle) => handle.id < 0),
 	() => {
 		saveCustomDoorHandles();
+	},
+	{ deep: true }
+);
+
+// Watch for changes in sketch_vars for selected door handle
+watch(
+	() => {
+		const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
+		if (selectedHandleId && selectedHandleId < 0) {
+			return {
+				handleId: selectedHandleId,
+				properties: sketch_vars.value[selectedOpeningID.value]
+			};
+		}
+		return null;
+	},
+	(newValue) => {
+		if (newValue) {
+			const handle = doorHandles.value.find(h => h.id === newValue.handleId);
+			if (handle) {
+				// Update handle properties based on sketch_vars
+				handle.item_properties = handle.item_properties.map(prop => {
+					if (newValue.properties[prop.name]) {
+						return {
+							...prop,
+							value: newValue.properties[prop.name][0].toString()
+						};
+					}
+					return prop;
+				});
+				saveCustomDoorHandles();
+			}
+		}
 	},
 	{ deep: true }
 );

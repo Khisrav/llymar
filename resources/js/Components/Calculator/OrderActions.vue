@@ -19,6 +19,8 @@ import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.v
 import { DropdownMenuPortal } from "radix-vue"
 import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
 import { WholesaleFactor } from "../../lib/types"
+import { Toaster } from "../ui/sonner"
+import { toast } from "vue-sonner"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -58,6 +60,7 @@ const order_info = computed(() => ({
 
 const downloadCommercialOffer = async () => {
     try {
+        toast.info("Подготовка коммерческого предложения...")
         const formData = {
             customer: commercialOfferStore.commercialOffer.customer,
             manufacturer: commercialOfferStore.commercialOffer.manufacturer,
@@ -84,15 +87,17 @@ const downloadCommercialOffer = async () => {
         document.body.appendChild(link)
         link.click()
 
-        link.parentNode.removeChild(link)
+        link.parentNode?.removeChild(link)
+        toast.success("Коммерческое предложение успешно загружено")
     } catch (error) {
         console.error('Error downloading the PDF:', error)
-        alert('Ошибка скачивания PDF')
+        toast.error("Ошибка при загрузке коммерческого предложения")
     }
 }
 
 const downloadListPDF = async () => {
     try {
+        toast.info("Подготовка перечня...")
         const formData = {
             name: order_info.value.name,
             phone: order_info.value.phone,
@@ -116,15 +121,17 @@ const downloadListPDF = async () => {
         document.body.appendChild(link)
         link.click()
         
-        link.parentNode.removeChild(link)
+        link.parentNode?.removeChild(link)
+        toast.success("Перечень успешно загружен")
     } catch (error) {
         console.error('Error downloading the PDF:', error)
-        alert('Ошибка скачивания PDF')
+        toast.error("Ошибка при загрузке перечня")
     }
 }
 </script>
 
 <template>
+    <Toaster />
     <div class="h-6 md:h-10"></div>
     <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 backdrop-blur-sm p-2 sm:p-4 bg-white/75 dark:bg-slate-900/75 ring-1 ring-black/5 sm:rounded-xl md:rounded-2xl shadow-sm">
         <div class="flex items-center justify-between">
@@ -136,41 +143,49 @@ const downloadListPDF = async () => {
             <div class="flex gap-2 md:gap-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon">
-                            <EllipsisVertical />
+                        <Button variant="outline" size="icon" class="hover:bg-accent">
+                            <EllipsisVertical class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent class="w-56">
                         <DropdownMenuLabel>Действия</DropdownMenuLabel>
                         
                         <DropdownMenuSeparator />
                         
-                        <DropdownMenuItem @click="downloadCommercialOffer">
-                            <Printer class="size-4" />
+                        <DropdownMenuItem @click="downloadCommercialOffer" class="cursor-pointer">
+                            <Printer class="size-4 mr-2" />
                             <span>Печать КП</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem @click="downloadListPDF">
-                            <ScrollText class="size-4" />
+                        <DropdownMenuItem @click="downloadListPDF" class="cursor-pointer">
+                            <ScrollText class="size-4 mr-2" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
                                                 
                         <DropdownMenuSub v-if="can_access_wholesale_factors">
-                            <DropdownMenuSubTrigger class="w-full flex gap-2 hover:text-white">
-                                <BadgePercentIcon class="size-4" />
+                            <DropdownMenuSubTrigger class="w-full flex gap-2 hover:text-white cursor-pointer">
+                                <BadgePercentIcon class="size-4 mr-2" />
                                 <span>Коэффициенты</span>
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                    <DropdownMenuItem v-for="factor_group in factor_groups" :key="factor_group.group_name" @click="selected_factor_group = factor_group.group_name" :class="{ 'bg-accent': factor_group.group_name === selected_factor_group }" class="mb-1">{{ factor_group.group_name }}</DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                        v-for="factor_group in factor_groups" 
+                                        :key="factor_group.group_name" 
+                                        @click="selected_factor_group = factor_group.group_name" 
+                                        :class="{ 'bg-accent': factor_group.group_name === selected_factor_group }" 
+                                        class="mb-1 cursor-pointer"
+                                    >
+                                        {{ factor_group.group_name }}
+                                    </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link href="/app/cart" v-if="can_access_app_cart">
-                    <Button>
+                    <Button class="hover:bg-primary/90">
                         <span class="text-base">В корзину</span>
-                        <ArrowRightIcon class="size-4" />
+                        <ArrowRightIcon class="size-4 ml-2" />
                     </Button>
                 </Link>
             </div>

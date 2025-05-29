@@ -50,7 +50,7 @@ const sketch_constraints: Record<string, Constraint> = {
 	// c: { start: 13, end: 13, default: 13, interval: 1 },
 	d: { start: 8, end: 55, default: 6, interval: 1 },
 	e: { start: 20, end: 80, default: 30, interval: 1 },
-	// f: { start: 5, end: 20, default: 14, interval: 1 },
+	f: { start: 5, end: 20, default: 14, interval: 1 },
 	g: { start: 30, end: 80, default: 55, interval: 1 },
 	i: { start: 20, end: 1000, default: 550, interval: 1 },
 	mp: { start: 100, end: 1000, default: 0, interval: 1 },
@@ -90,7 +90,7 @@ openings.value.forEach((opening: Opening) => {
 		// c: [opening.c as number],
 		d: [opening.d as number],
 		e: [opening.e as number],
-		// f: [opening.f as number],
+		f: [opening.f as number],
 		g: [opening.g as number],
 		i: [opening.i as number],
 		mp: [opening.mp as number],
@@ -259,8 +259,14 @@ const saveAndClose = (): Promise<boolean> => {
 
 const downloadDXF = async () => {
 	if (!can_access_dxf.value) {
-		// Use .value for refs
 		toast.warning("У вас нет доступа для скачивания DXF.");
+		return;
+	}
+
+	// Check if all openings have door handles selected
+	const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
+	if (openingsWithoutHandles.length > 0) {
+		toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием DXF.");
 		return;
 	}
 
@@ -303,6 +309,13 @@ const downloadDXF = async () => {
 };
 
 const saveAndDownload = async () => {
+	// Check if all openings have door handles selected
+	const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
+	if (openingsWithoutHandles.length > 0) {
+		toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием PDF.");
+		return;
+	}
+
 	try {
 		const response = await axios.post(
 			"/app/order/sketch/download",
@@ -463,7 +476,7 @@ watch(
 	<Toaster />
 
 	<div class="container p-0 md:p-4">
-		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
+		<div class="p-4 md:p-8 md:mt-8 mb-8 md:border rounded-2xl bg-background">
 			<h2 class="text-3xl font-semibold mb-6">Чертеж</h2>
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
 				<div class="col-span-9">

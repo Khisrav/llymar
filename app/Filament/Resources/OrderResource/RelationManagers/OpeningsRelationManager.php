@@ -76,11 +76,11 @@ class OpeningsRelationManager extends RelationManager
                                 ->minValue(0)
                                 ->default(0),
     
-                            Forms\Components\TextInput::make('c')
-                                ->label('c (мм)')
-                                ->numeric()
-                                ->minValue(0)
-                                ->default(0),
+                            // Forms\Components\TextInput::make('c')
+                            //     ->label('c (мм)')
+                            //     ->numeric()
+                            //     ->minValue(0)
+                            //     ->default(0),
     
                             Forms\Components\TextInput::make('d')
                                 ->label('d (мм)')
@@ -108,6 +108,12 @@ class OpeningsRelationManager extends RelationManager
     
                             Forms\Components\TextInput::make('i')
                                 ->label('i (мм)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+    
+                            Forms\Components\TextInput::make('mp')
+                                ->label('mp (мм)')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
@@ -207,7 +213,7 @@ class OpeningsRelationManager extends RelationManager
                     ->label('Параметры')
                     ->wrap()
                     ->formatStateUsing(function (OrderOpening $record) {
-                        return 'a: ' . $record->a . 'мм, b: ' . $record->b . 'мм, c: ' . $record->c . 'мм, d: ' . $record->d . 'мм, e: ' . $record->e . 'мм, f: ' . $record->f . 'мм, g: ' . $record->g . 'мм, i: ' . $record->i . 'мм';
+                        return 'a: ' . $record->a . 'мм, b: ' . $record->b . 'мм, d: ' . $record->d . 'мм, e: ' . $record->e . 'мм, f: ' . $record->f . 'мм, g: ' . $record->g . 'мм, i: ' . $record->i . 'мм, mp: ' . $record->mp . 'мм';
                     }),
             ])
             ->filters([

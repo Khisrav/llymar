@@ -1,472 +1,70 @@
 <script setup lang="ts">
 import { Head, usePage, useForm } from "@inertiajs/vue3";
-import { ref, computed, onMounted, watch } from "vue";
+import { onMounted } from "vue";
 import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
-import Slider from "../../../Components/ui/slider/Slider.vue";
-import Separator from "../../../Components/ui/separator/Separator.vue";
-import RadioGroup from "../../../Components/ui/radio-group/RadioGroup.vue";
-import RadioGroupItem from "../../../Components/ui/radio-group/RadioGroupItem.vue";
-import Label from "../../../Components/ui/label/Label.vue";
-import Button from "../../../Components/ui/button/Button.vue";
+import { Slider } from "../../../Components/ui/slider";
+import { Separator } from "../../../Components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "../../../Components/ui/radio-group";
+import { Label } from "../../../Components/ui/label";
+import { Button } from "../../../Components/ui/button";
 import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, TrashIcon } from "lucide-vue-next";
 import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
+import { useSketcherStore } from "../../../Stores/sketcherStore";
 import { toast } from "vue-sonner";
 import { Toaster } from "../../../Components/ui/sonner";
-import axios from "axios";
-import Select from "../../../Components/ui/select/Select.vue";
-import SelectTrigger from "../../../Components/ui/select/SelectTrigger.vue";
-import SelectValue from "../../../Components/ui/select/SelectValue.vue";
-import SelectContent from "../../../Components/ui/select/SelectContent.vue";
-import SelectItem from "../../../Components/ui/select/SelectItem.vue";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup } from "../../../Components/ui/select";
 import DoorHandleSVG from "../../../Components/Sketcher/DoorHandleSVG.vue";
-import SelectGroup from "../../../Components/ui/select/SelectGroup.vue";
-import Input from "../../../Components/ui/input/Input.vue";
+import { Input } from "../../../Components/ui/input";
 
 interface ItemWithProperties extends Item {
 	item_properties: ItemProperty[];
 }
 
-const order = ref(usePage().props.order as Order);
-const openings = ref(usePage().props.openings as Opening[]);
-const doorHandles = ref(usePage().props.door_handles as ItemWithProperties[]);
-// const doorHandlesProperties = ref(usePage().props.door_handles_properties as ItemProperty[]);
-const can_access_dxf = ref(usePage().props.can_access_dxf as any);
+// Get initial data from page props
+const pageData = usePage().props;
+const order = pageData.order as Order;
+const openings = pageData.openings as Opening[];
+const doorHandles = pageData.door_handles as ItemWithProperties[];
+const can_access_dxf = pageData.can_access_dxf as boolean;
 
-const selectedOpeningID = ref<number>(0);
+// Initialize stores
 const openingStore = useOpeningStore();
-const showSketchReference = ref(false);
-
-interface Constraint {
-	start: number;
-	end: number;
-	default: number;
-	interval: number;
-}
-
-const sketch_constraints: Record<string, Constraint> = {
-	a: { start: 3, end: 25, default: 14, interval: 1 },
-	b: { start: 14, end: 25, default: 17, interval: 1 },
-	// c: { start: 13, end: 13, default: 13, interval: 1 },
-	d: { start: 8, end: 55, default: 6, interval: 1 },
-	e: { start: 20, end: 80, default: 30, interval: 1 },
-	f: { start: 5, end: 20, default: 14, interval: 1 },
-	g: { start: 30, end: 80, default: 55, interval: 1 },
-	i: { start: 20, end: 1000, default: 550, interval: 1 },
-	mp: { start: 100, end: 1000, default: 0, interval: 1 },
-};
-
-const sketch_vars = ref<Record<number, Record<string, number[]>>>({});
-const selectedDoorHandles = ref<Record<number, number | undefined>>({}); // Track selected door handles
-
-// Load custom door handles from localStorage
-const loadCustomDoorHandles = () => {
-	try {
-		const saved = localStorage.getItem("customDoorHandles");
-		if (saved) {
-			const customHandles = JSON.parse(saved);
-			// Add custom handles to the doorHandles array
-			doorHandles.value.push(...customHandles);
-		}
-	} catch (error) {
-		console.error("Error loading custom door handles:", error);
-	}
-};
-
-// Save custom door handles to localStorage
-const saveCustomDoorHandles = () => {
-	try {
-		const customHandles = doorHandles.value.filter((handle) => handle.id < 0);
-		localStorage.setItem("customDoorHandles", JSON.stringify(customHandles));
-	} catch (error) {
-		console.error("Error saving custom door handles:", error);
-	}
-};
-
-openings.value.forEach((opening: Opening) => {
-	sketch_vars.value[opening.id as number] = {
-		a: [opening.a as number],
-		b: [opening.b as number],
-		// c: [opening.c as number],
-		d: [opening.d as number],
-		e: [opening.e as number],
-		f: [opening.f as number],
-		g: [opening.g as number],
-		i: [opening.i as number],
-		mp: [opening.mp as number],
-	};
-	selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
-});
+const sketcherStore = useSketcherStore();
 
 onMounted(() => {
-	if (openings.value.length > 0) {
-		selectedOpeningID.value = openings.value[0].id as number;
-	}
-	// Load custom door handles from localStorage
-	loadCustomDoorHandles();
-
-	// Apply door handle properties to sketch_vars for each opening
-	openings.value.forEach((opening) => {
-		const handleId = opening.door_handle_item_id;
-
-		if (handleId) {
-			try {
-				const handleProps = getHandleProperties(handleId);
-				sketch_vars.value[opening.id as number] = {
-					...sketch_vars.value[opening.id as number],
-					d: [handleProps.d],
-					g: [handleProps.g],
-					i: [handleProps.i],
-					mp: [handleProps.mp],
-				};
-			} catch (error) {
-				console.error(`Error applying handle properties for opening ${opening.id}:`, error);
-			}
-		}
+	// Initialize the sketcher store with page data
+	sketcherStore.initializeStore({
+		order,
+		openings,
+		doorHandles,
+		canAccessDxf: can_access_dxf
 	});
 });
 
-const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {
-	const item = doorHandles.value.find((dh) => dh.id === item_id);
-
-	if (!item) {
-		throw new Error("Item not found");
-	}
-
-	const getPropertyValue = (name: string): number => {
-		const property = item.item_properties.find((p) => p.name === name);
-		if (!property) {
-			throw new Error(`Property ${name} not found`);
-		}
-		const value = parseFloat(property.value);
-		if (isNaN(value)) {
-			throw new Error(`Property ${name} value is not a valid number`);
-		}
-		// Only apply constraints if they exist for this property
-		if (sketch_constraints[name]) {
-			return Math.min(Math.max(value, sketch_constraints[name].start), sketch_constraints[name].end);
-		}
-		return value;
-	};
-
-	return {
-		d: getPropertyValue("d"),
-		g: getPropertyValue("g"),
-		i: getPropertyValue("i"),
-		mp: getPropertyValue("MP"),
-	};
-};
-
-const currentSketch = computed(() => sketch_vars.value[selectedOpeningID.value] || {});
-const currentOpening = computed(() => openings.value.find((opening) => opening.id === selectedOpeningID.value));
-
-// Check if slider should be disabled based on selected door handle's d, MP property
-const isSliderDisabled = computed(() => {
-	const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
-	if (!selectedHandleId) return false;
-
-	try {
-		const handleProps = getHandleProperties(selectedHandleId);
-		return selectedHandleId >= 0 && (handleProps.mp !== 0 || handleProps.d !== 0);
-	} catch (error) {
-		return false;
-	}
-});
-
-const getOpeningSketchDimensions = (doorIndex: number) => {
-	if (!currentOpening.value) return { width: 0, height: 0 };
-
-	let gap = currentOpening.value.type == "center" ? sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0] + 3 : 130;
-	let doorsGap = {
-		start: sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0],
-		end: sketch_vars.value[selectedOpeningID.value].b[0],
-	};
-	let overlaps = currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1) - 1;
-	let middle = Math.floor((overlaps * 13) / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1)));
-	let edges = currentOpening.value.type == "center" ? Math.floor((overlaps * 13 - middle * (currentOpening.value.doors / 2 - 2)) / 2) : Math.floor((overlaps * 13 - middle * (currentOpening.value.doors - 2)) / 2);
-	let y = currentOpening.value.width / (currentOpening.value.type == "center" ? 2 : 1) - gap;
-	let z = y / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1));
-	let shirinaStvorok = [];
-
-	if (currentOpening.value.type == "center") {
-		for (let i = 1; i <= currentOpening.value.doors / 2; i++) {
-			let temp = z + (i == currentOpening.value.doors / 2 || i == 1 ? edges : middle);
-			if (i == 1) {
-				temp += doorsGap["end"];
-			} else if (i == currentOpening.value.doors / 2) {
-				temp += doorsGap["start"];
-			}
-
-			shirinaStvorok[i] = Math.floor(temp);
-			shirinaStvorok[currentOpening.value.doors - i + 1] = Math.floor(temp);
-		}
-	} else if (currentOpening.value.type == "left" || currentOpening.value.type == "right") {
-		for (let i = 1; i <= currentOpening.value.doors; i++) {
-			let temp = z + (i == currentOpening.value.doors || i == 1 ? edges : middle);
-			if (i == 1) {
-				temp += doorsGap["end"];
-			} else if (i == currentOpening.value.doors) {
-				temp += doorsGap["start"];
-			}
-
-			shirinaStvorok[i] = Math.floor(temp);
-		}
-	}
-
-	return {
-		width: shirinaStvorok[doorIndex],
-		height: currentOpening.value.height - 103,
-	};
-};
-
-const combinedOpenings = computed(() => {
-	return openings.value.map((opening) => {
-		const updatedSketch = sketch_vars.value[opening.id as number] || {};
-		const flatSketch: Record<string, number> = {};
-		for (const key in updatedSketch) {
-			flatSketch[key] = updatedSketch[key][0];
-		}
-		return {
-			...opening,
-			...flatSketch,
-			door_handle_item_id: selectedDoorHandles.value[opening.id as number],
-		};
-	});
-});
-
+// Form handling for saving
 const form = useForm({
 	openings: [] as Array<Record<string, any>>,
 });
 
-const saveAndClose = (): Promise<boolean> => {
+// Override the saveAndClose method to use the actual form submission
+sketcherStore.saveAndClose = (): Promise<boolean> => {
 	return new Promise((resolve, reject) => {
-		form.openings = combinedOpenings.value;
+		form.openings = sketcherStore.combinedOpenings;
 		form.post("/app/order/sketch/save", {
 			preserveScroll: true,
 			onSuccess: () => {
 				toast("Сохранено");
-				resolve(true); // Resolve the promise on successful save
+				resolve(true);
 			},
 			onError: (errors: any) => {
-				// Catch errors from form.post
 				console.error("Failed to save sketch:", errors);
 				toast.error("Ошибка сохранения. Пожалуйста, проверьте консоль.");
-				reject(errors); // Reject the promise if save fails
+				reject(errors);
 			},
 		});
 	});
 };
-
-const downloadDXF = async () => {
-	if (!can_access_dxf.value) {
-		toast.warning("У вас нет доступа для скачивания DXF.");
-		return;
-	}
-
-	// Check if all openings have door handles selected
-	const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
-	if (openingsWithoutHandles.length > 0) {
-		toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием DXF.");
-		return;
-	}
-
-	try {
-		// Wait for saveAndClose to complete successfully
-		await saveAndClose();
-
-		// If saveAndClose was successful, proceed to download DXF
-		toast.info("Данные сохранены. Начинается загрузка DXF...");
-
-		const response = await axios.post(
-			`/orders/${order.value.id}/dxf`,
-			{
-				openings: combinedOpenings.value, // Send the latest data
-				saveData: false, // Data is already saved by saveAndClose
-			},
-			{
-				responseType: "blob",
-			}
-		);
-
-		const fileBlob = new Blob([response.data], { type: "application/dxf" });
-		const fileURL = URL.createObjectURL(fileBlob);
-
-		const link = document.createElement("a");
-		link.href = fileURL;
-		link.setAttribute("download", `sketch_${order.value.id}.dxf`); // More specific filename
-		document.body.appendChild(link);
-		link.click();
-
-		document.body.removeChild(link);
-		URL.revokeObjectURL(fileURL);
-		toast.success("DXF файл успешно загружен.");
-	} catch (error) {
-		console.error("Failed to save or download DXF:", error);
-		if (axios.isAxiosError(error)) {
-			toast.error("Ошибка при загрузке DXF файла.");
-		}
-	}
-};
-
-const saveAndDownload = async () => {
-	// Check if all openings have door handles selected
-	const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
-	if (openingsWithoutHandles.length > 0) {
-		toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием PDF.");
-		return;
-	}
-
-	try {
-		const response = await axios.post(
-			"/app/order/sketch/download",
-			{
-				openings: combinedOpenings.value,
-				saveData: true,
-			},
-			{
-				responseType: "blob",
-			}
-		);
-
-		const fileBlob = new Blob([response.data], { type: "application/pdf" });
-		const fileURL = URL.createObjectURL(fileBlob);
-
-		const link = document.createElement("a");
-		link.href = fileURL;
-		link.setAttribute("download", "sketch.pdf");
-		document.body.appendChild(link);
-		link.click();
-
-		document.body.removeChild(link);
-		URL.revokeObjectURL(fileURL);
-	} catch (error) {
-		console.error("Failed to download PDF:", error);
-	}
-};
-
-const selectDoorHandle = (openingId: number, doorHandleId: number) => {
-	selectedDoorHandles.value[openingId] = doorHandleId;
-
-	try {
-		const handleProps = getHandleProperties(doorHandleId);
-
-		// If item properties are 0, use opening's properties
-		sketch_vars.value[openingId].d = [handleProps.d || sketch_vars.value[openingId].d[0]];
-		sketch_vars.value[openingId].g = [handleProps.g || sketch_vars.value[openingId].g[0]];
-		sketch_vars.value[openingId].i = [handleProps.i || sketch_vars.value[openingId].i[0]];
-		sketch_vars.value[openingId].mp = [handleProps.mp || sketch_vars.value[openingId].mp[0]];
-
-		console.log(sketch_vars.value[openingId]);
-	} catch (error) {
-		console.error("Error setting door handle properties:", error);
-	}
-};
-
-const clearSelectedDoorHandles = (id?: number) => {
-	if (!id) selectedDoorHandles.value = {};
-	else {
-		delete selectedDoorHandles.value[id];
-	}
-};
-
-const addCustomDoorHandle = () => {
-	const newHandle = {
-		id: -Date.now() - (Math.random() % 1000),
-		name: "Своя ручка",
-		img: "",
-		purchase_price: 0,
-		discount: 0,
-		item_properties: [
-			{
-				id: -Date.now() - 1000,
-				item_id: -Date.now(),
-				name: "d",
-				value: "8",
-			},
-			{
-				id: -Date.now() - 1001,
-				item_id: -Date.now(),
-				name: "g",
-				value: "0",
-			},
-			{
-				id: -Date.now() - 1002,
-				item_id: -Date.now(),
-				name: "i",
-				value: "0",
-			},
-			{
-				id: -Date.now() - 1003,
-				item_id: -Date.now(),
-				name: "MP",
-				value: "100",
-			},
-		],
-	};
-
-	doorHandles.value.push(newHandle);
-	saveCustomDoorHandles();
-};
-
-const removeCustomDoorHandle = (handleId: number) => {
-	// Remove from doorHandles array
-	const index = doorHandles.value.findIndex((handle) => handle.id === handleId);
-	if (index > -1) {
-		doorHandles.value.splice(index, 1);
-
-		// Remove from selected handles if it was selected
-		Object.keys(selectedDoorHandles.value).forEach((openingId) => {
-			if (selectedDoorHandles.value[parseInt(openingId)] === handleId) {
-				delete selectedDoorHandles.value[parseInt(openingId)];
-			}
-		});
-
-		// Save to localStorage
-		saveCustomDoorHandles();
-	}
-};
-
-// Watch for changes in custom door handles and save to localStorage
-watch(
-	() => doorHandles.value.filter((handle) => handle.id < 0),
-	() => {
-		saveCustomDoorHandles();
-	},
-	{ deep: true }
-);
-
-// Watch for changes in sketch_vars for selected door handle
-watch(
-	() => {
-		const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
-		if (selectedHandleId && selectedHandleId < 0) {
-			return {
-				handleId: selectedHandleId,
-				properties: sketch_vars.value[selectedOpeningID.value]
-			};
-		}
-		return null;
-	},
-	(newValue) => {
-		if (newValue) {
-			const handle = doorHandles.value.find(h => h.id === newValue.handleId);
-			if (handle) {
-				// Update handle properties based on sketch_vars
-				handle.item_properties = handle.item_properties.map(prop => {
-					if (newValue.properties[prop.name]) {
-						return {
-							...prop,
-							value: newValue.properties[prop.name][0].toString()
-						};
-					}
-					return prop;
-				});
-				saveCustomDoorHandles();
-			}
-		}
-	},
-	{ deep: true }
-);
 </script>
 
 <template>
@@ -489,18 +87,18 @@ watch(
 							</div>
 						</div>
 
-						<RadioGroup v-model="selectedOpeningID as any" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
+						<RadioGroup :model-value="String(sketcherStore.selectedOpeningID)" @update:model-value="(value) => sketcherStore.selectedOpeningID = Number(value)" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
 							<div
-								v-for="opening in openings"
+								v-for="opening in sketcherStore.openings"
 								:key="opening.id"
 								class="border rounded-lg p-2 md:p-4"
 								:class="{
-									'border-primary': opening.id === selectedOpeningID,
+									'border-primary': opening.id === sketcherStore.selectedOpeningID,
 								}"
 							>
 								<div class="flex flex-col gap-2">
 									<div class="flex items-center gap-2">
-										<RadioGroupItem :value="opening.id as any" :id="`opening-${opening.id as number}`" />
+										<RadioGroupItem :value="String(opening.id)" :id="`opening-${opening.id}`" />
 										<Label :for="`opening-${opening.id}`" class="w-full">
 											{{ openingStore.openingTypes[opening.type] }}
 										</Label>
@@ -518,27 +116,22 @@ watch(
 								<div class="mt-2 flex items-center justify-between gap-2">
 									<div class="flex-1 overflow-hidden">
 										<Select
-											v-model="selectedDoorHandles[opening.id as number] as any"
-											@update:model-value="
-                                                selectDoorHandle(
-                                                    opening.id as number,
-                                                    $event as any
-                                                )
-                                            "
+											:model-value="sketcherStore.selectedDoorHandles[opening.id || 0] ? String(sketcherStore.selectedDoorHandles[opening.id || 0]) : ''"
+											@update:model-value="(value) => opening.id && sketcherStore.selectDoorHandle(opening.id, Number(value))"
 										>
 											<SelectTrigger>
-												<SelectValue :placeholder="selectedDoorHandles[opening.id as number] ? doorHandles.find(dh => dh.id === selectedDoorHandles[opening.id as number])?.name : 'Выберите ручку'" />
+												<SelectValue :placeholder="sketcherStore.selectedDoorHandles[opening.id || 0] ? sketcherStore.doorHandles.find(dh => dh.id === sketcherStore.selectedDoorHandles[opening.id || 0])?.name : 'Выберите ручку'" />
 											</SelectTrigger>
 
 											<SelectContent class="max-w-xs sm:max-w-max">
 												<SelectGroup>
 													<!-- <SelectLabel>Все ручки</SelectLabel> -->
-													<SelectItem v-for="doorHandle in doorHandles" :key="doorHandle.id" :value="doorHandle.id as any">{{ doorHandle.name }}</SelectItem>
+													<SelectItem v-for="doorHandle in sketcherStore.doorHandles" :key="doorHandle.id" :value="String(doorHandle.id)">{{ doorHandle.name }}</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>
 									</div>
-									<Button variant="outline" size="icon" @click="clearSelectedDoorHandles(opening.id)">
+									<Button variant="outline" size="icon" @click="sketcherStore.clearSelectedDoorHandles(opening.id)">
 										<EraserIcon class="h-4 w-4" />
 									</Button>
 								</div>
@@ -548,35 +141,35 @@ watch(
 
 					<Separator class="my-4" />
 
-					<div v-show="showSketchReference" class="flex items-center justify-center mb-2">
-						<img :src="`/assets/sketch-reference/${currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
+					<div v-show="sketcherStore.showSketchReference" class="flex items-center justify-center mb-2">
+						<img :src="`/assets/sketch-reference/${sketcherStore.currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
 					</div>
 					<div class="text-center">
 						<div class="text-red-400">
 							<span>Вид изнутри</span>
 						</div>
-						<div v-for="i in currentOpening?.doors" :key="i" class="mx-1 inline-block">
+						<div v-for="i in sketcherStore.currentOpening?.doors" :key="i" class="mx-1 inline-block">
 							<span class="text-xs">СТ{{ i }}</span>
 							<div class="glass border border-blue-300 h-24 sm:h-36 relative col-span-1 aspect-[9/16]">
 								<span
 									class="text-xs absolute top-1/2 rotate-[-90deg]"
 									:class="{
-										'left-[-8px]': currentOpening?.type == 'right' || (currentOpening?.type == 'center' && i <= currentOpening?.doors / 2),
-										'right-[-6px]': currentOpening?.type == 'left' || (currentOpening?.type == 'center' && i > currentOpening?.doors / 2),
+										'left-[-8px]': sketcherStore.currentOpening?.type == 'right' || (sketcherStore.currentOpening?.type == 'center' && i <= sketcherStore.currentOpening?.doors / 2),
+										'right-[-6px]': sketcherStore.currentOpening?.type == 'left' || (sketcherStore.currentOpening?.type == 'center' && i > sketcherStore.currentOpening?.doors / 2),
 									}"
-									>{{ getOpeningSketchDimensions(i).height }}</span
+									>{{ sketcherStore.getOpeningSketchDimensions(i).height }}</span
 								>
-								<span style="position: absolute; top: 0; left: 50%; transform: translateX(-50%)" class="text-xs">{{ getOpeningSketchDimensions(currentOpening?.type == "left" ? currentOpening?.doors - i + 1 : i).width }}</span>
+								<span style="position: absolute; top: 0; left: 50%; transform: translateX(-50%)" class="text-xs">{{ sketcherStore.getOpeningSketchDimensions(sketcherStore.currentOpening?.type == "left" ? sketcherStore.currentOpening?.doors - i + 1 : i).width }}</span>
 
-								<DoorHandleSVG v-if="currentOpening?.type == 'left' && i == 1" type="left" class="absolute top-1/2 left-1.5 transform -translate-y-1/2" />
-								<DoorHandleSVG v-else-if="currentOpening?.type == 'right' && i == currentOpening?.doors" type="right" class="absolute top-1/2 right-1.5 transform -translate-y-1/2" />
+								<DoorHandleSVG v-if="sketcherStore.currentOpening?.type == 'left' && i == 1" type="left" class="absolute top-1/2 left-1.5 transform -translate-y-1/2" />
+								<DoorHandleSVG v-else-if="sketcherStore.currentOpening?.type == 'right' && i == sketcherStore.currentOpening?.doors" type="right" class="absolute top-1/2 right-1.5 transform -translate-y-1/2" />
 								<DoorHandleSVG
-									v-else-if="currentOpening?.type == 'center' && (i == currentOpening?.doors / 2 || i == currentOpening?.doors / 2 + 1)"
+									v-else-if="sketcherStore.currentOpening?.type == 'center' && (i == sketcherStore.currentOpening?.doors / 2 || i == sketcherStore.currentOpening?.doors / 2 + 1)"
 									type="right"
 									class="absolute top-1/2 transform -translate-y-1/2"
 									:class="{
-										'right-1.5': i == currentOpening?.doors / 2,
-										'left-1.5': i == currentOpening?.doors / 2 + 1,
+										'right-1.5': i == sketcherStore.currentOpening?.doors / 2,
+										'left-1.5': i == sketcherStore.currentOpening?.doors / 2 + 1,
 									}"
 								/>
 							</div>
@@ -588,17 +181,17 @@ watch(
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Свои ручки</h3>
-							<Button variant="outline" size="icon" @click="addCustomDoorHandle">
+							<Button variant="outline" size="icon" @click="sketcherStore.addCustomDoorHandle">
 								<PlusIcon class="h-4 w-4" />
 							</Button>
 						</div>
-						<template v-for="doorHandle in doorHandles" :key="doorHandle.id">
-							<div v-if="doorHandle.id < 0" class="flex flex-col gap-1.5 mt-2">
+						<template v-for="doorHandle in sketcherStore.doorHandles" :key="doorHandle.id">
+							<div v-if="(doorHandle.id ?? 0) < 0" class="flex flex-col gap-1.5 mt-2">
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex-1 overflow-hidden">
 										<Input v-model="doorHandle.name" class="h-9 text-sm" />
 									</div>
-									<Button variant="outline" size="icon" @click="removeCustomDoorHandle(doorHandle.id)">
+									<Button variant="outline" size="icon" @click="sketcherStore.removeCustomDoorHandle(doorHandle.id ?? 0)">
 										<TrashIcon class="h-4 w-4" />
 									</Button>
 								</div>
@@ -609,23 +202,23 @@ watch(
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between mb-4 gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
-							<Button :variant="showSketchReference ? 'default' : 'outline'" size="icon" @click="showSketchReference = !showSketchReference">
+							<Button :variant="sketcherStore.showSketchReference ? 'default' : 'outline'" size="icon" @click="sketcherStore.showSketchReference = !sketcherStore.showSketchReference">
 								<CircleHelpIcon class="h-4 w-4" />
 							</Button>
 						</div>
 
-						<template v-for="(value, key) in currentSketch" :key="key">
+						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
 							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div class="">
 									<span class="font-medium">{{ key }}: </span>
-									<span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
 								</div>
 								<Slider
-									v-model="currentSketch[key]"
-									:default-value="[sketch_constraints[key]?.default || 0]"
-									:min="sketch_constraints[key]?.start || 0"
-									:max="sketch_constraints[key]?.end || 100"
-									:step="sketch_constraints[key]?.interval || 1"
+									v-model="sketcherStore.currentSketch[key]"
+									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
+									:min="sketcherStore.sketch_constraints[key]?.start || 0"
+									:max="sketcherStore.sketch_constraints[key]?.end || 100"
+									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
 									class="my-1"
 								/>
 							</div>
@@ -635,23 +228,23 @@ watch(
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки</h3>
 						</div>
 
-						<template v-for="(value, key) in currentSketch" :key="key">
+						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
 							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div
 									:class="{
-										'opacity-50': isSliderDisabled && (key == 'mp' || key == 'd'),
+										'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd'),
 									}"
 								>
 									<span class="font-medium">{{ key }}: </span>
-									<span class="font-medium">{{ parseInt(value[0] as any) }}мм</span>
+									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
 								</div>
 								<Slider
-									v-model="currentSketch[key]"
-									:default-value="[sketch_constraints[key]?.default || 0]"
-									:min="sketch_constraints[key]?.start || 0"
-									:max="sketch_constraints[key]?.end || 100"
-									:step="sketch_constraints[key]?.interval || 1"
-									:disabled="isSliderDisabled && (key == 'mp' || key == 'd')"
+									v-model="sketcherStore.currentSketch[key]"
+									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
+									:min="sketcherStore.sketch_constraints[key]?.start || 0"
+									:max="sketcherStore.sketch_constraints[key]?.end || 100"
+									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
+									:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd')"
 									class="my-1"
 								/>
 							</div>
@@ -660,8 +253,8 @@ watch(
 						<div class="flex flex-col gap-2">
 							<!-- <Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button> -->
 							<div class="flex flex-row gap-2 justify-between items-center">
-								<Button type="button" class="w-full" variant="outline" @click="saveAndDownload"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-								<Button v-if="can_access_dxf" type="button" class="w-full" variant="outline" @click="downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+								<Button type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
+								<Button v-if="sketcherStore.canAccessDxf" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
 								<!-- доступ к DXF -->
 								<!-- <Button v-else type="button" class="w-full" variant="outline" @click="toast('Нет доступа к DXF')"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button> -->
 							</div>
@@ -671,4 +264,4 @@ watch(
 			</div>
 		</div>
 	</div>
-</template>
+</template> 

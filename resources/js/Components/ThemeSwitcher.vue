@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import Button from "./ui/button/Button.vue";
+import { Button } from "./ui/button";
 
 if (localStorage.getItem("theme")) {
     document.documentElement.classList.add(localStorage.getItem("theme") as string);
@@ -14,6 +14,12 @@ const themeToggler = () => {
     isDarkMode.value = document.documentElement.classList.contains("dark");
 
     localStorage.setItem("theme", isDarkMode.value ? "dark" : "");
+}
+</script>
+
+<script lang="ts">
+export default {
+    name: 'ThemeSwitcher'
 }
 </script>
 

@@ -299,6 +299,11 @@ class OrderController extends Controller
             $orderOpening = OrderOpening::findOrFail($openingData['id']);
             foreach ($openingData as $key => $value) {
                 if (in_array($key, $allowedKeys)) {
+                    $v = is_array($value) ? $value[0] : $value;
+                    if ('door_handle_item_id' == $key && $v < 0) {
+                        $orderOpening->{$key} = null;
+                        continue;
+                    }
                     $orderOpening->{$key} = is_array($value) ? $value[0] : $value;
                 }
             }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { computed } from "vue"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../Components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "../Components/ui/sheet"
 import { CircleUser, Menu } from "lucide-vue-next"
-import Button from "../Components/ui/button/Button.vue"
+import { Button } from "../Components/ui/button/"
 import { Link } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
 import { usePage } from "@inertiajs/vue3"
@@ -30,6 +30,12 @@ const username = computed(() => {
     if (!lastName) return firstName
     return firstName + ' ' + lastName[0] + '.'
 })
+</script>
+
+<script lang="ts">
+export default {
+    name: 'AuthenticatedHeaderLayout'
+}
 </script>
 
 <template>

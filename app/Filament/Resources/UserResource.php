@@ -23,7 +23,13 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    
+    protected static ?string $navigationLabel = 'Пользователи';
+    protected static ?string $navigationGroup = 'Пользователи';
+    protected static ?string $pluralModelLabel = 'Пользователи';
+    protected static ?string $pluralLabel = 'Пользователи';
+    protected static ?string $modelLabel = 'Пользователь';
+    protected static ?string $label = 'Пользователь';
+
     protected static $countries = [
         "" => [],
         "Армения" => [
@@ -180,6 +186,7 @@ class UserResource extends Resource
                                 Forms\Components\Select::make('roles')
                                     ->label('Роли')
                                     ->relationship('roles', 'name')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name)
                                     ->preload()
                                     ->required()
                                     ->native(false)
@@ -263,7 +270,10 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role')
                     ->label('Роль')
                     ->searchable()
-                    ->formatStateUsing(fn (Model $record) => $record->getRoleNames()->first())
+                    ->formatStateUsing(function (Model $record) {
+                        $role = $record->roles()->first();
+                        return $role ? ($role->display_name ?: $role->name) : '';
+                    })
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\ToggleColumn::make('can_access_dxf')
@@ -284,7 +294,8 @@ class UserResource extends Resource
                 SelectFilter::make('roles')
                     ->label('Роль')
                     ->native(false)
-                    ->relationship('roles', 'name'),
+                    ->relationship('roles', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name),
                 SelectFilter::make('country')
                     ->label('Страна')
                     ->native(false)

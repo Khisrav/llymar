@@ -69,13 +69,17 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
+                    ->label('Пользователи')
+                    // ->collapsed()
+                    ->icon('heroicon-o-user-group'),
+                NavigationGroup::make()
                     ->label('Склад')
-                    ->collapsed()
+                    // ->collapsed()
                     ->icon('heroicon-o-truck'),
                 NavigationGroup::make()
                     ->label('Настройки')
-                    ->collapsed()
-                    ->icon('heroicon-o-cog-6-tooth')
+                    // ->collapsed()
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->spa();
     }

@@ -57,7 +57,7 @@ class RoleResource extends Resource
                             ->helperText('Выберите разрешения для этой роли')
                             ->multiple()
                             ->preload()
-                            ->relationship('permissions', 'name')
+                            ->relationship('permissions', 'name', fn ($query) => $query->where('guard_name', 'web'))
                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name),
                     ]),
             ]);
@@ -67,6 +67,11 @@ class RoleResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->sortable()
@@ -92,6 +97,7 @@ class RoleResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])

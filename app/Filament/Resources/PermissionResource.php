@@ -43,6 +43,11 @@ class PermissionResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->sortable()
@@ -52,12 +57,30 @@ class PermissionResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                //guard_name
+                Tables\Columns\TextColumn::make('guard_name')
+                    ->label('Защитник')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'web' => 'info',
+                        'api' => 'gray',
+                    }),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
-                //
+                //filter by guard_name
+                Tables\Filters\SelectFilter::make('guard_name')
+                    ->label('Защитник')
+                    ->options([
+                        'web' => 'Web',
+                        'api' => 'API',
+                    ])
+                    ->native(false),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

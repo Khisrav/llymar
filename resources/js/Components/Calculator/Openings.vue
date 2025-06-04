@@ -199,25 +199,3 @@ watch(
 		</div>
 	</div>
 </template>
-
-<style>
-/* Enter and leave animations for openings */
-.opening-enter-active,
-.opening-leave-active {
-	transition: all 0.5s ease;
-}
-
-.opening-enter-from {
-	opacity: 0;
-	transform: translateY(-20px) scale(0.9);
-}
-
-.opening-leave-to {
-	opacity: 0;
-	transform: translateY(-20px) scale(0.9);
-}
-
-.opening-move {
-	transition: transform 0.3s ease;
-}
-</style>

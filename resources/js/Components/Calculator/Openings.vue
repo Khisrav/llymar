@@ -200,7 +200,7 @@ watch(
 	</div>
 </template>
 
-<style scoped>
+<style>
 /* Enter and leave animations for openings */
 .opening-enter-active,
 .opening-leave-active {

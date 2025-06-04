@@ -19,6 +19,7 @@ import NumberFieldDecrement from "../ui/number-field/NumberFieldDecrement.vue";
 import NumberFieldInput from "../ui/number-field/NumberFieldInput.vue";
 import NumberFieldIncrement from "../ui/number-field/NumberFieldIncrement.vue";
 import type { Opening, OpeningType } from "../../lib/types";
+import { TransitionGroup } from "vue";
 
 interface GroupedOpening {
 	opening: Opening;
@@ -117,69 +118,103 @@ watch(
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
-			<div v-for="(group, groupIndex) in groupedOpenings" :key="groupIndex" class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
-				<div class="flex justify-between items-center gap-2">
-					<div class="flex-1 overflow-hidden">
-						<Select :model-value="group.opening.type" @update:model-value="(value: keyof OpeningType) => updateGroupedOpening(group, 'type', value)" class="h-9 block text-sm">
-							<SelectTrigger class="h-9 shadow-sm text-sm">
-								<SelectValue placeholder="Выберите проем" class="text-sm" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem v-for="(type, key) in openingStore.openingTypes" :key="key" :value="key" class="text-sm">
-									{{ type }}
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-					<Button v-if="groupedOpenings.length > 1" variant="outline" size="icon" @click="removeGroup(group)" class="shrink-0">
-						<Trash2Icon class="size-4" />
-					</Button>
-				</div>
-
-				<div class="grid grid-cols-1 md:grid-cols-1 gap-2">
-					<div class="flex items-center">
-						<img :src="openingStore.opening_images[group.opening.type]" class="w-full rounded-md mt-2 md:mt-4" />
-					</div>
-					<div>
-						<label class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Размеры (ШxВ) в мм:</label>
-						<div class="flex items-center gap-2">
-							<Input :model-value="group.opening.width" @update:model-value="(value: string) => updateGroupedOpening(group, 'width', Number(value))" type="number" step="100" max="12800" placeholder="Ширина" class="h-9 text-center" />
-							<span class="inline-block text-sm">&#10005;</span>
-							<Input :model-value="group.opening.height" @update:model-value="(value: string) => updateGroupedOpening(group, 'height', Number(value))" type="number" step="100" placeholder="Высота" class="h-9 text-center" />
-						</div>
-
-						<div class="gap-2 mt-2">
-							<label class="text-center mb-1 text-muted-foreground text-xs md:text-sm block">Кол-во створок:</label>
-							<QuantitySelector
-								:model-value="group.opening.doors"
-								@update:model-value="(value: number) => updateGroupedOpening(group, 'doors', value)"
-								:min="doorsSelectLimiter(group.opening.type).min"
-								:max="doorsSelectLimiter(group.opening.type).max"
-								:step="doorsSelectLimiter(group.opening.type).step"
-							/>
-
-							<NumberField :model-value="group.count" @update:model-value="(value: number) => changeGroupQuantity(group, value)" id="quantity" :min="1" :max="99">
-								<Label for="quantity" class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Кол-во проемов</Label>
-								<NumberFieldContent>
-									<NumberFieldDecrement />
-									<NumberFieldInput />
-									<NumberFieldIncrement />
-								</NumberFieldContent>
-							</NumberField>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<button
-				class="p-2 md:p-4 border-4 border-dashed rounded-xl text-center flex items-center justify-center hover:border-black hover:dark:border-white transition-all text-gray-300 dark:text-gray-600 font-bold text-xl hover:text-black hover:dark:text-white"
-				@click="openingStore.addOpening"
+			<TransitionGroup 
+				name="opening" 
+				tag="div" 
+				class="contents"
+				appear
 			>
-				<div class="text-center flex flex-col items-center gap-2 p-6">
-					<CirclePlusIcon class="size-12" />
-					<span class="block">Добавить проем</span>
+				<div 
+					v-for="(group, groupIndex) in groupedOpenings" 
+					:key="`group-${groupIndex}`" 
+					class="bg-white dark:bg-slate-900 p-2 md:p-4 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10"
+				>
+					<div class="flex justify-between items-center gap-2">
+						<div class="flex-1 overflow-hidden">
+							<Select :model-value="group.opening.type" @update:model-value="(value: keyof OpeningType) => updateGroupedOpening(group, 'type', value)" class="h-9 block text-sm">
+								<SelectTrigger class="h-9 shadow-sm text-sm">
+									<SelectValue placeholder="Выберите проем" class="text-sm" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem v-for="(type, key) in openingStore.openingTypes" :key="key" :value="key" class="text-sm">
+										{{ type }}
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<Button v-if="groupedOpenings.length > 1" variant="outline" size="icon" @click="removeGroup(group)" class="shrink-0">
+							<Trash2Icon class="size-4" />
+						</Button>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-1 gap-2">
+						<div class="flex items-center">
+							<img :src="openingStore.opening_images[group.opening.type]" class="w-full rounded-md mt-2 md:mt-4" />
+						</div>
+						<div>
+							<label class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Размеры (ШxВ) в мм:</label>
+							<div class="flex items-center gap-2">
+								<Input :model-value="group.opening.width" @update:model-value="(value: string) => updateGroupedOpening(group, 'width', Number(value))" type="number" step="100" max="12800" placeholder="Ширина" class="h-9 text-center" />
+								<span class="inline-block text-sm">&#10005;</span>
+								<Input :model-value="group.opening.height" @update:model-value="(value: string) => updateGroupedOpening(group, 'height', Number(value))" type="number" step="100" placeholder="Высота" class="h-9 text-center" />
+							</div>
+
+							<div class="gap-2 mt-2">
+								<label class="text-center mb-1 text-muted-foreground text-xs md:text-sm block">Кол-во створок:</label>
+								<QuantitySelector
+									:model-value="group.opening.doors"
+									@update:model-value="(value: number) => updateGroupedOpening(group, 'doors', value)"
+									:min="doorsSelectLimiter(group.opening.type).min"
+									:max="doorsSelectLimiter(group.opening.type).max"
+									:step="doorsSelectLimiter(group.opening.type).step"
+								/>
+
+								<NumberField :model-value="group.count" @update:model-value="(value: number) => changeGroupQuantity(group, value)" id="quantity" :min="1" :max="99">
+									<Label for="quantity" class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Кол-во проемов</Label>
+									<NumberFieldContent>
+										<NumberFieldDecrement />
+										<NumberFieldInput />
+										<NumberFieldIncrement />
+									</NumberFieldContent>
+								</NumberField>
+							</div>
+						</div>
+					</div>
 				</div>
-			</button>
+
+				<button
+					key="add-button"
+					class="p-2 md:p-4 border-4 border-dashed rounded-xl text-center flex items-center justify-center hover:border-black hover:dark:border-white transition-all text-gray-300 dark:text-gray-600 font-bold text-xl hover:text-black hover:dark:text-white"
+					@click="openingStore.addOpening"
+				>
+					<div class="text-center flex flex-col items-center gap-2 p-6">
+						<CirclePlusIcon class="size-12" />
+						<span class="block">Добавить проем</span>
+					</div>
+				</button>
+			</TransitionGroup>
 		</div>
 	</div>
 </template>
+
+<style scoped>
+/* Enter and leave animations for openings */
+.opening-enter-active,
+.opening-leave-active {
+	transition: all 0.5s ease;
+}
+
+.opening-enter-from {
+	opacity: 0;
+	transform: translateY(-20px) scale(0.9);
+}
+
+.opening-leave-to {
+	opacity: 0;
+	transform: translateY(-20px) scale(0.9);
+}
+
+.opening-move {
+	transition: transform 0.3s ease;
+}
+</style>

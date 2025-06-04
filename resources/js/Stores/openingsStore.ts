@@ -35,19 +35,15 @@ export const useOpeningStore = defineStore('openingStore', () => {
     ])
 
     const addOpening = () => {
-        const randomChoice = (arr: any) => arr[Math.floor(Math.random() * arr.length)]
+        // Get the width of the last opening and increment by 1
+        const lastOpening = openings.value[openings.value.length - 1]
+        const newWidth = lastOpening ? lastOpening.width + 1 : 3000
         
-        const randomType = randomChoice(Object.keys(openingTypes))
-        const randomWidth = randomChoice([3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000])
-        
-        const doorsArr = ['left', 'right'].includes(randomType) ? [2, 3, 4, 5, 6, 8] : (randomType === 'center' ? [4, 6, 8, 10] : [3])
-        const randomDoors = randomChoice(doorsArr)
-
         openings.value.push({
-            doors: randomDoors,
-            width: randomWidth,
+            doors: 2,
+            width: newWidth,
             height: defaultHeight.value,
-            type: randomType,
+            type: 'left',
         })
     }
     

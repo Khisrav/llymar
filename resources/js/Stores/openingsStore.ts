@@ -35,13 +35,14 @@ export const useOpeningStore = defineStore('openingStore', () => {
     ])
 
     const addOpening = () => {
-        // Get the width of the last opening and increment by 1
-        const lastOpening = openings.value[openings.value.length - 1]
-        const newWidth = lastOpening ? lastOpening.width + 1 : 3000
+        // Find the maximum width from all existing openings and increment by 1
+        const maxWidth = openings.value.length > 0 
+            ? Math.max(...openings.value.map(opening => opening.width))
+            : 2999; // Start at 2999 so first opening will be 3000
         
         openings.value.push({
             doors: 2,
-            width: newWidth,
+            width: maxWidth + 1,
             height: defaultHeight.value,
             type: 'left',
         })

@@ -74,11 +74,14 @@ const changeGroupQuantity = (group: GroupedOpening, newCount: number): void => {
 
 	if (difference > 0) {
 		for (let i = 0; i < difference; i++) {
-			openingStore.addOpening();
-			const lastIndex = openingStore.openings.length - 1;
-			Object.assign(openingStore.openings[lastIndex], group.opening);
+			openingStore.openings.push({ ...group.opening });
 		}
-	} else if (difference < 0) { removeGroup(group) }
+	} else if (difference < 0) {
+		const indicesToRemove = group.indices.slice(newCount).sort((a: number, b: number) => b - a);
+		indicesToRemove.forEach((index: number) => {
+			openingStore.removeOpening(index);
+		});
+	}
 };
 
 watch(

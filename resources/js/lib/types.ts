@@ -125,6 +125,7 @@ export interface WholesaleFactor {
     name: string;
     value: number;
     reduction_factor_key: string;
+    color?: string;
 }
 
 export interface CommercialOffer {

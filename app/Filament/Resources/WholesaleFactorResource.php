@@ -48,6 +48,9 @@ class WholesaleFactorResource extends Resource
                     ->label('Значение оптового коэффициента')
                     ->numeric()
                     ->required(),
+                Forms\Components\ColorPicker::make('color')
+                    ->label('Цвет')
+                    ->required(),
             ]);
     }
 
@@ -71,6 +74,9 @@ class WholesaleFactorResource extends Resource
                 Tables\Columns\TextColumn::make('reduction_factor_key')
                     ->label('Ключ КУ')
                     ->searchable()
+                    ->sortable(),
+                Tables\Columns\ColorColumn::make('color')
+                    ->label('Цвет')
                     ->sortable(),
             ])
             ->filters([

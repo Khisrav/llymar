@@ -11,5 +11,6 @@ class WholesaleFactor extends Model
         'name',
         'value',
         'reduction_factor_key',
+        'color',
     ];
 }

@@ -144,7 +144,7 @@ const downloadListPDF = async () => {
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Button variant="outline" size="icon" class="hover:bg-accent">
-                            <EllipsisVertical class="h-4 w-4" />
+                            <EllipsisVertical class="h-4 w-4" :style="{ color: itemsStore.wholesale_factor?.color || 'currentColor' }" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-56">
@@ -163,7 +163,9 @@ const downloadListPDF = async () => {
                                                 
                         <DropdownMenuSub v-if="can_access_wholesale_factors">
                             <DropdownMenuSubTrigger class="w-full flex gap-2 hover:text-white cursor-pointer">
-                                <BadgePercentIcon class="size-4 mr-2" />
+                                <BadgePercentIcon 
+                                    class="size-4 mr-2"
+                                />
                                 <span>Коэффициенты</span>
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
@@ -173,9 +175,15 @@ const downloadListPDF = async () => {
                                         :key="factor_group.group_name" 
                                         @click="selected_factor_group = factor_group.group_name" 
                                         :class="{ 'bg-accent': factor_group.group_name === selected_factor_group }" 
-                                        class="mb-1 cursor-pointer"
+                                        class="mb-1 cursor-pointer flex items-center gap-2"
                                     >
-                                        {{ factor_group.group_name }}
+                                        <div 
+                                            v-if="factor_group.color" 
+                                            class="w-3 h-3 rounded-full shrink-0" 
+                                            :style="{ backgroundColor: factor_group.color }"
+                                        ></div>
+                                        <div v-else class="w-3 h-3 rounded-full bg-gray-300 shrink-0"></div>
+                                        <span>{{ factor_group.group_name }}</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>

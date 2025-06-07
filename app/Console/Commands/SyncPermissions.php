@@ -8,7 +8,7 @@ use Spatie\Permission\PermissionRegistrar;
 
 class SyncPermissions extends Command
 {
-    protected $signature = 'permissions:sync';
+    protected $signature = 'command-permissions:sync';
     protected $description = 'Sync permissions to match what policies expect';
 
     public function handle()

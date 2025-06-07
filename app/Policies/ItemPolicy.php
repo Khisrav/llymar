@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
+use Illuminate\Auth\Access\Response;
 use App\Models\Item;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ItemPolicy
 {
@@ -13,7 +13,7 @@ class ItemPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view-any item');
+        return $user->checkPermissionTo('view-any Item');
     }
 
     /**
@@ -21,7 +21,7 @@ class ItemPolicy
      */
     public function view(User $user, Item $item): bool
     {
-        return $user->can('view item');
+        return $user->checkPermissionTo('view Item');
     }
 
     /**
@@ -29,7 +29,7 @@ class ItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create item');
+        return $user->checkPermissionTo('create Item');
     }
 
     /**
@@ -37,7 +37,7 @@ class ItemPolicy
      */
     public function update(User $user, Item $item): bool
     {
-        return $user->can('update item');
+        return $user->checkPermissionTo('update Item');
     }
 
     /**
@@ -45,7 +45,15 @@ class ItemPolicy
      */
     public function delete(User $user, Item $item): bool
     {
-        return $user->can('delete item');
+        return $user->checkPermissionTo('delete Item');
+    }
+
+    /**
+     * Determine whether the user can delete any models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('delete-any Item');
     }
 
     /**
@@ -53,7 +61,31 @@ class ItemPolicy
      */
     public function restore(User $user, Item $item): bool
     {
-        return false;
+        return $user->checkPermissionTo('restore Item');
+    }
+
+    /**
+     * Determine whether the user can restore any models.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->checkPermissionTo('restore-any Item');
+    }
+
+    /**
+     * Determine whether the user can replicate the model.
+     */
+    public function replicate(User $user, Item $item): bool
+    {
+        return $user->checkPermissionTo('replicate Item');
+    }
+
+    /**
+     * Determine whether the user can reorder the models.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->checkPermissionTo('reorder Item');
     }
 
     /**
@@ -61,6 +93,14 @@ class ItemPolicy
      */
     public function forceDelete(User $user, Item $item): bool
     {
-        return false;
+        return $user->checkPermissionTo('force-delete Item');
+    }
+
+    /**
+     * Determine whether the user can permanently delete any models.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('force-delete-any Item');
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
+use Illuminate\Auth\Access\Response;
 use App\Models\Category;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CategoryPolicy
 {
@@ -13,8 +13,7 @@ class CategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        if ($user->can('view-any category')) { return true; }
-        return false;
+        return $user->checkPermissionTo('view-any Category');
     }
 
     /**
@@ -22,8 +21,7 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category): bool
     {
-        if ($user->can('view category')) { return true; }
-        return false;
+        return $user->checkPermissionTo('view Category');
     }
 
     /**
@@ -31,8 +29,7 @@ class CategoryPolicy
      */
     public function create(User $user): bool
     {
-        if ($user->can('create category')) { return true; }
-        return false;
+        return $user->checkPermissionTo('create Category');
     }
 
     /**
@@ -40,8 +37,7 @@ class CategoryPolicy
      */
     public function update(User $user, Category $category): bool
     {
-        if ($user->can('update category')) { return true; }
-        return false;
+        return $user->checkPermissionTo('update Category');
     }
 
     /**
@@ -49,8 +45,15 @@ class CategoryPolicy
      */
     public function delete(User $user, Category $category): bool
     {
-        if ($user->can('delete category')) { return true; }
-        return false;
+        return $user->checkPermissionTo('delete Category');
+    }
+
+    /**
+     * Determine whether the user can delete any models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('delete-any Category');
     }
 
     /**
@@ -58,7 +61,31 @@ class CategoryPolicy
      */
     public function restore(User $user, Category $category): bool
     {
-        return false;
+        return $user->checkPermissionTo('restore Category');
+    }
+
+    /**
+     * Determine whether the user can restore any models.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->checkPermissionTo('restore-any Category');
+    }
+
+    /**
+     * Determine whether the user can replicate the model.
+     */
+    public function replicate(User $user, Category $category): bool
+    {
+        return $user->checkPermissionTo('replicate Category');
+    }
+
+    /**
+     * Determine whether the user can reorder the models.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->checkPermissionTo('reorder Category');
     }
 
     /**
@@ -66,6 +93,14 @@ class CategoryPolicy
      */
     public function forceDelete(User $user, Category $category): bool
     {
-        return false;
+        return $user->checkPermissionTo('force-delete Category');
+    }
+
+    /**
+     * Determine whether the user can permanently delete any models.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('force-delete-any Category');
     }
 }

@@ -103,4 +103,4 @@ class PermissionPolicy
     {
         return $user->checkPermissionTo('force-delete-any Permission');
     }
-} 
+}

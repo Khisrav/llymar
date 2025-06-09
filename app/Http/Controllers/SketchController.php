@@ -108,6 +108,8 @@ class SketchController extends Controller
      */
     private function getHolesCoordinates($openings)
     {
+        $openings = $openings->reverse();
+        
         $calculatedCoordinates = [];
         $doorHandlePropertiesCache = [];
 
@@ -426,6 +428,8 @@ class SketchController extends Controller
     {
         $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
         $this->getOrderParameters($order);
+
+        $order->orderOpenings = $order->orderOpenings->reverse();
 
         $currentY = 0; 
         $holes = $this->getHolesCoordinates($order->orderOpenings);

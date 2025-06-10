@@ -19,7 +19,7 @@ class CustomPermissionSeeder extends Seeder
             'access app history',
             'access app cart',
             'access app wholesale-factors',
-            'can access dxf'
+            'access dxf'
         ];
 
         foreach ($permissions as $permission) {

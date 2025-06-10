@@ -25,8 +25,8 @@ class SyncPermissions extends Command
             'access app calculator',
             'access app history',
             'access app cart',
-            'can access app wholesale-factors',
-            'can access dxf',
+            'access app wholesale-factors',
+            'access dxf',
             
             // Order permissions
             'view-any order',

@@ -279,14 +279,17 @@ class UserResource extends Resource
                 Tables\Columns\ToggleColumn::make('can_access_dxf')
                     ->label('Доступ к DXF')
                     ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                    ->state(function (Model $record) {
+                        $user = User::find($record->id);
+                        return $user->can('access dxf');
+                    })
                     ->afterStateUpdated(function (Model $record, bool $state) {
                         $user = User::find($record->id);
-                        if ($state == true) {
-                            $user->givePermissionTo('can access dxf');
+                        if ($state) {
+                            $user->givePermissionTo('access dxf');
                         } else {
-                            $user->revokePermissionTo('can access dxf');
+                            $user->revokePermissionTo('access dxf');
                         }
-                        $user->save();
                     })
                     ->toggleable(isToggledHiddenByDefault: false),
             ])

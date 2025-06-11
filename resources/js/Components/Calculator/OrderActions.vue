@@ -143,8 +143,8 @@ const downloadListPDF = async () => {
             <div class="flex gap-2 md:gap-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon" class="hover:bg-accent">
-                            <EllipsisVertical class="h-4 w-4" :style="{ color: itemsStore.wholesale_factor?.color || 'currentColor' }" />
+                        <Button variant="outline" size="icon" class="hover:bg-accent rounded-xl" :style="{ backgroundColor: itemsStore.wholesale_factor?.color || 'currentColor' }">
+                            <EllipsisVertical class="h-4 w-4" :style="{ color: itemsStore.wholesale_factor?.color || 'currentColor', visibility: 'hidden' }" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-56">

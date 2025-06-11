@@ -57,10 +57,11 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'can_access_app_calculator' => $user->can('access app calculator'),
+            'can_access_app_history' => $user->can('access app history'),
             'can_access_admin_panel' => $user->can('access admin panel'),
             'can_access_app_cart' => $user->can('access app cart'),
-            'can_access_wholesale_factors' => $user->can('access wholesale-factors'),
-            'can_access_dxf' => $user['can_access_dxf'],
+            'can_access_wholesale_factors' => $user->can('access app wholesale-factors'),
+            'can_access_dxf' => ($user->can('access dxf') && $user->can_access_dxf) || $user->hasRole('Super-Admin'),
         ];
     }
 }

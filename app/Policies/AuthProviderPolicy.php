@@ -3,25 +3,25 @@
 namespace App\Policies;
 
 use Illuminate\Auth\Access\Response;
-use App\Models\Item;
+use App\Models\AuthProvider;
 use App\Models\User;
 
-class ItemPolicy
+class AuthProviderPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any Item');
+        return $user->checkPermissionTo('view-any AuthProvider');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Item $item): bool
+    public function view(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('view Item');
+        return $user->checkPermissionTo('view AuthProvider');
     }
 
     /**
@@ -29,23 +29,23 @@ class ItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create Item');
+        return $user->checkPermissionTo('create AuthProvider');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Item $item): bool
+    public function update(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('update Item');
+        return $user->checkPermissionTo('update AuthProvider');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Item $item): bool
+    public function delete(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('delete Item');
+        return $user->checkPermissionTo('delete AuthProvider');
     }
 
     /**
@@ -53,15 +53,15 @@ class ItemPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('delete-any Item');
+        return $user->checkPermissionTo('delete-any AuthProvider');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Item $item): bool
+    public function restore(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('restore Item');
+        return $user->checkPermissionTo('restore AuthProvider');
     }
 
     /**
@@ -69,15 +69,15 @@ class ItemPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->checkPermissionTo('restore-any Item');
+        return $user->checkPermissionTo('restore-any AuthProvider');
     }
 
     /**
      * Determine whether the user can replicate the model.
      */
-    public function replicate(User $user, Item $item): bool
+    public function replicate(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('replicate Item');
+        return $user->checkPermissionTo('replicate AuthProvider');
     }
 
     /**
@@ -85,15 +85,15 @@ class ItemPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->checkPermissionTo('reorder Item');
+        return $user->checkPermissionTo('reorder AuthProvider');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Item $item): bool
+    public function forceDelete(User $user, AuthProvider $authprovider): bool
     {
-        return $user->checkPermissionTo('force-delete Item');
+        return $user->checkPermissionTo('force-delete AuthProvider');
     }
 
     /**
@@ -101,6 +101,6 @@ class ItemPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('force-delete-any Item');
+        return $user->checkPermissionTo('force-delete-any AuthProvider');
     }
 }

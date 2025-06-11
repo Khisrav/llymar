@@ -3,25 +3,25 @@
 namespace App\Policies;
 
 use Illuminate\Auth\Access\Response;
-use App\Models\Item;
+use App\Models\OpeningParameters;
 use App\Models\User;
 
-class ItemPolicy
+class OpeningParametersPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any Item');
+        return $user->checkPermissionTo('view-any OpeningParameters');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Item $item): bool
+    public function view(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('view Item');
+        return $user->checkPermissionTo('view OpeningParameters');
     }
 
     /**
@@ -29,23 +29,23 @@ class ItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create Item');
+        return $user->checkPermissionTo('create OpeningParameters');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Item $item): bool
+    public function update(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('update Item');
+        return $user->checkPermissionTo('update OpeningParameters');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Item $item): bool
+    public function delete(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('delete Item');
+        return $user->checkPermissionTo('delete OpeningParameters');
     }
 
     /**
@@ -53,15 +53,15 @@ class ItemPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('delete-any Item');
+        return $user->checkPermissionTo('delete-any OpeningParameters');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Item $item): bool
+    public function restore(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('restore Item');
+        return $user->checkPermissionTo('restore OpeningParameters');
     }
 
     /**
@@ -69,15 +69,15 @@ class ItemPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->checkPermissionTo('restore-any Item');
+        return $user->checkPermissionTo('restore-any OpeningParameters');
     }
 
     /**
      * Determine whether the user can replicate the model.
      */
-    public function replicate(User $user, Item $item): bool
+    public function replicate(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('replicate Item');
+        return $user->checkPermissionTo('replicate OpeningParameters');
     }
 
     /**
@@ -85,15 +85,15 @@ class ItemPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->checkPermissionTo('reorder Item');
+        return $user->checkPermissionTo('reorder OpeningParameters');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Item $item): bool
+    public function forceDelete(User $user, OpeningParameters $openingparameters): bool
     {
-        return $user->checkPermissionTo('force-delete Item');
+        return $user->checkPermissionTo('force-delete OpeningParameters');
     }
 
     /**
@@ -101,6 +101,6 @@ class ItemPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('force-delete-any Item');
+        return $user->checkPermissionTo('force-delete-any OpeningParameters');
     }
 }

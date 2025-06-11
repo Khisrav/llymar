@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use Illuminate\Auth\Access\Response;
 use App\Models\Order;
 use App\Models\User;
 
@@ -12,7 +13,7 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view-any order');
+        return $user->checkPermissionTo('view-any Order');
     }
 
     /**
@@ -20,7 +21,7 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        return $user->can('view order');
+        return $user->checkPermissionTo('view Order');
     }
 
     /**
@@ -28,7 +29,7 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create order');
+        return $user->checkPermissionTo('create Order');
     }
 
     /**
@@ -36,7 +37,7 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        return $user->can('update order');
+        return $user->checkPermissionTo('update Order');
     }
 
     /**
@@ -44,7 +45,15 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        return $user->can('delete order');
+        return $user->checkPermissionTo('delete Order');
+    }
+
+    /**
+     * Determine whether the user can delete any models.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('delete-any Order');
     }
 
     /**
@@ -52,7 +61,31 @@ class OrderPolicy
      */
     public function restore(User $user, Order $order): bool
     {
-        return false;
+        return $user->checkPermissionTo('restore Order');
+    }
+
+    /**
+     * Determine whether the user can restore any models.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->checkPermissionTo('restore-any Order');
+    }
+
+    /**
+     * Determine whether the user can replicate the model.
+     */
+    public function replicate(User $user, Order $order): bool
+    {
+        return $user->checkPermissionTo('replicate Order');
+    }
+
+    /**
+     * Determine whether the user can reorder the models.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->checkPermissionTo('reorder Order');
     }
 
     /**
@@ -60,6 +93,14 @@ class OrderPolicy
      */
     public function forceDelete(User $user, Order $order): bool
     {
-        return false;
+        return $user->checkPermissionTo('force-delete Order');
+    }
+
+    /**
+     * Determine whether the user can permanently delete any models.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->checkPermissionTo('force-delete-any Order');
     }
 }

@@ -14,11 +14,20 @@ class Permission3Seeder extends Seeder
      */
     public function run(): void
     {
-        Permission::create(['name' => 'can access dxf']);
-        // $superAdminRole = Role::where('name', 'Super-Admin')->first();
-        // $operatorRole = Role::where('name', 'Operator')->first();
+        Permission::create([
+            'name' => 'can access dxf',
+            'guard_name' => 'web'
+        ]);
         
-        // $superAdminRole->givePermissionTo('can access dxf');
-        // $operatorRole->givePermissionTo('can access dxf');
+        // Uncomment if you want to assign to roles
+        // $superAdminRole = Role::where('name', 'Super-Admin')->where('guard_name', 'web')->first();
+        // $operatorRole = Role::where('name', 'Operator')->where('guard_name', 'web')->first();
+        
+        // if ($superAdminRole) {
+        //     $superAdminRole->givePermissionTo('can access dxf');
+        // }
+        // if ($operatorRole) {
+        //     $operatorRole->givePermissionTo('can access dxf');
+        // }
     }
 }

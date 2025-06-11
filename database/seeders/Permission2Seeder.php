@@ -19,14 +19,21 @@ class Permission2Seeder extends Seeder
         ];
         
         foreach ($permissions as $permissionName) {
-            Permission::create(['name' => $permissionName]);
+            Permission::create([
+                'name' => $permissionName,
+                'guard_name' => 'web'
+            ]);
         }
         
         //give permissions to admin and operator
-        $adminRole = Role::where('name', 'Super-Admin')->first();
-        $operatorRole = Role::where('name', 'Operator')->first();
+        $adminRole = Role::where('name', 'Super-Admin')->where('guard_name', 'web')->first();
+        $operatorRole = Role::where('name', 'Operator')->where('guard_name', 'web')->first();
         
-        $adminRole->givePermissionTo($permissions);
-        $operatorRole->givePermissionTo($permissions);
+        if ($adminRole) {
+            $adminRole->givePermissionTo($permissions);
+        }
+        if ($operatorRole) {
+            $operatorRole->givePermissionTo($permissions);
+        }
     }
 }

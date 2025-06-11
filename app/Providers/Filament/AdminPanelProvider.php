@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\OrderResource\Widgets\StatsOverview;
+use App\Filament\Widgets\OrderPriceChart;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -41,8 +42,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
+                OrderPriceChart::class,
                 StatsOverview::class,
             ])
             ->middleware([

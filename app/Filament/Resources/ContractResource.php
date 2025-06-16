@@ -18,9 +18,11 @@ use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class ContractResource extends Resource
 {
@@ -73,7 +75,7 @@ class ContractResource extends Resource
                                 ->required(),
                             TextInput::make('number')
                                 ->label('Номер')
-                                ->disabled()
+                                // ->disabled()
                                 ->type('number'),
                                 // ->required(),
                             Select::make('index')
@@ -86,7 +88,7 @@ class ContractResource extends Resource
                                 ->native(false)
                                 ->default('МВ')
                                 ->selectablePlaceholder(false)
-                                ->required(),
+                                ->required(),   
                         ])->columnSpan(2),
                         Select::make('order_id')
                             ->label('Договор для заказа')
@@ -101,8 +103,12 @@ class ContractResource extends Resource
                     ->columns(3)
                     ->schema([
                         TextInput::make('counterparty_fullname')
-                            ->label('Наименование')
-                            ->hidden(fn ($get) => $get('counterparty_type') === 'legal_entity')
+                            ->label(fn ($get) => match($get('counterparty_type')) {
+                                'legal_entity' => 'Наименование организации',
+                                'entrepreneur' => 'ФИО индивидуального предпринимателя',
+                                'individual' => 'ФИО физического лица',
+                                default => 'Наименование'
+                            })
                             ->required(),
                         TextInput::make('counterparty_address')
                             ->label('Адрес')
@@ -115,21 +121,108 @@ class ContractResource extends Resource
                             ->label('Телефон')
                             ->tel()
                             ->required(),
+                        TextInput::make('installation_address')
+                            ->label('Адрес установки')
+                            ->required()
+                    ]),
+                Section::make('Финансовые условия')
+                    ->collapsible()
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('price')
+                            ->label('Цена')
+                            ->numeric()
+                            ->default(0)
+                            ->required(),
+                        TextInput::make('advance_payment_percentage')
+                            ->label('Процент аванса')
+                            ->numeric()
+                            ->default(0)
+                            ->suffix('%')
+                            ->required(),
                     ]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
+        $counterparty_type = [
+            'entrepreneur' => 'ИП',
+            'individual' => 'ФЛ',
+            'legal_entity' => 'ЮЛ',
+        ];
+        
         return $table
             ->columns([
-                //
+            Tables\Columns\TextColumn::make('id')
+                ->label('ID')
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('number')
+                ->label('№')
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: false)
+                ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
+                <div>{$record->department_code}-{$record->number}-{$record->index}</div>"))
+                ->sortable(),
+            Tables\Columns\TextColumn::make('counterparty_fullname')
+                ->label('Заказчик')
+                ->searchable()
+                ->wrap()
+                ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
+                    <div><strong>" . ($record->counterparty_fullname ?: 'Не указано') . "</strong></div>
+                    <div><small>{$counterparty_type[$record->counterparty_type]} | {$record->counterparty_phone}</small></div>
+                    <div><small>📧 {$record->counterparty_email}</small></div>
+                    <div><small>📍 " . ($record->counterparty_address ?: 'Не указан') . "</small></div>"))
+                ->toggleable(isToggledHiddenByDefault: false)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('installation_address')
+                ->label('Адрес установки')
+                ->sortable()
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: false),
+            Tables\Columns\TextColumn::make('price')
+                ->label('Цена | Аванс')
+                ->sortable()
+                ->searchable()
+                ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
+                <div>{$record->price}₽ | {$record->advance_payment_percentage}%</div>"))
+                ->toggleable(isToggledHiddenByDefault: false),
+            Tables\Columns\TextColumn::make('date')
+                ->label('Дата')
+                ->dateTime('d.m.Y')
+                ->toggleable(isToggledHiddenByDefault: false)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('companyPerformer.short_name')
+                ->label('Организации')
+                ->searchable()
+                ->wrap()
+                ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
+                    <div><strong>👷 Исполнитель:</strong></div>
+                    <div><small>" . ($record->companyPerformer->short_name ?? 'Не указан') . "</small></div>
+                    <div><strong>🏭 Завод:</strong></div>
+                    <div><small>" . ($record->companyFactory->short_name ?? 'Не указан') . "</small></div>"))
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('template.name')
+                ->label('Связанные документы')
+                ->searchable()
+                ->wrap()
+                ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
+                    <div><strong>📋 Шаблон:</strong></div>
+                    <div><small>" . ($record->template->name ?? 'Не указан') . "</small></div>
+                    <div><strong>📦 Заказ:</strong></div>
+                    <div><small>" . ($record->order->order_number ?? 'Не указан') . "</small></div>"))
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

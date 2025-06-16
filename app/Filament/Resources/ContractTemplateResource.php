@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Auth;
 
 class ContractTemplateResource extends Resource
 {
@@ -37,7 +38,7 @@ class ContractTemplateResource extends Resource
         return $form
             ->schema([
                     Hidden::make('user_id')
-                        ->default(fn () => auth()->id())
+                        ->default(fn () => Auth::id())
                         ->required(),
 
                     Grid::make()
@@ -53,7 +54,7 @@ class ContractTemplateResource extends Resource
                                 FileUpload::make('attachment')
                                     ->label('Шаблон договора Word')
                                     ->downloadable()
-                                    ->directory(fn () => 'contracts/' . auth()->id())
+                                    ->directory(fn () => 'contracts/' . Auth::id())
                                     ->storeFileNamesIn('attachment_original_filename')
                                     ->maxSize(1024 * 16) // 16MB
                                     ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.wordprocessingml.document'])

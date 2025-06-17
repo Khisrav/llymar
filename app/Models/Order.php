@@ -75,4 +75,24 @@ class Order extends Model
     {
         return $this->hasMany(OrderOpening::class);
     }
+
+    /**
+     * Relationship: Order has many Contracts.
+     *
+     * @return HasMany
+     */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
+
+    /**
+     * Get the first contract for this order.
+     *
+     * @return Contract|null
+     */
+    public function getContractAttribute()
+    {
+        return $this->contracts()->first();
+    }
 }

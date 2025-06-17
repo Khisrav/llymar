@@ -96,6 +96,21 @@ class ContractResource extends Resource
                             ->searchable()
                             ->options(Order::all()->pluck('order_number', 'id'))
                             ->optionsLimit(20)
+                            ->default(fn () => request()->query('order_id'))
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set) {
+                                if ($state) {
+                                    $order = Order::find($state);
+                                    if ($order) {
+                                        $set('counterparty_fullname', $order->customer_name);
+                                        $set('counterparty_phone', $order->customer_phone);
+                                        $set('counterparty_email', $order->customer_email);
+                                        $set('counterparty_address', $order->customer_address);
+                                        $set('installation_address', $order->customer_address);
+                                        $set('price', $order->total_price);
+                                    }
+                                }
+                            })
                             ->required(),
                     ]),
                 Section::make('Данные заказчика')
@@ -132,7 +147,7 @@ class ContractResource extends Resource
                         TextInput::make('price')
                             ->label('Цена')
                             ->numeric()
-                            ->default(0)
+                            ->default(fn () => request()->query('total_price'))
                             ->required(),
                         TextInput::make('advance_payment_percentage')
                             ->label('Процент аванса')

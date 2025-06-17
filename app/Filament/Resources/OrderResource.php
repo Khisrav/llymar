@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
+use App\Models\Contract;
 use App\Models\Order;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -195,12 +196,12 @@ class OrderResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('customer_name')
-                    ->label('ФИО клиента')
+                TextColumn::make('user.name')
+                    ->label('ФИО пользователя')
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('customer_phone')
+                TextColumn::make('user.phone')
                     ->label('Телефон')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -246,6 +247,16 @@ class OrderResource extends Resource
                         ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-arrow-down-tray'),
+                    Action::make('create_contract')
+                        ->label('Создать Договор')
+                        ->url(fn (Order $record) => route('filament.admin.resources.contracts.create', ['order_id' => $record->id, 'order_price' => $record->total_price]))
+                        ->icon('heroicon-o-document-text')
+                        ->visible(fn (Order $record) => $record->contracts()->count() === 0),
+                    Action::make('view_contract')
+                        ->label('Просмотр Договора')
+                        ->url(fn (Order $record) => route('filament.admin.resources.contracts.edit', ['record' => $record->contracts()->first()->id]))
+                        ->icon('heroicon-o-document-text')
+                        ->visible(fn (Order $record) => $record->contracts()->count() > 0),
                     Action::make('invoice_pdf')
                         ->label('Счет PDF')
                         ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')

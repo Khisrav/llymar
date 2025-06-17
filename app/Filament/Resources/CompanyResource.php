@@ -77,8 +77,7 @@ class CompanyResource extends Resource
                             ->required(),
                         TextInput::make('email')
                             ->label('Email')
-                            ->type('email')
-                            ->required(),
+                            ->type('email'),
                         Select::make('warehouse_id')
                             ->label('Склад')
                             ->options(Warehouse::all()->pluck('name', 'id'))
@@ -108,11 +107,9 @@ class CompanyResource extends Resource
                             ->label('ИНН')
                             ->required(),
                         TextInput::make('kpp')
-                            ->label('КПП')
-                            ->required(),
+                            ->label('КПП'),
                         TextInput::make('ogrn')
-                            ->label('ОГРН')
-                            ->required(),
+                            ->label('ОГРН'),
                         Select::make('vat')
                             ->label('НДС')
                             ->options([

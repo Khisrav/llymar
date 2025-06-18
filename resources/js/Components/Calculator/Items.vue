@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import Button from '../ui/button/Button.vue';
 import { useItemsStore } from '../../Stores/itemsStore'
 import { ref } from 'vue';
-import { Eye, EyeOff } from 'lucide-vue-next';
+import { Eye, EyeOff, PlusIcon } from 'lucide-vue-next';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
 import { getImageSource } from '../../Utils/getImageSource';
+import Button from '../ui/button/Button.vue';
+import { 
+    NumberField, 
+    NumberFieldContent, 
+    NumberFieldDecrement, 
+    NumberFieldInput, 
+    NumberFieldIncrement 
+} from '../ui/number-field';
 
 const itemsStore = useItemsStore()
 const isItemsListHidden = ref(false)
+
+const addItemToCart = (itemId: number) => {
+    if (!itemsStore.cartItems[itemId]) {
+        itemsStore.cartItems[itemId] = { quantity: 1 }
+    }
+}
 </script>
 
 <template>
@@ -25,28 +38,55 @@ const isItemsListHidden = ref(false)
                 <div class="text-center font-bold text-lg text-primary font-mono">{{ item.vendor_code }}</div>
 
                 <div>
-                    <img :src="getImageSource(item.img as string)" class="rounded-md w-full">
+                    <img :src="getImageSource(item.img || '')" class="rounded-md w-full">
                 </div>
 
                 <div>
                     <div class="text-center text-sm sm:text-base py-2"><span>{{ item.name }}</span></div>
 
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
+                    <div class="">
+                        <div class="flex items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Цена:</span>
-                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(itemsStore.itemPrice(item.id)) }}/{{ item.unit }}</span>
+                            <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(itemsStore.itemPrice(item.id || 0)) }}/{{ item.unit }}</span>
                         </div>
-                        <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
+                        <!-- <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>
                             <span class="font-bold text-muted-foreground text-sm">
-                                {{ itemsStore.cartItems[item.id as number]?.quantity ?? 0 }} {{ item.unit }}
+                                {{ itemsStore.cartItems[item.id || 0]?.quantity ?? 0 }} {{ item.unit }}
                             </span>
-                        </div>
+                        </div> -->
                     </div>
     
+                    <!-- Quantity Selector -->
+                    <div class="mt-3">
+                        <Label v-if="itemsStore.cartItems[item.id || 0]" class="text-center mb-1 text-muted-foreground text-xs block">Кол-во: </Label>
+                        <NumberField 
+                            v-if="itemsStore.cartItems[item.id || 0]" 
+                            v-model="itemsStore.cartItems[item.id || 0].quantity"
+                            :min="0"
+                            :max="100"
+                        >
+                            <NumberFieldContent>
+                                <NumberFieldDecrement />
+                                <NumberFieldInput class="h-8 text-center" />
+                                <NumberFieldIncrement />
+                            </NumberFieldContent>
+                        </NumberField>
+                        <Button 
+                            v-else 
+                            variant="outline"
+                            size="sm"
+                            class="w-full shadow-none"
+                            @click="addItemToCart(item.id || 0)"
+                        > 
+                            <PlusIcon class="w-4 h-4 mr-1" /> 
+                            Добавить 
+                        </Button>
+                    </div>
+        
                     <div class="text-center pt-2">
                         <span class="font-bold">
-                            {{ currencyFormatter((itemsStore.cartItems[item.id as number]?.quantity ?? 0) * itemsStore.itemPrice(item.id)) }}
+                            {{ currencyFormatter((itemsStore.cartItems[item.id || 0]?.quantity ?? 0) * itemsStore.itemPrice(item.id || 0)) }}
                         </span>
                     </div>
                 </div>

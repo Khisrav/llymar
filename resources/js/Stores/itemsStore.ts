@@ -74,7 +74,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             })
 
             allItems.forEach(item => {
-                cartItems.value[item.id] = { quantity: 0 }
+                cartItems.value[item.id] = { quantity: 0, checked: true }
             })
         }
     }
@@ -226,7 +226,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
         cartItems.value[glassID] = {
             quantity: parseFloat((openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height
-            }, 0) / 1000000).toFixed(2))
+            }, 0) / 1000000).toFixed(2)),
+            checked: true
         }
     }
 
@@ -239,7 +240,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             //388 это распил
             if ([388].includes(serviceID)) {
                 // console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
-                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) }
+                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0), checked: true }
             }
             else if (serviceID == 386) {
                 let q = 0
@@ -248,14 +249,15 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
                     else q += cartItems.value[mp]?.quantity || 0
                 })
-                cartItems.value[serviceID] = { quantity: q }
+                cartItems.value[serviceID] = { quantity: q, checked: true }
             }
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
                 cartItems.value[serviceID] = {
                     quantity: openingsStore.openings.reduce((acc, { width, height }) => {
                         return acc + width * height
-                    }, 0) / 1000000
+                    }, 0) / 1000000,
+                    checked: true
                 }
             }
         })
@@ -264,7 +266,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const calculate = () => {
         items.value.forEach(item => {
             const quantity = calculateQuantity(item)
-            cartItems.value[item.id] = { quantity }
+            const existingItem = cartItems.value[item.id]
+            const checked = existingItem?.checked !== false // preserve existing checked state, default to true
+            cartItems.value[item.id] = { quantity, checked }
         })
 
         updateGlassQuantity(selectedGlassID.value)
@@ -292,9 +296,11 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
 
         allItems.forEach(item => {
-            const quantity = cartItems.value[item.id]?.quantity || 0
+            const cartItem = cartItems.value[item.id]
+            const quantity = cartItem?.quantity || 0
+            const isChecked = cartItem?.checked !== false // default to true if undefined
 
-            if (!quantity) return
+            if (!quantity || !isChecked) return
 
             totalPriceWithoutDiscount += 0
             totalPriceWithDiscount += itemPrice(item.id) * quantity
@@ -318,6 +324,29 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return item
     }
 
+    // const resetItem = (itemId: number) => {
+    //     if (cartItems.value[itemId]) {
+    //         cartItems.value[itemId].quantity = 0
+    //     }
+    // }
+
+    const toggleItemChecked = (itemId: number) => {
+        // Initialize item if it doesn't exist
+        if (!cartItems.value[itemId]) {
+            // Check if this is a calculated item or manually added item
+            const item = items.value.find(i => i.id === itemId)
+            const initialQuantity = item ? calculateQuantity(item) : 0
+            cartItems.value[itemId] = { quantity: initialQuantity, checked: true }
+        }
+
+        const currentChecked = cartItems.value[itemId].checked ?? true
+        const newCheckedState = !currentChecked
+        cartItems.value[itemId].checked = newCheckedState
+        
+        // Don't modify quantity when toggling checked state
+        // The quantity should remain as is for user flexibility
+    }
+
     return {
         items,
         glasses,
@@ -330,6 +359,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         calculate,
         initiateCartItems,
         getItemInfo,
+        toggleItemChecked,
         user,
         categories,
         wholesale_factor,

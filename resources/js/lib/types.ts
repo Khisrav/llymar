@@ -64,6 +64,7 @@ export interface ItemProperty {
 
 export interface CartItem {
     quantity: number;
+    checked?: boolean;
 }
 
 export interface User {

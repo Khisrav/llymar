@@ -27,20 +27,20 @@ const removeItem = (item_id: number) => {
 	<img :src="getImageSource(props.item.img as string) || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="w-20 md:w-24 rounded-md object-cover mr-4" />
 	<div class="flex-1">
 		<div class="flex justify-between text-xs md:text-base">
-			<h3 class="font-medium">
+			<h3 class="font-medium" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through'">
 				{{ props.item.name || "Неизвестная деталь" }}
 			</h3>
 			<div>
-			    <p class="font-medium ml-4">{{
-			        currencyFormatter(itemsStore.cartItems[props.item.id].quantity * itemPrice)
+			    <p class="font-medium ml-4" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through'">{{
+			        currencyFormatter(itemsStore.cartItems[props.item.id || 0].quantity * itemPrice)
 			    }}</p>
 			</div>
 		</div>
 		<p class="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-300">Цена: {{ currencyFormatter(itemPrice) }}/{{ props.item.unit }}</p>
-		<p class="block md:hidden mt-1 text-xs md:text-sm">Всего: <b>{{ currencyFormatter(itemsStore.cartItems[props.item.id].quantity * itemPrice) }}</b></p>
+		<p class="block md:hidden mt-1 text-xs md:text-sm">Всего: <b>{{ currencyFormatter(itemsStore.cartItems[props.item.id || 0].quantity * itemPrice) }}</b></p>
 		<div class="flex justify-between gap-2 md:gap-4 items-center mt-2">
 		    <div>
-		        <NumberField v-model="itemsStore.cartItems[props.item.id].quantity">
+		        <NumberField v-model="itemsStore.cartItems[props.item.id || 0].quantity">
                     <NumberFieldContent>
                         <NumberFieldDecrement />
                         <NumberFieldInput class="h-8 md:h-auto" />

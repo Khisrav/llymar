@@ -27,11 +27,11 @@ const removeItem = (item_id: number) => {
 	<img :src="getImageSource(props.item.img as string) || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="w-20 md:w-24 rounded-md object-cover mr-4" />
 	<div class="flex-1">
 		<div class="flex justify-between text-xs md:text-base">
-			<h3 class="font-medium" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through'">
+			<h3 class="font-medium" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through text-gray-500'">
 				{{ props.item.name || "Неизвестная деталь" }}
 			</h3>
 			<div>
-			    <p class="font-medium ml-4" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through'">{{
+			    <p class="font-medium ml-4" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through text-gray-500'">{{
 			        currencyFormatter(itemsStore.cartItems[props.item.id || 0].quantity * itemPrice)
 			    }}</p>
 			</div>

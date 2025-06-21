@@ -42,7 +42,7 @@ const addItemToCart = (itemId: number) => {
                     <Button 
                         :variant="(itemsStore.cartItems[item.id || 0]?.checked ?? true) ? 'outline' : 'destructive'"
                         size="icon"
-                        class="h-7 text-xs"
+                        class="h-7 w-7 text-xs"
                         @click="itemsStore.toggleItemChecked(item.id || 0)"
                     >
                         <Check v-if="itemsStore.cartItems[item.id || 0]?.checked ?? true" class="w-3 h-3" />

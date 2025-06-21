@@ -50,7 +50,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const initiateCartItems = () => {
         if (sessionStorage.getItem('cartItems')) {
-            cartItems.value = JSON.parse(sessionStorage.getItem('cartItems') as string)
+            const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
+            // Ensure all existing cart items have the checked property
+            Object.keys(savedCartItems).forEach(key => {
+                if (savedCartItems[+key].checked === undefined) {
+                    savedCartItems[+key].checked = true // Default to checked for existing items
+                }
+            })
+            cartItems.value = savedCartItems
         }
 
         if (sessionStorage.getItem('selectedGlassID')) {
@@ -217,30 +224,48 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
 
     const updateGlassQuantity = (glassID: number) => {
+        // Store existing checked states before deletion
+        const existingCheckedStates: { [key: number]: boolean } = {}
+        glasses.value.forEach(glass => {
+            if (cartItems.value[glass.id]) {
+                existingCheckedStates[glass.id] = cartItems.value[glass.id].checked ?? true
+            }
+        })
+
         glasses.value.forEach(glass => {
             delete cartItems.value[glass.id]
         })
 
         if (glassID == -1) return
 
+        const existingCheckedState = existingCheckedStates[glassID] ?? true // Use stored state or default to true
         cartItems.value[glassID] = {
             quantity: parseFloat((openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height
             }, 0) / 1000000).toFixed(2)),
-            checked: true
+            checked: existingCheckedState
         }
     }
 
     const updateServicesQuantity = (servicesID: number[]) => {
+        // Store existing checked states before deletion
+        const existingCheckedStates: { [key: number]: boolean } = {}
+        services.value.forEach(service => {
+            if (cartItems.value[service.id]) {
+                existingCheckedStates[service.id] = cartItems.value[service.id].checked ?? true
+            }
+        })
+
         services.value.forEach(service => {
             delete cartItems.value[service.id]
         })
 
         servicesID.forEach(serviceID => {
+            const existingCheckedState = existingCheckedStates[serviceID] ?? true
             //388 это распил
             if ([388].includes(serviceID)) {
                 // console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
-                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0), checked: true }
+                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0), checked: existingCheckedState }
             }
             else if (serviceID == 386) {
                 let q = 0
@@ -249,7 +274,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
                     else q += cartItems.value[mp]?.quantity || 0
                 })
-                cartItems.value[serviceID] = { quantity: q, checked: true }
+                cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
             }
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
@@ -257,7 +282,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     quantity: openingsStore.openings.reduce((acc, { width, height }) => {
                         return acc + width * height
                     }, 0) / 1000000,
-                    checked: true
+                    checked: existingCheckedState
                 }
             }
         })

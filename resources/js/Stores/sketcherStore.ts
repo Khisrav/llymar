@@ -22,7 +22,6 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	const doorHandles = ref<ItemWithProperties[]>([])
 	const canAccessDxf = ref(false)
 	const selectedOpeningID = ref<number>(0)
-	const showSketchReference = ref(false)
 	const customHandleIdCounter = ref(1)
 	
 	// Sketch constraints
@@ -505,7 +504,6 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		doorHandles,
 		canAccessDxf,
 		selectedOpeningID,
-		showSketchReference,
 		sketch_constraints,
 		sketch_vars,
 		selectedDoorHandles,

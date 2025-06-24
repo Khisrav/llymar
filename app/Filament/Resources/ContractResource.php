@@ -18,6 +18,7 @@ use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -134,7 +135,7 @@ class ContractResource extends Resource
                             ->required(),
                         TextInput::make('counterparty_phone')
                             ->label('Телефон')
-                            ->tel()
+                            ->mask('+7 (999) 999 99-99')
                             ->required(),
                         TextInput::make('installation_address')
                             ->label('Адрес установки')
@@ -186,16 +187,17 @@ class ContractResource extends Resource
                 ->searchable()
                 ->wrap()
                 ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
-                    <div><strong>" . ($record->counterparty_fullname ?: 'Не указано') . "</strong></div>
+                    <div class='font-medium'>" . ($record->counterparty_fullname ?: '-') . "</div>
                     <div><small>{$counterparty_type[$record->counterparty_type]} | {$record->counterparty_phone}</small></div>
                     <div><small>📧 {$record->counterparty_email}</small></div>
-                    <div><small>📍 " . ($record->counterparty_address ?: 'Не указан') . "</small></div>"))
+                    <div><small>📍 " . ($record->counterparty_address ?: '-') . "</small></div>"))
                 ->toggleable(isToggledHiddenByDefault: false)
                 ->sortable(),
             Tables\Columns\TextColumn::make('installation_address')
                 ->label('Адрес установки')
                 ->sortable()
                 ->searchable()
+                ->wrap()
                 ->toggleable(isToggledHiddenByDefault: false),
             Tables\Columns\TextColumn::make('price')
                 ->label('Цена | Аванс')
@@ -204,20 +206,15 @@ class ContractResource extends Resource
                 ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
                 <div>{$record->price}₽ | {$record->advance_payment_percentage}%</div>"))
                 ->toggleable(isToggledHiddenByDefault: false),
-            Tables\Columns\TextColumn::make('date')
-                ->label('Дата')
-                ->dateTime('d.m.Y')
-                ->toggleable(isToggledHiddenByDefault: false)
-                ->sortable(),
             Tables\Columns\TextColumn::make('companyPerformer.short_name')
                 ->label('Организации')
                 ->searchable()
                 ->wrap()
                 ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
-                    <div><strong>👷 Исполнитель:</strong></div>
-                    <div><small>" . ($record->companyPerformer->short_name ?? 'Не указан') . "</small></div>
-                    <div><strong>🏭 Завод:</strong></div>
-                    <div><small>" . ($record->companyFactory->short_name ?? 'Не указан') . "</small></div>"))
+                    <div class='font-medium'>👷 Исполнитель:</div>
+                    <div><small>" . ($record->companyPerformer->short_name ?? '-') . "</small></div>
+                    <div class='font-medium'>🏭 Завод:</div>
+                    <div><small>" . ($record->companyFactory->short_name ?? '-') . "</small></div>"))
                 ->toggleable(isToggledHiddenByDefault: true)
                 ->sortable(),
             Tables\Columns\TextColumn::make('template.name')
@@ -225,19 +222,26 @@ class ContractResource extends Resource
                 ->searchable()
                 ->wrap()
                 ->formatStateUsing(fn ($record): HtmlString => new HtmlString("
-                    <div><strong>📋 Шаблон:</strong></div>
-                    <div><small>" . ($record->template->name ?? 'Не указан') . "</small></div>
-                    <div><strong>📦 Заказ:</strong></div>
-                    <div><small>" . ($record->order->order_number ?? 'Не указан') . "</small></div>"))
+                    <div class='font-medium'>📋 Шаблон:</div>
+                    <div><small>" . ($record->template->name ?? '-') . "</small></div>
+                    <div class='font-medium'>📦 Заказ:</div>
+                    <div><small>" . ($record->order->order_number ?? '-') . "</small></div>"))
                 ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('date')
+                ->label('Дата')
+                ->dateTime('d.m.Y')
+                ->toggleable(isToggledHiddenByDefault: false)
                 ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

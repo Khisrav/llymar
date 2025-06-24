@@ -97,7 +97,7 @@ const downloadCommercialOffer = async () => {
 
 const downloadListPDF = async () => {
     try {
-        toast.info("Подготовка перечня...")
+        toast.info("Подготовка спецификации...")
         const formData = {
             name: order_info.value.name,
             phone: order_info.value.phone,
@@ -122,10 +122,10 @@ const downloadListPDF = async () => {
         link.click()
         
         link.parentNode?.removeChild(link)
-        toast.success("Перечень успешно загружен")
+        toast.success("Спецификация успешно загружена")
     } catch (error) {
         console.error('Error downloading the PDF:', error)
-        toast.error("Ошибка при загрузке перечня")
+        toast.error("Ошибка при загрузке спецификации")
     }
 }
 </script>
@@ -158,7 +158,7 @@ const downloadListPDF = async () => {
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="downloadListPDF" class="cursor-pointer">
                             <ScrollText class="size-4 mr-2" />
-                            <span>Перечень</span>
+                            <span>Спецификация</span>
                         </DropdownMenuItem>
                                                 
                         <DropdownMenuSub v-if="can_access_wholesale_factors">

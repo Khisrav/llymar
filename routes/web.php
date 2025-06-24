@@ -166,6 +166,11 @@ Route::get('/dxf', function (Request $request) {
     return response()->download($filePath)/*->deleteFileAfterSend(true)*/;
 });
 
+Route::get('/test-pdf', function() {
+    $orderID = 36;
+    return OrderController::listPDF($orderID);
+});
+
 /*
  *  PUBLIC ROUTES
  */

@@ -141,9 +141,6 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 					<Separator class="my-4" />
 
-					<div v-show="sketcherStore.showSketchReference" class="flex items-center justify-center mb-2">
-						<img :src="`/assets/sketch-reference/${sketcherStore.currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
-					</div>
 					<div class="text-center">
 						<div class="text-red-400">
 							<span>Вид изнутри</span>
@@ -175,6 +172,10 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							</div>
 						</div>
 					</div>
+					
+					<div class="flex items-center justify-center mt-4">
+						<img :src="`/assets/sketch-reference/${sketcherStore.currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
+					</div>
 				</div>
 
 				<div class="col-span-9 md:col-span-3 space-y-4">
@@ -202,9 +203,6 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between mb-4 gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
-							<Button :variant="sketcherStore.showSketchReference ? 'default' : 'outline'" size="icon" @click="sketcherStore.showSketchReference = !sketcherStore.showSketchReference">
-								<CircleHelpIcon class="h-4 w-4" />
-							</Button>
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">

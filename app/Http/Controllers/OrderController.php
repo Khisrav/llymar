@@ -155,6 +155,7 @@ class OrderController extends Controller
                 'item_id'        => $itemID,
                 'item'           => $product,
                 'quantity'       => $item['quantity'],
+                'checked'        => $item['checked'] ?? true,
                 'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID),
             ];
         }, $fields['cart_items'], array_keys($fields['cart_items']));
@@ -426,6 +427,7 @@ class OrderController extends Controller
                     'item_id'        => $orderItem->item_id,
                     'item'           => $orderItem->item,
                     'quantity'       => $orderItem->quantity,
+                    'checked'        => true, // Default to true for saved orders
                     'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id),
                 ];
             })->toArray();
@@ -435,6 +437,7 @@ class OrderController extends Controller
                     'item_id'        => $item->item_id,
                     'item'           => $item->item,
                     'quantity'       => $item->quantity,
+                    'checked'        => $item->checked ?? true,
                     'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id),
                 ];
             }, $orderItems);

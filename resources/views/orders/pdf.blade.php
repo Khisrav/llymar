@@ -249,7 +249,7 @@
                         </div>
                         
                         <div class="profile-diagram">
-                            @if ($item->item->img != null)
+                            @if ($item !== null && $item->item->img != null)
                                 <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" style="max-height: 42px;max-width:100%">
                             @endif
                         </div>

@@ -85,7 +85,7 @@
         
         .profile-cell.unchecked {
             background-color: #f5f5f5;
-            color: #888;
+            /* color: #888; */
         }
         
         .profile-diagram {
@@ -117,12 +117,9 @@
         }
         
         .unchecked-overlay {
-            /* position: absolute; */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30px;
+            font-size: 10px;
             font-weight: bold;
+            margin-top: -4px;
             color: #666;
         }
         
@@ -241,35 +238,39 @@
         @foreach($rows as $row)
             <tr>
                 @foreach($row as $item)
-                    <td class="profile-cell {{ $item === null || !($item->is_checked ?? true) ? 'unchecked' : '' }}">
-                        <div class="profile-checkbox">
-                            @if($item === null || !($item->is_checked ?? true))
-                                <div class="unchecked-overlay">X</div>
-                            @endif
-                        </div>
-                        
-                        <div class="profile-diagram">
-                            @if ($item->item->img != null)
-                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" style="max-height: 42px;max-width:100%">
-                            @endif
-                        </div>
-                        
-                        <div class="profile-name">
-                            @if($item !== null)
-                                @if($item->item->vendor_code)
-                                    {{ $item->item->vendor_code }}
-                                @endif - {{ $item->item->name }}
-                            @else
-                                -
-                            @endif
-                        </div>
-                        
-                        <div class="profile-quantity">
-                            @if($item !== null)
-                                {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} ({{ in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9')) ? intval($item->quantity / 6 + 0.999) . 'шт' : '-' }})
-                            @endif
-                        </div>                        
-                    </td>
+                    @if ($item !== null)
+                        <td class="profile-cell {{ !($item->checked ?? true) ? 'unchecked' : '' }}">
+                            <div class="profile-checkbox">
+                                @if(!($item->checked ?? true))
+                                    <div class="unchecked-overlay">X</div>
+                                @endif
+                            </div>
+                            
+                            <div class="profile-diagram">
+                                @if ($item !== null && $item->item->img != null)
+                                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" style="max-height: 42px;max-width:100%">
+                                @endif
+                            </div>
+                            
+                            <div class="profile-name">
+                                @if($item !== null)
+                                    @if($item->item->vendor_code)
+                                        {{ $item->item->vendor_code }}
+                                    @endif - {{ $item->item->name }}
+                                @else
+                                    -
+                                @endif
+                                <br>
+                                {{ $item->checked }}
+                            </div>
+                            
+                            <div class="profile-quantity">
+                                @if($item !== null)
+                                    {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} ({{ in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9')) ? intval($item->quantity / 6 + 0.999) . 'шт' : '-' }})
+                                @endif
+                            </div>                        
+                        </td>
+                    @endif
                 @endforeach
             </tr>
         @endforeach

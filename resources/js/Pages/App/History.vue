@@ -119,11 +119,11 @@ const deleteOrder = (order_id: number) => {
 								            </DropdownMenuItem>
 								            <DropdownMenuItem @click="downloadListPDF(order.id)">
 								                    <ScrollTextIcon class="size-4" />
-								                    <span>Перечень PDF</span>
+								                    <span>Спецификация</span>
 								            </DropdownMenuItem>
 								            <DropdownMenuItem>
 								                    <ReceiptRussianRubleIcon class="size-4" />
-								                    <span>Счет PDF</span>
+								                    <span>Счет</span>
 								            </DropdownMenuItem>
 								            <DropdownMenuItem @click="visitSketcherPage(order.id)">
 								                <DraftingCompassIcon class="size-4" />

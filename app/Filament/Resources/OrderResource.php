@@ -243,7 +243,7 @@ class OrderResource extends Resource
                 ActionGroup::make([
                     EditAction::make(),
                     Action::make('list_pdf')
-                        ->label('Перечень PDF')
+                        ->label('Спецификация')
                         ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
                         ->openUrlInNewTab()
                         ->icon('heroicon-o-arrow-down-tray'),

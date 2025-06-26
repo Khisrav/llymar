@@ -121,6 +121,7 @@ class UserResource extends Resource
                             ->options(function () {
                                 return User::all()->pluck('name', 'id');
                             })
+                            ->default(auth()->user()->id)
                             ->required(),
                         Forms\Components\TextInput::make('name')
                             ->label('ФИО')

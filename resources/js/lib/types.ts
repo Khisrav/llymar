@@ -98,8 +98,20 @@ export interface Order {
     customer_name: string;
     customer_phone: string;
     customer_address: string;
+    order_number?: string | null;
+    ral_code?: string | null;
     created_at?: string | null;
     update_at?: string | null;
+    contracts?: Contract[];
+}
+
+export interface Contract {
+    id: number;
+    order_id: number;
+    number: string;
+    date: string;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 export interface Pagination {

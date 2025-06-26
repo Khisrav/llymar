@@ -34,8 +34,8 @@
     --accent-foreground: 0 0% 100%;
 
     /* Destructive color: #3C465A */
-    --destructive: 224 21% 29%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
 
     /* Ring color: #6C768C */
     --ring: 224 13% 49%;
@@ -74,7 +74,7 @@
     --accent: 168 10% 43%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 224 21% 29%;
+    --destructive: 0 100% 75%;
     --destructive-foreground: 210 40% 98%;
 
     --ring: 224 13% 49%;

@@ -260,8 +260,6 @@
                                 @else
                                     -
                                 @endif
-                                <br>
-                                {{ $item->checked }}
                             </div>
                             
                             <div class="profile-quantity">

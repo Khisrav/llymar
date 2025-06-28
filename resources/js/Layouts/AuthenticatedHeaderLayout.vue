@@ -8,14 +8,17 @@ import { Link } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
 import { usePage } from "@inertiajs/vue3"
 
-const { can_access_app_calculator, can_access_admin_panel } = usePage().props as any
+const { can_access_app_calculator, can_access_app_history, can_access_admin_panel } = usePage().props as any
 const { user } = usePage().props.auth as any
 
 const navigationMenu = computed(() => {
     const menu = [
         { title: 'Главная', to: '/' },
-        { title: 'История', to: '/app/history' },
     ]
+
+    if (can_access_app_history) {
+        menu.push({ title: 'История', to: '/app/history' })
+    }
 
     if (can_access_app_calculator) {
         menu.push({ title: 'Калькулятор', to: '/app/calculator' })

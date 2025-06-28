@@ -12,6 +12,7 @@ use App\Models\OrderOpening;
 use App\Models\WholesaleFactor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -27,6 +28,11 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
+        if (!$user->can('access app history')) {
+            return redirect()->route('app.home');
+        }
+        
         $orders = Order::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);

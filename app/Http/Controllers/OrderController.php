@@ -357,6 +357,7 @@ class OrderController extends Controller
                 'item_id'  => $itemID,
                 'order_id' => $order->id,
                 'quantity' => $item['quantity'],
+                'checked'  => $item['checked'] ?? true,
             ]);
         }
     }
@@ -433,7 +434,7 @@ class OrderController extends Controller
                     'item_id'        => $orderItem->item_id,
                     'item'           => $orderItem->item,
                     'quantity'       => $orderItem->quantity,
-                    'checked'        => true, // Default to true for saved orders
+                    'checked'        => $orderItem->checked ?? true, // Use stored checked status
                     'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id),
                 ];
             })->toArray();

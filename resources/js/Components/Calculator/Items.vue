@@ -20,6 +20,7 @@ const isItemsListHidden = ref(false)
 const addItemToCart = (itemId: number) => {
     if (!itemsStore.cartItems[itemId]) {
         itemsStore.cartItems[itemId] = { quantity: 1, checked: true }
+        // itemsStore.calculate()
     }
 }
 </script>

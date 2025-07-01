@@ -269,12 +269,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
             }
             else if (serviceID == 386) {
                 let q = 0
+                const m_p_ = [391, 393, 394, 395, 396, 397];
                 // const m_p_ = [390, 391, 392, 393, 394, 395, 396, 397, 363, 425, 426];
-                // m_p_.forEach(mp => {
-                //     if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
-                //     else q += cartItems.value[mp]?.quantity || 0
-                // })
-                q = getItemQuantity('L1') + getItemQuantity('L3')
+                m_p_.forEach(mp => {
+                    if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
+                    else q += cartItems.value[mp]?.quantity || 0
+                })
+                // q = getItemQuantity('L1') + getItemQuantity('L3')
                 cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
             }
             //387 & 389 это монтаж и изготовление створок соответственно

@@ -266,28 +266,27 @@ class OrderController extends Controller
     {
         $order = Order::with(['orderOpenings', 'orderItems.item.itemProperties'])
             ->findOrFail($order_id);
-    
+
         $openings = $order->orderOpenings;
-    
+
         $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
             return $orderItem->item->category_id == 29;
         });
-    
-        $orderDoorHandles = $doorHandleOrderItems->pluck('item');
-        // $doorHandlesProperties = $doorHandleOrderItems->mapWithKeys(function ($orderItem) {
-        //     $item = $orderItem->item;
-        //     return [
-        //         $item->id => $item->itemProperties->pluck('value', 'name')->toArray()
-        //     ];
-        // })->toArray();
-    
-        // Log::info($doorHandlesProperties);
-    
+        Log::info($doorHandleOrderItems);
+
+        // For each door handle order item, repeat the item according to its quantity
+        $orderDoorHandles = [];
+        foreach ($doorHandleOrderItems as $orderItem) {
+            for ($i = 0; $i < $orderItem->quantity; $i++) {
+                $orderDoorHandles[] = $orderItem->item;
+            }
+        }
+        Log::info($orderDoorHandles);
+
         return Inertia::render('App/Order/Sketcher', [
             'order' => $order,
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
-            // 'door_handles_properties' => $doorHandlesProperties,
         ]);
     }
 

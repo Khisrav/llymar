@@ -384,6 +384,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         services,
         selectedGlassID,
         selectedServicesID,
+        updateServicesQuantity,
         additional_items,
         cartItems,
         total_price,

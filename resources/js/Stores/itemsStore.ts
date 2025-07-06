@@ -288,7 +288,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 }
             }
             else if ([435].includes(serviceID)) {
-                let q = getItemQuantity('L1') + getItemQuantity('L2')
+                let q = getItemQuantity('L1') + getItemQuantity('L3')
                 cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
             }
         })
@@ -384,6 +384,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         services,
         selectedGlassID,
         selectedServicesID,
+        updateServicesQuantity,
         additional_items,
         cartItems,
         total_price,

@@ -20,7 +20,8 @@ const isItemsListHidden = ref(false)
 const addItemToCart = (itemId: number) => {
     if (!itemsStore.cartItems[itemId]) {
         itemsStore.cartItems[itemId] = { quantity: 1, checked: true }
-        // itemsStore.calculate()
+        
+        itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
     }
 }
 </script>
@@ -92,6 +93,7 @@ const addItemToCart = (itemId: number) => {
                         <NumberField 
                             v-if="itemsStore.cartItems[item.id || 0]" 
                             v-model="itemsStore.cartItems[item.id || 0].quantity"
+                            @update:model-value="itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)"
                             :min="0"
                             :max="1000"
                         >

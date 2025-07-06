@@ -264,7 +264,17 @@
                             
                             <div class="profile-quantity">
                                 @if($item !== null)
-                                    {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} ({{ in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9')) ? intval($item->quantity / 6 + 0.999) . 'шт' : '-' }})
+                                    {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} (
+                                    @if($item->item->vendor_code != 'L8')
+                                        @if(in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L9')))
+                                            {{ number_format((float)$item->quantity / 6, 1) }}шт
+                                        @else
+                                            -
+                                        @endif
+                                    @else
+                                        {{ number_format((float)$item->quantity / 2, 1) }}шт
+                                    @endif
+                                    )
                                 @endif
                             </div>                        
                         </td>

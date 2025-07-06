@@ -20,6 +20,16 @@ class Item extends Model
         'quantity_in_warehouse',
         'vendor_code',
         'is_for_llymar',
+        'kz',
+        'pz',
+        'k1',
+        'p1',
+        'k2',
+        'p2',
+        'k3',
+        'p3',
+        'k4',
+        'pr',
     ];
 
     /**

@@ -143,5 +143,9 @@
             @endforeach
         </tbody>
     </table>
+    {{-- total price --}}
+    <div style="text-align: right; margin-top: 20px;font-weight:bold">
+        <p>Итого: {{ number_format((float)$order->total_price, 0, '.', '') }} руб.</p>
+    </div>
 </body>
 </html>

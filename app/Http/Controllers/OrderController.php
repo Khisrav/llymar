@@ -187,6 +187,63 @@ class OrderController extends Controller
     }
 
     /**
+     * Generate and download simple list PDF for a temporary order (e.g., from a calculator).
+     */
+    public static function simpleListFromCalcPDF(Request $request)
+    {
+        $fields = $request->validate([
+            'name'        => 'required|string|max:255',
+            'phone'       => 'required|string',
+            'address'     => 'required|string',
+            'email'       => 'required|email',
+            'cart_items'  => 'required|array',
+            'openings'    => 'required|array',
+            'total_price' => 'required|numeric',
+        ]);
+
+        // Create a temporary Order instance (not persisted)
+        $order = new Order([
+            'user_id'          => auth()->id(),
+            'customer_name'    => $fields['name'],
+            'customer_phone'   => $fields['phone'],
+            'customer_address' => $fields['address'],
+            'customer_email'   => $fields['email'],
+            'total_price'      => $fields['total_price'],
+        ]);
+
+        // Map cart items to include item details and computed total price.
+        $orderItems = array_map(function ($item, $itemID) {
+            $product = Item::findOrFail($itemID);
+            return (object)[
+                'item_id'        => $itemID,
+                'item'           => $product,
+                'quantity'       => $item['quantity'],
+                'checked'        => $item['checked'] ?? true,
+                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID),
+            ];
+        }, $fields['cart_items'], array_keys($fields['cart_items']));
+
+        // Map openings.
+        $orderOpenings = array_map(function ($opening) {
+            return (object)[
+                'type'   => $opening['type'],
+                'doors'  => $opening['doors'],
+                'width'  => $opening['width'],
+                'height' => $opening['height'],
+            ];
+        }, $fields['openings']);
+
+        $data = self::preparePdfData($order, $orderItems, $orderOpenings);
+        $pdf = Pdf::loadView('orders.list_pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
+
+        $pdfName = "list_" . ($order->order_number ?? 'temp') . "_" . date('Y-m-d') . ".pdf";
+        // return $pdf->download($pdfName);
+        return $pdf->stream($pdfName);
+    }
+
+    /**
      * Generate and download a commercial offer PDF.
      */
     public static function commercialOfferPDF(Request $request)

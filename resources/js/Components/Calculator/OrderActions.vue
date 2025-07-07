@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, BadgePercentIcon, EllipsisVertical, FilePenIcon, Printer, Ruler, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, BadgePercentIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -95,7 +95,7 @@ const downloadCommercialOffer = async () => {
     }
 }
 
-const downloadListPDF = async () => {
+const downloadSpecificationPDF = async () => {
     try {
         toast.info("Подготовка спецификации...")
         const formData = {
@@ -117,7 +117,7 @@ const downloadListPDF = async () => {
         const link = document.createElement('a')
     
         link.href = url
-        link.setAttribute('download', `list_${new Date().toISOString().split('T')[0]}.pdf`)
+        link.setAttribute('download', `specification_${new Date().toISOString().split('T')[0]}.pdf`)
         document.body.appendChild(link)
         link.click()
         
@@ -126,6 +126,40 @@ const downloadListPDF = async () => {
     } catch (error) {
         console.error('Error downloading the PDF:', error)
         toast.error("Ошибка при загрузке спецификации")
+    }
+}
+
+const downloadListPDF = async () => {
+    try {
+        toast.info("Подготовка перечня...")
+        const formData = {
+            name: order_info.value.name,
+            phone: order_info.value.phone,
+            address: order_info.value.address,
+            email: order_info.value.email,
+            cart_items: itemsStore.cartItems,
+            openings: openingsStore.openings,
+            total_price: itemsStore.total_price.with_discount,
+        }
+    
+        const response = await axios.post('/orders/simple-list-from-calc', formData, {
+            responseType: 'blob', 
+            headers: { 'Content-Type': 'application/json' }
+        })
+    
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+    
+        link.href = url
+        link.setAttribute('download', `list_${new Date().toISOString().split('T')[0]}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        
+        link.parentNode?.removeChild(link)
+        toast.success("Перечень успешно загружен")
+    } catch (error) {
+        console.error('Error downloading the PDF:', error)
+        toast.error("Ошибка при загрузке перечня")
     }
 }
 </script>
@@ -156,9 +190,13 @@ const downloadListPDF = async () => {
                             <Printer class="size-4 mr-2" />
                             <span>Печать КП</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem @click="downloadListPDF" class="cursor-pointer">
+                        <DropdownMenuItem @click="downloadSpecificationPDF" class="cursor-pointer">
                             <ScrollText class="size-4 mr-2" />
                             <span>Спецификация</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="downloadListPDF" class="cursor-pointer">
+                            <FileText class="size-4 mr-2" />
+                            <span>Перечень</span>
                         </DropdownMenuItem>
                                                 
                         <DropdownMenuSub v-if="can_access_wholesale_factors">

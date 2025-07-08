@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, BadgePercentIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -13,12 +13,7 @@ import { Link, router, usePage } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
-import { computed, ref, watch } from "vue"
-import DropdownMenuSub from "../ui/dropdown-menu/DropdownMenuSub.vue"
-import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.vue"
-import { DropdownMenuPortal } from "radix-vue"
-import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
-import { WholesaleFactor } from "../../lib/types"
+import { computed, ref } from "vue"
 import { Toaster } from "../ui/sonner"
 import { toast } from "vue-sonner"
 
@@ -26,23 +21,7 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-itemsStore.factor_groups = usePage().props.factor_groups as WholesaleFactor[]
-sessionStorage.setItem('factor_groups', JSON.stringify(itemsStore.factor_groups))
-
-const factor_groups = ref(itemsStore.factor_groups)
-const selected_factor_group = ref(sessionStorage.getItem('selected_factor_group') || itemsStore.user.wholesale_factor_key)
-
-//init
-commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
-itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === selected_factor_group.value)
-
-watch(selected_factor_group, (newValue) => {
-    commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
-    itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
-    sessionStorage.setItem('selected_factor_group', newValue as string)
-})
-
-const { can_access_app_cart, can_access_wholesale_factors } = usePage().props as any
+const { can_access_app_cart } = usePage().props as any
 
 // SNP for Surname Name Patronymic
 const snp = ref({
@@ -71,7 +50,6 @@ const downloadCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage.toFixed(2),
-            wholesale_factor: itemsStore.wholesale_factor
         }
 
         const response = await axios.post('/orders/commercial-offer', formData, {
@@ -177,8 +155,8 @@ const downloadListPDF = async () => {
             <div class="flex gap-2 md:gap-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon" class="hover:bg-accent rounded-xl" :style="{ backgroundColor: itemsStore.wholesale_factor?.color || 'currentColor' }">
-                            <EllipsisVertical class="h-4 w-4" :style="{ color: itemsStore.wholesale_factor?.color || 'currentColor', visibility: 'hidden' }" />
+                        <Button variant="outline" size="icon" class="hover:bg-accent rounded-xl">
+                            <EllipsisVertical class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-56">
@@ -198,34 +176,6 @@ const downloadListPDF = async () => {
                             <FileText class="size-4 mr-2" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
-                                                
-                        <DropdownMenuSub v-if="can_access_wholesale_factors">
-                            <DropdownMenuSubTrigger class="w-full flex gap-2 hover:text-white cursor-pointer">
-                                <BadgePercentIcon 
-                                    class="size-4 mr-2"
-                                />
-                                <span>Коэффициенты</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem 
-                                        v-for="factor_group in factor_groups" 
-                                        :key="factor_group.group_name" 
-                                        @click="selected_factor_group = factor_group.group_name" 
-                                        :class="{ 'bg-accent': factor_group.group_name === selected_factor_group }" 
-                                        class="mb-1 cursor-pointer flex items-center gap-2"
-                                    >
-                                        <div 
-                                            v-if="factor_group.color" 
-                                            class="w-3 h-3 rounded-full shrink-0" 
-                                            :style="{ backgroundColor: factor_group.color }"
-                                        ></div>
-                                        <div v-else class="w-3 h-3 rounded-full bg-gray-300 shrink-0"></div>
-                                        <span>{{ factor_group.group_name }}</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link href="/app/cart" v-if="can_access_app_cart">

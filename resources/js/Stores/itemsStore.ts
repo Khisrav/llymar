@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
-import { Item, CartItem, User, Category, WholesaleFactor } from '../lib/types'
+import { Item, CartItem, User, Category } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 
 export const useItemsStore = defineStore('itemsStore', () => {
@@ -14,10 +14,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const cartItems = ref<{ [key: number]: CartItem }>({})
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
-    const wholesale_factor = ref<WholesaleFactor>()
     const markupPercentage = ref(0)
-
-    const factor_groups = ref<WholesaleFactor[]>([])
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -311,10 +308,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         if (!item) return 0;
 
-        const category = categories.value.find(c => c.id === item?.category_id)
-        const ku = category?.reduction_factors?.find(ku => ku.key === wholesale_factor.value?.reduction_factor_key)
-
-        return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
+        return item.purchase_price;
     }
 
     const total_price = computed(() => {
@@ -394,9 +388,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         toggleItemChecked,
         user,
         categories,
-        wholesale_factor,
         itemPrice,
         markupPercentage,
-        factor_groups,
     }
 })

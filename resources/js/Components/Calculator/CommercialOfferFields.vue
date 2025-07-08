@@ -26,14 +26,7 @@ commercialOfferStore.commercialOffer.manufacturer = {
     phone: itemsStore.user.phone || '',
 }
 
-// Initialize factor group
-// commercialOfferStore.commercialOffer.wholesale_factor_key = selected_factor_group.value
 
-// Watch for factor group changes
-// watch(selected_factor_group, (newValue) => {
-//     commercialOfferStore.commercialOffer.wholesale_factor_key = newValue
-//     itemsStore.wholesale_factor = factor_groups.value.find(fg => fg.group_name === newValue)
-// })
 </script>
 
 <template>
@@ -96,21 +89,7 @@ commercialOfferStore.commercialOffer.manufacturer = {
                                placeholder="+7 (999) 999-99-99" />
                     </div>
 
-                    <!-- <div class="mb-4">
-                        <Label class="mb-2 block">Группа коэффициентов:</Label>
-                        <Select v-model="selected_factor_group">
-                            <SelectTrigger class="w-full">
-                                <SelectValue placeholder="Выберите группу" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="factor_group in factor_groups" 
-                                           :key="factor_group.id" 
-                                           :value="factor_group.group_name">
-                                    {{ factor_group.group_name }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div> -->
+
                 </div>
             </div>
         </div>

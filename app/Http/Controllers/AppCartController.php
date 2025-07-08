@@ -6,7 +6,7 @@ use App\Models\Category;
 use App\Models\Item;
 use Inertia\Inertia;
 use App\Models\LlymarCalculatorItem;
-use App\Models\WholesaleFactor;
+
 
 class AppCartController extends Controller
 {
@@ -23,7 +23,6 @@ class AppCartController extends Controller
             'services' => $this->getServices(),
             'user' => $user,
             'categories' => Category::all()->toArray(),
-            'wholesale_factor' => WholesaleFactor::where('name', $user->wholesale_factor_key)->first(),
         ]);
     }
     

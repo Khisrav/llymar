@@ -179,7 +179,7 @@ function groupArraysByProperties($arrays, $properties) {
             
                         @if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']]))
                             @php
-                                $price = App\Models\Item::itemPrice($offer['glass']['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                $price = App\Models\Item::itemPrice($offer['glass']['id']) * $markupPercentage;
                                 $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
                                 $total = $price * $quantity;
                             @endphp
@@ -196,7 +196,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @foreach ($offer['additional_items'] as $item)
                             @if (isset($offer['cart_items'][$item['id']]))
                                 @php
-                                    $price = App\Models\Item::itemPrice($item['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                    $price = App\Models\Item::itemPrice($item['id']) * $markupPercentage;
                                     $quantity = $offer['cart_items'][$item['id']]['quantity'];
                                     $total = $price * $quantity;
                                 @endphp
@@ -214,7 +214,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @foreach ($offer['services'] as $service)
                             @if (isset($offer['cart_items'][$service['id']]))
                                 @php
-                                    $price = App\Models\Item::itemPrice($service['id'], $offer['wholesale_factor']['group_name']) * $markupPercentage;
+                                    $price = App\Models\Item::itemPrice($service['id']) * $markupPercentage;
                                     $quantity = $offer['cart_items'][$service['id']]['quantity'];
                                     $total = $price * $quantity;
                                 @endphp

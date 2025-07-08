@@ -32,8 +32,6 @@ class User extends Authenticatable implements FilamentUser
         'phone',
         'address',
         'role',
-        // 'reduction_factor_key',
-        'wholesale_factor_key',
         'inn',
         'kpp',
         'current_account',

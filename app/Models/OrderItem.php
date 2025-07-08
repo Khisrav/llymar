@@ -57,7 +57,7 @@ class OrderItem extends Model
     }
     
     /**
-     * Calculate the total price of this OrderItem.
+     * Calculate the total price of this OrderItem (simplified).
      *
      * @return float
      */
@@ -68,34 +68,7 @@ class OrderItem extends Model
             return 0.0;
         }
 
-        // Retrieve the Order and its associated User
-        $order = Order::find($this->order_id);
-        if (! $order) return 0.0;
-        
-        $user = User::find($order->user_id);
-        if (! $user) return 0.0;
-
-        // Get user keys
-        $wholesaleFactor = WholesaleFactor::where('group_name', $user->wholesale_factor_key);
-        
-        // $wholesaleFactorKey = $wholesaleFactor->value('name'); //OPT1, OPT2... value
-        $reductionFactorKey = $wholesaleFactor->value('reduction_factor_key'); //KU1, KU2... key
-
-        // Fetch wholesale factor (default to 1 if not found)
-        $wholesaleFactorValue = $wholesaleFactor->value('value') ?? 1.0;
-
-        // Fetch reduction factors for this item's category
-        $category = Category::find($item->category_id);
-        $reductionFactors = $category ? $category->reduction_factors : [];
-
-        // Find matching factor in the array (default to 1 if not found)
-        $foundFactor = collect($reductionFactors)->firstWhere('key', $reductionFactorKey);
-        $reductionFactorValue = $foundFactor['value'] ?? 1.0;
-
-        // Final total = purchase price * quantity * factors
-        return $item->purchase_price
-            * $this->quantity
-            * floatval($wholesaleFactorValue)
-            * floatval($reductionFactorValue);
+        // Simple total = purchase price * quantity
+        return $item->purchase_price * $this->quantity;
     }
 }

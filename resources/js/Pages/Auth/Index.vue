@@ -16,6 +16,7 @@ const form = useForm({
 			<div class="mx-auto grid w-[350px] gap-6">
 				<div class="grid gap-2 text-center">
 					<h1 class="text-3xl font-bold">Вход</h1>
+					<p class="text-red-600 font-semibold">Технические работы до пятницы 11-го. Вход временно доступен только для супер-админов.</p>
 					<p class="text-balance text-muted-foreground">Добро пожаловать снова!</p>
 				</div>
 				<div class="grid gap-4">

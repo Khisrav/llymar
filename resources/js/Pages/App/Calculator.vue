@@ -3,7 +3,7 @@ import Openings from '../../Components/Calculator/Openings.vue';
 import AuthenticatedHeaderLayout from '../../Layouts/AuthenticatedHeaderLayout.vue';
 import { useItemsStore } from '../../Stores/itemsStore';
 import { Head, usePage } from '@inertiajs/vue3';
-import { Category, Item, User, WholesaleFactor } from '../../lib/types';
+import { Category, Item, User } from '../../lib/types';
 import Items from '../../Components/Calculator/Items.vue';
 import Additionals from '../../Components/Calculator/Additionals.vue';
 import OrderActions from '../../Components/Calculator/OrderActions.vue';
@@ -18,7 +18,6 @@ itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
-itemsStore.wholesale_factor = usePage().props.wholesale_factor as WholesaleFactor
 
 itemsStore.initiateCartItems()
 itemsStore.calculate()

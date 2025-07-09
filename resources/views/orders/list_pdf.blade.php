@@ -123,6 +123,7 @@
                 <th class="nowrap">Картинка</th>
                 <th class="nowrap">Деталь</th>
                 <th class="nowrap">Кол-во</th>
+                <th class="nowrap">Цена</th>
             </tr>
         </thead>
         <tbody>
@@ -139,13 +140,14 @@
                     </td>
                     <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
                     <td class="nowrap">{{  number_format((float)$item->quantity, 2, '.', '') }} {{ $item->item->unit }}</td>
+                    <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor), 0, '.', '') }} ₽</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
     {{-- total price --}}
     <div style="text-align: right; margin-top: 20px;font-weight:bold">
-        <p>Итого: {{ number_format((float)$order->total_price, 0, '.', '') }} руб.</p>
+        <p>Итого ({{ strtoupper($selected_factor ?? 'kz') }}): {{ number_format((float)$order->total_price, 0, '.', '') }} руб.</p>
     </div>
 </body>
 </html>

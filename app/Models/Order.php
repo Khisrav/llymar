@@ -20,6 +20,7 @@ class Order extends Model
         'customer_phone',
         'customer_address',
         'ral_code',
+        'selected_factor',
     ];
     
     //do changes into warehouse_records when order is created/deleted

@@ -57,47 +57,31 @@ class Item extends Model
     }
 
     /**
-     * Calculate the item price based on the user's wholesale factor
-     * and the category's reduction factors. Utilizes caching to reduce
-     * repeated DB queries.
+     * Get the item price based on the selected factor.
      *
      * @param  int  $itemId
+     * @param  string  $factor  The factor to use (kz, k1, k2, k3, k4)
      * @return float
      */
-    public static function itemPrice(int $itemId, string $user_wholesale_factor_key = null): float
+    public static function itemPrice(int $itemId, string $factor = 'kz'): float
     {
         // Retrieve the item or throw a 404 error if not found
         $item = self::findOrFail($itemId);
     
-        // Determine the user's wholesale factor key
-        $user_wholesale_factor_key = $user_wholesale_factor_key ?? Auth::user()->wholesale_factor_key;
-    
-        // Retrieve the wholesale factor and reduction factor key
-        $wholesaleFactor = WholesaleFactor::where('group_name', $user_wholesale_factor_key);
-        $reductionFactorKey = $wholesaleFactor->value('reduction_factor_key');
-        
-        // Cache the wholesale factor value for 60 minutes
-        $wholesaleFactorValue = Cache::remember(
-            "wholesale_factor_value_{$user_wholesale_factor_key}",
-            60,
-            fn() => $wholesaleFactor->value('value') ?? 1.0
-        );
-    
-        // Cache the reduction factors for the item's category for 60 minutes
-        $reductionFactors = Cache::remember(
-            "category_{$item->category_id}_reduction_factors",
-            60,
-            fn() => $item->category?->reduction_factors ?? []
-        );
-    
-        // Determine the reduction factor value
-        $reductionFactorValue = collect($reductionFactors)
-            ->firstWhere('key', $reductionFactorKey)['value'] ?? 1.0;
-    
-        Log::info("wholesale_factor_value: {$wholesaleFactorValue}, reduction_factor_value: {$reductionFactorValue}");
-    
-        // Calculate and return the final price
-        return $item->purchase_price * $wholesaleFactorValue * $reductionFactorValue;
+        // Get the appropriate factor value and price
+        switch (strtolower($factor)) {
+            case 'k1':
+                return $item->purchase_price * ($item->k1 ?? 1.0);
+            case 'k2':
+                return $item->purchase_price * ($item->k2 ?? 1.0);
+            case 'k3':
+                return $item->purchase_price * ($item->k3 ?? 1.0);
+            case 'k4':
+                return $item->purchase_price * ($item->k4 ?? 1.0);
+            case 'kz':
+            default:
+                return $item->purchase_price * ($item->kz ?? 1.0);
+        }
     }
 
 }

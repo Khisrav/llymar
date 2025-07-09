@@ -75,8 +75,6 @@ export interface User {
     phone?: string;
     company?: string;
     discount: number;
-    // reduction_factor_key?: string;
-    wholesale_factor_key?: string;
     inn?: string;
     kpp?: string;
     bik?: string;
@@ -125,20 +123,6 @@ export interface Category {
     name: string;
     created_at: string | null;
     updated_at: string;
-    reduction_factors: ReductionFactor[] | null;
-}
-
-export interface ReductionFactor {
-    key: string;
-    value: string | number;
-}
-
-export interface WholesaleFactor {
-    group_name: string;
-    name: string;
-    value: number;
-    reduction_factor_key: string;
-    color?: string;
 }
 
 export interface CommercialOffer {
@@ -155,7 +139,6 @@ export interface CommercialOffer {
         company: string;
         phone: string;
     },
-    wholesale_factor_key?: string;
 }
 
 export interface Contract {

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
-import { Item, CartItem, User, Category, WholesaleFactor } from '../lib/types'
+import { Item, CartItem, User, Category } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 
 export const useItemsStore = defineStore('itemsStore', () => {
@@ -14,10 +14,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const cartItems = ref<{ [key: number]: CartItem }>({})
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
-    const wholesale_factor = ref<WholesaleFactor>()
     const markupPercentage = ref(0)
-
-    const factor_groups = ref<WholesaleFactor[]>([])
+    const selectedFactor = ref('kz')
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -44,6 +42,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
         sessionStorage.setItem('cartItems', JSON.stringify(newCartItems))
     }, { deep: true })
 
+    // Watch for factor changes and recalculate totals
+    watch(selectedFactor, () => {
+        // No need to recalculate individual item quantities since factor only affects pricing
+        // The total_price computed will automatically recalculate when selectedFactor changes
+    })
+
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']
     const CENTER_TYPE = ['center']
@@ -64,7 +68,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             selectedGlassID.value = JSON.parse(sessionStorage.getItem('selectedGlassID') as string)
         } else {
             if (glasses.value.length) {
-                selectedGlassID.value = glasses.value[0].id
+                selectedGlassID.value = glasses.value[0].id as number
             }
         }
 
@@ -81,7 +85,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             })
 
             allItems.forEach(item => {
-                cartItems.value[item.id] = { quantity: 0, checked: true }
+                cartItems.value[item.id as number] = { quantity: 0, checked: true }
             })
         }
     }
@@ -227,13 +231,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
         // Store existing checked states before deletion
         const existingCheckedStates: { [key: number]: boolean } = {}
         glasses.value.forEach(glass => {
-            if (cartItems.value[glass.id]) {
-                existingCheckedStates[glass.id] = cartItems.value[glass.id].checked ?? true
+            if (cartItems.value[glass.id as number]) {
+                existingCheckedStates[glass.id as number] = cartItems.value[glass.id as number].checked ?? true
             }
         })
 
         glasses.value.forEach(glass => {
-            delete cartItems.value[glass.id]
+            delete cartItems.value[glass.id as number]
         })
 
         if (glassID == -1) return
@@ -251,13 +255,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
         // Store existing checked states before deletion
         const existingCheckedStates: { [key: number]: boolean } = {}
         services.value.forEach(service => {
-            if (cartItems.value[service.id]) {
-                existingCheckedStates[service.id] = cartItems.value[service.id].checked ?? true
+            if (cartItems.value[service.id as number]) {
+                existingCheckedStates[service.id as number] = cartItems.value[service.id as number].checked ?? true
             }
         })
 
         services.value.forEach(service => {
-            delete cartItems.value[service.id]
+            delete cartItems.value[service.id as number]
         })
 
         servicesID.forEach(serviceID => {
@@ -297,9 +301,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const calculate = () => {
         items.value.forEach(item => {
             const quantity = calculateQuantity(item)
-            const existingItem = cartItems.value[item.id]
+            const existingItem = cartItems.value[item.id as number]
             const checked = existingItem?.checked !== false // preserve existing checked state, default to true
-            cartItems.value[item.id] = { quantity, checked }
+            cartItems.value[item.id as number] = { quantity, checked }
         })
 
         updateGlassQuantity(selectedGlassID.value)
@@ -311,10 +315,30 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         if (!item) return 0;
 
-        const category = categories.value.find(c => c.id === item?.category_id)
-        const ku = category?.reduction_factors?.find(ku => ku.key === wholesale_factor.value?.reduction_factor_key)
+        // Apply the selected factor to the purchase price
+        const factor = selectedFactor.value.toLowerCase()
+        let multiplier = 1.0
 
-        return item.purchase_price * ((ku?.value as number) || 1) * (wholesale_factor.value?.value || 1);
+        switch (factor) {
+            case 'k1':
+                multiplier = (item as any).k1 ?? 1.0
+                break
+            case 'k2':
+                multiplier = (item as any).k2 ?? 1.0
+                break
+            case 'k3':
+                multiplier = (item as any).k3 ?? 1.0
+                break
+            case 'k4':
+                multiplier = (item as any).k4 ?? 1.0
+                break
+            case 'kz':
+            default:
+                multiplier = (item as any).kz ?? 1.0
+                break
+        }
+
+        return item.purchase_price * multiplier;
     }
 
     const total_price = computed(() => {
@@ -327,14 +351,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
 
         allItems.forEach(item => {
-            const cartItem = cartItems.value[item.id]
+            const cartItem = cartItems.value[item.id as number]
             const quantity = cartItem?.quantity || 0
             const isChecked = cartItem?.checked !== false // default to true if undefined
 
             if (!quantity || !isChecked) return
 
             totalPriceWithoutDiscount += 0
-            totalPriceWithDiscount += itemPrice(item.id) * quantity
+            totalPriceWithDiscount += itemPrice(item.id as number) * quantity
         })
 
         return {
@@ -394,9 +418,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
         toggleItemChecked,
         user,
         categories,
-        wholesale_factor,
         itemPrice,
         markupPercentage,
-        factor_groups,
+        selectedFactor,
     }
 })

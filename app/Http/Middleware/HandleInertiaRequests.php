@@ -44,7 +44,6 @@ class HandleInertiaRequests extends Middleware
                 'can_access_app_calculator' => false,
                 'can_access_admin_panel' => false,
                 'can_access_app_cart' => false,
-                'can_access_wholesale_factors' => false,
                 'can_access_dxf' => false
             ];
         }
@@ -60,7 +59,6 @@ class HandleInertiaRequests extends Middleware
             'can_access_app_history' => $user->can('access app history'),
             'can_access_admin_panel' => $user->can('access admin panel'),
             'can_access_app_cart' => $user->can('access app cart'),
-            'can_access_wholesale_factors' => $user->can('access app wholesale-factors'),
             'can_access_dxf' => ($user->can('access dxf') && $user->can_access_dxf) || $user->hasRole('Super-Admin'),
         ];
     }

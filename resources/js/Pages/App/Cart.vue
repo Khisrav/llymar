@@ -6,7 +6,7 @@ import { router } from "@inertiajs/vue3"
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
 import Button from "../../Components/ui/button/Button.vue"
 import { useItemsStore } from "../../Stores/itemsStore"
-import { Category, Item, OpeningType, User, WholesaleFactor } from "../../lib/types"
+import { Category, Item, OpeningType, User } from "../../lib/types"
 import CartItem from "../../Components/Cart/CartItem.vue"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import Input from "../../Components/ui/input/Input.vue"
@@ -35,13 +35,7 @@ itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
 
-if (itemsStore.factor_groups.length === 0) {
-	itemsStore.factor_groups = sessionStorage.getItem('factor_groups') ? JSON.parse(sessionStorage.getItem('factor_groups') as string) : []
-}
 
-const selected_factor_group = ref(sessionStorage.getItem('selected_factor_group') || itemsStore.user.wholesale_factor_key)
-
-itemsStore.wholesale_factor = itemsStore.factor_groups.find(fg => fg.group_name === selected_factor_group.value)
 
 itemsStore.initiateCartItems()
 
@@ -82,6 +76,7 @@ const checkout = () => {
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,
 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
+		selected_factor: itemsStore.selectedFactor,
 	}
 
 	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
@@ -104,7 +99,7 @@ const checkout = () => {
 <template>
 	<Head title="Корзина" />
 	<AuthenticatedHeaderLayout />
-	<div class="container p-0 md:p-4">
+	<div class="container p-0 md:p-4 mb-8">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
 				<Link href="/app/calculator"

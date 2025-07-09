@@ -68,6 +68,11 @@ class OrderResource extends Resource
                                     ->label('Цвет RAL')
                                     ->columnSpan(2),
                                     
+                                TextInput::make('selected_factor')
+                                    ->label('Коэффициент')
+                                    ->disabled()
+                                    ->columnSpan(2),
+                                    
                                 TextInput::make('user_id')
                                     ->label('Кем создан')
                                     ->disabled()

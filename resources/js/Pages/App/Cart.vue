@@ -76,6 +76,7 @@ const checkout = () => {
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,
 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
+		selected_factor: itemsStore.selectedFactor,
 	}
 
 	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
@@ -98,7 +99,7 @@ const checkout = () => {
 <template>
 	<Head title="Корзина" />
 	<AuthenticatedHeaderLayout />
-	<div class="container p-0 md:p-4">
+	<div class="container p-0 md:p-4 mb-8">
 		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
 				<Link href="/app/calculator"

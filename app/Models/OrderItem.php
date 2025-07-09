@@ -57,18 +57,19 @@ class OrderItem extends Model
     }
     
     /**
-     * Calculate the total price of this OrderItem (simplified).
+     * Calculate the total price of this OrderItem using a specific factor.
      *
+     * @param string $factor The factor to use (kz, k1, k2, k3, k4)
      * @return float
      */
-    public function itemTotalPrice(): float
+    public function itemTotalPrice(string $factor = 'kz'): float
     {
         $item = $this->item;
         if (! $item) {
             return 0.0;
         }
 
-        // Simple total = purchase price * quantity
-        return $item->purchase_price * $this->quantity;
+        // Calculate total using Item::itemPrice with the specified factor
+        return Item::itemPrice($item->id, $factor) * $this->quantity;
     }
 }

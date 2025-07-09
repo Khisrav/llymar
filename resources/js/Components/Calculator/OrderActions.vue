@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText } from "lucide-vue-next"
+import { ArrowRightIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText, Calculator } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -7,13 +7,17 @@ import DropdownMenuContent from "../ui/dropdown-menu/DropdownMenuContent.vue"
 import DropdownMenuLabel from "../ui/dropdown-menu/DropdownMenuLabel.vue"
 import DropdownMenuSeparator from "../ui/dropdown-menu/DropdownMenuSeparator.vue"
 import DropdownMenuItem from "../ui/dropdown-menu/DropdownMenuItem.vue"
+import DropdownMenuSub from "../ui/dropdown-menu/DropdownMenuSub.vue"
+import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.vue"
+import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
+import { DropdownMenuPortal } from "radix-vue"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { Link, router, usePage } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import { Toaster } from "../ui/sonner"
 import { toast } from "vue-sonner"
 
@@ -22,6 +26,26 @@ const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
 const { can_access_app_cart } = usePage().props as any
+
+// Factor management
+const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || 'kz')
+const factors = [
+    { key: 'kz', label: 'KZ' },
+    { key: 'k1', label: 'K1' },
+    { key: 'k2', label: 'K2' },
+    { key: 'k3', label: 'K3' },
+    { key: 'k4', label: 'K4' },
+]
+
+// Watch for factor changes and update session storage
+watch(selectedFactor, (newValue) => {
+    sessionStorage.setItem('selectedFactor', newValue)
+    // Trigger recalculation in items store
+    itemsStore.selectedFactor = newValue
+})
+
+// Initialize factor in items store
+itemsStore.selectedFactor = selectedFactor.value
 
 // SNP for Surname Name Patronymic
 const snp = ref({
@@ -50,6 +74,7 @@ const downloadCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage.toFixed(2),
+            selected_factor: selectedFactor.value,
         }
 
         const response = await axios.post('/orders/commercial-offer', formData, {
@@ -84,6 +109,7 @@ const downloadSpecificationPDF = async () => {
             cart_items: itemsStore.cartItems,
             openings: openingsStore.openings,
             total_price: itemsStore.total_price.with_discount,
+            selected_factor: selectedFactor.value,
         }
     
         const response = await axios.post('/orders/list-pdf-from-calc', formData, {
@@ -118,6 +144,7 @@ const downloadListPDF = async () => {
             cart_items: itemsStore.cartItems,
             openings: openingsStore.openings,
             total_price: itemsStore.total_price.with_discount,
+            selected_factor: selectedFactor.value,
         }
     
         const response = await axios.post('/orders/simple-list-from-calc', formData, {
@@ -148,14 +175,14 @@ const downloadListPDF = async () => {
     <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 backdrop-blur-sm p-2 sm:p-4 bg-white/75 dark:bg-slate-900/75 ring-1 ring-black/5 sm:rounded-xl md:rounded-2xl shadow-sm">
         <div class="flex items-center justify-between">
             <div class="flex flex-col">
-                <span class="text-xs font-thin text-muted-foreground">Закупочная цена:</span>
+                <span class="text-xs font-thin text-muted-foreground">Цена ({{ selectedFactor.toUpperCase() }}):</span>
                 <span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</span>
             </div>
 
             <div class="flex gap-2 md:gap-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon" class="hover:bg-accent rounded-xl">
+                        <Button variant="outline" size="icon" class="">
                             <EllipsisVertical class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -176,6 +203,29 @@ const downloadListPDF = async () => {
                             <FileText class="size-4 mr-2" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger class="w-full flex gap-2 active:text-white cursor-pointer">
+                                <Calculator class="size-4 mr-2" />
+                                <span>Коэффициенты</span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem 
+                                        v-for="factor in factors" 
+                                        :key="factor.key" 
+                                        @click="selectedFactor = factor.key" 
+                                        :class="{ 'bg-accent text-white': factor.key === selectedFactor }" 
+                                        class="mb-1 cursor-pointer flex items-center gap-2"
+                                    >
+                                        <!-- <div class="w-3 h-3 rounded-full bg-primary shrink-0"></div> -->
+                                        <span>{{ factor.label }}</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link href="/app/cart" v-if="can_access_app_cart">

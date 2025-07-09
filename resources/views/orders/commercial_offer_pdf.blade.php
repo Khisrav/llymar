@@ -179,7 +179,7 @@ function groupArraysByProperties($arrays, $properties) {
             
                         @if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']]))
                             @php
-                                $price = App\Models\Item::itemPrice($offer['glass']['id']) * $markupPercentage;
+                                $price = App\Models\Item::itemPrice($offer['glass']['id'], $selected_factor ?? 'kz') * $markupPercentage;
                                 $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
                                 $total = $price * $quantity;
                             @endphp
@@ -196,7 +196,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @foreach ($offer['additional_items'] as $item)
                             @if (isset($offer['cart_items'][$item['id']]))
                                 @php
-                                    $price = App\Models\Item::itemPrice($item['id']) * $markupPercentage;
+                                    $price = App\Models\Item::itemPrice($item['id'], $selected_factor ?? 'kz') * $markupPercentage;
                                     $quantity = $offer['cart_items'][$item['id']]['quantity'];
                                     $total = $price * $quantity;
                                 @endphp
@@ -214,7 +214,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @foreach ($offer['services'] as $service)
                             @if (isset($offer['cart_items'][$service['id']]))
                                 @php
-                                    $price = App\Models\Item::itemPrice($service['id']) * $markupPercentage;
+                                    $price = App\Models\Item::itemPrice($service['id'], $selected_factor ?? 'kz') * $markupPercentage;
                                     $quantity = $offer['cart_items'][$service['id']]['quantity'];
                                     $total = $price * $quantity;
                                 @endphp
@@ -230,7 +230,7 @@ function groupArraysByProperties($arrays, $properties) {
                         @endforeach
                     </tbody>
                 </table>
-                <p style="text-align: right;font-size:14px;">Итого: {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
+                <p style="text-align: right;font-size:14px;">Итого ({{ strtoupper($selected_factor ?? 'kz') }}): {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
             </td>
             <td style="vertical-align: top;border:none">
                 <table>

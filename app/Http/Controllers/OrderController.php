@@ -56,6 +56,7 @@ class OrderController extends Controller
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
             'ral_code'    => 'nullable',
+            'selected_factor' => 'sometimes|string',
         ]);
 
         try {
@@ -142,7 +143,10 @@ class OrderController extends Controller
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
+            'selected_factor' => 'sometimes|string',
         ]);
+
+        $selectedFactor = $fields['selected_factor'] ?? 'kz';
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
@@ -155,14 +159,14 @@ class OrderController extends Controller
         ]);
 
         // Map cart items to include item details and computed total price.
-        $orderItems = array_map(function ($item, $itemID) {
+        $orderItems = array_map(function ($item, $itemID) use ($selectedFactor) {
             $product = Item::findOrFail($itemID);
             return (object)[
                 'item_id'        => $itemID,
                 'item'           => $product,
                 'quantity'       => $item['quantity'],
                 'checked'        => $item['checked'] ?? true,
-                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID),
+                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
             ];
         }, $fields['cart_items'], array_keys($fields['cart_items']));
 
@@ -177,6 +181,7 @@ class OrderController extends Controller
         }, $fields['openings']);
 
         $data = self::preparePdfData($order, $orderItems, $orderOpenings);
+        $data['selected_factor'] = $selectedFactor; // Add factor to data
         $pdf = Pdf::loadView('orders.pdf', $data)
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);
@@ -199,7 +204,10 @@ class OrderController extends Controller
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
+            'selected_factor' => 'sometimes|string',
         ]);
+
+        $selectedFactor = $fields['selected_factor'] ?? 'kz';
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
@@ -212,14 +220,14 @@ class OrderController extends Controller
         ]);
 
         // Map cart items to include item details and computed total price.
-        $orderItems = array_map(function ($item, $itemID) {
+        $orderItems = array_map(function ($item, $itemID) use ($selectedFactor) {
             $product = Item::findOrFail($itemID);
             return (object)[
                 'item_id'        => $itemID,
                 'item'           => $product,
                 'quantity'       => $item['quantity'],
                 'checked'        => $item['checked'] ?? true,
-                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID),
+                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
             ];
         }, $fields['cart_items'], array_keys($fields['cart_items']));
 
@@ -234,6 +242,7 @@ class OrderController extends Controller
         }, $fields['openings']);
 
         $data = self::preparePdfData($order, $orderItems, $orderOpenings);
+        $data['selected_factor'] = $selectedFactor; // Add factor to data
         $pdf = Pdf::loadView('orders.list_pdf', $data)
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);
@@ -246,50 +255,37 @@ class OrderController extends Controller
     /**
      * Generate and download a commercial offer PDF.
      */
-    public static function commercialOfferPDF(Request $request)
+    public function commercialOfferPDF(Request $request)
     {
-        $offer = $request->validate([
-            'customer'          => 'required|array',
-            'manufacturer'      => 'required|array',
-            'openings'          => 'required|array',
-            'additional_items'  => 'required|array',
-            'services'          => 'array',
-            'glass'             => 'array',
-            'cart_items'        => 'required|array',
-            'total_price'       => 'required|numeric',
-            'markup_percentage' => 'required|numeric',
-        ]);
-        
-        $additional_items = $offer['additional_items'];
-        
-        // foreach ($offer['additional_items'] as $item_group) {
-        //     $additional_items[] = $item_group[0];
-        // }
-        
-        // $offer['additional_items'] = $additional_items;
+        $customer = $request->get('customer');
+        $manufacturer = $request->get('manufacturer');
+        $openings = $request->get('openings');
+        $additional_items = $request->get('additional_items');
+        $glass = $request->get('glass');
+        $services = $request->get('services');
+        $cart_items = $request->get('cart_items');
+        $total_price = $request->get('total_price');
+        $markup_percentage = $request->get('markup_percentage');
+        $selected_factor = $request->get('selected_factor', 'kz');
 
-        $offerAdditionalsPrice = self::calculateOfferAdditionalsPrice($offer);
-        $offerOpeningsPrice = $offer['total_price'] - $offerAdditionalsPrice;
+        $offer = [
+            'customer' => $customer,
+            'manufacturer' => $manufacturer,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+        ];
 
-        $user = auth()->user();
-        
-        $pdf = Pdf::loadView('orders.commercial_offer_pdf', [
-                'offer'                   => $offer,
-                'additional_items'        => $additional_items,
-                'offer_additionals_price' => $offerAdditionalsPrice,
-                'offer_openings_price'    => $offerOpeningsPrice,
-                'glass'                   => $offer['glass'],
-            ])
-            ->setPaper('a4', 'landscape')
-            ->setOptions(['isRemoteEnabled' => true]);
+        $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
+            'offer',
+            'selected_factor'
+        ))->setPaper('a4', 'landscape');
 
-        $pdfName = "offer_" . ($request->order_number ?? 'temp') . "_" . date('Y-m-d') . ".pdf";
-        $pdfContent = $pdf->output();
-
-        return Response::make($pdfContent, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => "attachment; filename=\"{$pdfName}\"",
-        ]);
+        return $pdf->download('commercial_offer.pdf');
     }
 
     /**
@@ -393,6 +389,7 @@ class OrderController extends Controller
             'customer_email'   => $data['email'] ?? '',
             'total_price'      => $data['total_price'],
             'ral_code'         => $data['ral_code'] ?? null,
+            'selected_factor'  => $data['selected_factor'] ?? 'kz',
         ]);
 
         // Generate a simple order number.
@@ -484,23 +481,23 @@ class OrderController extends Controller
         ): array {
         // Prepare order items.
         if (is_null($orderItems)) {
-            $orderItems = $order->orderItems->map(function ($orderItem) {
+            $orderItems = $order->orderItems->map(function ($orderItem) use ($order) {
                 return (object)[
                     'item_id'        => $orderItem->item_id,
                     'item'           => $orderItem->item,
                     'quantity'       => $orderItem->quantity,
                     'checked'        => $orderItem->checked ?? true, // Use stored checked status
-                    'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id),
+                    'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id, $order->selected_factor ?? 'kz'),
                 ];
             })->toArray();
         } else {
-            $orderItems = array_map(function ($item) {
+            $orderItems = array_map(function ($item) use ($order) {
                 return (object)[
                     'item_id'        => $item->item_id,
                     'item'           => $item->item,
                     'quantity'       => $item->quantity,
                     'checked'        => $item->checked ?? true,
-                    'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id),
+                    'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id, $order->selected_factor ?? 'kz'),
                 ];
             }, $orderItems);
         }
@@ -530,6 +527,7 @@ class OrderController extends Controller
             'order'         => $order,
             'orderItems'    => $orderItems,
             'orderOpenings' => $orderOpenings,
+            'selected_factor' => $order->selected_factor ?? 'kz',
         ];
     }
 
@@ -539,10 +537,11 @@ class OrderController extends Controller
     private static function calculateOfferAdditionalsPrice(array $offer): float
     {
         $offerAdditionalsPrice = 0;
+        $selectedFactor = $offer['selected_factor'] ?? 'kz';
 
         foreach ($offer['additional_items'] as $item) {
             if (isset($offer['cart_items'][$item['id']])) {
-                $price = Item::itemPrice($item['id']);
+                $price = Item::itemPrice($item['id'], $selectedFactor);
                 $quantity = $offer['cart_items'][$item['id']]['quantity'];
                 $offerAdditionalsPrice += $price * $quantity;
             }
@@ -550,18 +549,19 @@ class OrderController extends Controller
 
         foreach ($offer['services'] ?? [] as $service) {
             if (isset($offer['cart_items'][$service['id']])) {
-                $price = Item::itemPrice($service['id']);
+                $price = Item::itemPrice($service['id'], $selectedFactor);
                 $quantity = $offer['cart_items'][$service['id']]['quantity'];
                 $offerAdditionalsPrice += $price * $quantity;
             }
         }
 
         if (isset($offer['glass']['id'], $offer['cart_items'][$offer['glass']['id']])) {
-            $price = Item::itemPrice($offer['glass']['id']);
+            $price = Item::itemPrice($offer['glass']['id'], $selectedFactor);
             $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
             $offerAdditionalsPrice += $price * $quantity;
         }
 
         return $offerAdditionalsPrice;
     }
+
 }

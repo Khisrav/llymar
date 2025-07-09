@@ -57,18 +57,31 @@ class Item extends Model
     }
 
     /**
-     * Get the item price (simplified - just returns purchase price).
+     * Get the item price based on the selected factor.
      *
      * @param  int  $itemId
+     * @param  string  $factor  The factor to use (kz, k1, k2, k3, k4)
      * @return float
      */
-    public static function itemPrice(int $itemId): float
+    public static function itemPrice(int $itemId, string $factor = 'kz'): float
     {
         // Retrieve the item or throw a 404 error if not found
         $item = self::findOrFail($itemId);
     
-        // Simply return the purchase price
-        return $item->purchase_price;
+        // Get the appropriate factor value and price
+        switch (strtolower($factor)) {
+            case 'k1':
+                return $item->purchase_price * ($item->k1 ?? 1.0);
+            case 'k2':
+                return $item->purchase_price * ($item->k2 ?? 1.0);
+            case 'k3':
+                return $item->purchase_price * ($item->k3 ?? 1.0);
+            case 'k4':
+                return $item->purchase_price * ($item->k4 ?? 1.0);
+            case 'kz':
+            default:
+                return $item->purchase_price * ($item->kz ?? 1.0);
+        }
     }
 
 }

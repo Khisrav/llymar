@@ -3,11 +3,14 @@ import { Link, useForm } from "@inertiajs/vue3";
 import Label from "../../Components/ui/label/Label.vue";
 import Input from "../../Components/ui/input/Input.vue";
 import Button from "../../Components/ui/button/Button.vue";
+import { ref } from "vue";
 
 const form = useForm({
 	email: "",
 	password: "",
 })
+
+const showFormCnt = ref(0)
 </script>
 
 <template>
@@ -15,11 +18,11 @@ const form = useForm({
 		<div class="flex items-center justify-center py-12">
 			<div class="mx-auto grid w-[350px] gap-6">
 				<div class="grid gap-2 text-center">
-					<h1 class="text-3xl font-bold">Вход</h1>
-					<p class="text-red-600 font-semibold">Технические работы до пятницы 11-го. Вход временно доступен только для супер-админов.</p>
+					<h1 class="text-3xl font-bold" @click="() => showFormCnt++">Вход</h1>
 					<p class="text-balance text-muted-foreground">Добро пожаловать снова!</p>
+					<p class="text-red-600 font-semibold">Технические работы до пятницы 11-го. Вход временно доступен только для супер-админов.</p>
 				</div>
-				<div class="grid gap-4">
+				<div class="grid gap-4" v-if="showFormCnt >= 5">
 					<form @submit.prevent="form.post('/login')" class="space-y-4">
 						<div class="grid gap-2">
 							<Label for="email">Email</Label>
@@ -64,7 +67,7 @@ const form = useForm({
 			</div>
 		</div>
 		<div class="hidden bg-muted lg:block">
-			<img src="/storage/mockuper.jpg" alt="Image" width="1920" height="1080" class="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
+			<img src="/assets/login-page.jpg" alt="Image" width="1920" height="1080" class="h-screen w-full object-cover dark:brightness-[0.2] dark:grayscale" />
 		</div>
 	</div>
 </template>

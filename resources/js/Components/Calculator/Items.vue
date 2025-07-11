@@ -3,6 +3,7 @@ import { useItemsStore } from '../../Stores/itemsStore'
 import { ref } from 'vue';
 import { Eye, EyeOff, PlusIcon, RotateCcw, Check, X } from 'lucide-vue-next';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
+import { quantityFormatter } from '../../Utils/quantityFormatter';
 import { getImageSource } from '../../Utils/getImageSource';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -82,7 +83,7 @@ const addItemToCart = (itemId: number) => {
                         <!-- <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>
                             <span class="font-bold text-muted-foreground text-sm">
-                                {{ itemsStore.cartItems[item.id || 0]?.quantity ?? 0 }} {{ item.unit }}
+                                {{ quantityFormatter(itemsStore.cartItems[item.id || 0]?.quantity ?? 0) }} {{ item.unit }}
                             </span>
                         </div> -->
                     </div>

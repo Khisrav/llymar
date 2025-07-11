@@ -140,7 +140,7 @@
                         @endif
                     </td>
                     <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
-                    <td class="nowrap">{{  number_format((float)$item->quantity, 2, '.', '') }} {{ $item->item->unit }}</td>
+                                            <td class="nowrap">{{ rtrim(rtrim(number_format((float)$item->quantity, 2, '.', ''), '0'), '.') }} {{ $item->item->unit }}</td>
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor), 0, '.', '') }} ₽</td>
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor) * $item->quantity, 0, '.', '') }} ₽</td>
                 </tr>

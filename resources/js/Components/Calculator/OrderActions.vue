@@ -25,7 +25,7 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const { can_access_app_cart } = usePage().props as any
+const { can_access_app_cart, can_access_factors } = usePage().props as any
 
 // Factor management
 const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || 'kz')
@@ -204,9 +204,9 @@ const downloadListPDF = async () => {
                             <span>Перечень</span>
                         </DropdownMenuItem>
                         
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator v-if="can_access_factors" />
                         
-                        <DropdownMenuSub>
+                        <DropdownMenuSub v-if="can_access_factors">
                             <DropdownMenuSubTrigger class="w-full flex gap-2 active:text-white cursor-pointer">
                                 <Calculator class="size-4 mr-2" />
                                 <span>Коэффициенты</span>

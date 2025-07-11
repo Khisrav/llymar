@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useOpeningStore } from './openingsStore'
 import { Item, CartItem, User, Category } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
+import { parseQuantity } from '../Utils/quantityFormatter'
 
 export const useItemsStore = defineStore('itemsStore', () => {
     const openingsStore = useOpeningStore()
@@ -244,9 +245,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         const existingCheckedState = existingCheckedStates[glassID] ?? true // Use stored state or default to true
         cartItems.value[glassID] = {
-            quantity: parseFloat((openingsStore.openings.reduce((acc, { width, height }) => {
+            quantity: parseQuantity((openingsStore.openings.reduce((acc, { width, height }) => {
                 return acc + width * height
-            }, 0) / 1000000).toFixed(2)),
+            }, 0) / 1000000)),
             checked: existingCheckedState
         }
     }
@@ -285,9 +286,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
                 cartItems.value[serviceID] = {
-                    quantity: openingsStore.openings.reduce((acc, { width, height }) => {
+                    quantity: parseQuantity(openingsStore.openings.reduce((acc, { width, height }) => {
                         return acc + width * height
-                    }, 0) / 1000000,
+                    }, 0) / 1000000),
                     checked: existingCheckedState
                 }
             }
@@ -300,7 +301,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const calculate = () => {
         items.value.forEach(item => {
-            const quantity = calculateQuantity(item)
+            const quantity = parseQuantity(calculateQuantity(item))
             const existingItem = cartItems.value[item.id as number]
             const checked = existingItem?.checked !== false // preserve existing checked state, default to true
             cartItems.value[item.id as number] = { quantity, checked }

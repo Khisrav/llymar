@@ -30,15 +30,8 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+        
         $request->session()->regenerate();
-
-        // Block all users except super admins
-        if (!Auth::user()->hasRole('Super-Admin')) {
-            Auth::logout();
-            return redirect()->route('login')->withErrors([
-                'email' => 'Технические работы до пятницы 11-го. Вход временно доступен только для супер-админов.'
-            ]);
-        }
 
         // return redirect()->intended(route('dashboard', absolute: false));
         return redirect()->route('app.home');

@@ -66,6 +66,7 @@ class OrderItemsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Кол-во')
+                    ->formatStateUsing(fn ($state) => rtrim(rtrim(number_format($state, 2, '.', ''), '0'), '.'))
                     ->suffix(function (Model $record) {
                         return ' ' . Item::find($record->item_id)->unit;
                     })

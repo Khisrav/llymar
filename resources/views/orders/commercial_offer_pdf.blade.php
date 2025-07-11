@@ -189,7 +189,7 @@ function groupArraysByProperties($arrays, $properties) {
                                 <td>
                                     <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($offer['glass']['img'][0] != '/' ? '/' : '') . $offer['glass']['img']))) }}" alt="" width="40">
                                 </td>
-                                <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $offer['glass']['unit'] }}</td>
+                                <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $offer['glass']['unit'] }}</td>
                             </tr>
                         @endif
                         
@@ -206,7 +206,7 @@ function groupArraysByProperties($arrays, $properties) {
                                     <td>
                                         <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item['img'][0] != '/' ? '/' : '') . $item['img']))) }}" alt="" width="40">
                                     </td>
-                                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $item['unit'] }}</td>
+                                    <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $item['unit'] }}</td>
                                 </tr>
                             @endif
                         @endforeach
@@ -224,7 +224,7 @@ function groupArraysByProperties($arrays, $properties) {
                                     <td>
                                         <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($service['img'][0] != '/' ? '/' : '') . $service['img']))) }}" alt="" width="40">
                                     </td>
-                                    <td class="nowrap">{{ number_format($quantity, 2, '.', ' ') }} {{ $service['unit'] }}</td>
+                                    <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $service['unit'] }}</td>
                                 </tr>
                             @endif
                         @endforeach

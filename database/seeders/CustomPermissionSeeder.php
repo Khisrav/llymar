@@ -19,11 +19,12 @@ class CustomPermissionSeeder extends Seeder
             'access app history',
             'access app cart',
             'access app wholesale-factors',
-            'access dxf'
+            'access dxf',
+            'access factors'
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
     }
 }

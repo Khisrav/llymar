@@ -5,6 +5,7 @@ import { useItemsStore } from '../../Stores/itemsStore'
 import { getImageSource } from '../../Utils/getImageSource'
 import Button from '../ui/button/Button.vue';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
+import { quantityFormatter, parseQuantity } from '../../Utils/quantityFormatter';
 import NumberField from '../ui/number-field/NumberField.vue';
 import NumberFieldContent from '../ui/number-field/NumberFieldContent.vue';
 import NumberFieldDecrement from '../ui/number-field/NumberFieldDecrement.vue';
@@ -16,7 +17,7 @@ const itemsStore = useItemsStore()
 
 const props = defineProps<{ item: Item }>()
 
-const itemPrice = itemsStore.itemPrice(props.item.id)
+const itemPrice = itemsStore.itemPrice(props.item.id || 0)
 
 const removeItem = (item_id: number) => {
     delete itemsStore.cartItems[item_id]
@@ -24,7 +25,7 @@ const removeItem = (item_id: number) => {
 </script>
 
 <template>
-	<img :src="getImageSource(props.item.img as string) || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="w-20 md:w-24 rounded-md object-cover mr-4" />
+	<img :src="getImageSource(props.item.img || '') || '/placeholder.jpg'" :alt="props.item.name || 'Item Image'" class="w-20 md:w-24 rounded-md object-cover mr-4" />
 	<div class="flex-1">
 		<div class="flex justify-between text-xs md:text-base">
 			<h3 class="font-medium" :class="itemsStore.cartItems[props.item.id || 0].checked ? '' : 'line-through text-gray-500'">
@@ -50,7 +51,7 @@ const removeItem = (item_id: number) => {
 		    </div>
 
 			<div>
-			    <Button variant="outline" size="icon" class="size-8 md:size-10" @click="removeItem(props.item.id)">
+			    <Button variant="outline" size="icon" class="size-8 md:size-10" @click="removeItem(props.item.id || 0)">
     				<TrashIcon class="h-4 w-4" />
     			</Button>
 			</div>

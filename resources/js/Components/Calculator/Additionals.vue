@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useItemsStore } from "../../Stores/itemsStore";
 import { currencyFormatter } from "../../Utils/currencyFormatter";
+import { quantityFormatter } from "../../Utils/quantityFormatter";
 import { ref, watch } from "vue";
 import { getImageSource } from "../../Utils/getImageSource";
 import { PlusIcon, Check, X } from "lucide-vue-next";
@@ -94,7 +95,7 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
 								<span>Кол-во:</span>
-								<span v-if="selectedGlass" class="font-bold text-primary"> {{ itemsStore.cartItems[itemsStore.selectedGlassID]?.quantity || 0 }} {{ selectedGlass.unit }} </span>
+								<span v-if="selectedGlass" class="font-bold text-primary"> {{ quantityFormatter(itemsStore.cartItems[itemsStore.selectedGlassID]?.quantity || 0) }} {{ selectedGlass.unit }} </span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Итого:</span>
@@ -161,7 +162,7 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 										>
 											{{ currencyFormatter(itemsStore.itemPrice(service.id || 0) * (itemsStore.cartItems[service.id || 0]?.quantity || 0)) }}
 										</p>
-										<p class="font-semibold text-xs text-muted-foreground">{{ itemsStore.cartItems[service.id || 0]?.quantity || 0 }} {{ service.unit }}</p>
+										<p class="font-semibold text-xs text-muted-foreground">{{ quantityFormatter(itemsStore.cartItems[service.id || 0]?.quantity || 0) }} {{ service.unit }}</p>
 									</div>
 									<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id || 0)" @click="toggleSelection(service.id || 0)" />
 								</div>

@@ -266,7 +266,7 @@
                                 @if($item !== null)
                                     {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} (
                                     @if($item->item->vendor_code != 'L8')
-                                        @if(in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L9')))
+                                        @if(in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7')))
                                             {{ number_format((float)$item->quantity / 6, 1) }}шт
                                         @else
                                             -

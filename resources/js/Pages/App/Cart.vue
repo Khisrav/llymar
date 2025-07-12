@@ -27,6 +27,7 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
+const { user_default_factor } = usePage().props as any
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
@@ -34,6 +35,9 @@ itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
+
+// Initialize user's default factor
+itemsStore.initializeUserFactor(user_default_factor || 'kz')
 
 
 

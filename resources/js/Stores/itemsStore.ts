@@ -17,6 +17,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const categories = ref<Category[]>([])
     const markupPercentage = ref(0)
     const selectedFactor = ref('kz')
+    const userDefaultFactor = ref('kz')
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -52,6 +53,13 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']
     const CENTER_TYPE = ['center']
+
+    const initializeUserFactor = (defaultFactor: string) => {
+        userDefaultFactor.value = defaultFactor
+        // Use saved factor from session or fallback to user's default factor
+        const savedFactor = sessionStorage.getItem('selectedFactor')
+        selectedFactor.value = savedFactor || defaultFactor
+    }
 
     const initiateCartItems = () => {
         if (sessionStorage.getItem('cartItems')) {
@@ -415,6 +423,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         total_price,
         calculate,
         initiateCartItems,
+        initializeUserFactor,
         getItemInfo,
         toggleItemChecked,
         user,
@@ -422,5 +431,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
         itemPrice,
         markupPercentage,
         selectedFactor,
+        userDefaultFactor,
     }
 })

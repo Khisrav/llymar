@@ -25,10 +25,10 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const { can_access_app_cart, can_access_factors } = usePage().props as any
+const { can_access_app_cart, can_access_factors, user_default_factor } = usePage().props as any
 
 // Factor management
-const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || 'kz')
+const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'kz')
 const factors = [
     { key: 'kz', label: 'KZ' },
     { key: 'k1', label: 'K1' },
@@ -44,7 +44,8 @@ watch(selectedFactor, (newValue) => {
     itemsStore.selectedFactor = newValue
 })
 
-// Initialize factor in items store
+// Initialize factor in items store with user's default factor
+itemsStore.initializeUserFactor(user_default_factor || 'kz')
 itemsStore.selectedFactor = selectedFactor.value
 
 // SNP for Surname Name Patronymic

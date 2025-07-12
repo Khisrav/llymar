@@ -143,6 +143,19 @@ class UserResource extends Resource
                             ->minValue(0)
                             ->maxValue(100)
                             ->required(),
+                        Forms\Components\Select::make('default_factor')
+                            ->label('Коэффициент по умолчанию')
+                            ->native(false)
+                            ->required()
+                            ->default('kz')
+                            ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                            ->options([
+                                'kz' => 'KZ',
+                                'k1' => 'K1',
+                                'k2' => 'K2',
+                                'k3' => 'K3',
+                                'k4' => 'K4',
+                            ]),
                         Forms\Components\Select::make('country')
                             ->label('Страна')
                             ->native(false)
@@ -250,6 +263,14 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('default_factor')
+                    ->label('Коэфф-т')
+                    ->formatStateUsing(fn ($state) => strtoupper($state ?? 'kz'))
+                    ->badge()
+                    ->color('gray')
+                    ->visible(auth()->user()->hasRole('Super-Admin'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('role')

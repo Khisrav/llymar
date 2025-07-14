@@ -264,16 +264,24 @@
                             
                             <div class="profile-quantity">
                                 @if($item !== null)
-                                    {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }} (
-                                    @if($item->item->vendor_code != 'L8')
-                                        @if(in_array($item->item->vendor_code, array('L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7')))
-                                            {{ number_format((float)$item->quantity / 6, 1) }}шт
-                                        @else
-                                            -
-                                        @endif
-                                    @else
-                                        {{ number_format((float)$item->quantity / 2, 1) }}шт
-                                    @endif
+                                    {{ number_format((float)$item->quantity, 0) }}{{ $item->item->unit ?? 'шт' }}
+                                    (
+                                    @php
+                                        $quantity = (float)$item->quantity;
+                                        $vendorCode = $item->item->vendor_code;
+                                        $result = '-';
+                                
+                                        if ($vendorCode != 'L8') {
+                                            if (in_array($vendorCode, ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'])) {
+                                                $result = number_format($quantity / 6, 1) . 'шт';
+                                            } elseif ($vendorCode == 'L9') {
+                                                $result = number_format($quantity / 2, 1) . 'шт';
+                                            }
+                                        } else {
+                                            $result = number_format($quantity / 2, 1) . 'шт';
+                                        }
+                                    @endphp
+                                    {{ $result }}
                                     )
                                 @endif
                             </div>                        

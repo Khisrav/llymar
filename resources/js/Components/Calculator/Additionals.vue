@@ -50,6 +50,8 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 	if (!itemsStore.cartItems[itemId]) {
 		itemsStore.cartItems[itemId] = { quantity: step, checked: true }
 	}
+	
+	itemsStore.updateServicesQuantity([386])
 }
 </script>
 
@@ -219,6 +221,11 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 									v-model="itemsStore.cartItems[item.id || 0].quantity"
 									:min="0"
 									:max="100"
+									@update:modelValue="() => {
+										if (categoryId == 30) {
+											itemsStore.updateServicesQuantity([386])
+										}
+									}"
 									:step="step(+categoryId)"
 								>
 									<NumberFieldContent>

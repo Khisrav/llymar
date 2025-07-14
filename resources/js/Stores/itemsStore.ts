@@ -288,6 +288,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
                     else q += cartItems.value[mp]?.quantity || 0
                 })
+                additional_items.value[30].forEach(item => {
+                    if (item.id == 363) q += cartItems.value[item.id as number]?.quantity * 2 || 0
+                    else if (item.id == 425) q += cartItems.value[item.id as number]?.quantity || 0
+                })
                 // q = getItemQuantity('L1') + getItemQuantity('L3')
                 cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
             }

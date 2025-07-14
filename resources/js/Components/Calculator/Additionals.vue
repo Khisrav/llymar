@@ -51,7 +51,7 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 		itemsStore.cartItems[itemId] = { quantity: step, checked: true }
 	}
 	
-	itemsStore.updateServicesQuantity([386])
+	itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
 }
 </script>
 
@@ -223,7 +223,7 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 									:max="100"
 									@update:modelValue="() => {
 										if (categoryId == 30) {
-											itemsStore.updateServicesQuantity([386])
+											itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
 										}
 									}"
 									:step="step(+categoryId)"

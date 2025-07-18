@@ -53,13 +53,18 @@ const pricePerM2 = computed(() => {
 				<div class="font-bold">{{ currencyFormatter(basePrice) }}</div>
 			</div>
 
-			<div class="flex justify-between gap-4 mb-4">
-				<div>Наценка:</div>
-				<div class="font-bold">{{ itemsStore.markupPercentage.toFixed(2) }}%</div>
+			<div class="flex justify-between items-center gap-4 mb-4">
+				<div>Наценка в %:</div>
+				<!-- <div class="font-bold">{{ itemsStore.markupPercentage.toFixed(2) }}%</div> -->
+				<Input v-model="itemsStore.markupPercentage" type="number" class="w-24 md:w-32" />
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">
 				<Slider v-model="sliderValue" :min="-50" :max="50" :step="0.1" />
+			</div>
+
+			<div class="flex justify-between items-center gap-4">
+				
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">

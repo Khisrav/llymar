@@ -166,11 +166,6 @@ Route::get('/dxf', function (Request $request) {
     return response()->download($filePath)/*->deleteFileAfterSend(true)*/;
 });
 
-Route::get('/test-pdf', function() {
-    $orderID = 36;
-    return OrderController::listPDF($orderID);
-});
-
 /*
  *  PUBLIC ROUTES
  */
@@ -191,6 +186,8 @@ Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOffe
     ->name('orders.commercial_offer_pdf');
 Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
     ->name('orders.sketch_pdf');
+Route::get('/orders/{order}/download-bill', [OrderController::class, 'downloadBill'])
+    ->name('orders.download_bill');
 Route::post('/orders/{order_id}/dxf', [SketchController::class, 'generateDXF']);
 // Route::get('/orders/sketch', function() {
 //     // return view('orders.sketch_pdf');

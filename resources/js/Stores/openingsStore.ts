@@ -71,6 +71,17 @@ export const useOpeningStore = defineStore('openingStore', () => {
         })
     }
 
+    const clearOpenings = () => {
+        openings.value = [
+            {
+                doors: 2,
+                width: 3000,
+                height: 2700,
+                type: 'left',
+            },
+        ]
+    }
+
     return {
         openingTypes,
         defaultHeight,
@@ -80,5 +91,6 @@ export const useOpeningStore = defineStore('openingStore', () => {
         removeOpening,
         setDefaultHeightToAll,
         addDuplicateOpening,
+        clearOpenings,
     }
 })

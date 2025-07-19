@@ -66,6 +66,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
 
     const initiateCartItems = () => {
+        cartItems.value = []
+    
         if (sessionStorage.getItem('cartItems')) {
             const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
             // Ensure all existing cart items have the checked property

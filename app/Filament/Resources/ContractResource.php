@@ -31,6 +31,7 @@ class ContractResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Договоры';
+    protected static ?string $navigationGroup = 'Договоры';
 
     public static function form(Form $form): Form
     {

@@ -31,7 +31,7 @@ class ContractTemplateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
     protected static ?string $navigationLabel = 'Шаблоны договоров';
-    protected static ?string $navigationGroup = 'Настройки';
+    protected static ?string $navigationGroup = 'Договоры';
 
     public static function form(Form $form): Form
     {

@@ -69,6 +69,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
+                    ->label('Договоры')
+                    ->icon('heroicon-o-document-text'),
+                NavigationGroup::make()
                     ->label('Пользователи')
                     // ->collapsed()
                     ->icon('heroicon-o-user-group'),

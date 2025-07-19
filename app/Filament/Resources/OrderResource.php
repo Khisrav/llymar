@@ -8,6 +8,7 @@ use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationMana
 use App\Models\Contract;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\TochkaBankService;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -24,6 +25,7 @@ use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class OrderResource extends Resource
 {
@@ -34,7 +36,7 @@ class OrderResource extends Resource
     
     public static function getEloquentQuery(): Builder
     {
-        $parent_user = auth()->user();
+        $parent_user = Auth::user();
         $child_users = User::where('parent_id', $parent_user->id)->pluck('id')->toArray();
     
         if ($parent_user->hasRole('Super-Admin') || $parent_user->hasRole('Workman')) {
@@ -137,7 +139,7 @@ class OrderResource extends Resource
 
     public static function table(Tables\Table $table): Tables\Table
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if ($user->hasRole('Super-Admin') || $user->hasRole('Operator') || $user->hasRole('Workman')) {
             $StatusColumn = SelectColumn::make('status')
                 ->label('Статус')
@@ -184,7 +186,7 @@ class OrderResource extends Resource
         }
         return $table
             ->modifyQueryUsing(function (Builder $query): Builder {
-                if (auth()->user()->hasRole('Workman')) {
+                if (Auth::user()->hasRole('Workman')) {
                     return $query->whereIn('status', ['assembled', 'paid']);
                 }
                 
@@ -226,6 +228,16 @@ class OrderResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 $StatusColumn,
+                TextColumn::make('invoice_id')
+                    ->label('ID счета')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('invoice_status')
+                    ->label('Статус счета')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -262,11 +274,91 @@ class OrderResource extends Resource
                         ->url(fn (Order $record) => route('filament.admin.resources.contracts.edit', ['record' => $record->contracts()->first()->id]))
                         ->icon('heroicon-o-document-text')
                         ->visible(fn (Order $record) => $record->contracts()->count() > 0),
+                    Action::make('create_bill')
+                        ->label('Создать счет')
+                        ->action(function (Order $record) {
+                            try {
+                                $tochkaService = new TochkaBankService();
+                                $response = $tochkaService->createBill($record);
+                                
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Успешно')
+                                    ->body('Счет создан успешно')
+                                    ->success()
+                                    ->send();
+                                    
+                                return redirect()->back();
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Ошибка')
+                                    ->body('Не удалось создать счет: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->icon('heroicon-o-plus-circle')
+                        ->visible(fn (Order $record) => empty($record->invoice_id)),
+                    Action::make('check_payment_status')
+                        ->label('Проверить оплату')
+                        ->action(function (Order $record) {
+                            try {
+                                $tochkaService = new TochkaBankService();
+                                $response = $tochkaService->getBillPaymentStatus($record);
+                                
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Статус оплаты')
+                                    ->body('Статус: ' . ($response['Data']['status'] ?? 'неизвестен'))
+                                    ->info()
+                                    ->send();
+                                    
+                                return redirect()->back();
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Ошибка')
+                                    ->body('Не удалось проверить статус: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->icon('heroicon-o-credit-card')
+                        ->visible(fn (Order $record) => !empty($record->invoice_id)),
                     Action::make('invoice_pdf')
-                        ->label('Счет PDF')
-                        ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
+                        ->label('Скачать счет PDF')
+                        ->url(function (Order $record) {
+                            return route('orders.download_bill', ['order' => $record->id]);
+                        })
                         ->openUrlInNewTab()
-                        ->icon('heroicon-o-document-currency-dollar'),
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->visible(fn (Order $record) => !empty($record->invoice_id)),
+                    Action::make('send_bill_email')
+                        ->label('Отправить на email')
+                        ->form([
+                            Forms\Components\TextInput::make('email')
+                                ->label('Email')
+                                ->email()
+                                ->required()
+                                ->default(fn (Order $record) => $record->customer_email)
+                        ])
+                        ->action(function (Order $record, array $data) {
+                            try {
+                                $tochkaService = new TochkaBankService();
+                                $response = $tochkaService->sendBillToEmail($record, $data['email']);
+                                
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Успешно')
+                                    ->body('Счет отправлен на email')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Ошибка')
+                                    ->body('Не удалось отправить счет: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->icon('heroicon-o-envelope')
+                        ->visible(fn (Order $record) => !empty($record->invoice_id)),
                     ActionsDeleteAction::make()
                         ->requiresConfirmation()
                         ->hidden(!$user->hasRole('Super-Admin')),

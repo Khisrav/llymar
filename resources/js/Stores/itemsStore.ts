@@ -21,6 +21,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
+    
+    watch(markupPercentage, (newMarkupPercentage) => {
+        markupPercentage.value = parseFloat(newMarkupPercentage.toFixed(3))
+    })
 
     watch(selectedGlassID, (newSelectedGlassID) => {
         sessionStorage.setItem('selectedGlassID', JSON.stringify(newSelectedGlassID))
@@ -62,6 +66,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
 
     const initiateCartItems = () => {
+        cartItems.value = []
+    
         if (sessionStorage.getItem('cartItems')) {
             const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
             // Ensure all existing cart items have the checked property
@@ -140,7 +146,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 const res = openings.reduce(
                     (acc, { width, type, doors }) => {
                         // If adding the opening does not exceed 6000, include it in the current group.
-                        if (acc.group + width <= 6000) {
+                        if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
                             // For a new group, record type and doors.
                             if (acc.group === 0) {
                                 acc.groupType = type;
@@ -166,7 +172,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             L3: () => {
                 const res = openings.reduce(
                     (acc, { width, type, doors }) => {
-                        if (acc.group + width <= 6000) {
+                        if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
                             if (acc.group === 0) {
                                 acc.groupType = type;
                                 acc.groupDoors = doors;

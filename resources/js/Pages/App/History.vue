@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from "@inertiajs/vue3"
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
-import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon, CalendarIcon, UserIcon, PhoneIcon, FileTextIcon, PaletteIcon } from "lucide-vue-next"
+import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon, CalendarIcon, UserIcon, PhoneIcon, FileTextIcon, PaletteIcon, SearchIcon, FilterIcon } from "lucide-vue-next"
 import { ref, computed } from "vue"
 import { Order, Pagination } from "../../lib/types"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../../Components/ui/table"
@@ -10,18 +10,35 @@ import { Button } from "../../Components/ui/button"
 import StatusBadge from "../../Components/StatusBadge.vue"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../../Components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../Components/ui/dialog"
+import { Input } from "../../Components/ui/input"
 import axios from "axios"
 import { toast } from "vue-sonner"
 import { Toaster } from "../../Components/ui/sonner"
-import { RAL } from "ral-colors/index.js"
+
+// Import RAL colors
+// @ts-ignore - RAL library doesn't have proper types
+import { RAL } from 'ral-colors/index.js'
 
 const page = usePage() as any
 const orders = ref(page.props.orders.data as Order[])
 const pagination = ref(page.props.orders.links as Pagination[])
 const deleteDialogOpen = ref(false)
 const orderToDelete = ref<number | null>(null)
+const searchQuery = ref("")
 
 const hasOrders = computed(() => orders.value.length > 0)
+
+const filteredOrders = computed(() => {
+  if (!searchQuery.value) return orders.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return orders.value.filter(order => 
+    order.order_number?.toString().includes(query) ||
+    order.customer_name?.toLowerCase().includes(query) ||
+    order.customer_phone?.includes(query) ||
+    order.ral_code?.toLowerCase().includes(query)
+  )
+})
 
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString("ru-RU", {
@@ -34,7 +51,6 @@ const formatDate = (dateString: string) => {
 const getRalColor = (ralCode: string | null) => {
 	if (!ralCode) return null
 	try {
-		// @ts-ignore - RAL library doesn't have types
 		const color = RAL.classic[ralCode]
 		return color ? { name: ralCode, hex: color.HEX } : null
 	} catch {
@@ -96,6 +112,10 @@ const deleteOrder = (order_id: number) => {
 		toast("Произошла ошибка при удалении заказа")
 	})
 }
+
+const downloadBill = (order_id: number) => {
+	window.open("/orders/" + order_id + "/download-bill", "_blank").focus()
+}
 </script>
 
 <template>
@@ -104,17 +124,32 @@ const deleteOrder = (order_id: number) => {
 	
 	<Toaster />
 
-	<div class="container mx-auto p-0 md:p-6 lg:p-8 ">
+	<div class="container mx-auto p-0 md:p-6 lg:p-8">
 		<div class="bg-background md:border md:rounded-2xl md:shadow-sm overflow-hidden">
 			<!-- Header Section -->
-			<div class="p-4 md:p-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<h1 class="text-2xl font-bold tracking-tight">История заказов</h1>
+			<div class="p-4 md:p-8">
+				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+					<div class="flex items-center gap-3">
+						<div class="p-2 bg-primary/10 rounded-lg">
+							<FolderClockIcon class="h-6 w-6 text-primary" />
+						</div>
+						<div>
+							<h1 class="text-2xl font-bold tracking-tight">История заказов</h1>
+							<p class="text-sm text-muted-foreground mt-1">
+								{{ hasOrders ? `${orders.length} заказов` : 'Управляйте своими заказами' }}
+							</p>
+						</div>
 					</div>
-					<!-- <div class="hidden md:block">
-						<FolderClockIcon class="h-10 w-10 text-muted-foreground" />
-					</div> -->
+					
+					<!-- Search Bar -->
+					<div v-if="hasOrders" class="relative w-full md:w-80">
+						<SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+						<Input
+							v-model="searchQuery"
+							placeholder="Поиск по номеру, клиенту, телефону..."
+							class="pl-10"
+						/>
+					</div>
 				</div>
 			</div>
 
@@ -122,7 +157,9 @@ const deleteOrder = (order_id: number) => {
 			<div v-if="!hasOrders" class="p-8 md:p-16">
 				<div class="text-center max-w-md mx-auto">
 					<div class="mb-6">
-						<FolderClockIcon class="h-20 w-20 mx-auto text-muted-foreground/50" />
+						<div class="mx-auto w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+							<FolderClockIcon class="h-10 w-10 text-muted-foreground" />
+						</div>
 					</div>
 					<h3 class="text-xl font-semibold mb-2">Заказов пока нет</h3>
 					<p class="text-muted-foreground mb-6">Создайте свой первый заказ, используя калькулятор</p>
@@ -135,15 +172,36 @@ const deleteOrder = (order_id: number) => {
 				</div>
 			</div>
 
+			<!-- No Search Results -->
+			<div v-else-if="hasOrders && filteredOrders.length === 0" class="p-8 md:p-16">
+				<div class="text-center max-w-md mx-auto">
+					<div class="mb-6">
+						<div class="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+							<SearchIcon class="h-8 w-8 text-muted-foreground" />
+						</div>
+					</div>
+					<h3 class="text-lg font-semibold mb-2">Ничего не найдено</h3>
+					<p class="text-muted-foreground mb-4">Попробуйте изменить поисковый запрос</p>
+					<Button variant="outline" @click="searchQuery = ''">
+						Очистить поиск
+					</Button>
+				</div>
+			</div>
+
 			<!-- Orders Content -->
 			<div v-else class="p-4 md:p-6 lg:p-8" style="padding-top: 0px !important;">
 				<!-- Mobile Cards View -->
 				<div class="md:hidden space-y-4">
-					<div v-for="order in orders" :key="order.id" class="border rounded-lg p-4 bg-card">
-						<div class="flex items-start justify-between mb-3">
+					<div 
+						v-for="(order, index) in filteredOrders" 
+						:key="order.id" 
+						class="border rounded-xl p-4 bg-card transition-all duration-200 hover:border-border/60"
+						:style="{ animationDelay: `${index * 50}ms` }"
+					>
+						<div class="flex items-start justify-between mb-4">
 							<div class="flex items-center gap-2">
-								<span class="text-sm font-mono text-muted-foreground">№</span>
-								<span class="font-semibold">{{ order.order_number || order.id }}</span>
+								<span class="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">№</span>
+								<span class="font-semibold text-lg">{{ order.order_number || order.id }}</span>
 							</div>
 							<StatusBadge :status="order.status" />
 						</div>
@@ -161,7 +219,7 @@ const deleteOrder = (order_id: number) => {
 							
 							<div class="flex items-center gap-2 text-sm">
 								<PhoneIcon class="h-4 w-4 text-muted-foreground" />
-								<a :href="'tel:' + order.customer_phone" class="text-primary hover:underline">
+								<a :href="'tel:' + order.customer_phone" class="text-primary hover:underline font-mono">
 									{{ order.customer_phone }}
 								</a>
 							</div>
@@ -171,20 +229,20 @@ const deleteOrder = (order_id: number) => {
 								<PaletteIcon class="h-4 w-4 text-muted-foreground" />
 								<div class="flex items-center gap-2">
 									<div 
-										class="w-4 h-4 rounded border border-border" 
+										class="w-4 h-4 rounded border border-border shadow-sm" 
 										:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
 									></div>
-									<span class="text-xs">{{ order.ral_code }}</span>
+									<span class="text-xs font-mono">{{ order.ral_code }}</span>
 								</div>
 							</div>
 							
-							<div class="flex items-center justify-between pt-2 border-t">
-								<div class="text-lg font-semibold">
+							<div class="flex items-center justify-between pt-3 border-t">
+								<div class="text-lg font-bold text-primary">
 									{{ currencyFormatter(order.total_price) }}
 								</div>
 								<DropdownMenu>
 									<DropdownMenuTrigger>
-										<Button variant="outline" size="sm">
+										<Button variant="outline" size="sm" class="h-8 w-8 p-0">
 											<EllipsisVerticalIcon class="h-4 w-4" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -199,19 +257,10 @@ const deleteOrder = (order_id: number) => {
 											<ScrollTextIcon class="h-4 w-4" />
 											<span>Спецификация</span>
 										</DropdownMenuItem>
-										<DropdownMenuItem>
+										<DropdownMenuItem @click="downloadBill(order.id)">
 											<ReceiptRussianRubleIcon class="h-4 w-4" />
-											<span>Счет</span>
+											<span>Счет PDF</span>
 										</DropdownMenuItem>
-										<!-- <DropdownMenuSeparator />
-										<DropdownMenuItem v-if="!hasContract(order)" @click="createContract(order.id)">
-											<FileTextIcon class="h-4 w-4" />
-											<span>Создать договор</span>
-										</DropdownMenuItem>
-										<DropdownMenuItem v-else @click="viewContract(order.id)">
-											<FileTextIcon class="h-4 w-4" />
-											<span>Просмотр договора</span>
-										</DropdownMenuItem> -->
 										<DropdownMenuSeparator />
 										<DropdownMenuItem @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
 											<TrashIcon class="h-4 w-4" />
@@ -226,23 +275,27 @@ const deleteOrder = (order_id: number) => {
 
 				<!-- Desktop Table View -->
 				<div class="hidden md:block">
-					<div class="rounded-lg border overflow-hidden">
+					<div class="rounded-lg border overflow-hidden shadow-sm">
 						<Table>
 							<TableHeader>
-								<TableRow class="bg-muted/20">
-									<TableHead class="font-semibold">№ заказа</TableHead>
-									<TableHead class="font-semibold">Дата</TableHead>
-									<TableHead class="font-semibold">Получатель</TableHead>
-									<TableHead class="font-semibold">Цвет RAL</TableHead>
-									<TableHead class="font-semibold">Сумма</TableHead>
-									<TableHead class="font-semibold">Статус</TableHead>
-									<TableHead class="font-semibold text-right">Действия</TableHead>
+								<TableRow class="bg-muted/30 hover:bg-muted/30">
+									<TableHead class="font-semibold text-sm">№ заказа</TableHead>
+									<TableHead class="font-semibold text-sm">Дата</TableHead>
+									<TableHead class="font-semibold text-sm">Получатель</TableHead>
+									<TableHead class="font-semibold text-sm">Цвет RAL</TableHead>
+									<TableHead class="font-semibold text-sm">Сумма</TableHead>
+									<TableHead class="font-semibold text-sm">Статус</TableHead>
+									<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								<TableRow v-for="order in orders" :key="order.id" class="group hover:bg-muted/30 transition-colors">
-									<TableCell class="font-mono">{{ order.order_number || order.id }}</TableCell>
-									<TableCell class="text-muted-foreground">{{ formatDate(order.created_at || '') }}</TableCell>
+								<TableRow 
+									v-for="order in filteredOrders" 
+									:key="order.id" 
+									class="group hover:bg-muted/20 transition-colors duration-150"
+								>
+									<TableCell class="font-mono font-medium">{{ order.order_number || order.id }}</TableCell>
+									<TableCell class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</TableCell>
 									<TableCell>
 										<div class="space-y-1">
 											<p class="font-medium">{{ order.customer_name }}</p>
@@ -254,21 +307,21 @@ const deleteOrder = (order_id: number) => {
 									<TableCell>
 										<div v-if="order.ral_code && getRalColor(order.ral_code)" class="flex items-center gap-2">
 											<div 
-												class="w-5 h-5 rounded border border-border" 
+												class="w-5 h-5 rounded border border-border shadow-sm" 
 												:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
 											></div>
-											<span class="text-sm">{{ order.ral_code }}</span>
+											<span class="text-sm font-mono">{{ order.ral_code }}</span>
 										</div>
 										<span v-else class="text-muted-foreground text-sm">—</span>
 									</TableCell>
-									<TableCell class="font-semibold">{{ currencyFormatter(order.total_price) }}</TableCell>
+									<TableCell class="font-bold text-primary">{{ currencyFormatter(order.total_price) }}</TableCell>
 									<TableCell>
 										<StatusBadge :status="order.status" />
 									</TableCell>
 									<TableCell class="text-right">
 										<DropdownMenu>
 											<DropdownMenuTrigger>
-												<Button variant="ghost" size="icon" class="">
+												<Button variant="ghost" size="icon" class="h-8 w-8">
 													<EllipsisVerticalIcon class="h-4 w-4" />
 												</Button>
 											</DropdownMenuTrigger>
@@ -283,19 +336,10 @@ const deleteOrder = (order_id: number) => {
 													<ScrollTextIcon class="h-4 w-4" />
 													<span>Спецификация</span>
 												</DropdownMenuItem>
-												<DropdownMenuItem>
+												<DropdownMenuItem @click="downloadBill(order.id)">
 													<ReceiptRussianRubleIcon class="h-4 w-4" />
-													<span>Счет</span>
+													<span>Счет PDF</span>
 												</DropdownMenuItem>
-												<!-- <DropdownMenuSeparator />
-												<DropdownMenuItem v-if="!hasContract(order)" @click="createContract(order.id)">
-													<FileTextIcon class="h-4 w-4" />
-													<span>Создать договор</span>
-												</DropdownMenuItem>
-												<DropdownMenuItem v-else @click="viewContract(order.id)">
-													<FileTextIcon class="h-4 w-4" />
-													<span>Просмотр договора</span>
-												</DropdownMenuItem> -->
 												<DropdownMenuSeparator />
 												<DropdownMenuItem @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
 													<TrashIcon class="h-4 w-4" />
@@ -311,7 +355,7 @@ const deleteOrder = (order_id: number) => {
 				</div>
 
 				<!-- Pagination -->
-				<div class="mt-6 md:mt-8 flex justify-center">
+				<div v-if="pagination.length > 3" class="mt-6 md:mt-8 flex justify-center">
 					<div class="flex items-center gap-1">
 						<template v-for="link in pagination" :key="link.label">
 							<Button 

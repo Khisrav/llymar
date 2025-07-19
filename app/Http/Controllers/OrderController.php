@@ -9,7 +9,7 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
-
+use App\Services\TochkaBankService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +67,18 @@ class OrderController extends Controller
                 $this->createOrderOpenings($order, $fields['openings']);
                 return $order;
             });
+
+            // Make bill in Tochka Bank
+            try {
+                $tochkaService = new TochkaBankService();
+                $tochkaService->createBill($order);
+            } catch (\Exception $e) {
+                Log::error("Failed to create Tochka Bank bill", [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+                // Optionally: continue, or return with error
+            }
 
             // Send Telegram notification after transaction commit.
             $this->notifyViaTelegram($order);
@@ -562,6 +574,36 @@ class OrderController extends Controller
         }
 
         return $offerAdditionalsPrice;
+    }
+
+    /**
+     * Download bill PDF from Tochka Bank.
+     */
+    public function downloadBill(Order $order)
+    {
+        try {
+            $tochkaService = new TochkaBankService();
+            $pdfContent = $tochkaService->getBillPDF($order);
+            
+            $filename = "invoice_{$order->id}_" . now()->format('Y-m-d') . ".pdf";
+            
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($pdfContent))
+                ->header('Cache-Control', 'no-cache, must-revalidate');
+                
+        } catch (\Exception $e) {
+            Log::error('Error downloading Tochka Bank bill', [
+                'error' => $e->getMessage(),
+                'order_id' => $order->id,
+                'invoice_id' => $order->invoice_id
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to download bill: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

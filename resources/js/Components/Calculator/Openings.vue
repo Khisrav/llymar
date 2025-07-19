@@ -106,6 +106,20 @@ watch(
 	},
 	{ deep: true }
 );
+
+const clearSessionStorage = () => {
+	sessionStorage.removeItem('selectedServicesID')
+	sessionStorage.removeItem('selectedFactor')
+	sessionStorage.removeItem('selectedGlassID')
+	sessionStorage.removeItem('cartItems')
+	sessionStorage.removeItem('openings')
+	
+	openingStore.clearOpenings()
+	
+	itemsStore.initiateCartItems()
+	itemsStore.initializeUserFactor(itemsStore.userDefaultFactor)
+	itemsStore.calculate()
+}
 </script>
 
 <template>
@@ -114,9 +128,10 @@ watch(
 
 		<div class="flex flex-col md:flex-row md:items-center gap-2 my-2">
 			<Label>Высота по умолчанию: </Label>
-			<div class="flex flex-row items-center gap-2">
+			<div class="flex flex-col sm:flex-row items-center gap-2">
 				<Input type="number" v-model="openingStore.defaultHeight" placeholder="Высота для всех, мм" class="max-w-32 text-center" />
 				<Button @click="openingStore.setDefaultHeightToAll()" variant="outline" class="h-10">Применить ко всем</Button>
+				<Button variant="outline" @click="clearSessionStorage">Сбросить</Button>
 			</div>
 		</div>
 

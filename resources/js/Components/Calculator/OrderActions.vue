@@ -44,6 +44,8 @@ watch(selectedFactor, (newValue) => {
     itemsStore.selectedFactor = newValue
 })
 
+
+
 // Initialize factor in items store with user's default factor
 itemsStore.initializeUserFactor(user_default_factor || 'kz')
 itemsStore.selectedFactor = selectedFactor.value
@@ -180,10 +182,31 @@ const downloadListPDF = async () => {
                 <span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</span>
             </div>
 
-            <div class="flex gap-2 md:gap-4 items-center">
+            <div class="flex gap-2 md:gap-2 items-center actions">
+                <DropdownMenu v-if="can_access_factors">
+                    <DropdownMenuTrigger>
+                        <Button variant="outline" size="sm" class="min-w-12">
+                            <span class="text-sm font-medium">{{ selectedFactor.toUpperCase() }}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent class="w-32">
+                        <DropdownMenuLabel>Коэффициенты</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                            v-for="factor in factors" 
+                            :key="factor.key" 
+                            @click="selectedFactor = factor.key" 
+                            :class="{ 'bg-accent text-white': factor.key === selectedFactor }" 
+                            class="mb-1 cursor-pointer flex items-center gap-2"
+                        >
+                            <span>{{ factor.label }}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon" class="">
+                        <Button variant="outline" size="sm" class="">
                             <EllipsisVertical class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -204,35 +227,13 @@ const downloadListPDF = async () => {
                             <FileText class="size-4 mr-2" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
-                        
-                        <DropdownMenuSeparator v-if="can_access_factors" />
-                        
-                        <DropdownMenuSub v-if="can_access_factors">
-                            <DropdownMenuSubTrigger class="w-full flex gap-2 active:text-white cursor-pointer">
-                                <Calculator class="size-4 mr-2" />
-                                <span>Коэффициенты</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem 
-                                        v-for="factor in factors" 
-                                        :key="factor.key" 
-                                        @click="selectedFactor = factor.key" 
-                                        :class="{ 'bg-accent text-white': factor.key === selectedFactor }" 
-                                        class="mb-1 cursor-pointer flex items-center gap-2"
-                                    >
-                                        <!-- <div class="w-3 h-3 rounded-full bg-primary shrink-0"></div> -->
-                                        <span>{{ factor.label }}</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
+                
                 <Link href="/app/cart" v-if="can_access_app_cart">
-                    <Button class="hover:bg-primary/90">
-                        <span class="text-base">В корзину</span>
-                        <ArrowRightIcon class="size-4 ml-2" />
+                    <Button class="hover:bg-primary/90 px-3" size="sm">
+                        <span class="text-base">Заказать</span>
+                        <ArrowRightIcon class="size-4 ml-0" />
                     </Button>
                 </Link>
             </div>

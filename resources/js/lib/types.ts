@@ -44,6 +44,8 @@ export interface Item {
     vendor_code?: string;
     name: string;
     img?: string;
+    images?: string[];
+    description?: string;
     retail_price: number;
     purchase_price: number;
     unit: string;

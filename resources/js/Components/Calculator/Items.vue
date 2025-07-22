@@ -14,9 +14,13 @@ import {
     NumberFieldInput, 
     NumberFieldIncrement 
 } from '../ui/number-field';
+import { Item } from '../../lib/types';
+import ItemImageModal from '../ItemImageModal.vue';
 
 const itemsStore = useItemsStore()
 const isItemsListHidden = ref(false)
+const selectedItem = ref<Item | null>(null)
+const isModalOpen = ref(false)
 
 const addItemToCart = (itemId: number) => {
     if (!itemsStore.cartItems[itemId]) {
@@ -24,6 +28,16 @@ const addItemToCart = (itemId: number) => {
         
         itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
     }
+}
+
+const openImageModal = (item: Item) => {
+    selectedItem.value = item
+    isModalOpen.value = true
+}
+
+const closeImageModal = () => {
+    isModalOpen.value = false
+    selectedItem.value = null
 }
 </script>
 
@@ -55,7 +69,12 @@ const addItemToCart = (itemId: number) => {
                 </div>
 
                 <div>
-                    <img :src="getImageSource(item.img || '')" class="rounded-md w-full">
+                    <img 
+                        :src="getImageSource(item.img || '')" 
+                        class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity"
+                        @click="openImageModal(item)"
+                        :alt="item.name"
+                    >
                 </div>
 
                 <div>
@@ -128,4 +147,11 @@ const addItemToCart = (itemId: number) => {
             </div>
         </div>
     </div>
+    
+    <!-- Image Modal -->
+    <ItemImageModal
+        :item="selectedItem"
+        :is-open="isModalOpen"
+        @close="closeImageModal"
+    />
 </template>

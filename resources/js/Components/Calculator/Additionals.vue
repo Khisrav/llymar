@@ -22,10 +22,14 @@ import {
 	NumberFieldInput, 
 	NumberFieldIncrement 
 } from '../ui/number-field';
-import Separator from "../ui/separator/Separator.vue";
+import { Separator } from "../ui/separator";
+import ItemImageModal from '../ItemImageModal.vue';
+import { Item } from '../../lib/types';
 
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find((glass) => glass.id === itemsStore.selectedGlassID) || null);
+const selectedItem = ref<Item | null>(null);
+const isModalOpen = ref(false);
 
 const servicesByCategory = computed(() => {
 	const llymarServices = itemsStore.services.filter((service) => service.category_id === 26);
@@ -65,6 +69,16 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 	}
 	
 	itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
+}
+
+const openImageModal = (item: Item) => {
+	selectedItem.value = item
+	isModalOpen.value = true
+}
+
+const closeImageModal = () => {
+	isModalOpen.value = false
+	selectedItem.value = null
 }
 </script>
 
@@ -128,7 +142,12 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 						</div>
 					</div>
 					<div v-if="selectedGlass" class="basis-1/3">
-						<img :src="getImageSource(selectedGlass.img || '')" class="rounded-md w-full" />
+						<img 
+							:src="getImageSource(selectedGlass.img || '')" 
+							class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity" 
+							@click="openImageModal(selectedGlass)"
+							:alt="selectedGlass.name"
+						/>
 					</div>
 				</div>
 			</div>
@@ -209,7 +228,12 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 					</div>
 					<div class="flex flex-row gap-2 md:gap-4">
 						<div class="basis-1/3">
-							<img :src="getImageSource(item.img || '')" class="rounded-md w-full" />
+							<img 
+								:src="getImageSource(item.img || '')" 
+								class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity" 
+								@click="openImageModal(item)"
+								:alt="item.name"
+							/>
 						</div>
 						<div class="basis-2/3 flex flex-col justify-between gap-2">
 							<div class="flex justify-between items-center text-sm text-muted-foreground">
@@ -254,4 +278,11 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 			</div>
 		</div>
 	</div>
+	
+	<!-- Image Modal -->
+	<ItemImageModal
+		:item="selectedItem"
+		:is-open="isModalOpen"
+		@close="closeImageModal"
+	/>
 </template>

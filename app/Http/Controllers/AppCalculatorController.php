@@ -34,7 +34,7 @@ class AppCalculatorController extends Controller
     }
     
     protected function getServices() {
-        $service_category_ids = [26, 33];
+        $service_category_ids = [26, 35];
         
         return Item::whereIn('category_id', $service_category_ids)->get()->toArray();
     }

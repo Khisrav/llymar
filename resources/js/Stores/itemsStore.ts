@@ -23,7 +23,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const selectedGlassID = ref(287)
     
     watch(markupPercentage, (newMarkupPercentage) => {
-        markupPercentage.value = parseFloat(newMarkupPercentage.toFixed(3))
+        if (newMarkupPercentage === undefined) markupPercentage.value = 0
+        else markupPercentage.value = parseFloat(newMarkupPercentage.toFixed(3))
     })
 
     watch(selectedGlassID, (newSelectedGlassID) => {

@@ -40,7 +40,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     watch(cartItems, (newCartItems) => {
         Object.keys(newCartItems).forEach(key => {
-            if (newCartItems[+key].quantity === 0) {
+            // Check if the cart item exists and has a quantity property
+            if (newCartItems[+key] && typeof newCartItems[+key] === 'object' && newCartItems[+key].quantity === 0) {
                 delete newCartItems[+key]
             }
         })
@@ -72,8 +73,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
             const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
             // Ensure all existing cart items have the checked property
             Object.keys(savedCartItems).forEach(key => {
-                if (savedCartItems[+key].checked === undefined) {
-                    savedCartItems[+key].checked = true // Default to checked for existing items
+                // Check if the cart item exists and is not null/undefined
+                if (savedCartItems[+key] && typeof savedCartItems[+key] === 'object') {
+                    if (savedCartItems[+key].checked === undefined) {
+                        savedCartItems[+key].checked = true // Default to checked for existing items
+                    }
+                } else {
+                    // If the cart item is null/undefined, initialize it properly
+                    savedCartItems[+key] = { quantity: 0, checked: true }
                 }
             })
             cartItems.value = savedCartItems

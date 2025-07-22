@@ -5,6 +5,13 @@ import { useOpeningStore } from "../../Stores/openingsStore"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import Slider from "../ui/slider/Slider.vue"
 import Input from "../ui/input/Input.vue"
+import { 
+	NumberField, 
+	NumberFieldContent, 
+	NumberFieldDecrement, 
+	NumberFieldInput, 
+	NumberFieldIncrement 
+} from '../ui/number-field'
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -18,6 +25,13 @@ const percentageFromTotalPrice = (price: number) => basePrice.value === 0 ? 0 : 
 
 // ----- LOCAL REF FOR THE INPUT -----
 const typedTotalPrice = ref(0);
+
+// ----- HANDLE MARKUP PERCENTAGE UPDATE WITH PROPER PRECISION -----
+const handleMarkupPercentageUpdate = (value: number) => {
+	// Fix floating point precision by rounding to 3 decimal places
+	const roundedValue = Math.round(value * 1000) / 1000
+	itemsStore.markupPercentage = roundedValue
+}
 
 onMounted(() => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
 
@@ -55,8 +69,20 @@ const pricePerM2 = computed(() => {
 
 			<div class="flex justify-between items-center gap-4 mb-4">
 				<div>Наценка в %:</div>
-				<!-- <div class="font-bold">{{ itemsStore.markupPercentage.toFixed(2) }}%</div> -->
-				<Input v-model="itemsStore.markupPercentage" type="number" class="w-24 md:w-32" />
+				<NumberField 
+					:model-value="itemsStore.markupPercentage" 
+					@update:model-value="handleMarkupPercentageUpdate"
+					:min="-50" 
+					:max="200" 
+					:step="0.1"
+					class="w-24 md:w-32"
+				>
+					<NumberFieldContent>
+						<NumberFieldDecrement />
+						<NumberFieldInput class="h-9 text-center" />
+						<NumberFieldIncrement />
+					</NumberFieldContent>
+				</NumberField>
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">

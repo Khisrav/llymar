@@ -16,6 +16,8 @@ class Item extends Model
         'retail_price',
         'category_id',
         'img',
+        'images',
+        'description',
         'unit',
         'quantity_in_warehouse',
         'vendor_code',
@@ -30,6 +32,10 @@ class Item extends Model
         'p3',
         'k4',
         'pr',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     /**

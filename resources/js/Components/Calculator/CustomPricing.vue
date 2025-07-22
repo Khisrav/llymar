@@ -3,8 +3,8 @@ import { ref, watch, computed, onMounted } from "vue"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
-import Slider from "../ui/slider/Slider.vue"
-import Input from "../ui/input/Input.vue"
+import { Slider } from "../ui/slider"
+import { Input } from "../ui/input"
 import { 
 	NumberField, 
 	NumberFieldContent, 
@@ -28,6 +28,11 @@ const typedTotalPrice = ref(0);
 
 // ----- HANDLE MARKUP PERCENTAGE UPDATE WITH PROPER PRECISION -----
 const handleMarkupPercentageUpdate = (value: number) => {
+	// If value is empty, undefined, or NaN, default to 0
+	if (value == null || isNaN(value)) {
+		itemsStore.markupPercentage = 0
+		return
+	}
 	// Fix floating point precision by rounding to 3 decimal places
 	const roundedValue = Math.round(value * 1000) / 1000
 	itemsStore.markupPercentage = roundedValue
@@ -35,7 +40,14 @@ const handleMarkupPercentageUpdate = (value: number) => {
 
 onMounted(() => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
 
-watch(typedTotalPrice, (newVal) => { itemsStore.markupPercentage = percentageFromTotalPrice(newVal) })
+watch(typedTotalPrice, (newVal) => { 
+	if (newVal == null || isNaN(newVal)) {
+		itemsStore.markupPercentage = 0
+		return
+	}
+	
+	itemsStore.markupPercentage = percentageFromTotalPrice(newVal)
+})
 
 watch(() => itemsStore.markupPercentage, (newPercent) => {
 	typedTotalPrice.value = Math.round(totalPriceFromPercentage(newPercent))
@@ -55,6 +67,13 @@ const pricePerM2 = computed(() => {
 	if (!area) return 0
 	return typedTotalPrice.value / area
 })
+
+const handleTypedTotalPriceBlur = () => {
+	const minPrice = basePrice.value * 0.5, maxPrice = basePrice.value * 1.5
+	if (typedTotalPrice.value < minPrice || typedTotalPrice.value > maxPrice) {
+		typedTotalPrice.value = Math.round(typedTotalPrice.value > maxPrice ? maxPrice : minPrice)
+	}
+}
 </script>
 
 <template>
@@ -73,8 +92,9 @@ const pricePerM2 = computed(() => {
 					:model-value="itemsStore.markupPercentage" 
 					@update:model-value="handleMarkupPercentageUpdate"
 					:min="-50" 
-					:max="200" 
+					:max="50" 
 					:step="0.1"
+					:default-value="0"
 					class="w-24 md:w-32"
 				>
 					<NumberFieldContent>
@@ -102,7 +122,7 @@ const pricePerM2 = computed(() => {
 				<div>
 					Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(2) }}%</b>:
 				</div>
-				<Input v-model="typedTotalPrice" type="number" class="w-24 md:w-32" />
+				<Input v-model="typedTotalPrice" @blur="handleTypedTotalPriceBlur" type="number" class="w-24 md:w-32" />
 			</div>
 		</div>
 	</div>

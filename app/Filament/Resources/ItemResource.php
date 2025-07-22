@@ -69,7 +69,7 @@ class ItemResource extends Resource
                             ->options(Category::all()->pluck('name', 'id'))
                             ->required(),                   
                         Forms\Components\FileUpload::make('img')
-                            ->label('Картинка')
+                            ->label('Основная картинка')
                             ->image()
                             ->required()
                             ->imageEditor()
@@ -81,6 +81,26 @@ class ItemResource extends Resource
                             ])
                             ->default('no-image.jpg')
                             ->directory('items'),
+                        Forms\Components\FileUpload::make('images')
+                            ->label('Дополнительные изображения')
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(10)
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ])
+                            ->directory('items')
+                            ->columnSpanFull()
+                            ->helperText('Максимум 10 дополнительных изображений'),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Описание')
+                            ->rows(3)
+                            ->columnSpanFull()
+                            ->placeholder('Введите описание товара...'),
                         Forms\Components\Toggle::make('is_for_llymar')
                             ->label('Для LLYMAR')
                             // ->default(false)

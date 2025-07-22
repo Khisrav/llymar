@@ -2,7 +2,7 @@
 import { useItemsStore } from "../../Stores/itemsStore";
 import { currencyFormatter } from "../../Utils/currencyFormatter";
 import { quantityFormatter } from "../../Utils/quantityFormatter";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { getImageSource } from "../../Utils/getImageSource";
 import { PlusIcon, Check, X } from "lucide-vue-next";
 import { Button } from "../ui/button";
@@ -22,9 +22,22 @@ import {
 	NumberFieldInput, 
 	NumberFieldIncrement 
 } from '../ui/number-field';
+import Separator from "../ui/separator/Separator.vue";
 
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find((glass) => glass.id === itemsStore.selectedGlassID) || null);
+
+const servicesByCategory = computed(() => {
+	const llymarServices = itemsStore.services.filter((service) => service.category_id === 26);
+	const otherServices = itemsStore.services.filter((service) => service.category_id !== 26);
+	let categories = [...llymarServices.map((service) => service.category_id), ...otherServices.map((service) => service.category_id)];
+	categories = [...new Set(categories)];
+
+	return {
+		[categories[0]]: llymarServices,
+		[categories[1]]: otherServices
+	}
+})
 
 watch(
 	() => itemsStore.selectedGlassID,
@@ -125,48 +138,45 @@ const addAdditionalItemToCart = (itemId: number, step: number) => {
 					<div>
 						<span class="font-semibold">Услуги</span>
 					</div>
-					<div v-for="service in itemsStore.services" :key="service.id">
-						<div class="flex flex-row gap-4 justify-between border rounded-lg p-2 w-full text-sm">
-							<div class="flex justify-between items-start w-full">
-								<div>
-									<p class="font-semibold">
-										<span>{{ service.vendor_code ? service.vendor_code + " - " : "" }} {{ service.name }}</span>
-										<!-- <span :class="!itemsStore.cartItems[service.id || 0]?.checked && itemsStore.selectedServicesID.includes(service.id || 0) ? '' : 'line-through'">{{ service.vendor_code ? service.vendor_code + " - " : "" }} {{ service.name }}</span> -->
-									</p>
-									<div class="flex flex-row gap-4 items-center">
-										<p class="text-muted-foreground text-xs">{{ currencyFormatter(itemsStore.itemPrice(service.id || 0)) }}/{{ service.unit }}</p>
-										<span 
-											v-if="itemsStore.selectedServicesID.includes(service.id || 0)"
-											@click="itemsStore.toggleItemChecked(service.id || 0)" 
-											class="text-blue-400 underline decoration-dotted text-xs hover:cursor-pointer select-none"
-										>
-											{{ itemsStore.cartItems[service.id || 0]?.checked === false ? "Учитывать" : "Не учитывать" }}
-										</span>
-									</div>
-								</div>
-								<div class="flex flex-row gap-2 items-center">
-									<!-- Check/Uncheck Button for Service -->
-									<!-- <Button 
-										v-if="itemsStore.selectedServicesID.includes(service.id || 0)"
-										:variant="(itemsStore.cartItems[service.id || 0]?.checked ?? true) ? 'outline' : 'destructive'"
-										size="icon"
-										class="h-6 w-6 text-xs"
-										@click="itemsStore.toggleItemChecked(service.id || 0)"
-									>
-										<Check v-if="itemsStore.cartItems[service.id || 0]?.checked ?? true" class="w-3 h-3" />
-										<X v-else class="w-3 h-3" />
-									</Button> -->
-									
-									<div class="text-right" v-if="itemsStore.selectedServicesID.includes(service.id || 0)">
-										<p 
-											class="font-semibold text-sm"
-											:class="itemsStore.cartItems[service.id || 0]?.checked === false ? 'text-muted-foreground line-through' : ''"
-										>
-											{{ currencyFormatter(itemsStore.itemPrice(service.id || 0) * (itemsStore.cartItems[service.id || 0]?.quantity || 0)) }}
+					<div
+						v-for="(services, categoryId, idx) in servicesByCategory"
+						:key="categoryId"
+						class="flex flex-col gap-2"
+					>
+						<Separator
+							v-if="idx !== 0"
+							class="my-0.5"
+						></Separator>
+						<div v-for="service in services" :key="service.id">
+							<div class="flex flex-row gap-4 justify-between border rounded-lg p-2 w-full text-sm">
+								<div class="flex justify-between items-start w-full">
+									<div>
+										<p class="font-semibold">
+											<span>{{ service.vendor_code ? service.vendor_code + " - " : "" }} {{ service.name }}</span>
 										</p>
-										<p class="font-semibold text-xs text-muted-foreground">{{ quantityFormatter(itemsStore.cartItems[service.id || 0]?.quantity || 0) }} {{ service.unit }}</p>
+										<div class="flex flex-row gap-4 items-center">
+											<p class="text-muted-foreground text-xs">{{ currencyFormatter(itemsStore.itemPrice(service.id || 0)) }}/{{ service.unit }}</p>
+											<span 
+												v-if="itemsStore.selectedServicesID.includes(service.id || 0)"
+												@click="itemsStore.toggleItemChecked(service.id || 0)" 
+												class="text-blue-400 underline decoration-dotted text-xs hover:cursor-pointer select-none"
+											>
+												{{ itemsStore.cartItems[service.id || 0]?.checked === false ? "Учитывать" : "Не учитывать" }}
+											</span>
+										</div>
 									</div>
-									<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id || 0)" @click="toggleSelection(service.id || 0)" />
+									<div class="flex flex-row gap-2 items-center">
+										<div class="text-right" v-if="itemsStore.selectedServicesID.includes(service.id || 0)">
+											<p 
+												class="font-semibold text-sm"
+												:class="itemsStore.cartItems[service.id || 0]?.checked === false ? 'text-muted-foreground line-through' : ''"
+											>
+												{{ currencyFormatter(itemsStore.itemPrice(service.id || 0) * (itemsStore.cartItems[service.id || 0]?.quantity || 0)) }}
+											</p>
+											<p class="font-semibold text-xs text-muted-foreground">{{ quantityFormatter(itemsStore.cartItems[service.id || 0]?.quantity || 0) }} {{ service.unit }}</p>
+										</div>
+										<Checkbox :checked="itemsStore.selectedServicesID.includes(service.id || 0)" @click="toggleSelection(service.id || 0)" />
+									</div>
 								</div>
 							</div>
 						</div>

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 class TochkaBankService
 {
     private string $baseUrl;
-    private ?string $accessToken;
+    private ?string $clientSecret;
     private ?string $customerCode;
     private ?string $accountId;
     private string $apiVersion;
@@ -22,7 +22,7 @@ class TochkaBankService
     public function __construct()
     {
         $this->baseUrl = config('services.tochka.base_url');
-        $this->accessToken = config('services.tochka.access_token');
+        $this->clientSecret = config('services.tochka.client_secret');
         // $this->accessToken = 'working_token';
         $this->customerCode = config('services.tochka.customer_code');
         $this->accountId = config('services.tochka.account_id');
@@ -30,14 +30,14 @@ class TochkaBankService
         
         Log::info('Tochka Bank credentials', [
             'baseUrl' => $this->baseUrl,
-            'accessToken' => $this->accessToken,
+            'clientSecret' => $this->clientSecret,
             'customerCode' => $this->customerCode,
             'accountId' => $this->accountId,
             'apiVersion' => $this->apiVersion
         ]);
         
-        if (!$this->accessToken || !$this->customerCode || !$this->accountId) {
-            throw new Exception('Tochka Bank credentials not configured. Please set TOCHKA_ACCESSTOKEN_HYBRID, TOCHKA_CUSTOMER_CODE, and TOCHKA_ACCOUNT_ID in your .env file.');
+        if (!$this->clientSecret || !$this->customerCode || !$this->accountId) {
+            throw new Exception('Tochka Bank credentials not configured. Please set TOCHKA_CLIENT_SECRET, TOCHKA_CUSTOMER_CODE, and TOCHKA_ACCOUNT_ID in your .env file.');
         }
     }
 
@@ -55,7 +55,7 @@ class TochkaBankService
             $payload = $this->prepareBillPayload($order, $secondSide);
             
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->accessToken}",
+                'Authorization' => "Bearer {$this->clientSecret}",
                 'Content-Type' => 'application/json',
             ])->post("{$this->baseUrl}/invoice/{$this->apiVersion}/bills", $payload);
 
@@ -106,7 +106,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->accessToken}",
+                'Authorization' => "Bearer {$this->clientSecret}",
             ])->get("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/payment-status");
 
             if (!$response->successful()) {
@@ -148,7 +148,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->accessToken}",
+                'Authorization' => "Bearer {$this->clientSecret}",
             ])->get("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/file");
 
             if (!$response->successful()) {
@@ -190,7 +190,7 @@ class TochkaBankService
             ];
 
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->accessToken}",
+                'Authorization' => "Bearer {$this->clientSecret}",
                 'Content-Type' => 'application/json',
             ])->post("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/email", $payload);
 
@@ -227,7 +227,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->accessToken}",
+                'Authorization' => "Bearer {$this->clientSecret}",
             ])->delete("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}");
 
             if (!$response->successful()) {
@@ -279,19 +279,15 @@ class TochkaBankService
 
         // Default second side information
         $defaultSecondSide = [
-            'accountId' => $this->accountId,
-            'legalAddress' => config('services.tochka.legal_address', ''),
-            'kpp' => config('services.tochka.kpp', ''),
-            'bankName' => config('services.tochka.bank_name', 'ТОЧКА ПАО БАНКА "ФК ОТКРЫТИЕ"'),
-            'bankCorrAccount' => config('services.tochka.bank_corr_account', ''),
-            'taxCode' => config('services.tochka.tax_code', ''),
+            // 'taxCode' => $order->user->inn ?? '',
+            'taxCode' => '0000000000',
             'type' => 'company',
-            'secondSideName' => config('services.tochka.company_name', '')
+            'secondSideName' => $order->customer_name ?? ''
         ];
 
         $finalSecondSide = array_merge($defaultSecondSide, $secondSide);
 
-        return [
+        $payload = [
             'Data' => [
                 'customerCode' => $this->customerCode,
                 'accountId' => $this->accountId,
@@ -310,6 +306,13 @@ class TochkaBankService
                 'SecondSide' => $finalSecondSide
             ]
         ];
+        
+        //log payload
+        Log::info('Tochka Bank payload', [
+            'payload' => $payload
+        ]);
+
+        return $payload;
     }
 
     /**

@@ -10,6 +10,10 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\JWK;
+use Firebase\JWT\Key;
 
 class TochkaBankService
 {
@@ -116,8 +120,8 @@ class TochkaBankService
             $responseData = $response->json();
             
             // Update order invoice status if needed
-            if (isset($responseData['Data']['status'])) {
-                $order->update(['invoice_status' => $responseData['Data']['status']]);
+            if (isset($responseData['Data']['paymentStatus'])) {
+                $order->update(['invoice_status' => $responseData['Data']['paymentStatus']]);
             }
 
             return $responseData;
@@ -328,5 +332,135 @@ class TochkaBankService
         }
 
         return "{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/file";
+    }
+    
+    /**
+     * Receive webhook from Tochka Bank
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function receiveWebhook(Request $request): void
+    {
+        Log::info('Tochka Bank webhook received', ['request' => $request->all()]);
+        
+        if ($this->validateWebhookJwtToken($request)) {
+            $entityBody = $request->getContent();
+            
+            try {
+                $decoded = $this->decodeWebhookPayload($entityBody);
+                
+                // Process the webhook data
+                Log::info('Webhook payload decoded successfully', ['decoded' => $decoded]);
+                
+                // Handle the webhook based on the event type
+                $this->processWebhookEvent($decoded);
+                
+            } catch (\Exception $e) {
+                Log::error('Failed to process webhook', ['error' => $e->getMessage()]);
+            }
+        } else {
+            Log::warning('Invalid webhook signature');
+        }
+    }
+    
+    /**
+     * Validate webhook JWT token
+     *
+     * @param Request $request
+     * @return bool
+     */
+    private function validateWebhookJwtToken(Request $request): bool
+    {
+        $entityBody = $request->getContent();
+        
+        $json_public_key = '{"kty":"RSA","e":"AQAB","n":"rwm77av7GIttq-JF1itEgLCGEZW_zz16RlUQVYlLbJtyRSu61fCec_rroP6PxjXU2uLzUOaGaLgAPeUZAJrGuVp9nryKgbZceHckdHDYgJd9TsdJ1MYUsXaOb9joN9vmsCscBx1lwSlFQyNQsHUsrjuDk-opf6RCuazRQ9gkoDCX70HV8WBMFoVm-YWQKJHZEaIQxg_DU4gMFyKRkDGKsYKA0POL-UgWA1qkg6nHY5BOMKaqxbc5ky87muWB5nNk4mfmsckyFv9j1gBiXLKekA_y4UwG2o1pbOLpJS3bP_c95rm4M9ZBmGXqfOQhbjz8z-s9C11i-jmOQ2ByohS-ST3E5sqBzIsxxrxyQDTw--bZNhzpbciyYW4GfkkqyeYoOPd_84jPTBDKQXssvj8ZOj2XboS77tvEO1n1WlwUzh8HPCJod5_fEgSXuozpJtOggXBv0C2ps7yXlDZf-7Jar0UYc_NJEHJF-xShlqd6Q3sVL02PhSCM-ibn9DN9BKmD"}';
+        $jwks = json_decode($json_public_key, true, 512, JSON_THROW_ON_ERROR);
+        
+        try {
+            JWT::decode($entityBody, JWK::parseKey($jwks, "RS256"));
+            return true;
+        } catch (\UnexpectedValueException $e) {
+            // Неверная подпись, вебхук не от Точки или с ним что-то не так
+            Log::error('Invalid webhook signature', ['error' => $e->getMessage()]);
+            return false;
+        }
+    }
+    
+    /**
+     * Decode webhook payload
+     *
+     * @param string $entityBody
+     * @return array
+     */
+    private function decodeWebhookPayload(string $entityBody): array
+    {
+        $json_public_key = '{"kty":"RSA","e":"AQAB","n":"rwm77av7GIttq-JF1itEgLCGEZW_zz16RlUQVYlLbJtyRSu61fCec_rroP6PxjXU2uLzUOaGaLgAPeUZAJrGuVp9nryKgbZceHckdHDYgJd9TsdJ1MYUsXaOb9joN9vmsCscBx1lwSlFQyNQsHUsrjuDk-opf6RCuazRQ9gkoDCX70HV8WBMFoVm-YWQKJHZEaIQxg_DU4gMFyKRkDGKsYKA0POL-UgWA1qkg6nHY5BOMKaqxbc5ky87muWB5nNk4mfmsckyFv9j1gBiXLKekA_y4UwG2o1pbOLpJS3bP_c95rm4M9ZBmGXqfOQhbjz8z-s9C11i-jmOQ2ByohS-ST3E5sqBzIsxxrxyQDTw--bZNhzpbciyYW4GfkkqyeYoOPd_84jPTBDKQXssvj8ZOj2XboS77tvEO1n1WlwUzh8HPCJod5_fEgSXuozpJtOggXBv0C2ps7yXlDZf-7Jar0UYc_NJEHJF-xShlqd6Q3sVL02PhSCM-ibn9DN9BKmD"}';
+        $jwks = json_decode($json_public_key, true, 512, JSON_THROW_ON_ERROR);
+        
+        try {
+            $decoded = JWT::decode($entityBody, JWK::parseKey($jwks, "RS256"));
+            return (array)$decoded;
+        } catch (\UnexpectedValueException $e) {
+            // Неверная подпись, вебхук не от Точки или с ним что-то не так
+            throw new Exception("Invalid webhook: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Process webhook event
+     *
+     * @param array $webhookData
+     * @return void
+     */
+    private function processWebhookEvent(array $webhookData): void
+    {
+        // Process different webhook events
+        if (isset($webhookData['eventType'])) {
+            switch ($webhookData['eventType']) {
+                case 'PAYMENT_RECEIVED':
+                    $this->handlePaymentReceived($webhookData);
+                    break;
+                case 'BILL_EXPIRED':
+                    $this->handleBillExpired($webhookData);
+                    break;
+                default:
+                    Log::info('Unknown webhook event type', ['eventType' => $webhookData['eventType']]);
+            }
+        }
+    }
+    
+    /**
+     * Handle payment received webhook
+     *
+     * @param array $webhookData
+     * @return void
+     */
+    private function handlePaymentReceived(array $webhookData): void
+    {
+        if (isset($webhookData['documentId'])) {
+            $order = Order::where('invoice_id', $webhookData['documentId'])->first();
+            if ($order) {
+                $order->update(['invoice_status' => 'paid']);
+                Log::info('Order payment confirmed via webhook', ['order_id' => $order->id]);
+            }
+        }
+    }
+    
+    /**
+     * Handle bill expired webhook
+     *
+     * @param array $webhookData
+     * @return void
+     */
+    private function handleBillExpired(array $webhookData): void
+    {
+        if (isset($webhookData['documentId'])) {
+            $order = Order::where('invoice_id', $webhookData['documentId'])->first();
+            if ($order) {
+                $order->update(['invoice_status' => 'expired']);
+                Log::info('Order bill expired via webhook', ['order_id' => $order->id]);
+            }
+        }
     }
 } 

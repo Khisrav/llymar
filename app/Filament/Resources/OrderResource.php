@@ -26,6 +26,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class OrderResource extends Resource
 {
@@ -235,6 +236,20 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('invoice_status')
                     ->label('Статус счета')
+                    ->badge()
+                    ->color(fn (string $state): string => match($state) {
+                        'payment_waiting' => 'info',
+                        'payment_expired' => 'red',
+                        'payment_paid' => 'green',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match($state) {
+                        'payment_waiting' => 'Ожидание оплаты',
+                        'payment_expired' => 'Просрочен',
+                        'payment_paid' => 'Оплачен',
+                        'created' => 'Создан',
+                        default => $state,
+                    })
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -305,9 +320,15 @@ class OrderResource extends Resource
                                 $tochkaService = new TochkaBankService();
                                 $response = $tochkaService->getBillPaymentStatus($record);
                                 
+                                $paymentStatuses = [
+                                    'payment_waiting' => 'Ожидание оплаты',
+                                    'payment_expired' => 'Просрочен',
+                                    'payment_paid' => 'Оплачен',
+                                ];
+                                
                                 \Filament\Notifications\Notification::make()
                                     ->title('Статус оплаты')
-                                    ->body('Статус: ' . ($response['Data']['status'] ?? 'неизвестен'))
+                                    ->body('Статус: ' . ($paymentStatuses[$response['Data']['paymentStatus']] ?? 'неизвестен'))
                                     ->info()
                                     ->send();
                                     

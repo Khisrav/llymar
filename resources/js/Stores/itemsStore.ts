@@ -40,14 +40,33 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }, { deep: true })
 
     watch(cartItems, (newCartItems) => {
+        // Clean up invalid items
         Object.keys(newCartItems).forEach(key => {
-            // Check if the cart item exists and has a quantity property
-            if (newCartItems[+key] && typeof newCartItems[+key] === 'object' && newCartItems[+key].quantity === 0) {
-                delete newCartItems[+key]
+            const itemId = +key
+            const item = newCartItems[itemId]
+            
+            // Remove invalid item IDs or invalid cart items
+            if (!itemId || itemId <= 0 || 
+                !item || 
+                typeof item !== 'object' || 
+                typeof item.quantity !== 'number' || 
+                item.quantity <= 0) {
+                console.warn(`Removing invalid cart item: ID=${key}`, item)
+                delete newCartItems[itemId]
             }
         })
 
-        sessionStorage.setItem('cartItems', JSON.stringify(newCartItems))
+        // Only save valid cart items to session storage
+        const validCartItems: { [key: number]: CartItem } = {}
+        Object.keys(newCartItems).forEach(key => {
+            const itemId = +key
+            const item = newCartItems[itemId]
+            if (itemId > 0 && item && typeof item === 'object' && item.quantity > 0) {
+                validCartItems[itemId] = item
+            }
+        })
+
+        sessionStorage.setItem('cartItems', JSON.stringify(validCartItems))
     }, { deep: true })
 
     // Watch for factor changes and recalculate totals
@@ -68,23 +87,38 @@ export const useItemsStore = defineStore('itemsStore', () => {
     }
 
     const initiateCartItems = () => {
-        cartItems.value = []
+        cartItems.value = {}
     
         if (sessionStorage.getItem('cartItems')) {
             const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
-            // Ensure all existing cart items have the checked property
+            // Clean up and validate saved cart items
+            const cleanedCartItems: { [key: number]: CartItem } = {}
+            
             Object.keys(savedCartItems).forEach(key => {
-                // Check if the cart item exists and is not null/undefined
-                if (savedCartItems[+key] && typeof savedCartItems[+key] === 'object') {
-                    if (savedCartItems[+key].checked === undefined) {
-                        savedCartItems[+key].checked = true // Default to checked for existing items
+                const itemId = +key
+                const item = savedCartItems[itemId]
+                
+                // Skip invalid item IDs (must be positive numbers)
+                if (!itemId || itemId <= 0) {
+                    console.warn(`Skipping invalid item ID: ${key}`)
+                    return
+                }
+                
+                // Check if the cart item exists and is valid
+                if (item && typeof item === 'object' && typeof item.quantity === 'number') {
+                    // Only keep items with positive quantities
+                    if (item.quantity > 0) {
+                        cleanedCartItems[itemId] = {
+                            quantity: item.quantity,
+                            checked: item.checked !== false // Default to true if undefined
+                        }
                     }
                 } else {
-                    // If the cart item is null/undefined, initialize it properly
-                    savedCartItems[+key] = { quantity: 0, checked: true }
+                    console.warn(`Skipping invalid cart item for ID ${itemId}:`, item)
                 }
             })
-            cartItems.value = savedCartItems
+            
+            cartItems.value = cleanedCartItems
         }
 
         if (sessionStorage.getItem('selectedGlassID')) {
@@ -100,17 +134,45 @@ export const useItemsStore = defineStore('itemsStore', () => {
         } else { selectedServicesID.value = [] }
 
         if (!sessionStorage.getItem('cartItems')) {
-            // const allItems = [...items.value, ...additional_items.value]
             const allItems = [...items.value]
 
             Object.keys(additional_items.value).forEach(key => {
                 allItems.push(...additional_items.value[+key])
             })
 
+            // Only initialize items with valid IDs
             allItems.forEach(item => {
-                cartItems.value[item.id as number] = { quantity: 0, checked: true }
+                if (item.id && item.id > 0) {
+                    cartItems.value[item.id as number] = { quantity: 0, checked: true }
+                }
             })
         }
+
+        // Clean up any invalid items that might have been loaded
+        cleanupCartItems()
+    }
+
+    // Utility function to clean up invalid cart items
+    const cleanupCartItems = () => {
+        const itemsToRemove: number[] = []
+        
+        Object.keys(cartItems.value).forEach(key => {
+            const itemId = +key
+            const item = cartItems.value[itemId]
+            
+            if (!itemId || itemId <= 0 || 
+                !item || 
+                typeof item !== 'object' || 
+                typeof item.quantity !== 'number' || 
+                item.quantity < 0) {
+                itemsToRemove.push(itemId)
+            }
+        })
+        
+        itemsToRemove.forEach(itemId => {
+            console.warn(`Removing invalid cart item with ID: ${itemId}`)
+            delete cartItems.value[itemId]
+        })
     }
 
     const getItemQuantity = (vendorCode: string): number => {
@@ -254,23 +316,32 @@ export const useItemsStore = defineStore('itemsStore', () => {
         // Store existing checked states before deletion
         const existingCheckedStates: { [key: number]: boolean } = {}
         glasses.value.forEach(glass => {
-            if (cartItems.value[glass.id as number]) {
+            if (glass.id && cartItems.value[glass.id as number]) {
                 existingCheckedStates[glass.id as number] = cartItems.value[glass.id as number].checked ?? true
             }
         })
 
+        // Remove all glass items from cart
         glasses.value.forEach(glass => {
-            delete cartItems.value[glass.id as number]
+            if (glass.id) {
+                delete cartItems.value[glass.id as number]
+            }
         })
 
-        if (glassID == -1) return
+        // Only add valid glass items
+        if (glassID <= 0) return
 
-        const existingCheckedState = existingCheckedStates[glassID] ?? true // Use stored state or default to true
-        cartItems.value[glassID] = {
-            quantity: parseQuantity((openingsStore.openings.reduce((acc, { width, height }) => {
-                return acc + width * height
-            }, 0) / 1000000)),
-            checked: existingCheckedState
+        const quantity = parseQuantity((openingsStore.openings.reduce((acc, { width, height }) => {
+            return acc + width * height
+        }, 0) / 1000000))
+
+        // Only add if quantity is positive
+        if (quantity > 0) {
+            const existingCheckedState = existingCheckedStates[glassID] ?? true
+            cartItems.value[glassID] = {
+                quantity: quantity,
+                checked: existingCheckedState
+            }
         }
     }
 
@@ -278,49 +349,53 @@ export const useItemsStore = defineStore('itemsStore', () => {
         // Store existing checked states before deletion
         const existingCheckedStates: { [key: number]: boolean } = {}
         services.value.forEach(service => {
-            if (cartItems.value[service.id as number]) {
+            if (service.id && cartItems.value[service.id as number]) {
                 existingCheckedStates[service.id as number] = cartItems.value[service.id as number].checked ?? true
             }
         })
 
+        // Remove all service items from cart
         services.value.forEach(service => {
-            delete cartItems.value[service.id as number]
+            if (service.id) {
+                delete cartItems.value[service.id as number]
+            }
         })
 
         servicesID.forEach(serviceID => {
+            // Skip invalid service IDs
+            if (!serviceID || serviceID <= 0) return
+
             const existingCheckedState = existingCheckedStates[serviceID] ?? true
+            let quantity = 0
+
             //388 это распил
             if ([388].includes(serviceID)) {
-                // console.log({ quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0) })
-                cartItems.value[serviceID] = { quantity: openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0), checked: existingCheckedState }
+                quantity = openingsStore.openings.reduce((acc, { doors }) => acc + doors, 0)
             }
             else if (serviceID == 386) {
-                let q = 0
-                const m_p_ = [391, 393, 394, 395, 396, 397];
-                // const m_p_ = [390, 391, 392, 393, 394, 395, 396, 397, 363, 425, 426];
+                const m_p_ = [391, 393, 394, 395, 396, 397]
                 m_p_.forEach(mp => {
-                    if ([396, 397].includes(mp)) q += (cartItems.value[mp]?.quantity || 0) * 3
-                    else q += cartItems.value[mp]?.quantity || 0
+                    if ([396, 397].includes(mp)) quantity += (cartItems.value[mp]?.quantity || 0) * 3
+                    else quantity += cartItems.value[mp]?.quantity || 0
                 })
-                additional_items.value[30].forEach(item => {
-                    if (item.id == 363) q += cartItems.value[item.id as number]?.quantity * 2 || 0
-                    else if (item.id == 425) q += cartItems.value[item.id as number]?.quantity || 0
+                additional_items.value[30]?.forEach(item => {
+                    if (item.id == 363) quantity += cartItems.value[item.id as number]?.quantity * 2 || 0
+                    else if (item.id == 425) quantity += cartItems.value[item.id as number]?.quantity || 0
                 })
-                // q = getItemQuantity('L1') + getItemQuantity('L3')
-                cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
             }
             //387 & 389 это монтаж и изготовление створок соответственно
             else if ([387, 389].includes(serviceID)) {
-                cartItems.value[serviceID] = {
-                    quantity: parseQuantity(openingsStore.openings.reduce((acc, { width, height }) => {
-                        return acc + width * height
-                    }, 0) / 1000000),
-                    checked: existingCheckedState
-                }
+                quantity = parseQuantity(openingsStore.openings.reduce((acc, { width, height }) => {
+                    return acc + width * height
+                }, 0) / 1000000)
             }
             else if ([435].includes(serviceID)) {
-                let q = getItemQuantity('L1') + getItemQuantity('L3')
-                cartItems.value[serviceID] = { quantity: q, checked: existingCheckedState }
+                quantity = getItemQuantity('L1') + getItemQuantity('L3')
+            }
+
+            // Only add if quantity is positive
+            if (quantity > 0) {
+                cartItems.value[serviceID] = { quantity, checked: existingCheckedState }
             }
         })
     }
@@ -444,6 +519,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         initializeUserFactor,
         getItemInfo,
         toggleItemChecked,
+        cleanupCartItems,
         user,
         categories,
         itemPrice,

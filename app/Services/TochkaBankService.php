@@ -271,7 +271,7 @@ class TochkaBankService
 
         $positions = [
             [
-                'positionName' => 'Borderless Glass Doors System',
+                'positionName' => 'Безрамная система остекления LLYMAR',
                 'unitCode' => 'шт.',
                 'ndsKind' => 'nds_0',
                 'price' => number_format($totalAmount, 2, '.', ''),
@@ -283,9 +283,8 @@ class TochkaBankService
 
         // Default second side information
         $defaultSecondSide = [
-            // 'taxCode' => $order->user->inn ?? '',
-            'taxCode' => '0000000000',
-            'type' => 'company',
+            'taxCode' => $order->user->inn ?? '',
+            'type' => 'ip', //or company
             'secondSideName' => $order->customer_name ?? ''
         ];
 
@@ -300,7 +299,7 @@ class TochkaBankService
                         'number' => $order->order_number ?? (string) $order->id,
                         'basedOn' => 'Заказ №' . ($order->order_number ?? $order->id),
                         'comment' => $order->comment ?? 'Оплата заказа',
-                        'paymentExpiryDate' => now()->addDays(30)->format('Y-m-d'),
+                        'paymentExpiryDate' => now()->addDays(3)->format('Y-m-d'),
                         'date' => $order->created_at->format('Y-m-d'),
                         'totalAmount' => number_format($totalAmount, 2, '.', ''),
                         'totalNds' => number_format($totalNds, 2, '.', ''),
@@ -428,6 +427,17 @@ class TochkaBankService
                     Log::info('Unknown webhook event type', ['eventType' => $webhookData['eventType']]);
             }
         }
+        
+        // Handle webhookType-based events
+        if (isset($webhookData['webhookType'])) {
+            switch ($webhookData['webhookType']) {
+                case 'incomingPayment':
+                    $this->handleIncomingPayment($webhookData);
+                    break;
+                default:
+                    Log::info('Unknown webhook type', ['webhookType' => $webhookData['webhookType']]);
+            }
+        }
     }
     
     /**
@@ -462,5 +472,156 @@ class TochkaBankService
                 Log::info('Order bill expired via webhook', ['order_id' => $order->id]);
             }
         }
+    }
+    
+    /**
+     * Handle incoming payment webhook
+     *
+     * @param array $webhookData
+     * @return void
+     */
+    private function handleIncomingPayment(array $webhookData): void
+    {
+        $order = $this->findOrderFromWebhookData($webhookData);
+        
+        if ($order) {
+            $order->update(['invoice_status' => 'paid']);
+            
+            // Extract amount safely from nested structure
+            $amount = $this->extractAmountFromWebhookData($webhookData);
+            
+            Log::info('Order payment received via webhook', [
+                'order_id' => $order->id,
+                'payment_id' => $webhookData['paymentId'] ?? null,
+                'amount' => $amount,
+                'purpose' => $webhookData['purpose'] ?? null
+            ]);
+        } else {
+            Log::warning('Could not find order for incoming payment webhook', [
+                'webhook_data' => $webhookData
+            ]);
+        }
+    }
+    
+    /**
+     * Find order from webhook data
+     *
+     * @param array $webhookData
+     * @return Order|null
+     */
+    private function findOrderFromWebhookData(array $webhookData): ?Order
+    {
+        // Try to find order by various methods
+        
+        // Method 1: Extract order number from purpose field
+        if (isset($webhookData['purpose'])) {
+            $purpose = $webhookData['purpose'];
+            
+            // Look for order number patterns in purpose
+            // Pattern 1: "Заказ №123" or "Заказ №123 "
+            if (preg_match('/Заказ\s*№\s*(\d+)/ui', $purpose, $matches)) {
+                $orderNumber = $matches[1];
+                $order = Order::where('order_number', $orderNumber)->first();
+                if ($order) {
+                    return $order;
+                }
+                
+                // Also try by ID if order_number is not set
+                $order = Order::where('id', $orderNumber)->first();
+                if ($order) {
+                    return $order;
+                }
+            }
+            
+            // Pattern 2: Just a number that could be order ID
+            if (preg_match('/^\d+$/', trim($purpose))) {
+                $orderId = trim($purpose);
+                $order = Order::where('id', $orderId)->first();
+                if ($order) {
+                    return $order;
+                }
+            }
+        }
+        
+        // Method 2: Try by document number if it matches order pattern
+        if (isset($webhookData['documentNumber'])) {
+            $order = Order::where('order_number', $webhookData['documentNumber'])->first();
+            if ($order) {
+                return $order;
+            }
+        }
+        
+        // Method 3: Try by amount matching (less reliable, use as last resort)
+        $amount = $this->extractAmountFromWebhookData($webhookData);
+        if ($amount !== null) {
+            $order = Order::where('total_price', $amount)
+                         ->whereIn('invoice_status', ['created', 'pending', null])
+                         ->first();
+            if ($order) {
+                return $order;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extract amount from webhook data handling stdClass structure
+     *
+     * @param array $webhookData
+     * @return float|null
+     */
+    private function extractAmountFromWebhookData(array $webhookData): ?float
+    {
+        // Handle different possible structures
+        try {
+            // Try SidePayer->stdClass->amount
+            if (isset($webhookData['SidePayer'])) {
+                $sidePayer = $webhookData['SidePayer'];
+                
+                // If it's an object, convert to array
+                if (is_object($sidePayer)) {
+                    $sidePayer = json_decode(json_encode($sidePayer), true);
+                }
+                
+                // Check for stdClass nested structure
+                if (isset($sidePayer['stdClass']['amount'])) {
+                    return floatval($sidePayer['stdClass']['amount']);
+                }
+                
+                // Check for direct amount
+                if (isset($sidePayer['amount'])) {
+                    return floatval($sidePayer['amount']);
+                }
+            }
+            
+            // Try SideRecipient as fallback
+            if (isset($webhookData['SideRecipient'])) {
+                $sideRecipient = $webhookData['SideRecipient'];
+                
+                // If it's an object, convert to array
+                if (is_object($sideRecipient)) {
+                    $sideRecipient = json_decode(json_encode($sideRecipient), true);
+                }
+                
+                // Check for stdClass nested structure
+                if (isset($sideRecipient['stdClass']['amount'])) {
+                    return floatval($sideRecipient['stdClass']['amount']);
+                }
+                
+                // Check for direct amount
+                if (isset($sideRecipient['amount'])) {
+                    return floatval($sideRecipient['amount']);
+                }
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Error extracting amount from webhook data', [
+                'error' => $e->getMessage(),
+                'webhook_data' => $webhookData
+            ]);
+        }
+        
+        return null;
     }
 } 

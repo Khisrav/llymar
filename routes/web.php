@@ -238,15 +238,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 /*
- *  WEBHOOK ROUTES
- */
-Route::post('/webhook/tochka', function (Request $request) {
-    $tochkaService = new \App\Services\TochkaBankService();
-    $tochkaService->receiveWebhook($request);
-    return response()->json(['status' => 'ok']);
-})->name('webhook.tochka');
-
-/*
  *  SOCIALITE ROUTES
  */
 Route::get('/login/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('socialite.redirect');

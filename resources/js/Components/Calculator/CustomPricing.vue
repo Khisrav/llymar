@@ -69,7 +69,7 @@ const pricePerM2 = computed(() => {
 })
 
 const handleTypedTotalPriceBlur = () => {
-	const minPrice = basePrice.value * 0.5, maxPrice = basePrice.value * 1.5
+	const minPrice = basePrice.value * -2, maxPrice = basePrice.value * 4
 	if (typedTotalPrice.value < minPrice || typedTotalPrice.value > maxPrice) {
 		typedTotalPrice.value = Math.round(typedTotalPrice.value > maxPrice ? maxPrice : minPrice)
 	}
@@ -91,8 +91,8 @@ const handleTypedTotalPriceBlur = () => {
 				<NumberField 
 					:model-value="itemsStore.markupPercentage" 
 					@update:model-value="handleMarkupPercentageUpdate"
-					:min="-50" 
-					:max="50" 
+					:min="-300" 
+					:max="300" 
 					:step="0.1"
 					:default-value="0"
 					class="w-24 md:w-32"

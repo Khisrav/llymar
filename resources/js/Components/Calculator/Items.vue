@@ -42,7 +42,7 @@ const closeImageModal = () => {
 </script>
 
 <template>
-    <div class="border p-2 md:p-4 rounded-2xl bg-background">
+    <div class="border p-2 md:p-4 rounded-2xl bg-background mb-8 md:mb-16">
         <div class="flex items-center">
             <h2 class="text-xl font-bold text-muted-foreground">Состав системы</h2>
             <Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="isItemsListHidden = !isItemsListHidden">

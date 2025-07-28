@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ComissionCredits extends Model
 {
@@ -14,4 +16,40 @@ class ComissionCredits extends Model
         'receipt',
         'type',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($model) {
+            // Delete the receipt file if it exists
+            if ($model->receipt && Storage::disk('public')->exists($model->receipt)) {
+                Storage::disk('public')->delete($model->receipt);
+            }
+        });
+    }
+
+    /**
+     * Relationship: ComissionCredits belongs to a User (initiator).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relationship: ComissionCredits belongs to an Order.
+     */
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    /**
+     * Relationship: ComissionCredits belongs to a User (recipient).
+     */
+    public function recipient(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
 }

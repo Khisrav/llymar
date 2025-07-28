@@ -34,32 +34,41 @@ const handleMarkupPercentageUpdate = (value: number) => {
 		return
 	}
 	// Fix floating point precision by rounding to 3 decimal places
-	const roundedValue = Math.round(value * 1000) / 1000
+	// const roundedValue = Math.round(value * 1000) / 1000
+	const roundedValue = value
 	itemsStore.markupPercentage = roundedValue
 }
 
 onMounted(() => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
 
-watch(typedTotalPrice, (newVal) => { 
-	if (newVal == null || isNaN(newVal)) {
-		itemsStore.markupPercentage = 0
-		return
-	}
+// watch(typedTotalPrice, (newVal) => { 
+// 	if (newVal == null || isNaN(newVal)) {
+// 		itemsStore.markupPercentage = 0
+// 		return
+// 	}
 	
-	itemsStore.markupPercentage = percentageFromTotalPrice(newVal)
-})
+// 	itemsStore.markupPercentage = percentageFromTotalPrice(newVal)
+// })
+
+const handleTypedTotalPriceBlur = () => {
+	if (!typedTotalPrice.value) {
+		typedTotalPrice.value = basePrice.value
+	} else {
+		itemsStore.markupPercentage = percentageFromTotalPrice(typedTotalPrice.value)
+	}
+}
 
 watch(() => itemsStore.markupPercentage, (newPercent) => {
 	typedTotalPrice.value = Math.round(totalPriceFromPercentage(newPercent))
 })
 
 // ----- WATCH BASE PRICE CHANGES -----
-watch(basePrice, () => { typedTotalPrice.value = Math.round(totalPriceFromPercentage(itemsStore.markupPercentage)) })
+watch(basePrice, () => { typedTotalPrice.value = (totalPriceFromPercentage(itemsStore.markupPercentage)) })
 
 // ----- SLIDER BINDING -----
 const sliderValue = computed({
 	get() { return [itemsStore.markupPercentage] },
-	set([val]) { itemsStore.markupPercentage = parseFloat(val.toFixed(2)) },
+	set([val]) { itemsStore.markupPercentage = parseFloat(val.toFixed(4)) },
 })
 
 const pricePerM2 = computed(() => {
@@ -67,13 +76,6 @@ const pricePerM2 = computed(() => {
 	if (!area) return 0
 	return typedTotalPrice.value / area
 })
-
-const handleTypedTotalPriceBlur = () => {
-	const minPrice = basePrice.value * -4, maxPrice = basePrice.value * 6
-	if (typedTotalPrice.value < minPrice || typedTotalPrice.value > maxPrice) {
-		typedTotalPrice.value = Math.round(typedTotalPrice.value > maxPrice ? maxPrice : minPrice)
-	}
-}
 </script>
 
 <template>
@@ -91,9 +93,7 @@ const handleTypedTotalPriceBlur = () => {
 				<NumberField 
 					:model-value="itemsStore.markupPercentage" 
 					@update:model-value="handleMarkupPercentageUpdate"
-					:min="-500" 
-					:max="500"
-					:step="1"
+					:step="0.01"
 					:default-value="0"
 					class="w-24 md:w-32"
 				>
@@ -106,11 +106,7 @@ const handleTypedTotalPriceBlur = () => {
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">
-				<Slider v-model="sliderValue" :min="-100" :max="100" :step="1" />
-			</div>
-
-			<div class="flex justify-between items-center gap-4">
-				
+				<Slider v-model="sliderValue" :min="-100" :max="100" :step="0.01" />
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">
@@ -120,7 +116,7 @@ const handleTypedTotalPriceBlur = () => {
 
 			<div class="flex justify-between items-center gap-4">
 				<div>
-					Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(2) }}%</b>:
+					Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(4) }}%</b>:
 				</div>
 				<Input v-model="typedTotalPrice" @blur="handleTypedTotalPriceBlur" type="number" class="w-24 md:w-32" />
 			</div>

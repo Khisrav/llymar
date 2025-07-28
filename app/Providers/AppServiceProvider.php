@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use App\Models\ComissionCredits;
+use App\Policies\ComissionCreditsPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('Super-Admin') ? true : null;
         });
+        
+        // Register ComissionCredits policy
+        Gate::policy(ComissionCredits::class, ComissionCreditsPolicy::class);
         
         FilamentColor::register([
             'red' => Color::Red,

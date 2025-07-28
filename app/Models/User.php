@@ -8,6 +8,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Log;
@@ -83,5 +84,45 @@ class User extends Authenticatable implements FilamentUser
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+    
+    /**
+     * Relationship: User belongs to a parent User.
+     *
+     * @return BelongsTo
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
+    
+    /**
+     * Relationship: User has many child Users.
+     *
+     * @return HasMany
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(User::class, 'parent_id');
+    }
+    
+    /**
+     * Relationship: User has many Commission Credits as initiator.
+     *
+     * @return HasMany
+     */
+    public function initiatedCommissions(): HasMany
+    {
+        return $this->hasMany(ComissionCredits::class, 'user_id');
+    }
+    
+    /**
+     * Relationship: User has many Commission Credits as recipient.
+     *
+     * @return HasMany
+     */
+    public function receivedCommissions(): HasMany
+    {
+        return $this->hasMany(ComissionCredits::class, 'parent_id');
     }
 }

@@ -55,7 +55,7 @@ return [
     
     'tochka' => [
         'base_url' => env('TOCHKA_RS_URL'),
-        'access_token' => env('TOCHKA_ACCESSTOKEN_HYBRID'),
+        'client_secret' => env('TOCHKA_CLIENT_SECRET'),
         'customer_code' => env('TOCHKA_CUSTOMER_CODE'),
         'account_id' => env('TOCHKA_ACCOUNT_ID'),
         'api_version' => env('TOCHKA_API_VERSION', 'v1.0'),

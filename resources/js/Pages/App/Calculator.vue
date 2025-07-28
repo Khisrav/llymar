@@ -36,8 +36,8 @@ itemsStore.calculate()
     <div class="mt-4">
         <CommercialOfferFields class="mb-8" />
         <Openings class="mb-8" />
-        <CustomPricing class="mb-8" />
         <Additionals class="mb-8" />
+        <CustomPricing class="mb-8" />
         <Items class="mb-8" />
     </div>
 </div>

@@ -16,9 +16,8 @@ class CreateUser extends CreateRecord
     {
         $user = auth()->user();
         
-        if ($user->hasRole('Super-Admin')) return 'Создать пользователя';
-        else if ($user->hasRole('Operator')) return 'Создать менеджера';
-        else if ($user->hasRole('Manager')) return 'Создать дилера';
+        if ($user->hasRole('Operator')) return 'Создать менеджера';
+        else if ($user->hasRole('Manager') || $user->hasRole('ROP')) return 'Создать дилера';
         
         return 'Создать пользователя';
     }
@@ -30,7 +29,7 @@ class CreateUser extends CreateRecord
         
         if ($parent_user->hasRole('Operator')) {
             $user->assignRole('Manager');
-        } else if ($parent_user->hasRole('Manager')) {
+        } else if ($parent_user->hasRole('Manager') || $parent_user->hasRole('ROP')) {
             $user->assignRole('Dealer');
         }
     }

@@ -170,17 +170,38 @@ class OrderController extends Controller
             'total_price'      => $fields['total_price'],
         ]);
 
-        // Map cart items to include item details and computed total price.
-        $orderItems = array_map(function ($item, $itemID) use ($selectedFactor) {
-            $product = Item::findOrFail($itemID);
-            return (object)[
-                'item_id'        => $itemID,
-                'item'           => $product,
-                'quantity'       => $item['quantity'],
-                'checked'        => $item['checked'] ?? true,
-                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
-            ];
-        }, $fields['cart_items'], array_keys($fields['cart_items']));
+        // Filter out invalid cart items and map to order items
+        $validCartItems = array_filter($fields['cart_items'], function($item, $itemID) {
+            return is_numeric($itemID) && $itemID > 0 && 
+                   is_array($item) && 
+                   isset($item['quantity']) && 
+                   $item['quantity'] > 0;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $orderItems = [];
+        foreach ($validCartItems as $itemID => $item) {
+            try {
+                $product = Item::find($itemID);
+                if (!$product) {
+                    Log::warning("Item not found with ID: {$itemID}");
+                    continue;
+                }
+                
+                $orderItems[] = (object)[
+                    'item_id'        => $itemID,
+                    'item'           => $product,
+                    'quantity'       => $item['quantity'],
+                    'checked'        => $item['checked'] ?? true,
+                    'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
+                ];
+            } catch (\Exception $e) {
+                Log::error("Failed to process item with ID: {$itemID}", [
+                    'item_id' => $itemID,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+        }
 
         // Map openings.
         $orderOpenings = array_map(function ($opening) {
@@ -231,17 +252,38 @@ class OrderController extends Controller
             'total_price'      => $fields['total_price'],
         ]);
 
-        // Map cart items to include item details and computed total price.
-        $orderItems = array_map(function ($item, $itemID) use ($selectedFactor) {
-            $product = Item::findOrFail($itemID);
-            return (object)[
-                'item_id'        => $itemID,
-                'item'           => $product,
-                'quantity'       => $item['quantity'],
-                'checked'        => $item['checked'] ?? true,
-                'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
-            ];
-        }, $fields['cart_items'], array_keys($fields['cart_items']));
+        // Filter out invalid cart items and map to order items
+        $validCartItems = array_filter($fields['cart_items'], function($item, $itemID) {
+            return is_numeric($itemID) && $itemID > 0 && 
+                   is_array($item) && 
+                   isset($item['quantity']) && 
+                   $item['quantity'] > 0;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $orderItems = [];
+        foreach ($validCartItems as $itemID => $item) {
+            try {
+                $product = Item::find($itemID);
+                if (!$product) {
+                    Log::warning("Item not found with ID: {$itemID}");
+                    continue;
+                }
+                
+                $orderItems[] = (object)[
+                    'item_id'        => $itemID,
+                    'item'           => $product,
+                    'quantity'       => $item['quantity'],
+                    'checked'        => $item['checked'] ?? true,
+                    'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
+                ];
+            } catch (\Exception $e) {
+                Log::error("Failed to process item with ID: {$itemID}", [
+                    'item_id' => $itemID,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+        }
 
         // Map openings.
         $orderOpenings = array_map(function ($opening) {
@@ -417,6 +459,27 @@ class OrderController extends Controller
     private function createOrderItems(Order $order, array $cartItems): void
     {
         foreach ($cartItems as $itemID => $item) {
+            // Skip invalid item IDs and items with zero or invalid quantities
+            if (!is_numeric($itemID) || $itemID <= 0 || 
+                !is_array($item) || !isset($item['quantity']) || 
+                $item['quantity'] <= 0) {
+                Log::warning("Skipping invalid cart item", [
+                    'item_id' => $itemID,
+                    'item' => $item,
+                    'order_id' => $order->id
+                ]);
+                continue;
+            }
+
+            // Verify the item exists in the database
+            if (!Item::where('id', $itemID)->exists()) {
+                Log::warning("Skipping cart item - Item not found in database", [
+                    'item_id' => $itemID,
+                    'order_id' => $order->id
+                ]);
+                continue;
+            }
+
             OrderItem::create([
                 'item_id'  => $itemID,
                 'order_id' => $order->id,

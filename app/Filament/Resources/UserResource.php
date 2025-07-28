@@ -100,7 +100,7 @@ class UserResource extends Resource
         $user = auth()->user();
 
         if ($user->hasRole('Operator')) return 'Менеджеры';
-        else if ($user->hasRole('Manager')) return 'Дилеры';
+        else if ($user->hasRole('Manager') || $user->hasRole('ROP')) return 'Дилеры';
 
         return 'Пользователи';
     }
@@ -117,9 +117,13 @@ class UserResource extends Resource
                             ->label('Родитель')
                             ->native(false)
                             ->searchable()
-                            ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                            // ->disabled(!auth()->user()->hasRole('Super-Admin'))
                             ->options(function () {
-                                return User::all()->pluck('name', 'id');
+                                if (auth()->user()->hasRole('Super-Admin')) {
+                                    return User::all()->pluck('name', 'id');
+                                } else {
+                                    return User::where('id', auth()->user()->id)->pluck('name', 'id');
+                                }
                             })
                             ->default(auth()->user()->id)
                             ->required(),

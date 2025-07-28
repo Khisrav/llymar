@@ -69,7 +69,7 @@ const pricePerM2 = computed(() => {
 })
 
 const handleTypedTotalPriceBlur = () => {
-	const minPrice = basePrice.value * -2, maxPrice = basePrice.value * 4
+	const minPrice = basePrice.value * -4, maxPrice = basePrice.value * 6
 	if (typedTotalPrice.value < minPrice || typedTotalPrice.value > maxPrice) {
 		typedTotalPrice.value = Math.round(typedTotalPrice.value > maxPrice ? maxPrice : minPrice)
 	}
@@ -91,9 +91,9 @@ const handleTypedTotalPriceBlur = () => {
 				<NumberField 
 					:model-value="itemsStore.markupPercentage" 
 					@update:model-value="handleMarkupPercentageUpdate"
-					:min="-300" 
-					:max="300" 
-					:step="0.1"
+					:min="-500" 
+					:max="500"
+					:step="1"
 					:default-value="0"
 					class="w-24 md:w-32"
 				>
@@ -106,7 +106,7 @@ const handleTypedTotalPriceBlur = () => {
 			</div>
 
 			<div class="flex justify-between gap-4 mb-4">
-				<Slider v-model="sliderValue" :min="-50" :max="50" :step="0.1" />
+				<Slider v-model="sliderValue" :min="-100" :max="100" :step="1" />
 			</div>
 
 			<div class="flex justify-between items-center gap-4">

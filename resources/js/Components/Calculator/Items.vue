@@ -18,7 +18,7 @@ import { Item } from '../../lib/types';
 import ItemImageModal from '../ItemImageModal.vue';
 
 const itemsStore = useItemsStore()
-const isItemsListHidden = ref(false)
+const isItemsListHidden = ref(true)
 const selectedItem = ref<Item | null>(null)
 const isModalOpen = ref(false)
 

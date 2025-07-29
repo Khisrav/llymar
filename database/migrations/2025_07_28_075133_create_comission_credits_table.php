@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('comission_credits', function (Blueprint $table) {
             $table->id();
             //comissions should be credited to the parent user of the order that was made by another user
-            $table->foreignId('user_id')->constrained('users'); // to whom to be credited
+            $table->foreignId('user_id')->constrained('users'); // to whom to be credited and is also nullable like orde
             $table->decimal('amount', 10, 2);
             $table->foreignId('order_id')->constrained('orders'); // from which order
             $table->foreignId('parent_id')->constrained('users'); // from which user
             $table->string('receipt'); //receipt will be a pdf or image file that is attached to the record by admins when paid
-            $table->string('type'); //income, expense
+            $table->string('type'); //accrual or write-off
             $table->timestamps();
         });
     }

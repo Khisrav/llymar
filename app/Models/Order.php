@@ -45,7 +45,39 @@ class Order extends Model
                     }
                 }
             }
+            
+            // Calculate commission when order status changes to 'paid'
+            if ($model->status === 'paid' && $model->getOriginal('status') !== 'paid') {
+                static::calculateCommission($model);
+            }
         });
+    }
+    
+    /**
+     * Calculate and create commission credits when order is paid.
+     */
+    protected static function calculateCommission($order)
+    {
+        $user = $order->user;
+        
+        // Check if user has a parent (for commission hierarchy)
+        if ($user && $user->parent_id && $user->reward_fee) {
+            $parent = User::find($user->parent_id);
+            
+            // Only create commission if parent has ROP role
+            if ($parent && $parent->hasRole('ROP')) {
+                $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
+                
+                // Create commission credit record
+                ComissionCredits::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'parent_id' => $parent->id,
+                    'amount' => $commissionAmount,
+                    'type' => 'accrual',
+                ]);
+            }
+        }
     }
 
 

@@ -25,7 +25,7 @@ class CommissionCreditResource extends Resource
     protected static ?string $label = 'Комиссионный';
     protected static ?string $pluralLabel = 'Комиссионные';
     protected static ?string $pluralModelLabel = 'Комиссионные';
-    protected static ?string $modelLabel = 'Комиссионного';
+    protected static ?string $modelLabel = 'Комиссионноe';
     // protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
@@ -71,7 +71,7 @@ class CommissionCreditResource extends Resource
                     })->pluck('name', 'id'))
                     ->required(),
             ])
-            ->columns(1);
+            ->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -90,16 +90,19 @@ class CommissionCreditResource extends Resource
                     ->label('Инициатор')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('order.order_number')
                     ->label('Заказ')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('recipient.name')
                     ->label('Получатель комиссии')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('type')
                     ->label('Тип')
                     ->searchable()
@@ -110,17 +113,19 @@ class CommissionCreditResource extends Resource
                         'write-off' => 'Списание',
                         default => $state,
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Сумма')
                     ->searchable()
                     ->money('RUB')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Дата создания')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -143,7 +148,7 @@ class CommissionCreditResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

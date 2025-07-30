@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
+use App\Models\CommissionCredit;
 
 class Order extends Model
 {
@@ -69,7 +70,7 @@ class Order extends Model
                 $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
                 
                 // Create commission credit record
-                ComissionCredits::create([
+                CommissionCredit::create([
                     'user_id' => $user->id,
                     'order_id' => $order->id,
                     'parent_id' => $parent->id,

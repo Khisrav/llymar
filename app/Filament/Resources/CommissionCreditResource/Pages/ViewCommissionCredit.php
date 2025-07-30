@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ComissionCreditsResource\Pages;
+namespace App\Filament\Resources\CommissionCreditResource\Pages;
 
-use App\Filament\Resources\ComissionCreditsResource;
+use App\Filament\Resources\CommissionCreditResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewComissionCredits extends ViewRecord
+class ViewCommissionCredit extends ViewRecord
 {
-    protected static string $resource = ComissionCreditsResource::class;
+    protected static string $resource = CommissionCreditResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ComissionCreditsResource\Pages;
-use App\Filament\Resources\ComissionCreditsResource\RelationManagers;
-use App\Models\ComissionCredits;
+use App\Filament\Resources\CommissionCreditResource\Pages;
+use App\Filament\Resources\CommissionCreditResource\RelationManagers;
+use App\Models\CommissionCredit;
 use App\Models\Order;
 use App\Models\User;
 use Filament\Forms;
@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
-class ComissionCreditsResource extends Resource
+class CommissionCreditResource extends Resource
 {
-    protected static ?string $model = ComissionCredits::class;
+    protected static ?string $model = CommissionCredit::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Комиссионные';
@@ -59,7 +59,7 @@ class ComissionCreditsResource extends Resource
                     ->label('Заказ')
                     ->searchable()
                     ->options(
-                        Order::whereNotIn('id', ComissionCredits::whereNotNull('order_id')->pluck('order_id'))
+                        Order::whereNotIn('id', CommissionCredit::whereNotNull('order_id')->pluck('order_id'))
                             ->pluck('order_number', 'id')
                     )
                     ->nullable(),
@@ -137,9 +137,9 @@ class ComissionCreditsResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (ComissionCredits $record) => $record->type === 'write-off' && Auth::user()->hasRole('Super-Admin')),
+                    ->visible(fn (CommissionCredit $record) => $record->type === 'write-off' && Auth::user()->hasRole('Super-Admin')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (ComissionCredits $record) => $record->type === 'write-off' && Auth::user()->hasRole('Super-Admin')),
+                    ->visible(fn (CommissionCredit $record) => $record->type === 'write-off' && Auth::user()->hasRole('Super-Admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -159,10 +159,10 @@ class ComissionCreditsResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListComissionCredits::route('/'),
-            'create' => Pages\CreateComissionCredits::route('/create'),
-            'view' => Pages\ViewComissionCredits::route('/{record}'),
-            'edit' => Pages\EditComissionCredits::route('/{record}/edit'),
+            'index' => Pages\ListCommissionCredits::route('/'),
+            'create' => Pages\CreateCommissionCredit::route('/create'),
+            'view' => Pages\ViewCommissionCredit::route('/{record}'),
+            'edit' => Pages\EditCommissionCredit::route('/{record}/edit'),
         ];
     }
     
@@ -171,4 +171,4 @@ class ComissionCreditsResource extends Resource
         $user = Auth::user();
         return $user && $user->hasRole(['Super-Admin', 'ROP']);
     }
-}
+} 

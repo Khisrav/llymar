@@ -76,7 +76,7 @@ const downloadCommercialOffer = async () => {
             services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
-            markup_percentage: itemsStore.markupPercentage.toFixed(2),
+            markup_percentage: itemsStore.markupPercentage,
             selected_factor: selectedFactor.value,
         }
 

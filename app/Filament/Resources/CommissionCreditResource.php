@@ -35,8 +35,7 @@ class CommissionCreditResource extends Resource
                 Forms\Components\FileUpload::make('receipt')
                     ->label('Чек')
                     ->acceptedFileTypes(['image/*', 'application/pdf'])
-                    ->directory('receipts')
-                    ->required(),
+                    ->directory('receipts'),
                 Forms\Components\Select::make('type')
                     ->label('Тип')
                     ->options([

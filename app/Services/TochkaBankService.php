@@ -453,6 +453,9 @@ class TochkaBankService
             if ($order) {
                 $order->update(['invoice_status' => 'paid']);
                 Log::info('Order payment confirmed via webhook', ['order_id' => $order->id]);
+                
+                // Send Telegram notification for payment received
+                $this->sendTelegramPaymentNotification($order);
             }
         }
     }
@@ -496,6 +499,9 @@ class TochkaBankService
                 'amount' => $amount,
                 'purpose' => $webhookData['purpose'] ?? null
             ]);
+            
+            // Send Telegram notification for payment received
+            $this->sendTelegramPaymentNotification($order);
         } else {
             Log::warning('Could not find order for incoming payment webhook', [
                 'webhook_data' => $webhookData
@@ -623,5 +629,74 @@ class TochkaBankService
         }
         
         return null;
+    }
+
+    /**
+     * Send Telegram notification when payment is received
+     *
+     * @param Order $order
+     * @return void
+     */
+    private function sendTelegramPaymentNotification(Order $order): void
+    {
+        try {
+            $botToken = config('services.telegram.bot_token', env('TELEGRAM_BOT_TOKEN'));
+            $chatId = config('services.telegram.chat_id', env('TELEGRAM_CHAT_ID'));
+
+            if (!$botToken || !$chatId) {
+                Log::warning('Telegram notification not sent - missing bot token or chat ID', [
+                    'order_id' => $order->id
+                ]);
+                return;
+            }
+
+            // Find commission credit for this order
+            $commissionCredit = $order->commissionCredits()->first();
+            $commissionInfo = '';
+            
+            if ($commissionCredit) {
+                $recipient = $commissionCredit->recipient;
+                $initiator = $commissionCredit->user;
+                $initiatorName = $initiator ? $initiator->name : 'N/A';
+                $recipientName = $recipient ? $recipient->name : 'N/A';
+                
+                $commissionInfo = "\n💰 <b>Комиссия:</b> {$commissionCredit->amount}₽\n" .
+                                "👤 <b>Инициатор:</b> {$initiatorName}\n" .
+                                "🎯 <b>Получатель:</b> {$recipientName}\n";
+            }
+
+            $message = "✅ <b>Платеж получен!</b>\n\n" .
+                      "📋 <b>Заказ №{$order->order_number}</b>\n" .
+                      "👤 <b>Клиент:</b> {$order->customer_name}\n" .
+                      "📞 <b>Телефон:</b> <a href='tel:{$order->customer_phone}'>{$order->customer_phone}</a>\n" .
+                      "💵 <b>Сумма:</b> {$order->total_price}₽\n" .
+                      $commissionInfo .
+                      "\n🎉 <i>Заказ оплачен и готов к обработке!</i>";
+
+            $response = Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => $message,
+                'parse_mode' => 'HTML',
+            ]);
+
+            if ($response->successful()) {
+                Log::info('Telegram payment notification sent successfully', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number
+                ]);
+            } else {
+                Log::error('Failed to send Telegram payment notification', [
+                    'order_id' => $order->id,
+                    'response_status' => $response->status(),
+                    'response_body' => $response->body()
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Telegram payment notification failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'stack' => $e->getTraceAsString()
+            ]);
+        }
     }
 } 

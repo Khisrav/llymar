@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
+use App\Filament\Resources\UserResource\RelationManagers\Widgets\CommissionCreditsOverviewByUser as WidgetsCommissionCreditsOverviewByUser;
 use App\Models\CommissionCredit;
 use App\Models\Order;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Widgets\AccountWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +23,22 @@ class ReceivedCommissionsRelationManager extends RelationManager
     //protected static ?string $pluralTitle = 'Комиссионные';
     //protected static ?string $modelLabel = 'Комиссионные';
     //protected static ?string $pluralModelLabel = 'Комиссионные';
+    
+    public static function getWidgets(): array
+    {
+        return [
+            AccountWidget::class,
+            // WidgetsCommissionCreditsOverviewByUser::class,
+        ];
+    }
+    
+    public function getHeaderWidgets(): array
+    {
+        return [
+            AccountWidget::class,
+            // WidgetsCommissionCreditsOverviewByUser::class,
+        ];
+    }
 
     public function form(Form $form): Form
     {
@@ -29,8 +47,7 @@ class ReceivedCommissionsRelationManager extends RelationManager
                 Forms\Components\FileUpload::make('receipt')
                     ->label('Чек')
                     ->acceptedFileTypes(['image/*', 'application/pdf'])
-                    ->directory('receipts')
-                    ->required(),
+                    ->directory('receipts'),
                 Forms\Components\Select::make('type')
                     ->label('Тип')
                     ->options([

@@ -80,8 +80,9 @@ class OrderController extends Controller
                 // Optionally: continue, or return with error
             }
 
-            // Send Telegram notification after transaction commit.
-            $this->notifyViaTelegram($order);
+            // Create commission credit
+            $commissionCredit = new CommissionCreditController();
+            $commissionCredit->store($order->id, $order->total_price);
 
             return redirect()->route('app.history');
         } catch (\Exception $e) {

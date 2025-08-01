@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CommissionCredit extends Model
 {
-    protected $table = 'comission_credits'; // Keep existing table name for database compatibility
+    protected $table = 'commission_credits'; // Updated table name
     
     protected $fillable = [
         'user_id',

@@ -30,12 +30,25 @@ class PermissionResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('name')
+                    ->label('Название')
+                    ->required()
+                    ->placeholder('Введите название')
+                    ->helperText('Название разрешения, которое будет использоваться в коде')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('display_name')
                     ->label('Отображается как')
                     ->required()
                     ->placeholder('Введите отображаемое название')
                     ->helperText('Название разрешения, которое будет отображаться пользователям')
                     ->maxLength(255),
+                Forms\Components\Select::make('guard_name')
+                    ->label('Защитник')
+                    ->options([
+                        'web' => 'Web',
+                        'api' => 'API',
+                    ])
+                    ->required(),
             ]);
     }
 

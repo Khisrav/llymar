@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\CommissionCredit;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -113,7 +114,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function initiatedCommissions(): HasMany
     {
-        return $this->hasMany(ComissionCredits::class, 'user_id');
+        return $this->hasMany(CommissionCredit::class, 'user_id');
     }
     
     /**
@@ -123,6 +124,6 @@ class User extends Authenticatable implements FilamentUser
      */
     public function receivedCommissions(): HasMany
     {
-        return $this->hasMany(ComissionCredits::class, 'parent_id');
+        return $this->hasMany(CommissionCredit::class, 'parent_id');
     }
 }

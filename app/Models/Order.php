@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
+use App\Models\CommissionCredit;
 
 class Order extends Model
 {
@@ -55,27 +56,48 @@ class Order extends Model
     
     /**
      * Calculate and create commission credits when order is paid.
+     * This method only creates commissions if they don't already exist.
      */
     protected static function calculateCommission($order)
     {
         $user = $order->user;
         
         // Check if user has a parent (for commission hierarchy)
-        if ($user && $user->parent_id && $user->reward_fee) {
+        if ($user && $user->parent_id && $user->reward_fee && $user->hasRole('Dealer')) {
             $parent = User::find($user->parent_id);
             
             // Only create commission if parent has ROP role
             if ($parent && $parent->hasRole('ROP')) {
-                $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
+                // Check if commission credit already exists for this order
+                $existingCommission = CommissionCredit::where('order_id', $order->id)
+                    ->where('user_id', $user->id)
+                    ->where('parent_id', $parent->id)
+                    ->first();
                 
-                // Create commission credit record
-                ComissionCredits::create([
-                    'user_id' => $user->id,
-                    'order_id' => $order->id,
-                    'parent_id' => $parent->id,
-                    'amount' => $commissionAmount,
-                    'type' => 'accrual',
-                ]);
+                if (!$existingCommission) {
+                    $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
+                    
+                    // Create commission credit record
+                    CommissionCredit::create([
+                        'user_id' => $user->id,
+                        'order_id' => $order->id,
+                        'parent_id' => $parent->id,
+                        'amount' => $commissionAmount,
+                        'type' => 'accrual',
+                    ]);
+                    
+                    Log::info("Commission credit created on order payment", [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'parent_id' => $parent->id,
+                        'amount' => $commissionAmount
+                    ]);
+                } else {
+                    Log::info("Commission credit already exists for order", [
+                        'order_id' => $order->id,
+                        'existing_commission_id' => $existingCommission->id
+                    ]);
+                }
             }
         }
     }
@@ -129,5 +151,15 @@ class Order extends Model
     public function getContractAttribute()
     {
         return $this->contracts()->first();
+    }
+
+    /**
+     * Relationship: Order has many Commission Credits.
+     *
+     * @return HasMany
+     */
+    public function commissionCredits(): HasMany
+    {
+        return $this->hasMany(CommissionCredit::class);
     }
 }

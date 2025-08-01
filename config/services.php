@@ -60,4 +60,9 @@ return [
         'account_id' => env('TOCHKA_ACCOUNT_ID'),
         'api_version' => env('TOCHKA_API_VERSION', 'v1.0'),
     ],
+    
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
 ];

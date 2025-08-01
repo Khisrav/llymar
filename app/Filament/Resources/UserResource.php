@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\ReceivedCommissionsRelationManager;
 use App\Models\User;
 use Closure;
 use Filament\Forms;
@@ -338,6 +339,7 @@ class UserResource extends Resource
     {
         return [
             OrdersRelationManager::class,
+            ReceivedCommissionsRelationManager::class,
         ];
     }
 

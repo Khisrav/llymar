@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
-class ComissionCredits extends Model
+class CommissionCredit extends Model
 {
+    protected $table = 'commission_credits'; // Updated table name
+    
     protected $fillable = [
         'user_id',
         'amount',
@@ -30,7 +32,7 @@ class ComissionCredits extends Model
     }
 
     /**
-     * Relationship: ComissionCredits belongs to a User (initiator).
+     * Relationship: CommissionCredit belongs to a User (initiator).
      */
     public function user(): BelongsTo
     {
@@ -38,7 +40,7 @@ class ComissionCredits extends Model
     }
 
     /**
-     * Relationship: ComissionCredits belongs to an Order.
+     * Relationship: CommissionCredit belongs to an Order.
      */
     public function order(): BelongsTo
     {
@@ -46,10 +48,10 @@ class ComissionCredits extends Model
     }
 
     /**
-     * Relationship: ComissionCredits belongs to a User (recipient).
+     * Relationship: CommissionCredit belongs to a User (recipient).
      */
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'parent_id');
     }
-}
+} 

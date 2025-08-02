@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class CreateUser extends CreateRecord
@@ -14,22 +15,30 @@ class CreateUser extends CreateRecord
     
     public function getTitle(): string | Htmlable
     {
-        $user = auth()->user();
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
         
-        if ($user->hasRole('Operator')) return 'Создать менеджера';
-        else if ($user->hasRole('Manager') || $user->hasRole('ROP')) return 'Создать дилера';
+        if (!$user) return 'Создать пользователя';
         
-        return 'Создать пользователя';
+        return match (true) {
+            $user->hasRole('Operator') => 'Создать менеджера',
+            $user->hasRole('Manager') || $user->hasRole('ROP') => 'Создать дилера',
+            default => 'Создать пользователя'
+        };
     }
     
     protected function afterCreate(): void
     {
-        $parent_user = auth()->user();
+        /** @var \App\Models\User|null $parentUser */
+        $parentUser = Auth::user();
+        /** @var \App\Models\User $user */
         $user = $this->record;
         
-        if ($parent_user->hasRole('Operator')) {
+        if (!$parentUser) return;
+        
+        if ($parentUser->hasRole('Operator')) {
             $user->assignRole('Manager');
-        } else if ($parent_user->hasRole('Manager') || $parent_user->hasRole('ROP')) {
+        } else if ($parentUser->hasRole('Manager') || $parentUser->hasRole('ROP')) {
             $user->assignRole('Dealer');
         }
     }

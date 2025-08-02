@@ -18,6 +18,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -30,6 +33,8 @@ class UserResource extends Resource
     protected static ?string $pluralLabel = 'Пользователи';
     protected static ?string $modelLabel = 'Пользователь';
     protected static ?string $label = 'Пользователь';
+
+    protected static ?int $navigationSort = 1;
 
     protected static $countries = [
         "" => [],
@@ -89,21 +94,55 @@ class UserResource extends Resource
         ]
     ];
 
+    /**
+     * Get the current authenticated user
+     */
+    protected static function getCurrentUser(): ?User
+    {
+        return Auth::user();
+    }
+
+    /**
+     * Check if current user has specified role
+     */
+    protected static function currentUserHasRole(string $role): bool
+    {
+        $user = static::getCurrentUser();
+        return $user && $user->hasRole($role);
+    }
+
+    /**
+     * Check if current user is Super Admin
+     */
+    protected static function isSuperAdmin(): bool
+    {
+        return static::currentUserHasRole('Super-Admin');
+    }
+
     public static function getEloquentQuery(): Builder
     {
-        $user = auth()->user();
-        if ($user->hasRole('Super-Admin')) return parent::getEloquentQuery();
+        $user = static::getCurrentUser();
+        if (!$user) {
+            return parent::getEloquentQuery()->whereRaw('1 = 0'); // Return empty query if no user
+        }
+        
+        if ($user->hasRole('Super-Admin')) {
+            return parent::getEloquentQuery();
+        }
+        
         return parent::getEloquentQuery()->where('parent_id', $user->id);
     }
 
     public static function getNavigationLabel(): string
     {
-        $user = auth()->user();
+        $user = static::getCurrentUser();
+        if (!$user) return 'Пользователи';
 
-        if ($user->hasRole('Operator')) return 'Менеджеры';
-        else if ($user->hasRole('Manager') || $user->hasRole('ROP')) return 'Дилеры';
-
-        return 'Пользователи';
+        return match (true) {
+            $user->hasRole('Operator') => 'Менеджеры',
+            $user->hasRole('Manager') || $user->hasRole('ROP') => 'Дилеры',
+            default => 'Пользователи'
+        };
     }
 
     public static function form(Form $form): Form
@@ -111,136 +150,225 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Section::make('Основная информация')
+                    ->description('Персональные данные и контактная информация')
+                    ->icon('heroicon-o-user')
                     ->columns(2)
                     ->collapsible()
                     ->schema([
+                        // Parent User Selection
                         Forms\Components\Select::make('parent_id')
                             ->label('Родитель')
+                            ->helperText('Выберите родительского пользователя')
                             ->native(false)
                             ->searchable()
-                            // ->disabled(!auth()->user()->hasRole('Super-Admin'))
                             ->options(function () {
-                                if (auth()->user()->hasRole('Super-Admin')) {
-                                    return User::all()->pluck('name', 'id');
-                                } else {
-                                    return User::where('id', auth()->user()->id)->pluck('name', 'id');
-                                }
+                                return Cache::remember('user_parent_options', 300, function () {
+                                    if (static::isSuperAdmin()) {
+                                        return User::orderBy('name')->pluck('name', 'id');
+                                    } else {
+                                        $currentUser = static::getCurrentUser();
+                                        return $currentUser ? [$currentUser->id => $currentUser->name] : [];
+                                    }
+                                });
                             })
-                            ->default(auth()->user()->id)
-                            ->required(),
+                            ->default(static::getCurrentUser()?->id)
+                            ->required()
+                            ->columnSpan(2),
+
+                        // Personal Information
                         Forms\Components\TextInput::make('name')
                             ->label('ФИО')
-                            ->required(),
+                            ->placeholder('Введите полное имя')
+                            ->required()
+                            ->maxLength(255)
+                            ->autocomplete('name'),
+
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
+                            ->placeholder('example@domain.com')
                             ->email()
-                            ->required(),
-                        Forms\Components\TextInput::make('address')
+                            ->unique(ignoreRecord: true)
+                            ->required()
+                            ->autocomplete('email')
+                            ->prefixIcon('heroicon-o-envelope'),
+
+                        // Contact Information
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Телефон')
+                            ->mask('+7 (999) 999 99-99')
+                            ->placeholder('+7 (XXX) XXX XX-XX')
+                            ->required()
+                            ->prefixIcon('heroicon-o-phone'),
+
+                        Forms\Components\TextInput::make('telegram')
+                            ->label('Ник в Telegram')
+                            ->startsWith('@')
+                            ->placeholder('@username')
+                            ->helperText('Ник должен начинаться с @')
+                            ->prefixIcon('heroicon-o-chat-bubble-left-ellipsis'),
+
+                        // Address Information
+                        Grid::make(2)
+                            ->columnSpan(2)
+                            ->schema([
+                                Forms\Components\Select::make('country')
+                                    ->label('Страна')
+                                    ->native(false)
+                                    ->required()
+                                    ->searchable()
+                                    ->prefixIcon('heroicon-o-globe-americas')
+                                    ->options([
+                                        'Армения' => 'Армения',
+                                        'Беларусь' => 'Беларусь',
+                                        'Казахстан' => 'Казахстан',
+                                        'Киргизия' => 'Киргизия',
+                                        'Россия' => 'Россия',
+                                    ])
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('region', null)),
+
+                                Forms\Components\Select::make('region')
+                                    ->label('Регион')
+                                    ->native(false)
+                                    ->required()
+                                    ->searchable()
+                                    ->disabled(fn (Get $get) => !$get('country'))
+                                    ->options(function (Get $get) {
+                                        $country = $get('country');
+                                        return $country ? self::$countries[$country] : [];
+                                    })
+                                    ->helperText('Сначала выберите страну'),
+                            ]),
+
+                        Forms\Components\Textarea::make('address')
                             ->label('Фактический адрес')
-                            ->required(),
+                            ->placeholder('Введите полный адрес')
+                            ->required()
+                            ->maxLength(500)
+                            ->rows(2)
+                            ->columnSpan(2),
+                    ]),
+
+                Section::make('Бизнес информация')
+                    ->description('Данные о компании и комиссиях')
+                    ->icon('heroicon-o-building-office')
+                    ->columns(3)
+                    ->collapsible()
+                    ->schema([
                         Forms\Components\TextInput::make('company')
                             ->label('Контрагент')
-                            ->required(),
+                            ->placeholder('Название компании')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(2),
+
                         Forms\Components\TextInput::make('reward_fee')
                             ->label('Комиссия')
+                            ->placeholder('0.00')
                             ->postfix('%')
-                            ->type('number')
+                            ->numeric()
                             ->minValue(0)
                             ->maxValue(100)
-                            ->required(),
+                            ->step(0.01)
+                            ->required()
+                            ->helperText('Комиссионный процент от 0 до 100'),
+
                         Forms\Components\Select::make('default_factor')
                             ->label('Коэффициент по умолчанию')
                             ->native(false)
                             ->required()
                             ->default('kz')
-                            ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                            ->visible(static::isSuperAdmin())
+                            ->helperText('Применяется для расчетов')
                             ->options([
                                 'kz' => 'KZ',
                                 'k1' => 'K1',
                                 'k2' => 'K2',
                                 'k3' => 'K3',
                                 'k4' => 'K4',
-                            ]),
-                        Forms\Components\Select::make('country')
-                            ->label('Страна')
-                            ->native(false)
-                            ->required()
-                            ->reactive()
-                            ->searchable()
-                            ->options([
-                                'Армения' => 'Армения',
-                                'Беларусь' => 'Беларусь',
-                                'Казахстан' => 'Казахстан',
-                                'Киргизия' => 'Киргизия',
-                                'Россия' => 'Россия',
                             ])
-                            ->live(),
-                        Forms\Components\Select::make('region')
-                            ->label('Регион')
-                            ->native(false)
-                            ->required()
-                            ->searchable()
-                            ->selectablePlaceholder(false)
-                            ->options(function (Get $get) {
-                                return self::$countries[$get('country')];
-                            }),
-                        Grid::make(9)
-                            ->schema([
-                                Forms\Components\TextInput::make('password')
-                                    ->label('Пароль')
-                                    ->password()
-                                    ->required()
-                                    ->hiddenOn('edit')
-                                    ->columnSpan(3),
-                                Forms\Components\TextInput::make('telegram')
-                                    ->label('Ник в Telegram')
-                                    ->startsWith('@')
-                                    ->placeholder('@user')
-                                    ->columnSpan(3),
-                                Forms\Components\TextInput::make('phone')
-                                    ->label('Телефон')
-                                    ->mask('+7 (999) 999 99-99')
-                                    ->required()
-                                    ->columnSpan(3),
-                                Forms\Components\Select::make('roles')
-                                    ->label('Роли')
-                                    ->relationship('roles', 'name')
-                                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name)
-                                    ->preload()
-                                    ->required()
-                                    ->native(false)
-                                    ->hidden(!auth()->user()->hasRole('Super-Admin'))
-                                    ->columnSpan(3),
-
-                            ]),
+                            ->columnSpan(static::isSuperAdmin() ? 1 : 0),
                     ]),
-                Section::make('Реквизиты')
+
+                Section::make('Безопасность и доступ')
+                    ->description('Настройки пароля и ролей')
+                    ->icon('heroicon-o-shield-check')
                     ->columns(2)
                     ->collapsible()
+                    ->schema([
+                        Forms\Components\TextInput::make('password')
+                            ->label('Пароль')
+                            ->password()
+                            ->required(fn (string $context): bool => $context === 'create')
+                            ->dehydrated(fn ($state): bool => filled($state))
+                            ->rule(Password::default())
+                            ->helperText('Минимум 8 символов')
+                            ->hiddenOn('edit')
+                            ->revealable(),
+
+                        Forms\Components\Select::make('roles')
+                            ->label('Роли')
+                            ->relationship('roles', 'name')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name)
+                            ->preload()
+                            ->required()
+                            ->native(false)
+                            ->visible(static::isSuperAdmin())
+                            ->helperText('Определяет права доступа пользователя')
+                            ->searchable(),
+                    ]),
+
+                Section::make('Реквизиты')
+                    ->description('Банковские и юридические данные')
+                    ->icon('heroicon-o-banknotes')
+                    ->columns(2)
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Grid::make(4)
                             ->schema([
                                 Forms\Components\TextInput::make('inn')
                                     ->label('ИНН')
+                                    ->placeholder('0000000000')
+                                    ->maxLength(12)
                                     ->columnSpan(1),
+
                                 Forms\Components\TextInput::make('kpp')
                                     ->label('КПП')
+                                    ->placeholder('000000000')
+                                    ->maxLength(9)
                                     ->columnSpan(1),
+
                                 Forms\Components\TextInput::make('current_account')
-                                    ->columnSpan(2)
-                                    ->label('Расчетный счет'),
+                                    ->label('Расчетный счет')
+                                    ->placeholder('00000000000000000000')
+                                    ->maxLength(20)
+                                    ->columnSpan(2),
+
                                 Forms\Components\TextInput::make('correspondent_account')
-                                    ->columnSpan(2)
-                                    ->label('Корреспондентский счет'),
+                                    ->label('Корреспондентский счет')
+                                    ->placeholder('00000000000000000000')
+                                    ->maxLength(20)
+                                    ->columnSpan(2),
+
                                 Forms\Components\TextInput::make('bik')
-                                    ->columnSpan(2)
-                                    ->label('БИК'),
+                                    ->label('БИК')
+                                    ->placeholder('000000000')
+                                    ->maxLength(9)
+                                    ->columnSpan(1),
+
                                 Forms\Components\TextInput::make('bank')
-                                    ->columnSpan(2)
-                                    ->label('Банк'),
-                                Forms\Components\TextInput::make('legal_address')
-                                    ->columnSpan(2)
-                                    ->label('Юридический адрес'),
+                                    ->label('Банк')
+                                    ->placeholder('Название банка')
+                                    ->maxLength(255)
+                                    ->columnSpan(3),
+
+                                Forms\Components\Textarea::make('legal_address')
+                                    ->label('Юридический адрес')
+                                    ->placeholder('Полный юридический адрес')
+                                    ->maxLength(500)
+                                    ->rows(2)
+                                    ->columnSpan(4),
                             ])
                     ])
             ]);
@@ -254,65 +382,117 @@ class UserResource extends Resource
                     ->label('ID')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->size(Tables\Columns\TextColumn\TextColumnSize::ExtraSmall)
+                    ->alignCenter(),
+
+                Tables\Columns\ImageColumn::make('avatar')
+                    ->label('')
+                    ->circular()
+                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&color=7F9CF5&background=EBF4FF')
+                    ->size(40),
+
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Имя')
+                    ->label('Пользователь')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->description(fn ($record) => $record->email)
+                    ->weight('medium'),
+
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->icon('heroicon-o-phone')
+                    ->copyable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('company')
+                    ->label('Компания')
+                    ->searchable()
+                    ->wrap()
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->company)
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('country')
+                    ->label('Страна')
+                    ->badge()
+                    ->searchable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('default_factor')
                     ->label('Коэфф-т')
                     ->formatStateUsing(fn ($state) => strtoupper($state ?? 'kz'))
                     ->badge()
-                    ->color('gray')
-                    ->visible(auth()->user()->hasRole('Super-Admin'))
+                    ->color(fn ($state) => match ($state) {
+                        'kz' => 'gray',
+                        'k1' => 'blue',
+                        'k2' => 'green',
+                        'k3' => 'yellow',
+                        'k4' => 'red',
+                        default => 'gray',
+                    })
+                    ->visible(static::isSuperAdmin())
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('role')
                     ->label('Роль')
                     ->searchable()
                     ->formatStateUsing(function (Model $record) {
                         $role = $record->roles()->first();
-                        return $role ? ($role->display_name ?: $role->name) : '';
+                        return $role ? ($role->display_name ?: $role->name) : 'Нет роли';
                     })
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'Super-Admin' => 'danger',
+                        'Operator' => 'warning',
+                        'Manager' => 'success',
+                        'ROP' => 'info',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('reward_fee')
+                    ->label('Комиссия')
+                    ->suffix('%')
+                    ->numeric(decimalPlaces: 2)
+                    ->alignEnd()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(),
+
                 Tables\Columns\ToggleColumn::make('can_access_dxf')
-                    ->label('Доступ к DXF')
-                    ->hidden(!auth()->user()->hasRole('Super-Admin'))
+                    ->label('DXF')
+                    ->visible(static::isSuperAdmin())
                     ->state(function (Model $record) {
-                        $user = User::find($record->id);
-                        return $user->can('access dxf');
+                        return User::find($record->id)?->can('access dxf') ?? false;
                     })
                     ->afterStateUpdated(function (Model $record, bool $state) {
                         $user = User::find($record->id);
-                        if ($state) {
-                            $user->givePermissionTo('access dxf');
-                        } else {
-                            $user->revokePermissionTo('access dxf');
+                        if ($user) {
+                            $state ? $user->givePermissionTo('access dxf') : $user->revokePermissionTo('access dxf');
                         }
                     })
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->tooltip('Доступ к DXF файлам'),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создан')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('roles')
                     ->label('Роль')
                     ->native(false)
+                    ->multiple()
                     ->relationship('roles', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name),
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name)
+                    ->preload(),
+
                 SelectFilter::make('country')
                     ->label('Страна')
                     ->native(false)
+                    ->multiple()
                     ->options([
                         'Армения' => 'Армения',
                         'Беларусь' => 'Беларусь',
@@ -320,19 +500,42 @@ class UserResource extends Resource
                         'Киргизия' => 'Киргизия',
                         'Россия' => 'Россия',
                     ]),
-                SelectFilter::make('region')
-                    ->label('Регион')
+
+                SelectFilter::make('default_factor')
+                    ->label('Коэффициент')
                     ->native(false)
-                    ->options(self::$countries),
+                    ->visible(static::isSuperAdmin())
+                    ->options([
+                        'kz' => 'KZ',
+                        'k1' => 'K1',
+                        'k2' => 'K2',
+                        'k3' => 'K3',
+                        'k4' => 'K4',
+                    ]),
+
+                Tables\Filters\Filter::make('has_dxf_access')
+                    ->label('Доступ к DXF')
+                    ->visible(static::isSuperAdmin())
+                    ->query(fn (Builder $query): Builder => 
+                        $query->whereHas('permissions', fn ($q) => $q->where('name', 'access dxf'))
+                    )
+                    ->toggle(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->slideOver(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->extremePaginationLinks();
     }
 
     public static function getRelations(): array
@@ -350,5 +553,22 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $user = static::getCurrentUser();
+        if (!$user) return null;
+        
+        return Cache::remember(
+            "user_count_badge_{$user->id}", 
+            300, 
+            fn () => static::getEloquentQuery()->count()
+        );
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'phone', 'company'];
     }
 }

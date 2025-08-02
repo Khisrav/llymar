@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 
 class ListUsers extends ListRecords
 {
@@ -13,13 +14,17 @@ class ListUsers extends ListRecords
     
     public function getTitle(): string | Htmlable
     {
-        $user = auth()->user();
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
         
-        if ($user->hasRole('Super-Admin')) return ' Пользователи';
-        else if ($user->hasRole('Operator')) return ' Менеджеры';
-        else if ($user->hasRole('Manager')) return 'Дилеры';
+        if (!$user) return 'Пользователи';
         
-        return 'Пользователи';
+        return match (true) {
+            $user->hasRole('Super-Admin') => 'Пользователи',
+            $user->hasRole('Operator') => 'Менеджеры',
+            $user->hasRole('Manager') => 'Дилеры',
+            default => 'Пользователи'
+        };
     }
 
     protected function getHeaderActions(): array

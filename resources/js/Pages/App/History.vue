@@ -85,6 +85,10 @@ const hasContract = (order: Order) => {
 	return order.contracts && order.contracts.length > 0
 }
 
+const canDeleteOrder = (order: Order) => {
+	return order.status === 'created'
+}
+
 const openDeleteDialog = (order_id: number) => {
 	orderToDelete.value = order_id
 	deleteDialogOpen.value = true
@@ -262,7 +266,7 @@ const downloadBill = (order_id: number) => {
 											<span>Счет PDF</span>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
-										<DropdownMenuItem @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
+										<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
 											<TrashIcon class="h-4 w-4" />
 											<span>Удалить</span>
 										</DropdownMenuItem>
@@ -341,7 +345,7 @@ const downloadBill = (order_id: number) => {
 													<span>Счет PDF</span>
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
-												<DropdownMenuItem @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
+												<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
 													<TrashIcon class="h-4 w-4" />
 													<span>Удалить</span>
 												</DropdownMenuItem>

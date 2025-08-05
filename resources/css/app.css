@@ -1,6 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.montserrat {
+  font-family: Montserrat, "Open Sans", sans-serif;
+}
 
 @layer base {
   :root {
@@ -41,6 +47,9 @@
     --ring: 224 13% 49%;
 
     --radius: 0.5rem;
+    
+    --dark-green: #23322D;
+    --light-gold: #FBD7A5;
   }
 
   .dark {

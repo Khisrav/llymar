@@ -13,15 +13,14 @@ const isMenuOpen = ref(false)
 
 <template>
     <header class="container max-w-screen-2xl flex flex-row items-center justify-between py-4 px-4 montserrat relative">
-        <img src="/assets/golden-logo-llymar.png" alt="" class="h-8 md:h-12" :class="{'z-50': isMenuOpen}">
+        <img src="/assets/golden-logo-llymar.png" alt="" class="h-8 md:h-12">
         
         <!-- Mobile Menu Button -->
         <button 
             @click="isMenuOpen = !isMenuOpen"
             class="lg:hidden p-2 text-white hover:text-light-gold transition-colors z-50 relative"
         >
-            <Menu v-if="!isMenuOpen" class="w-6 h-6" />
-            <X v-else class="w-6 h-6" />
+            <Menu class="w-8 h-8" />
         </button>
         
         <!-- Desktop Navigation -->
@@ -31,7 +30,7 @@ const isMenuOpen = ref(false)
                 <li><a href="" class="hover:text-light-gold transition-colors">Наши работы</a></li>
                 <li><a href="" class="hover:text-light-gold transition-colors">О нас</a></li>
                 
-                <li><a href="tel:+7 (123) 456 67-89" class="font-semibold underline hover:text-light-gold transition-colors">+7 (123) 456 67-89</a></li>
+                <li><a href="tel:+7 (989) 804 12-34" class="font-semibold underline hover:text-light-gold transition-colors">+7 (989) 804 12-34</a></li>
                 <li>
                     <a href="/auth" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-colors rounded-full px-3 py-2 inline-block flex items-center gap-2 text-sm">
                         <UserIcon class="w-4 h-4"/>
@@ -41,37 +40,95 @@ const isMenuOpen = ref(false)
             </ul>
         </nav>
 
-        
-
-        <!-- Mobile Navigation Overlay -->
-        <nav 
-            v-show="isMenuOpen" 
-            class="lg:hidden fixed inset-0 bg-opacity-75 backdrop-blur-md z-40 flex flex-col"
+        <!-- Mobile Navigation Overlay with Transition -->
+        <Transition
+            enter-active-class="transition-all duration-300 ease-out"
+            leave-active-class="transition-all duration-300 ease-in"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
         >
-            <!-- Menu content with padding from top to account for header -->
-            <div class="pt-20 px-6 flex-1">
-                <ul class="flex flex-col gap-6">
-                    <li><a href="" @click="isMenuOpen = false" class="block py-3 text-lg hover:text-light-gold transition-colors">Главная</a></li>
-                    <li><a href="" @click="isMenuOpen = false" class="block py-3 text-lg hover:text-light-gold transition-colors">Наши работы</a></li>
-                    <li><a href="" @click="isMenuOpen = false" class="block py-3 text-lg hover:text-light-gold transition-colors">О нас</a></li>
-                    
-                    <li class="pt-6 mt-6 border-t border-light-gold/20">
-                        <a href="tel:+7 (123) 456 67-89" @click="isMenuOpen = false" class="block py-3 text-lg font-semibold underline hover:text-light-gold transition-colors">+7 (123) 456 67-89</a>
-                    </li>
-                    <li class="mt-6">
-                        <a href="/auth" @click="isMenuOpen = false" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-colors rounded-full px-6 py-4 inline-block flex items-center justify-center gap-3 text-base w-full max-w-xs mx-auto">
-                            <UserIcon class="w-5 h-5"/>
-                            <span class="font-medium">Войти</span>
-                        </a>
-                    </li>
-                </ul>
+            <div 
+                v-if="isMenuOpen"
+                class="lg:hidden fixed inset-0 backdrop-blur-md z-40"
+                @click="isMenuOpen = false"
+            >
+                <X class="w-8 h-8 ml-4 mt-4"/>
             </div>
-        </nav>
+        </Transition>
+
+        <!-- Mobile Navigation Menu with Slide Animation -->
+        <Transition
+            enter-active-class="transition-transform duration-300 ease-out"
+            leave-active-class="transition-transform duration-300 ease-in"
+            enter-from-class="transform translate-x-full"
+            enter-to-class="transform translate-x-0"
+            leave-from-class="transform translate-x-0"
+            leave-to-class="transform translate-x-full"
+        >
+            <nav 
+                v-if="isMenuOpen"
+                class="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-dark-green shadow-2xl z-50 flex flex-col"
+                @click.stop
+            >
+                <!-- Menu content with padding from top to account for header -->
+                <div class="py-6 px-6 flex-1">
+                    <ul class="flex flex-col gap-2">
+                        <li class="menu-item" style="animation-delay: 0.1s">
+                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                                Главная
+                            </a>
+                        </li>
+                        <li class="menu-item" style="animation-delay: 0.2s">
+                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                                Наши работы
+                            </a>
+                        </li>
+                        <li class="menu-item" style="animation-delay: 0.3s">
+                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                                О нас
+                            </a>
+                        </li>
+                        
+                        <li class="pt-6 mt-6 border-t border-light-gold/20 menu-item" style="animation-delay: 0.4s">
+                            <a href="tel:+7 (989) 804 12-34" @click="isMenuOpen = false" class="block py-3 text-lg font-semibold underline hover:text-light-gold transition-colors">
+                                +7 (989) 804 12-34
+                            </a>
+                        </li>
+                        <li class="mt-6 menu-item" style="animation-delay: 0.5s">
+                            <a href="/auth" @click="isMenuOpen = false" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-all duration-300 rounded-full px-6 py-4 inline-block flex items-center justify-center gap-3 text-base w-full max-w-xs mx-auto hover:shadow-lg hover:shadow-light-gold/20">
+                                <UserIcon class="w-5 h-5"/>
+                                <span class="font-medium">Войти</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </Transition>
     </header>
 </template>
 
-<style>
+<style scoped>
 body {
     font-family: Montserrat, "Open Sans", sans-serif !important;
+}
+
+.menu-item {
+    opacity: 0;
+    transform: translateX(20px);
+    animation: slideInLeft 0.4s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Prevent body scroll when menu is open */
+.menu-open {
+    overflow: hidden;
 }
 </style>

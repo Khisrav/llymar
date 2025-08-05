@@ -20,14 +20,22 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Filament\Support\Assets\Css;
+use Filament\Support\Facades\FilamentAsset;
+use Illuminate\Support\Facades\Vite;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        FilamentAsset::register([
+            Css::make('filament-custom', Vite::asset('resources/css/filament-custom.css')),
+        ]);
+        
         return $panel
             ->default()
             ->id('admin')
+            ->globalSearch(false)
             ->path('admin')
             ->login()
             ->colors([

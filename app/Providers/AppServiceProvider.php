@@ -12,6 +12,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\CommissionCredit;
 use App\Policies\CommissionCreditPolicy;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -65,5 +66,7 @@ class AppServiceProvider extends ServiceProvider
             'lime' => Color::Lime,
             'fuchsia' => Color::Fuchsia,
         ]);
+        
+
     }
 }

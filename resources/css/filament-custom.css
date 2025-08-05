@@ -1,6 +1,4 @@
-.fi-sidebar-nav::-webkit-scrollbar {
-    visibility: hidden;
-    display: none;
+.fi-sidebar-nav {
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
 }

@@ -14,7 +14,7 @@ const isMenuOpen = ref(false)
     <header class="z-20">
         <nav class="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
             <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-                <a href="https://flowbite.com" class="flex items-center">
+                <a href="/" class="flex items-center">
                     <img src="/assets/logo.png" alt="" class="mr-3 h-6 sm:h-9">
                     <!-- <span class="self-center text-xl font-black whitespace-nowrap dark:text-white">LLYMAR</span> -->
                 </a>

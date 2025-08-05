@@ -186,7 +186,7 @@ const downloadListPDF = async () => {
                 <DropdownMenu v-if="can_access_factors">
                     <DropdownMenuTrigger>
                         <Button variant="outline" size="sm" class="min-w-12">
-                            <span class="text-sm font-medium">РЦ</span>
+                            <span class="text-sm font-medium">{{ selectedFactor.toUpperCase() }}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-32">

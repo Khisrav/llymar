@@ -27,19 +27,19 @@ class AppCalculatorController extends Controller
         ]);
     }
     
-    protected function getGlasses() {
+    public static function getGlasses() {
         $glass_category_id = 1;
         
         return Item::where('category_id', $glass_category_id)->get()->toArray();
     }
     
-    protected function getServices() {
+    public static function getServices() {
         $service_category_ids = [26, 35];
         
         return Item::whereIn('category_id', $service_category_ids)->get()->toArray();
     }
     
-    protected function getCalculatorItems() {
+    public static function getCalculatorItems() {
         $llymar_calculator_items = LlymarCalculatorItem::all();
         
         $items = Item::whereIn('id', $llymar_calculator_items->pluck('item_id'))->get();
@@ -49,7 +49,7 @@ class AppCalculatorController extends Controller
         return [];
     }
     
-    protected function getAdditionalItems() {
+    public static function getAdditionalItems() {
         $items = Item::where('is_for_llymar', true)->get();
         
         if ($items->isNotEmpty()) {

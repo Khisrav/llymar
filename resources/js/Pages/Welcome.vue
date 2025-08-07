@@ -15,8 +15,11 @@ import {
     ClockIcon,
     AwardIcon,
     ChevronDownIcon,
-    PlayIcon
+    PlayIcon,
+    MailIcon
 } from 'lucide-vue-next';
+import LandingBadge from '../Components/LandingBadge.vue';
+import LandingButton from '../Components/LandingButton.vue';
 
 // Enhanced portfolio data with more details
 const portfolio = ref([
@@ -239,10 +242,9 @@ const structuredData = computed(() => ({
             <div class="container max-w-screen-2xl px-4 flex-1 flex flex-col justify-center">
                 <div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
                     <div class="space-y-4">
-                        <div class="inline-flex items-center gap-2 bg-light-gold/10 backdrop-blur-md border border-light-gold rounded-full px-4 py-2 text-sm font-medium text-light-gold">
-                            <StarIcon class="w-4 h-4" />
-                            <span>Премиум качество • Гарантия 10 лет</span>
-                        </div>
+                        <LandingBadge variant="gold" :icon="StarIcon">
+                            Премиум качество • Гарантия 10 лет
+                        </LandingBadge>    
                         
                         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
                             Премиальное <br/> 
@@ -256,21 +258,18 @@ const structuredData = computed(() => ({
                     </div>
                     
                     <div class="flex flex-col sm:flex-row gap-4 md:gap-8 mt-6">
-                        <button 
-                            @click="scrollToSection('consultation')"
-                            class="group bg-light-gold hover:bg-light-gold/90 transition-all duration-300 flex items-center flex-row gap-3 md:gap-4 text-black py-4 md:py-5 px-6 md:px-8 font-semibold rounded-full text-sm md:text-base w-full sm:w-auto justify-center sm:justify-start hover:shadow-lg hover:shadow-light-gold/25 hover:scale-105"
-                        >
-                            <span class="montserrat">Получить консультацию</span>
-                            <img src="/assets/arrow.svg" alt="arrow" class="group-hover:translate-x-1 transition-transform">
-                        </button>
+                        <LandingButton>
+                            Получить консультацию
+                        </LandingButton>
                         
-                        <a 
+                        <LandingButton 
+                            variant="secondary" 
+                            :icon="PhoneIcon" 
                             href="tel:+7 (989) 804 12-34"
-                            class="group border-2 border-white/30 hover:border-light-gold hover:bg-light-gold/10 backdrop-blur-md transition-all duration-300 flex items-center flex-row gap-3 text-white hover:text-light-gold py-4 px-6 font-medium rounded-full text-sm md:text-base w-full sm:w-auto justify-center"
+                            iconPosition="left"
                         >
-                            <PhoneIcon class="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            <span class="montserrat">+7 (989) 804 12-34</span>
-                        </a>
+                            +7 (989) 804 12-34
+                        </LandingButton>
                     </div>
                     
                     <!-- Stats -->
@@ -312,9 +311,9 @@ const structuredData = computed(() => ({
     <section class="hidden bg-gray-50 py-16 md:py-24">
         <div class="container max-w-screen-2xl px-4">
             <div class="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-                <div class="inline-flex items-center gap-2 bg-light-gold/10 border border-light-gold/30 rounded-full px-4 py-2 text-sm font-medium text-dark-green mb-4">
-                    <span>Наши услуги</span>
-                </div>
+                <LandingBadge variant="gold" size="sm" icon="Star">
+                    Наши услуги
+                </LandingBadge>
                 <h2 class="text-3xl md:text-4xl font-light text-dark-green mb-4">
                     Что мы предлагаем
                 </h2>
@@ -352,13 +351,13 @@ const structuredData = computed(() => ({
         <div class="container max-w-screen-2xl px-4">
             <div class="flex flex-col gap-8 mb-16">
                 <div class="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-                    <div class="inline-flex items-center gap-2 bg-light-gold/10 border border-light-gold/30 rounded-full px-4 py-2 text-sm font-medium text-light-gold mb-4">
-                        <span>Примеры работ</span>
+                    <div class="inline-flex items-center gap-2 bg-light-gold/10 border border-light-gold rounded-full px-4 py-2 text-sm font-medium text-light-gold mb-4">
+                        <h2>Примеры работ</h2>
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-light mb-4">
+                    <h4 class="text-3xl md:text-4xl font-light mb-4">
                         Результат говорит сам за себя
-                    </h2>
-                    <p class="text-gray-300 max-w-2xl">
+                    </h4>
+                    <p class="text-gray-300">
                         Каждый проект — это уникальное решение, созданное с учетом пожеланий клиента и особенностей объекта
                     </p>
                 </div>
@@ -428,6 +427,29 @@ const structuredData = computed(() => ({
                         <p>✓ Выезд замерщика бесплатно</p>
                         <p>✓ Расчет готов в течение 24 часов</p>
                         <p>✓ Никаких скрытых платежей</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="bg-light-gold text-dark-green py-16 md:py-24">
+        <div class="container max-w-screen-2xl px-4 text-center">
+            <div class="flex flex-col gap-8 mb-16">
+                <div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
+                    <LandingBadge variant="dark">
+                        Свяжитесь с нами
+                    </LandingBadge>
+                    <h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                    <LandingButton variant="dark" showArrow>
+                        Получить консультацию
+                    </LandingButton>
+                    <span>или</span>
+                    <div class="flex flex-row gap-4">
+                        <LandingButton variant="dark" size="icon" :icon="PhoneIcon"></LandingButton>
+                        <LandingButton variant="dark" size="icon" :icon="MailIcon"></LandingButton>
                     </div>
                 </div>
             </div>

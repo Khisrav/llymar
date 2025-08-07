@@ -1,4 +1,7 @@
-@if (!Request::is('/'))
+{{-- @if (!Request::is('/'))
+    @php($__inertiaSsr = null)
+@endif --}}
+@if (Request::is('/'))
     @php($__inertiaSsr = null)
 @endif
 <!DOCTYPE html>

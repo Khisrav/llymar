@@ -30,7 +30,7 @@ const isMenuOpen = ref(false)
                 <li><a href="" class="hover:text-light-gold transition-colors">Наши работы</a></li>
                 <li><a href="" class="hover:text-light-gold transition-colors">О нас</a></li>
                 
-                <li><a href="tel:+7 (989) 804 12-34" class="font-semibold underline hover:text-light-gold transition-colors">+7 (989) 804 12-34</a></li>
+                <!-- <li><a href="tel:+7 (989) 804 12-34" class="font-semibold underline hover:text-light-gold transition-colors">+7 (989) 804 12-34</a></li> -->
                 <li>
                     <a href="/auth" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-colors rounded-full px-3 py-2 inline-block flex items-center gap-2 text-sm">
                         <UserIcon class="w-4 h-4"/>

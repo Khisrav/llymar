@@ -1,4 +1,4 @@
-@if (Request::is('app/*'))
+@if (!Request::is('/'))
     @php($__inertiaSsr = null)
 @endif
 <!DOCTYPE html>

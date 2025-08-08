@@ -38,7 +38,7 @@ const badgeClasses = computed(() => {
     
     const sizeClasses = {
         sm: 'px-3 py-1 text-xs rounded-full',
-        md: 'px-4 py-2 text-sm rounded-full',
+        md: 'px-4 py-2 text-xs md:text-sm rounded-full',
         lg: 'px-6 py-3 text-base rounded-full'
     };
     

@@ -641,7 +641,7 @@ const structuredData = computed(() => ({
         leave-to-class="opacity-0"
     >
         <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-            <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="closeModal"></div>
+            <div class="absolute inset-0 backdrop-blur-md" @click="closeModal"></div>
             
             <div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-full overflow-hidden flex flex-col modal-content">
                 <!-- Close Button -->
@@ -845,13 +845,9 @@ a:focus-visible {
     transform: scale(1.05);
 }
 
-/* Modal responsive improvements */
-@media (max-width: 640px) {
-    .modal-content {
-        max-height: calc(100vh);
-    }
+.modal-content {
+    max-height: calc(100vh - 32px);
 }
-
 /* Smooth transitions */
 * {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;

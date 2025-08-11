@@ -24,6 +24,7 @@ import {
 } from 'lucide-vue-next';
 import LandingBadge from '../Components/LandingBadge.vue';
 import LandingButton from '../Components/LandingButton.vue';
+import ConsultationDialog from '../Components/ConsultationDialog.vue';
 
 // Portfolio data from API
 const portfolio = ref([]);
@@ -181,6 +182,7 @@ const selectedPortfolioItem = ref(null);
 const isModalOpen = ref(false);
 const currentTestimonial = ref(0);
 const currentImageIndex = ref(0);
+const isConsultationDialogOpen = ref(false);
 
 // Touch/swipe support
 const touchStartX = ref(0);
@@ -264,6 +266,11 @@ const scrollToSection = (sectionId) => {
     if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
     }
+};
+
+// Open consultation dialog
+const openConsultationDialog = () => {
+    isConsultationDialogOpen.value = true;
 };
 
 // Keyboard navigation for carousel
@@ -414,7 +421,7 @@ const structuredData = computed(() => ({
                     </div>
                     
                     <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
-                        <LandingButton>
+                        <LandingButton @click="openConsultationDialog">
                             Получить консультацию
                         </LandingButton>
                         
@@ -590,12 +597,9 @@ const structuredData = computed(() => ({
                 
                 <div>
                     <div class="flex flex-col justify-center sm:flex-row gap-4 w-full">
-                        <div>
-                            <button class="group bg-light-gold hover:bg-light-gold/90 transition-all duration-300 flex items-center justify-center gap-3 text-black py-4 px-6 font-semibold rounded-full text-base flex-1 hover:shadow-lg hover:shadow-light-gold/25 hover:scale-105">
-                                <span class="montserrat">Бесплатный расчет</span>
-                                <img src="/assets/arrow.svg" alt="arrow" class="group-hover:translate-x-1 transition-transform">
-                            </button>
-                        </div>
+                        <LandingButton @click="openConsultationDialog" size="lg">
+                            <span class="montserrat font-semibold">Бесплатный расчет</span>
+                        </LandingButton>
                     </div>
                     
                     <div class="text-center text-sm text-gray-400 mt-4">
@@ -660,7 +664,7 @@ const structuredData = computed(() => ({
                     <h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>
                 </div>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                    <LandingButton variant="dark" showArrow>
+                    <LandingButton variant="dark" showArrow @click="openConsultationDialog">
                         Получить консультацию
                     </LandingButton>
                     <span>или</span>
@@ -729,17 +733,28 @@ const structuredData = computed(() => ({
                         </a>
                     </div>
                 </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-light-gold">Информация</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <a href="#" class="block hover:text-light-gold transition-colors">
+                            Политика конфиденциальности
+                        </a>
+                        <a href="#" class="block hover:text-light-gold transition-colors">
+                            Условия использования
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="text-gray-400 text-sm">
-                        © 2024 Llymar. Все права защищены.
+                        © 2025 Llymar. Все права защищены.
                     </div>
                     <div class="flex gap-6 text-sm text-gray-400">
-                        <a href="#" class="hover:text-light-gold transition-colors">Политика конфиденциальности</a>
-                        <a href="#" class="hover:text-light-gold transition-colors">Условия использования</a>
+                        <a href="https://t.me/kh_tj" class="hover:text-light-gold transition-colors">Разработка сайта</a>
                     </div>
                 </div>
             </div>
@@ -756,9 +771,9 @@ const structuredData = computed(() => ({
         leave-to-class="opacity-0"
     >
         <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-            <div class="absolute inset-0 backdrop-blur-md" @click="closeModal"></div>
+            <div class="absolute inset-0 backdrop-blur-sm" @click="closeModal"></div>
             
-            <div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-full overflow-hidden flex flex-col modal-content">
+            <div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-[calc(100vw-16px)] overflow-hidden flex flex-col modal-content">
                 <!-- Close Button -->
                 <button 
                     @click="closeModal"
@@ -769,7 +784,7 @@ const structuredData = computed(() => ({
                 
                 <div v-if="selectedPortfolioItem" class="flex flex-col h-full">
                     <!-- Image Carousel Section -->
-                    <div class="relative flex-shrink-0 h-64 sm:h-80 md:h-96 bg-gray-900">
+                    <div class="relative flex-shrink-0 h-96 md:h-[500px] bg-gray-900">
                         <!-- Main Image -->
                         <div 
                             class="relative w-full h-full overflow-hidden"
@@ -779,7 +794,7 @@ const structuredData = computed(() => ({
                             <img 
                                 :src="selectedPortfolioItem.images[currentImageIndex]" 
                                 :alt="selectedPortfolioItem.type"
-                                class="w-full h-full object-cover carousel-image select-none"
+                                class="w-full h-full object-contain carousel-image select-none"
                                 draggable="false"
                             />
                             
@@ -824,46 +839,46 @@ const structuredData = computed(() => ({
                         <!-- Header -->
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                             <div class="flex-1">
-                                <h3 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-dark-green mb-2">
+                                <h3 class="text-xl montserrat sm:text-2xl lg:text-3xl font-semibold text-dark-green mb-2">
                                     {{ selectedPortfolioItem.type }}
                                 </h3>
-                                <div class="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-600">
+                                <div class="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-600 mb-2">
                                     <MapPinIcon class="w-4 h-4 text-light-gold" />
                                     <span>{{ selectedPortfolioItem.location }}</span>
                                     <span class="text-gray-400">•</span>
                                     <CalendarIcon class="w-4 h-4 text-light-gold" />
                                     <span>{{ selectedPortfolioItem.year }}</span>
-                                    <template v-if="selectedPortfolioItem.created_at">
-                                        <span class="text-gray-400">•</span>
-                                        <span class="text-gray-500">{{ formatDate(selectedPortfolioItem.created_at) }}</span>
-                                    </template>
+                                    
                                 </div>
+                                <template v-if="selectedPortfolioItem.created_at">
+                                    <span class="text-gray-500 text-sm sm:text-base">{{ formatDate(selectedPortfolioItem.created_at) }}</span>
+                                </template>
                             </div>
                             <div class="text-center sm:text-right bg-gray-50 p-3 rounded-lg">
-                                <div class="text-2xl sm:text-3xl font-bold text-dark-green">{{ selectedPortfolioItem.area }}</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-dark-green montserrat">{{ selectedPortfolioItem.area }}</div>
                                 <div class="text-xs sm:text-sm text-gray-500">площадь остекления</div>
                             </div>
                         </div>
                         
                         <!-- Description -->
                         <div v-if="selectedPortfolioItem.description" class="mb-6">
-                            <h4 class="text-lg font-semibold text-dark-green mb-3">Описание проекта</h4>
+                            <h4 class="text-lg font-semibold text-dark-green mb-3 montserrat">Описание проекта</h4>
                             <p class="text-gray-700 leading-relaxed">{{ selectedPortfolioItem.description }}</p>
                         </div>
                         
                         <!-- Technical Details -->
-                        <div class="mb-6">
+                        <div class="mb-6 montserrat">
                             <h4 class="text-lg font-semibold text-dark-green mb-4">Технические характеристики</h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <RectangleVerticalIcon class="text-light-gold w-5 h-5 flex-shrink-0" />
+                                    <RectangleVerticalIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
                                     <div>
                                         <div class="text-sm text-gray-500">Тип стекла</div>
                                         <div class="font-medium">{{ selectedPortfolioItem.glass }}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <PaletteIcon class="text-light-gold w-5 h-5 flex-shrink-0" />
+                                    <PaletteIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
                                     <div>
                                         <div class="text-sm text-gray-500">Цвет профиля</div>
                                         <div class="font-medium">{{ selectedPortfolioItem.profile }}</div>
@@ -874,18 +889,27 @@ const structuredData = computed(() => ({
                         
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <button class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
+                            <!-- <button @click="openConsultationDialog" class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
                                 Заказать похожий проект
                             </button>
-                            <button class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
+                            <button @click="openConsultationDialog" class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
                                 Получить консультацию
-                            </button>
+                            </button> -->
+                            <LandingButton variant="dark" size="icon" iconPosition="left" :icon="PhoneIcon" @click="openConsultationDialog">
+                                Заказать похожий проект
+                            </LandingButton>
+                            <LandingButton variant="outline" size="icon" iconPosition="left" :icon="MailIcon" @click="openConsultationDialog">
+                                Получить консультацию
+                            </LandingButton>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </Transition>
+
+    <!-- Consultation Dialog -->
+    <ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />
 </template>
 
 <style scoped>
@@ -961,7 +985,8 @@ a:focus-visible {
 }
 
 .modal-content {
-    max-height: calc(100vh - 32px);
+    max-height: calc(100vh - 86px);
+    border-radius: 8px;
 }
 /* Smooth transitions */
 * {

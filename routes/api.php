@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\ConsultationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/portfolio/latest', [PortfolioController::class, 'getLatest'])
     ->middleware('throttle:60,1') // 60 requests per minute
     ->name('api.portfolio.latest');
+
+/*
+ * CONSULTATION ROUTES
+ */
+Route::post('/consultation-request', [ConsultationController::class, 'store'])
+    ->middleware('throttle:10,1') // 10 requests per minute
+    ->name('api.consultation.store');
 
 /*
  *  WEBHOOK ROUTES

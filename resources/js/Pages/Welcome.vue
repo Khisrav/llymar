@@ -24,6 +24,7 @@ import {
 } from 'lucide-vue-next';
 import LandingBadge from '../Components/LandingBadge.vue';
 import LandingButton from '../Components/LandingButton.vue';
+import ConsultationDialog from '../Components/ConsultationDialog.vue';
 
 // Portfolio data from API
 const portfolio = ref([]);
@@ -181,6 +182,7 @@ const selectedPortfolioItem = ref(null);
 const isModalOpen = ref(false);
 const currentTestimonial = ref(0);
 const currentImageIndex = ref(0);
+const isConsultationDialogOpen = ref(false);
 
 // Touch/swipe support
 const touchStartX = ref(0);
@@ -264,6 +266,11 @@ const scrollToSection = (sectionId) => {
     if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
     }
+};
+
+// Open consultation dialog
+const openConsultationDialog = () => {
+    isConsultationDialogOpen.value = true;
 };
 
 // Keyboard navigation for carousel
@@ -414,7 +421,7 @@ const structuredData = computed(() => ({
                     </div>
                     
                     <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
-                        <LandingButton>
+                        <LandingButton @click="openConsultationDialog">
                             Получить консультацию
                         </LandingButton>
                         
@@ -590,12 +597,9 @@ const structuredData = computed(() => ({
                 
                 <div>
                     <div class="flex flex-col justify-center sm:flex-row gap-4 w-full">
-                        <div>
-                            <button class="group bg-light-gold hover:bg-light-gold/90 transition-all duration-300 flex items-center justify-center gap-3 text-black py-4 px-6 font-semibold rounded-full text-base flex-1 hover:shadow-lg hover:shadow-light-gold/25 hover:scale-105">
-                                <span class="montserrat">Бесплатный расчет</span>
-                                <img src="/assets/arrow.svg" alt="arrow" class="group-hover:translate-x-1 transition-transform">
-                            </button>
-                        </div>
+                        <LandingButton @click="openConsultationDialog" size="lg">
+                            <span class="montserrat font-semibold">Бесплатный расчет</span>
+                        </LandingButton>
                     </div>
                     
                     <div class="text-center text-sm text-gray-400 mt-4">
@@ -660,7 +664,7 @@ const structuredData = computed(() => ({
                     <h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>
                 </div>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                    <LandingButton variant="dark" showArrow>
+                    <LandingButton variant="dark" showArrow @click="openConsultationDialog">
                         Получить консультацию
                     </LandingButton>
                     <span>или</span>
@@ -729,17 +733,28 @@ const structuredData = computed(() => ({
                         </a>
                     </div>
                 </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-light-gold">Информация</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <a href="#" class="block hover:text-light-gold transition-colors">
+                            Политика конфиденциальности
+                        </a>
+                        <a href="#" class="block hover:text-light-gold transition-colors">
+                            Условия использования
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="text-gray-400 text-sm">
-                        © 2024 Llymar. Все права защищены.
+                        © 2025 Llymar. Все права защищены.
                     </div>
                     <div class="flex gap-6 text-sm text-gray-400">
-                        <a href="#" class="hover:text-light-gold transition-colors">Политика конфиденциальности</a>
-                        <a href="#" class="hover:text-light-gold transition-colors">Условия использования</a>
+                        <a href="https://t.me/kh_tj" class="hover:text-light-gold transition-colors">Разработка сайта</a>
                     </div>
                 </div>
             </div>
@@ -874,10 +889,10 @@ const structuredData = computed(() => ({
                         
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <button class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
+                            <button @click="openConsultationDialog" class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
                                 Заказать похожий проект
                             </button>
-                            <button class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
+                            <button @click="openConsultationDialog" class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
                                 Получить консультацию
                             </button>
                         </div>
@@ -886,6 +901,9 @@ const structuredData = computed(() => ({
             </div>
         </div>
     </Transition>
+
+    <!-- Consultation Dialog -->
+    <ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />
 </template>
 
 <style scoped>

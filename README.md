@@ -1,81 +1,230 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Llymar - Frameless Glazing Systems Management Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive business management platform for Llymar, a Russian manufacturer of frameless glazing systems for residential and commercial properties.
 
-## About Laravel
+## 🏢 About Llymar
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Llymar is a reliable Russian manufacturer of frameless glazing systems for residential and commercial properties. We create modern solutions that make spaces brighter, more comfortable, and visually more spacious. We implement unique glazing projects for balconies, terraces, loggias, facades, and partitions, ensuring high quality at every stage from design to installation.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📊 Business Management
+- **Order Management**: Complete order lifecycle management with status tracking
+- **Customer Management**: User accounts with role-based permissions
+- **Inventory Management**: Item catalog with categories, pricing, and warehouse tracking
+- **Commission System**: Hierarchical commission tracking for dealers and agents
+- **Contract Generation**: Automated contract and document generation
 
-## Learning Laravel
+### 🧮 Calculator & Pricing
+- **Interactive Calculator**: Advanced pricing calculator for glazing projects
+- **Dynamic Pricing**: Multi-tier pricing system with factors (KZ, K1-K4)
+- **Cart System**: Shopping cart functionality with custom pricing
+- **Commercial Offers**: Generate professional commercial offer PDFs
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📐 Technical Tools
+- **DXF Integration**: CAD file generation and processing
+- **Sketcher**: Interactive sketching tool for project visualization
+- **PDF Generation**: Automated document generation (orders, sketches, commercial offers)
+- **Technical Drawings**: Generate technical documentation
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🔐 Access Control
+- **Role-Based Permissions**: 6 distinct user roles with granular permissions
+  - **Super-Admin**: Full system access
+  - **Operator**: Catalog and order management
+  - **Manager**: Order oversight and user management
+  - **Agent**: Limited order and user access
+  - **Dealer**: Calculator and order history access
+  - **Workman**: Order viewing and status updates
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🏦 Financial Integration
+- **Tochka Bank Integration**: Automated billing and payment processing
+- **Commission Tracking**: Automated commission calculations and credits
+- **Multi-currency Support**: Pricing in multiple currencies
 
-## Laravel Sponsors
+## 🛠 Tech Stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Backend
+- **PHP 8.2+** - Modern PHP with type declarations
+- **Laravel 11** - Latest Laravel framework
+- **Filament 3.2** - Modern admin panel
+- **MySQL/PostgreSQL** - Database management
+- **Spatie Laravel Permission** - Role and permission management
 
-### Premium Partners
+### Frontend
+- **Vue.js 3** - Progressive JavaScript framework
+- **Inertia.js** - Modern monolith architecture
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **Pinia** - State management for Vue
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Integrations & Tools
+- **DXFighter** - DXF file processing
+- **DOMPDF** - PDF generation
+- **PHPWord** - Document generation
+- **Laravel Socialite** - OAuth authentication (Google, VK, Yandex)
+- **Tochka Bank API** - Payment processing
 
-## Contributing
+## 📋 Requirements
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP 8.2 or higher
+- Composer
+- Node.js 18+ and NPM
+- MySQL 8.0+ or PostgreSQL 13+
+- Web server (Apache/Nginx)
 
-## Code of Conduct
+## 🚀 Installation
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd llymar
+   ```
 
-## Security Vulnerabilities
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Install JavaScript dependencies**
+   ```bash
+   npm install
+   ```
 
-## License
+4. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5. **Configure database**
+   Update your `.env` file with database credentials:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=llymar
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
 
+6. **Configure Tochka Bank (Optional)**
+   ```env
+   TOCHKA_BASE_URL=https://api.tochka.com
+   TOCHKA_CLIENT_SECRET=your_client_secret
+   TOCHKA_CUSTOMER_CODE=your_customer_code
+   TOCHKA_ACCOUNT_ID=your_account_id
+   ```
 
-## Some notes for devs
-Order statuses (may change or pending approval):
-- created - создан
-- paid - оплачен
-- expired - просрочен
-- assembled - собран
-- sent - отправлен
-- страховой случай???
-- completed - выполнен
-- archived - архивирован
-- unknown - неизвестно
-обсудить статусы с деловыми линиями
+7. **Run migrations and seeders**
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
+8. **Create storage link**
+   ```bash
+   php artisan storage:link
+   ```
+
+9. **Build frontend assets**
+   ```bash
+   npm run build
+   ```
+
+## 🏃‍♂️ Development
+
+### Start development servers
+```bash
+# Start all development services (Laravel, Queue, Vite)
+composer run dev
+
+# Or start individually:
+php artisan serve          # Laravel server
+php artisan queue:work     # Queue worker
+npm run dev               # Vite development server
+```
+
+### Useful commands
+```bash
+# Sync permissions
+php artisan command-permissions:sync
+
+# Clear caches
+php artisan optimize:clear
+
+# Run tests
+php artisan test
+```
+
+## 🏗 Project Structure
+
+```
+app/
+├── Console/Commands/     # Artisan commands
+├── Filament/            # Admin panel resources
+├── Http/Controllers/    # HTTP controllers
+├── Models/             # Eloquent models
+├── Policies/           # Authorization policies
+├── Services/           # Business logic services
+└── Observers/          # Model observers
+
+resources/
+├── js/
+│   ├── Components/     # Vue.js components
+│   ├── Pages/         # Inertia.js pages
+│   ├── Stores/        # Pinia stores
+│   └── Utils/         # Utility functions
+├── css/               # Stylesheets
+└── views/             # Blade templates
+
+database/
+├── migrations/        # Database migrations
+└── seeders/          # Database seeders
+```
+
+## 🔑 Default Users
+
+After running seeders, you can access the system with:
+
+- **Super Admin**: User ID 1 (check your seeded data)
+- **Admin Panel**: `/admin`
+- **User Application**: `/app`
+
+## 📱 Main Application Routes
+
+- `/` - Landing page
+- `/auth` - Authentication page
+- `/app` - User dashboard
+- `/app/calculator` - Pricing calculator
+- `/app/cart` - Shopping cart
+- `/app/history` - Order history
+- `/app/sketcher/{order_id}` - Project sketcher
+- `/admin` - Admin panel (Filament)
+
+## 🧪 Testing
+
+```bash
+# Run PHP tests
+php artisan test
+
+# Run specific test file
+php artisan test tests/Feature/OrderTest.php
+```
+
+## 📄 License
+
+This project is proprietary software owned by Llymar.
+
+## 🤝 Contributing
+
+This is a private business application. Contact the development team for contribution guidelines.
+
+## 📞 Support
+
+For technical support or business inquiries:
+- Phone: +7 (989) 804 12-34
+- Website: https://llymar.ru
+
+---
+
+*Developed for Llymar - Making spaces brighter and more comfortable through innovative frameless glazing solutions.* 

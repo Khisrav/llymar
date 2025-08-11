@@ -96,7 +96,7 @@ const handleClick = (event) => {
 </script>
 
 <template>
-    <div>
+    <div class="contents">
         <component 
             :is="href ? 'a' : 'button'"
             :href="href"

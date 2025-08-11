@@ -771,9 +771,9 @@ const structuredData = computed(() => ({
         leave-to-class="opacity-0"
     >
         <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-            <div class="absolute inset-0 backdrop-blur-md" @click="closeModal"></div>
+            <div class="absolute inset-0 backdrop-blur-sm" @click="closeModal"></div>
             
-            <div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-full overflow-hidden flex flex-col modal-content">
+            <div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-[calc(100vw-16px)] overflow-hidden flex flex-col modal-content">
                 <!-- Close Button -->
                 <button 
                     @click="closeModal"
@@ -784,7 +784,7 @@ const structuredData = computed(() => ({
                 
                 <div v-if="selectedPortfolioItem" class="flex flex-col h-full">
                     <!-- Image Carousel Section -->
-                    <div class="relative flex-shrink-0 h-64 sm:h-80 md:h-96 bg-gray-900">
+                    <div class="relative flex-shrink-0 h-96 md:h-[500px] bg-gray-900">
                         <!-- Main Image -->
                         <div 
                             class="relative w-full h-full overflow-hidden"
@@ -794,7 +794,7 @@ const structuredData = computed(() => ({
                             <img 
                                 :src="selectedPortfolioItem.images[currentImageIndex]" 
                                 :alt="selectedPortfolioItem.type"
-                                class="w-full h-full object-cover carousel-image select-none"
+                                class="w-full h-full object-contain carousel-image select-none"
                                 draggable="false"
                             />
                             
@@ -839,46 +839,46 @@ const structuredData = computed(() => ({
                         <!-- Header -->
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                             <div class="flex-1">
-                                <h3 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-dark-green mb-2">
+                                <h3 class="text-xl montserrat sm:text-2xl lg:text-3xl font-semibold text-dark-green mb-2">
                                     {{ selectedPortfolioItem.type }}
                                 </h3>
-                                <div class="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-600">
+                                <div class="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-600 mb-2">
                                     <MapPinIcon class="w-4 h-4 text-light-gold" />
                                     <span>{{ selectedPortfolioItem.location }}</span>
                                     <span class="text-gray-400">•</span>
                                     <CalendarIcon class="w-4 h-4 text-light-gold" />
                                     <span>{{ selectedPortfolioItem.year }}</span>
-                                    <template v-if="selectedPortfolioItem.created_at">
-                                        <span class="text-gray-400">•</span>
-                                        <span class="text-gray-500">{{ formatDate(selectedPortfolioItem.created_at) }}</span>
-                                    </template>
+                                    
                                 </div>
+                                <template v-if="selectedPortfolioItem.created_at">
+                                    <span class="text-gray-500 text-sm sm:text-base">{{ formatDate(selectedPortfolioItem.created_at) }}</span>
+                                </template>
                             </div>
                             <div class="text-center sm:text-right bg-gray-50 p-3 rounded-lg">
-                                <div class="text-2xl sm:text-3xl font-bold text-dark-green">{{ selectedPortfolioItem.area }}</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-dark-green montserrat">{{ selectedPortfolioItem.area }}</div>
                                 <div class="text-xs sm:text-sm text-gray-500">площадь остекления</div>
                             </div>
                         </div>
                         
                         <!-- Description -->
                         <div v-if="selectedPortfolioItem.description" class="mb-6">
-                            <h4 class="text-lg font-semibold text-dark-green mb-3">Описание проекта</h4>
+                            <h4 class="text-lg font-semibold text-dark-green mb-3 montserrat">Описание проекта</h4>
                             <p class="text-gray-700 leading-relaxed">{{ selectedPortfolioItem.description }}</p>
                         </div>
                         
                         <!-- Technical Details -->
-                        <div class="mb-6">
+                        <div class="mb-6 montserrat">
                             <h4 class="text-lg font-semibold text-dark-green mb-4">Технические характеристики</h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <RectangleVerticalIcon class="text-light-gold w-5 h-5 flex-shrink-0" />
+                                    <RectangleVerticalIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
                                     <div>
                                         <div class="text-sm text-gray-500">Тип стекла</div>
                                         <div class="font-medium">{{ selectedPortfolioItem.glass }}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <PaletteIcon class="text-light-gold w-5 h-5 flex-shrink-0" />
+                                    <PaletteIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
                                     <div>
                                         <div class="text-sm text-gray-500">Цвет профиля</div>
                                         <div class="font-medium">{{ selectedPortfolioItem.profile }}</div>
@@ -889,12 +889,18 @@ const structuredData = computed(() => ({
                         
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <button @click="openConsultationDialog" class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
+                            <!-- <button @click="openConsultationDialog" class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
                                 Заказать похожий проект
                             </button>
                             <button @click="openConsultationDialog" class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
                                 Получить консультацию
-                            </button>
+                            </button> -->
+                            <LandingButton variant="dark" size="icon" iconPosition="left" :icon="PhoneIcon" @click="openConsultationDialog">
+                                Заказать похожий проект
+                            </LandingButton>
+                            <LandingButton variant="outline" size="icon" iconPosition="left" :icon="MailIcon" @click="openConsultationDialog">
+                                Получить консультацию
+                            </LandingButton>
                         </div>
                     </div>
                 </div>
@@ -979,7 +985,8 @@ a:focus-visible {
 }
 
 .modal-content {
-    max-height: calc(100vh - 32px);
+    max-height: calc(100vh - 86px);
+    border-radius: 8px;
 }
 /* Smooth transitions */
 * {

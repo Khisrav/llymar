@@ -80,12 +80,12 @@ function groupArraysByProperties($arrays, $properties) {
                         <tr>
                             <td style="border:none">
                                 <div>
-                                    <h1 style="margin:0;padding:0;font-size:16px !important;">Коммерческое предложение</h1>
-                                    <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления</p>
+                                    <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления</h1>
+                                    {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления</p> --}}
                                 </div>
                             </td>
                             <td style="text-align: right;border:none">
-                                {{-- <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto"> --}}
+                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
                             </td>
                         </tr>
                     </tbody>
@@ -242,8 +242,8 @@ function groupArraysByProperties($arrays, $properties) {
                                     <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
                                 </div> --}}
                             </td>
-                            <td style="text-align: right;border:none">
-                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:34px;width:auto">
+                            <td style="text-align: right;border:none;padding-bottom:12px;">
+                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
                             </td>
                         </tr>
                     </tbody>

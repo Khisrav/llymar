@@ -20,7 +20,14 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     CalendarIcon,
-    XIcon
+    XIcon,
+    FlameIcon,
+    ShieldIcon,
+    LockIcon,
+    GlassWaterIcon,
+    CloudIcon,
+    SunsetIcon,
+    SunIcon
 } from 'lucide-vue-next';
 import LandingBadge from '../Components/LandingBadge.vue';
 import LandingButton from '../Components/LandingButton.vue';
@@ -176,6 +183,47 @@ const services = ref([
         price: 'от 20 000 ₽/м²'
     }
 ]);
+
+const TemperedGlassAdvantages = ref([
+    {
+        icon: FlameIcon,
+        title: 'Термостойкость',
+        description: 'Выдерживает воздействие высоких температур без деформации и потери целостности.'
+    },
+    {
+        icon: ShieldIcon,
+        title: 'Повышенная прочность',
+        description: 'В 5 раз прочнее обычного стекла и выдерживает высокие ветровые нагрузки.'
+    },
+    {
+        icon: LockIcon,
+        title: 'Безопасность',
+        description: 'При повреждении распадается на мелкие осколки с тупыми гранями, не способными поранить.'
+    }
+])
+
+const glassTypes = ref([
+    {
+        icon: GlassWaterIcon,
+        title: 'Обычное прозрачное стекло',
+        description: 'Классический вариант с высокой светопропускаемостью (~90%), обеспечивающий естественное освещение и лёгкость конструкции. Обладает нейтральным оттенком, подходит для любых интерьеров и устойчиво к перепадам температур.',
+    },
+    {
+        icon: CloudIcon,
+        title: 'Тонированное в массе (серое)',
+        description: 'Глубокий серый оттенок снижает солнечную нагрузку и создаёт современный вид. Пропускает 50–70% света, уменьшает нагрев, подходит для солнечных сторон и сочетается с металлом и деревом.',
+    },
+    {
+        icon: SunsetIcon,
+        title: 'Тонированное в массе (бронза)',
+        description: 'Тёплый золотисто-коричневый оттенок придаёт уют и элегантность. Задерживает УФ-лучи, снижает яркость без потери видимости, пропуская 40–60% света. Идеально смотрится в классических и средиземноморских стилях.',
+    },
+    {
+        icon: SunIcon,
+        title: 'Просветлённое стекло “Оптивайт”',
+        description: 'Максимально прозрачно за счёт уменьшенного содержания железа, что убирает зеленоватый оттенок. Отличается естественной цветопередачей и лучшей светопроницаемостью.',
+    },
+])
 
 // Reactive state
 const selectedPortfolioItem = ref(null);
@@ -405,7 +453,7 @@ const structuredData = computed(() => ({
             <div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
                 <div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
                     <div class="space-y-4">
-                        <LandingBadge variant="gold" :icon="StarIcon">
+                        <LandingBadge variant="gold" size="sm" :icon="StarIcon">
                             Премиум качество • Гарантия 10 лет
                         </LandingBadge>    
                         
@@ -474,7 +522,7 @@ const structuredData = computed(() => ({
     <section class="hidden bg-black py-16 md:py-32">
         <div class="container max-w-screen-2xl px-4">
             <div class="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-                <LandingBadge variant="gold">
+                <LandingBadge variant="gold" size="sm">
                     Наши услуги
                 </LandingBadge>
                 <h2 class="text-3xl md:text-4xl font-light text-white mb-4">
@@ -514,7 +562,7 @@ const structuredData = computed(() => ({
         <div class="container max-w-screen-2xl px-4">
             <div class="flex flex-col gap-8 mb-16">
                 <div class="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-                    <LandingBadge>
+                    <LandingBadge size="sm">
                         Примеры работ
                     </LandingBadge>
                     <h4 class="text-3xl md:text-4xl font-light mb-4">
@@ -618,7 +666,7 @@ const structuredData = computed(() => ({
                 <div>
                     <div class="flex flex-col gap-8 mb-6">
                         <div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
-                            <LandingBadge variant="gold">
+                            <LandingBadge variant="gold" size="sm">
                                 О нас
                             </LandingBadge>
                             <h4 class="text-3xl md:text-4xl font-light mb-4">Ваш комфорт - наша работа!</h4>
@@ -654,11 +702,56 @@ const structuredData = computed(() => ({
         </div>
     </section>
     
+    <section class="bg-gray-50 pt-16 md:pt-32 montserrat">
+        <div class="container max-w-screen-2xl px-4">
+            <div class="flex flex-col gap-4 md:gap-8 mb-6">
+                <div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
+                    <LandingBadge variant="dark" size="sm">
+                        О нас
+                    </LandingBadge>
+                    <h4 class="text-3xl md:text-4xl font-light mb-4">Преимущества закаленного стекла</h4>
+                </div>
+            </div>
+            
+            <div>
+                <p class="text-justify text-base">Закаленное стекло (каленое стекло) — современный материал, получаемый из обычных стеклянных листов путем тепловой обработки. В результате применения данного метода хрупкие изделия кардинально меняют физические свойства, становятся прочными и надежными. В процессе изготовления стеклянных конструкций мы используем только закаленное стекло толщиной 10 мм.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mt-12">
+                    <div v-for="advantage in TemperedGlassAdvantages" :key="advantage.title" class="text-center flex flex-col gap-4 items-center bg-white p-4 md:p-8">
+                        <div class="flex flex-row gap-2 items-center justify-center bg-light-gold rounded-full p-4">
+                            <component :is="advantage.icon" class="w-6 h-6 text-dark-green" />
+                        </div>
+                        <h5 class="text-lg font-semibold text-dark-green">{{ advantage.title }}</h5>
+                        <p class="text-base text-gray-600">{{ advantage.description }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16">
+                <h2 class="text-4xl md:text-4xl font-light mb-8 text-center">Выбор стекла</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                    <div v-for="glass in glassTypes" :key="glass.title" class="flex flex-col gap-4 bg-white p-4 md:p-8">
+                        <div class="inline-block">
+                            <div class="inline-block bg-green-50 rounded-full p-4">
+                                <component :is="glass.icon" class="w-6 h-6 text-dark-green" />
+                            </div>
+                        </div>
+                        <h5 class="text-lg font-semibold text-dark-green">{{ glass.title }}</h5>
+                        <p class="text-sm md:text-base text-justify text-gray-600">{{ glass.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-16 md:mt-32">
+            <img src="/assets/glass-types.jpg" class="w-full" alt="">
+        </div>
+    </section>
+    
     <section class="bg-light-gold text-dark-green py-16 md:py-32">
         <div class="container max-w-screen-2xl px-4 text-center">
             <div class="flex flex-col gap-8 mb-16">
                 <div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
-                    <LandingBadge variant="dark">
+                    <LandingBadge variant="dark" size="sm">
                         Свяжитесь с нами
                     </LandingBadge>
                     <h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>

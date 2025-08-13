@@ -4,6 +4,7 @@ import Label from "../../Components/ui/label/Label.vue";
 import Input from "../../Components/ui/input/Input.vue";
 import Button from "../../Components/ui/button/Button.vue";
 import { ref } from "vue";
+import { Head } from "@inertiajs/vue3";
 
 const form = useForm({
 	email: "",
@@ -12,6 +13,9 @@ const form = useForm({
 </script>
 
 <template>
+	<Head>
+		<title>Вход</title>
+	</Head>
 	<div class="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
 		<div class="flex items-center justify-center py-12">
 			<div class="mx-auto grid w-[350px] gap-6">

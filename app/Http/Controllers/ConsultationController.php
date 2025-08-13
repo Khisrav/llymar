@@ -15,8 +15,7 @@ class ConsultationController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'service' => 'nullable|string|max:255',
+            'city' => 'required|string|max:100',
             'message' => 'nullable|string|max:1000',
             'source' => 'nullable|string|max:100',
         ]);
@@ -105,32 +104,17 @@ class ConsultationController extends Controller
 
     private function formatTelegramMessage(array $data)
     {
-        $serviceNames = [
-            'balcony' => 'Безрамное остекление балконов',
-            'panoramic' => 'Панорамное остекление',
-            'terrace' => 'Остекление террас',
-            'facade' => 'Фасадное остекление',
-            'other' => 'Другое'
-        ];
-
-        $serviceName = $serviceNames[$data['service']] ?? $data['service'] ?? 'Не указано';
-
         $message = "🔔 <b>Новая заявка на консультацию</b>\n\n";
         $message .= "👤 <b>Имя:</b> " . htmlspecialchars($data['name']) . "\n";
         $message .= "📞 <b>Телефон:</b> " . htmlspecialchars($data['phone']) . "\n";
-        
-        if (!empty($data['email'])) {
-            $message .= "📧 <b>Email:</b> " . htmlspecialchars($data['email']) . "\n";
-        }
-        
-        $message .= "🏗️ <b>Услуга:</b> " . htmlspecialchars($serviceName) . "\n";
+        $message .= "🏙️ <b>Город:</b> " . htmlspecialchars($data['city']) . "\n";
         
         if (!empty($data['message'])) {
             $message .= "💬 <b>Сообщение:</b>\n" . htmlspecialchars($data['message']) . "\n";
         }
         
-        // $message .= "\n📍 <b>Источник:</b> " . htmlspecialchars($data['source'] ?? 'Лендинг') . "\n";
-        // $message .= "🕐 <b>Время:</b> " . now()->format('d.m.Y H:i') . "\n";
+        $message .= "\n📍 <b>Источник:</b> " . htmlspecialchars($data['source'] ?? 'Лендинг') . "\n";
+        $message .= "🕐 <b>Время:</b> " . now()->format('d.m.Y H:i') . "\n";
 
         return $message;
     }

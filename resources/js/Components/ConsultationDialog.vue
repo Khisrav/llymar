@@ -21,8 +21,7 @@ const emit = defineEmits(['update:isOpen']);
 const form = reactive({
     name: '',
     phone: '',
-    email: '',
-    service: '',
+    city: '',
     message: '',
     privacy: false
 });
@@ -50,8 +49,7 @@ const resetForm = () => {
     Object.assign(form, {
         name: '',
         phone: '',
-        email: '',
-        service: '',
+        city: '',
         message: '',
         privacy: false
     });
@@ -74,8 +72,8 @@ const validateForm = () => {
         newErrors.phone = 'Введите корректный номер телефона';
     }
     
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-        newErrors.email = 'Введите корректный email';
+    if (!form.city.trim()) {
+        newErrors.city = 'Город обязателен для заполнения';
     }
     
     if (!form.privacy) {
@@ -108,8 +106,7 @@ const submitForm = async () => {
             body: JSON.stringify({
                 name: form.name.trim(),
                 phone: form.phone.trim(),
-                email: form.email.trim() || null,
-                service: form.service || null,
+                city: form.city.trim(),
                 message: form.message.trim() || null,
                 source: 'Лендинг'
             })
@@ -183,32 +180,16 @@ watch(form, () => {
                 </div>
                 
                 <div class="grid gap-2">
-                    <Label for="email">Email</Label>
+                    <Label for="city">Город *</Label>
                     <Input 
-                        id="email"
-                        v-model="form.email"
-                        type="email"
-                        placeholder="example@mail.com"
+                        id="city"
+                        v-model="form.city"
+                        type="text"
+                        placeholder="Ваш город"
+                        required
                         :disabled="isSubmitting"
                     />
-                    <div v-if="errors.email" class="text-xs text-red-500">{{ errors.email }}</div>
-                </div>
-                
-                <div class="grid gap-2">
-                    <Label for="service">Интересующая услуга</Label>
-                    <select 
-                        id="service"
-                        v-model="form.service"
-                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        :disabled="isSubmitting"
-                    >
-                        <option value="">Выберите услугу</option>
-                        <option value="balcony">Безрамное остекление балконов</option>
-                        <option value="panoramic">Панорамное остекление</option>
-                        <option value="terrace">Остекление террас</option>
-                        <option value="facade">Фасадное остекление</option>
-                        <option value="other">Другое</option>
-                    </select>
+                    <div v-if="errors.city" class="text-xs text-red-500">{{ errors.city }}</div>
                 </div>
                 
                 <div class="grid gap-2">

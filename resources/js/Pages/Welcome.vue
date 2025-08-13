@@ -741,7 +741,7 @@ const structuredData = computed(() => ({
 					<div class="flex items-center gap-3 mb-4">
 						<img src="/assets/golden-logo-llymar.png" alt="Llymar" class="h-8" />
 					</div>
-					<p class="text-gray-300 mb-4 max-w-md">Премиальные системы безрамного остекления для жилых и коммерческих объектов. Создаём современные решения с 20XX года.</p>
+					<p class="text-gray-300 mb-4 max-w-md">Премиальные системы безрамного остекления для жилых и коммерческих объектов. Создаём современные решения.</p>
 					<div class="hidden flex gap-4">
 						<a href="#" class="text-gray-300 hover:text-light-gold transition-colors">
 							<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

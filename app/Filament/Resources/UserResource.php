@@ -140,8 +140,8 @@ class UserResource extends Resource
         if (!$user) return 'Пользователи';
 
         return match (true) {
-            $user->hasRole('Operator') => 'Менеджеры',
-            $user->hasRole('Manager') || $user->hasRole('ROP') => 'Дилеры',
+            $user->hasRole('Operator') => 'Дилеры',
+            $user->hasRole('Dealer') || $user->hasRole('ROP') => 'Менеджеры',
             default => 'Пользователи'
         };
     }
@@ -314,17 +314,47 @@ class UserResource extends Resource
                             ->preload()
                             ->required()
                             ->native(false)
-                            ->visible(static::isSuperAdmin())
+                            ->hidden(!static::isSuperAdmin())
+                            ->default(function () {
+                                $user = Auth::user();
+                                if ($user && $user->hasRole('Dealer')) {
+                                    $managerRole = \Spatie\Permission\Models\Role::where('name', 'Manager')->first();
+                                    return $managerRole ? [$managerRole->id] : [];
+                                }
+                                return [];
+                            })
                             ->helperText('Определяет права доступа пользователя')
                             ->searchable(),
                         
                         Forms\Components\Toggle::make('can_access_dxf')
                             ->label('Доступ к DXF')
-                            ->helperText('Определяет права доступа к DXF генерации')
-                            ->visible(static::isSuperAdmin())
+                            ->helperText(function ($record) {
+                                if ($record && $record->parent_id) {
+                                    $parent = User::find($record->parent_id);
+                                    if ($parent && $parent->hasRole('Dealer')) {
+                                        return 'Доступ наследуется от родителя-дилера автоматически';
+                                    }
+                                }
+                                return 'Определяет права доступа к DXF генерации';
+                            })
+                            // ->hidden(!static::isSuperAdmin())
+                            ->disabled(function ($record) {
+                                if (static::isSuperAdmin()) {
+                                    return false;
+                                }
+                            
+                                return true;
+                            })
                             ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
                                 if ($record) {
                                     $set('can_access_dxf', $record->can('access dxf'));
+                                }
+                                
+                                if ($record && $record->parent_id) {
+                                    $parent = User::find($record->parent_id);
+                                    if ($parent && $parent->hasRole('Dealer')) {
+                                        $set('can_access_dxf', $parent->can('access dxf'));
+                                    }
                                 }
                             })
                             ->afterStateUpdated(function (Forms\Get $get, bool $state, $record) {
@@ -332,7 +362,19 @@ class UserResource extends Resource
                                     $state
                                         ? $record->givePermissionTo('access dxf')
                                         : $record->revokePermissionTo('access dxf');
+                                    
+                                    // Sync DXF access to children if this user is a Dealer
+                                    if ($record->hasRole('Dealer')) {
+                                        $record->syncChildrenDxfAccess();
+                                    }
                                 }
+                            })
+                            ->default(function () {
+                                $user = Auth::user();
+                                if ($user && $user->hasRole('Dealer') && $user->can('access dxf')) {
+                                    return true;
+                                }
+                                return false;
                             }),
 
                     ]),
@@ -469,6 +511,7 @@ class UserResource extends Resource
                         'ROP' => 'info',
                         default => 'gray',
                     })
+                    ->hidden(!static::isSuperAdmin())
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('reward_fee')
@@ -482,6 +525,13 @@ class UserResource extends Resource
                 Tables\Columns\ToggleColumn::make('can_access_dxf')
                     ->label('DXF')
                     ->visible(static::isSuperAdmin())
+                    ->disabled(function (Model $record) {
+                        if ($record->parent_id) {
+                            $parent = User::find($record->parent_id);
+                            return $parent && $parent->hasRole('Dealer');
+                        }
+                        return false;
+                    })
                     ->state(function (Model $record) {
                         return User::find($record->id)?->can('access dxf') ?? false;
                     })
@@ -489,9 +539,22 @@ class UserResource extends Resource
                         $user = User::find($record->id);
                         if ($user) {
                             $state ? $user->givePermissionTo('access dxf') : $user->revokePermissionTo('access dxf');
+                            
+                            // Sync DXF access to children if this user is a Dealer
+                            if ($user->hasRole('Dealer')) {
+                                $user->syncChildrenDxfAccess();
+                            }
                         }
                     })
-                    ->tooltip('Доступ к DXF файлам'),
+                    ->tooltip(function (Model $record) {
+                        if ($record->parent_id) {
+                            $parent = User::find($record->parent_id);
+                            if ($parent && $parent->hasRole('Dealer')) {
+                                return 'Доступ наследуется от родителя-дилера';
+                            }
+                        }
+                        return 'Доступ к DXF файлам';
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')

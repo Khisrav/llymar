@@ -19,6 +19,7 @@ import {
 	MailIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
+	ChevronUpIcon,
 	CalendarIcon,
 	XIcon,
 	FlameIcon,
@@ -231,6 +232,7 @@ const isModalOpen = ref(false);
 const currentTestimonial = ref(0);
 const currentImageIndex = ref(0);
 const isConsultationDialogOpen = ref(false);
+const showBackToTop = ref(false);
 
 // Touch/swipe support
 const touchStartX = ref(0);
@@ -310,7 +312,15 @@ const formatDate = (dateString) => {
 const scrollToSection = (sectionId) => {
 	const element = document.getElementById(sectionId);
 	if (element) {
-		element.scrollIntoView({ behavior: "smooth" });
+		// Calculate offset to account for fixed header
+		const headerHeight = 80; // Approximate header height
+		const elementPosition = element.getBoundingClientRect().top;
+		const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+		window.scrollTo({
+			top: offsetPosition,
+			behavior: "smooth"
+		});
 	}
 };
 
@@ -338,6 +348,19 @@ const handleKeydown = (event) => {
 	}
 };
 
+// Back to top functionality
+const scrollToTop = () => {
+	window.scrollTo({
+		top: 0,
+		behavior: "smooth"
+	});
+};
+
+// Handle scroll events for back to top button
+const handleScroll = () => {
+	showBackToTop.value = window.scrollY > 500;
+};
+
 // Intersection Observer for animations
 onMounted(() => {
 	// Fetch portfolio data from API
@@ -345,6 +368,9 @@ onMounted(() => {
 
 	// Add keyboard event listener
 	document.addEventListener("keydown", handleKeydown);
+
+	// Add scroll event listener for back to top button
+	window.addEventListener("scroll", handleScroll);
 
 	const observerOptions = {
 		threshold: 0.1,
@@ -367,6 +393,7 @@ onMounted(() => {
 // Cleanup on unmount
 onUnmounted(() => {
 	document.removeEventListener("keydown", handleKeydown);
+	window.removeEventListener("scroll", handleScroll);
 });
 
 // Structured data for SEO
@@ -449,14 +476,14 @@ const structuredData = computed(() => ({
 	</Head>
 
 	<!-- Hero Section -->
-	<section class="bg-[url('/assets/hero.jpg')] bg-cover bg-center text-white relative min-h-screen overflow-hidden">
+	<section id="hero" class="bg-[url('/assets/hero.jpg')] bg-cover bg-center text-white relative min-h-screen overflow-hidden">
 		<div class="bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70 min-h-screen flex flex-col">
 			<GuestHeaderLayout />
 
 			<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
 				<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
 					<div class="space-y-4">
-						<LandingBadge variant="gold" size="sm" :icon="StarIcon"> Премиум качество • Гарантия 10 лет </LandingBadge>
+						<!-- <LandingBadge variant="gold" size="sm" :icon="StarIcon"> Премиум качество • Гарантия 10 лет </LandingBadge> -->
 
 						<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
 							Премиальное <br />
@@ -473,16 +500,20 @@ const structuredData = computed(() => ({
 					</div>
 
 					<!-- Stats -->
-					<div class="grid grid-cols-2 md:flex flex-col md:flex-row items-center justify-between gap-6 mt-4 md:mt-12 pt-8 border-t border-white/20">
+					<!-- <div class="grid grid-cols-2 md:flex flex-col md:flex-row items-center justify-between gap-6 mt-4 md:mt-12 pt-8 border-t border-white/20">
 						<div v-for="stat in stats" :key="stat.label" class="text-center animate-on-scroll opacity-0 translate-y-4 transition-all duration-700">
 							<div class="text-2xl md:text-3xl font-bold text-light-gold montserrat">{{ stat.number }}</div>
 							<div class="text-sm text-gray-300 mt-1">{{ stat.label }}</div>
 						</div>
-						<!-- Scroll indicator -->
 						<div class="hidden md:block animate-bounce cursor-pointer" @click="scrollToSection('portfolio')">
 							<div class="flex flex-col items-center gap-2 text-white/70 hover:text-light-gold transition-colors">
 								<img src="/assets/scrolldown.svg" alt="scroll" />
 							</div>
+						</div>
+					</div> -->
+					<div class="text-right">
+						<div class="inline-block text-white/70 hover:text-light-gold transition-colors animate-bounce cursor-pointer mt-4 pt-8 md:mt-12" @click="scrollToSection('portfolio')">
+							<img src="/assets/scrolldown.svg" alt="scroll" />
 						</div>
 					</div>
 				</div>
@@ -491,7 +522,7 @@ const structuredData = computed(() => ({
 	</section>
 
 	<!-- Features Section -->
-	<section class="hidden bg-white py-16 md:py-32">
+	<section id="features" class="hidden bg-white py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4">
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				<div v-for="(feature, index) in features" :key="feature.title" class="text-center animate-on-scroll opacity-0 translate-y-8 transition-all duration-700" :style="`animation-delay: ${index * 200}ms`">
@@ -506,7 +537,7 @@ const structuredData = computed(() => ({
 	</section>
 
 	<!-- Services Section -->
-	<section class="hidden bg-black py-16 md:py-32">
+	<section id="services" class="hidden bg-black py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4">
 			<div class="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
 				<LandingBadge variant="gold" size="sm"> Наши услуги </LandingBadge>
@@ -627,7 +658,7 @@ const structuredData = computed(() => ({
 		</div>
 	</section>
 
-	<section class="bg-dark-green py-16 md:py-32">
+	<section id="about" class="bg-dark-green py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4 text-white">
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 				<div>
@@ -667,11 +698,11 @@ const structuredData = computed(() => ({
 		</div>
 	</section>
 
-	<section class="bg-gray-50 pt-16 md:pt-32 montserrat">
+	<section id="glass-types" class="bg-gray-50 pt-16 md:pt-32 montserrat">
 		<div class="container max-w-screen-2xl px-4">
 			<div class="flex flex-col gap-4 md:gap-8 mb-6">
 				<div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
-					<LandingBadge variant="dark" size="sm"> О нас </LandingBadge>
+					<LandingBadge variant="dark" size="sm"> Выбор стекла </LandingBadge>
 					<h4 class="text-3xl md:text-4xl font-light mb-4">Преимущества закаленного стекла</h4>
 				</div>
 			</div>
@@ -694,7 +725,7 @@ const structuredData = computed(() => ({
 			</div>
 
 			<div class="mt-16">
-				<h2 class="text-4xl md:text-4xl font-light mb-8 text-center">Выбор стекла</h2>
+				<h2 class="text-4xl md:text-4xl font-light mb-8 text-center">Виды стекла</h2>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
 					<div v-for="glass in glassTypes" :key="glass.title" class="flex flex-col gap-4 bg-white p-4 md:p-8">
 						<div class="inline-block">
@@ -713,7 +744,7 @@ const structuredData = computed(() => ({
 		</div>
 	</section>
 
-	<section class="bg-light-gold text-dark-green py-16 md:py-32">
+	<section id="contact" class="bg-light-gold text-dark-green py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4 text-center">
 			<div class="flex flex-col gap-8 mb-16">
 				<div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
@@ -926,9 +957,33 @@ const structuredData = computed(() => ({
 
 	<!-- Consultation Dialog -->
 	<ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />
+
+	<!-- Back to Top Button -->
+	<Transition
+		enter-active-class="transition-all duration-300 ease-out"
+		leave-active-class="transition-all duration-300 ease-in"
+		enter-from-class="opacity-0 translate-y-2 scale-90"
+		enter-to-class="opacity-100 translate-y-0 scale-100"
+		leave-from-class="opacity-100 translate-y-0 scale-100"
+		leave-to-class="opacity-0 translate-y-2 scale-90"
+	>
+		<button
+			v-if="showBackToTop"
+			@click="scrollToTop"
+			class="fixed bottom-6 right-6 z-40 bg-dark-green hover:bg-dark-green/90 text-light-gold p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+			aria-label="Вернуться к началу"
+		>
+			<ChevronUpIcon class="w-6 h-6" />
+		</button>
+	</Transition>
 </template>
 
 <style scoped>
+/* Smooth scrolling for the entire page */
+html {
+	scroll-behavior: smooth;
+}
+
 /* Animation classes */
 .animate-on-scroll {
 	transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);

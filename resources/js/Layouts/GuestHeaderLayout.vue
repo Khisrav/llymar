@@ -9,6 +9,16 @@ import { Link } from '@inertiajs/vue3';
 import { UserIcon, Menu, X } from 'lucide-vue-next';
 
 const isMenuOpen = ref(false)
+
+// Smooth scroll functionality
+const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+    }
+    // Close mobile menu after navigation
+    isMenuOpen.value = false;
+};
 </script>
 
 <template>
@@ -26,9 +36,11 @@ const isMenuOpen = ref(false)
         <!-- Desktop Navigation -->
         <nav class="hidden lg:block">
             <ul class="flex flex-row gap-6 items-center">
-                <li><a href="" class="hover:text-light-gold transition-colors">Главная</a></li>
-                <li><a href="" class="hover:text-light-gold transition-colors">Наши работы</a></li>
-                <li><a href="" class="hover:text-light-gold transition-colors">О нас</a></li>
+                <li><a href="#hero" @click.prevent="scrollToSection('hero')" class="hover:text-light-gold transition-colors cursor-pointer">Главная</a></li>
+                <li><a href="#portfolio" @click.prevent="scrollToSection('portfolio')" class="hover:text-light-gold transition-colors cursor-pointer">Наши работы</a></li>
+                <li><a href="#about" @click.prevent="scrollToSection('about')" class="hover:text-light-gold transition-colors cursor-pointer">О нас</a></li>
+                <li><a href="#glass-types" @click.prevent="scrollToSection('glass-types')" class="hover:text-light-gold transition-colors cursor-pointer">Стекло</a></li>
+                <li><a href="#contact" @click.prevent="scrollToSection('contact')" class="hover:text-light-gold transition-colors cursor-pointer">Контакты</a></li>
                 
                 <!-- <li><a href="tel:+7 (989) 804 12-34" class="font-semibold underline hover:text-light-gold transition-colors">+7 (989) 804 12-34</a></li> -->
                 <li>
@@ -76,27 +88,37 @@ const isMenuOpen = ref(false)
                 <div class="py-6 px-6 flex-1">
                     <ul class="flex flex-col gap-2">
                         <li class="menu-item" style="animation-delay: 0.1s">
-                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                            <a href="#hero" @click.prevent="scrollToSection('hero')" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30 cursor-pointer">
                                 Главная
                             </a>
                         </li>
                         <li class="menu-item" style="animation-delay: 0.2s">
-                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                            <a href="#portfolio" @click.prevent="scrollToSection('portfolio')" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30 cursor-pointer">
                                 Наши работы
                             </a>
                         </li>
                         <li class="menu-item" style="animation-delay: 0.3s">
-                            <a href="" @click="isMenuOpen = false" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30">
+                            <a href="#about" @click.prevent="scrollToSection('about')" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30 cursor-pointer">
                                 О нас
                             </a>
                         </li>
+                        <li class="menu-item" style="animation-delay: 0.35s">
+                            <a href="#glass-types" @click.prevent="scrollToSection('glass-types')" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30 cursor-pointer">
+                                Стекло
+                            </a>
+                        </li>
+                        <li class="menu-item" style="animation-delay: 0.4s">
+                            <a href="#contact" @click.prevent="scrollToSection('contact')" class="block py-4 text-lg hover:text-light-gold transition-colors border-b border-gray-700/50 hover:border-light-gold/30 cursor-pointer">
+                                Контакты
+                            </a>
+                        </li>
                         
-                        <li class="pt-6 mt-6 border-t border-light-gold/20 menu-item" style="animation-delay: 0.4s">
+                        <li class="pt-6 mt-6 border-t border-light-gold/20 menu-item" style="animation-delay: 0.5s">
                             <a href="tel:+7 (989) 804 12-34" @click="isMenuOpen = false" class="block py-3 text-lg font-semibold underline hover:text-light-gold transition-colors">
                                 +7 (989) 804 12-34
                             </a>
                         </li>
-                        <li class="mt-6 menu-item" style="animation-delay: 0.5s">
+                        <li class="mt-6 menu-item" style="animation-delay: 0.6s">
                             <a href="/auth" @click="isMenuOpen = false" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-all duration-300 rounded-full px-6 py-4 inline-block flex items-center justify-center gap-3 text-base w-full max-w-xs mx-auto hover:shadow-lg hover:shadow-light-gold/20">
                                 <UserIcon class="w-5 h-5"/>
                                 <span class="font-medium">Войти</span>

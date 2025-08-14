@@ -21,8 +21,8 @@ class CreateUser extends CreateRecord
         if (!$user) return 'Создать пользователя';
         
         return match (true) {
-            $user->hasRole('Operator') => 'Создать менеджера',
-            $user->hasRole('Manager') || $user->hasRole('ROP') => 'Создать дилера',
+            $user->hasRole('Operator') => 'Создать дилера',
+            $user->hasRole('Dealer') || $user->hasRole('ROP') => 'Создать менеджера',
             default => 'Создать пользователя'
         };
     }
@@ -36,10 +36,14 @@ class CreateUser extends CreateRecord
         
         if (!$parentUser) return;
         
-        if ($parentUser->hasRole('Operator')) {
+        if ($parentUser->hasRole('Dealer')) {
             $user->assignRole('Manager');
-        } else if ($parentUser->hasRole('Manager') || $parentUser->hasRole('ROP')) {
+        } else if ($parentUser->hasRole('ROP')) {
             $user->assignRole('Dealer');
+        }
+        
+        if ($parentUser->hasRole('Dealer') && $parentUser->can('access dxf')) {
+            $user->givePermissionTo('access dxf');
         }
     }
 }

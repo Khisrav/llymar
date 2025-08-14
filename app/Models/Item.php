@@ -32,6 +32,7 @@ class Item extends Model
         'p3',
         'k4',
         'pr',
+        'weight',
     ];
 
     protected $casts = [

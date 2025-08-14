@@ -96,6 +96,7 @@ class PortfolioResource extends Resource
                             ->directory('portfolio')
                             ->hint('Загрузите несколько изображений для карусели')
                             ->maxSize(512)
+                            ->panelLayout('grid')
                             ->downloadable(),
                     ])
                     ->columns(1)

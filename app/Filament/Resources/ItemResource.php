@@ -51,6 +51,7 @@ class ItemResource extends Resource
                             ->columnSpanFull()
                             ->required(),
                         Forms\Components\TextInput::make('vendor_code')
+                            ->placeholder('Напр. L123')
                             ->label('Артикул'),
                         Forms\Components\TextInput::make('purchase_price')
                             ->label('Закупка, ₽')
@@ -81,12 +82,19 @@ class ItemResource extends Resource
                             ])
                             ->default('no-image.jpg')
                             ->directory('items'),
+                        Forms\Components\TextInput::make('weight')
+                            ->label('Вес, кг')
+                            ->default(0)
+                            ->type('integer')
+                            ->minValue(0),
                         Forms\Components\FileUpload::make('images')
                             ->label('Дополнительные изображения')
                             ->image()
                             ->multiple()
                             ->maxFiles(10)
                             ->imageEditor()
+                            ->reorderable()
+                            ->maxSize(1024)
                             ->imageEditorAspectRatios([
                                 null,
                                 '16:9',

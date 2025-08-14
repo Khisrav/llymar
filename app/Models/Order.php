@@ -47,15 +47,16 @@ class Order extends Model
                 }
             }
             
-            // Calculate commission when order status changes to 'paid'
-            if ($model->status === 'paid' && $model->getOriginal('status') !== 'paid') {
+            // Calculate commission when order status changes to 'paid' or 'completed'
+            if (($model->status === 'paid' && $model->getOriginal('status') !== 'paid') ||
+                ($model->status === 'completed' && $model->getOriginal('status') !== 'completed')) {
                 static::calculateCommission($model);
             }
         });
     }
     
     /**
-     * Calculate and create commission credits when order is paid.
+     * Calculate and create commission credits when order is paid or completed.
      * This method only creates commissions if they don't already exist.
      */
     protected static function calculateCommission($order)

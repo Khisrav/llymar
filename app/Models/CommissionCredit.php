@@ -11,12 +11,12 @@ class CommissionCredit extends Model
     protected $table = 'commission_credits'; // Updated table name
     
     protected $fillable = [
-        'user_id',
+        'user_id', // User who received the commission
         'amount',
         'order_id',
-        'parent_id',
-        'receipt',
-        'type',
+        'parent_id', // User who initiated the order
+        'receipt', // Receipt file path
+        'type', // Type of commission (e.g., 'accrual', 'write-off')
     ];
 
     protected static function boot()

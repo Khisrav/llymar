@@ -189,15 +189,15 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Override assignRole to handle DXF access syncing
      */
-    public function assignRole($role)
-    {
-        $result = parent::assignRole($role);
+    // public function assignRole($role)
+    // {
+    //     $result = parent::assignRole($role);
         
-        // After role assignment, handle DXF access
-        $this->handleDxfAccessAfterRoleChange();
+    //     // After role assignment, handle DXF access
+    //     $this->handleDxfAccessAfterRoleChange();
         
-        return $result;
-    }
+    //     return $result;
+    // }
     
     /**
      * Override removeRole to handle DXF access syncing

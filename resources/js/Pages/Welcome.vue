@@ -456,7 +456,7 @@ const structuredData = computed(() => ({
 			<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
 				<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
 					<div class="space-y-4">
-						<LandingBadge variant="gold" size="sm" :icon="StarIcon"> Премиум качество • Гарантия 10 лет </LandingBadge>
+						<!-- <LandingBadge variant="gold" size="sm" :icon="StarIcon"> Премиум качество • Гарантия 10 лет </LandingBadge> -->
 
 						<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
 							Премиальное <br />
@@ -473,16 +473,20 @@ const structuredData = computed(() => ({
 					</div>
 
 					<!-- Stats -->
-					<div class="grid grid-cols-2 md:flex flex-col md:flex-row items-center justify-between gap-6 mt-4 md:mt-12 pt-8 border-t border-white/20">
+					<!-- <div class="grid grid-cols-2 md:flex flex-col md:flex-row items-center justify-between gap-6 mt-4 md:mt-12 pt-8 border-t border-white/20">
 						<div v-for="stat in stats" :key="stat.label" class="text-center animate-on-scroll opacity-0 translate-y-4 transition-all duration-700">
 							<div class="text-2xl md:text-3xl font-bold text-light-gold montserrat">{{ stat.number }}</div>
 							<div class="text-sm text-gray-300 mt-1">{{ stat.label }}</div>
 						</div>
-						<!-- Scroll indicator -->
 						<div class="hidden md:block animate-bounce cursor-pointer" @click="scrollToSection('portfolio')">
 							<div class="flex flex-col items-center gap-2 text-white/70 hover:text-light-gold transition-colors">
 								<img src="/assets/scrolldown.svg" alt="scroll" />
 							</div>
+						</div>
+					</div> -->
+					<div class="text-right">
+						<div class="inline-block text-white/70 hover:text-light-gold transition-colors animate-bounce cursor-pointer mt-4 pt-8 md:mt-12" @click="scrollToSection('portfolio')">
+							<img src="/assets/scrolldown.svg" alt="scroll" />
 						</div>
 					</div>
 				</div>

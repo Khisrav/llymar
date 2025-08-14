@@ -93,10 +93,9 @@ class PortfolioResource extends Resource
                             ->image()
                             ->multiple()
                             ->reorderable()
-                            // ->enableReordering()
                             ->directory('portfolio')
                             ->hint('Загрузите несколько изображений для карусели')
-                            ->imagePreviewHeight('150')
+                            ->maxSize(512)
                             ->downloadable(),
                     ])
                     ->columns(1)

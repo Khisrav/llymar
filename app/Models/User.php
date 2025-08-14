@@ -126,4 +126,109 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(CommissionCredit::class, 'parent_id');
     }
+    
+    /**
+     * Sync DXF access for all child users when parent is a Dealer
+     */
+    public function syncChildrenDxfAccess(): void
+    {
+        // Only sync if this user is a Dealer
+        if (!$this->hasRole('Dealer')) {
+            return;
+        }
+        
+        $hasParentDxfAccess = $this->can('access dxf');
+        
+        // Get all child users
+        $children = $this->children;
+        
+        foreach ($children as $child) {
+            if ($hasParentDxfAccess) {
+                $child->givePermissionTo('access dxf');
+            } else {
+                $child->revokePermissionTo('access dxf');
+            }
+        }
+    }
+    
+    /**
+     * Check if user should inherit DXF access from parent
+     */
+    public function shouldInheritDxfFromParent(): bool
+    {
+        if (!$this->parent_id || !$this->parent) {
+            return false;
+        }
+        
+        return $this->parent->hasRole('Dealer') && $this->parent->can('access dxf');
+    }
+    
+    /**
+     * Ensure DXF access is inherited from Dealer parent if applicable
+     */
+    public function ensureDxfAccessInheritance(): void
+    {
+        if ($this->shouldInheritDxfFromParent()) {
+            $this->givePermissionTo('access dxf');
+        }
+    }
+    
+    /**
+     * Override syncRoles to handle DXF access syncing
+     */
+    public function syncRoles($roles)
+    {
+        $result = parent::syncRoles($roles);
+        
+        // After role sync, handle DXF access
+        $this->handleDxfAccessAfterRoleChange();
+        
+        return $result;
+    }
+    
+    /**
+     * Override assignRole to handle DXF access syncing
+     */
+    public function assignRole($role)
+    {
+        $result = parent::assignRole($role);
+        
+        // After role assignment, handle DXF access
+        $this->handleDxfAccessAfterRoleChange();
+        
+        return $result;
+    }
+    
+    /**
+     * Override removeRole to handle DXF access syncing
+     */
+    public function removeRole($role)
+    {
+        $result = parent::removeRole($role);
+        
+        // After role removal, handle DXF access
+        $this->handleDxfAccessAfterRoleChange();
+        
+        return $result;
+    }
+    
+    /**
+     * Handle DXF access syncing after role changes
+     */
+    protected function handleDxfAccessAfterRoleChange(): void
+    {
+        // If this user is now a Dealer, sync DXF access to children
+        if ($this->hasRole('Dealer')) {
+            $this->syncChildrenDxfAccess();
+        } else {
+            // If this user is no longer a Dealer, revoke DXF access from all children
+            $children = $this->children;
+            foreach ($children as $child) {
+                $child->revokePermissionTo('access dxf');
+            }
+        }
+        
+        // Ensure this user inherits DXF access from dealer parent if applicable
+        $this->ensureDxfAccessInheritance();
+    }
 }

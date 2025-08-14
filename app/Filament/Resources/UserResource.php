@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
@@ -316,6 +317,24 @@ class UserResource extends Resource
                             ->visible(static::isSuperAdmin())
                             ->helperText('Определяет права доступа пользователя')
                             ->searchable(),
+                        
+                        Forms\Components\Toggle::make('can_access_dxf')
+                            ->label('Доступ к DXF')
+                            ->helperText('Определяет права доступа к DXF генерации')
+                            ->visible(static::isSuperAdmin())
+                            ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
+                                if ($record) {
+                                    $set('can_access_dxf', $record->can('access dxf'));
+                                }
+                            })
+                            ->afterStateUpdated(function (Forms\Get $get, bool $state, $record) {
+                                if ($record) {
+                                    $state
+                                        ? $record->givePermissionTo('access dxf')
+                                        : $record->revokePermissionTo('access dxf');
+                                }
+                            }),
+
                     ]),
 
                 Section::make('Реквизиты')

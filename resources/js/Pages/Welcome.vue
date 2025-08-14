@@ -802,7 +802,7 @@ const structuredData = computed(() => ({
 				<div class="flex flex-col md:flex-row justify-between items-center gap-4">
 					<div class="text-gray-400 text-sm">© 2025 Llymar. Все права защищены.</div>
 					<div class="flex gap-6 text-sm text-gray-400">
-						<a href="https://t.me/kh_tj" class="hover:text-light-gold transition-colors">Разработка сайта</a>
+						<!-- <a href="https://t.me/kh_tj" class="hover:text-light-gold transition-colors">Разработка сайта</a> -->
 					</div>
 				</div>
 			</div>

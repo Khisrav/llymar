@@ -213,52 +213,59 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         const quantityMap: { [key: string]: () => number } = {
             L1: () => {
-                const res = openings.reduce(
-                    (acc, { width, type, doors }) => {
-                        // If adding the opening does not exceed 6000, include it in the current group.
-                        if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
-                            // For a new group, record type and doors.
-                            if (acc.group === 0) {
-                                acc.groupType = type;
-                                acc.groupDoors = doors;
-                            }
-                            acc.group += width;
-                        } else {
-                            // Finalize the current group: convert total width to a rounded value and multiply.
-                            acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", acc.groupDoors, acc.groupType);
-                            // Start a new group with the current opening.
-                            acc.group = width;
-                            acc.groupType = type;
-                            acc.groupDoors = doors;
-                        }
-                        return acc;
-                    },
-                    { total: 0, group: 0, groupType: "", groupDoors: 0 }
-                );
-                // Finalize any remaining group.
-                return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", res.groupDoors, res.groupType) : 0);
+                // const res = openings.reduce(
+                //     (acc, { width, type, doors }) => {
+                //         // If adding the opening does not exceed 6000, include it in the current group.
+                //         if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
+                //             // For a new group, record type and doors.
+                //             if (acc.group === 0) {
+                //                 acc.groupType = type;
+                //                 acc.groupDoors = doors;
+                //             }
+                //             acc.group += width;
+                //         } else {
+                //             // Finalize the current group: convert total width to a rounded value and multiply.
+                //             acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", acc.groupDoors, acc.groupType);
+                //             // Start a new group with the current opening.
+                //             acc.group = width;
+                //             acc.groupType = type;
+                //             acc.groupDoors = doors;
+                //         }
+                //         return acc;
+                //     },
+                //     { total: 0, group: 0, groupType: "", groupDoors: 0 }
+                // );
+                // // Finalize any remaining group.
+                // return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", res.groupDoors, res.groupType) : 0);
+                return openings.reduce((acc, { width, type, doors }) => {
+                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L1", doors, type)
+                }, 0)
             },
             L2: () => getItemQuantity("L1"),
             L3: () => {
-                const res = openings.reduce(
-                    (acc, { width, type, doors }) => {
-                        if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
-                            if (acc.group === 0) {
-                                acc.groupType = type;
-                                acc.groupDoors = doors;
-                            }
-                            acc.group += width;
-                        } else {
-                            acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", acc.groupDoors, acc.groupType);
-                            acc.group = width;
-                            acc.groupType = type;
-                            acc.groupDoors = doors;
-                        }
-                        return acc;
-                    },
-                    { total: 0, group: 0, groupType: "", groupDoors: 0 }
-                );
-                return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", res.groupDoors, res.groupType) : 0);
+                // const res = openings.reduce(
+                //     (acc, { width, type, doors }) => {
+                //         if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
+                //             if (acc.group === 0) {
+                //                 acc.groupType = type;
+                //                 acc.groupDoors = doors;
+                //             }
+                //             acc.group += width;
+                //         } else {
+                //             acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", acc.groupDoors, acc.groupType);
+                //             acc.group = width;
+                //             acc.groupType = type;
+                //             acc.groupDoors = doors;
+                //         }
+                //         console.log(acc)
+                //         return acc;
+                //     },
+                //     { total: 0, group: 0, groupType: "", groupDoors: 0 }
+                // );
+                // return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", res.groupDoors, res.groupType) : 0);
+                return openings.reduce((acc, { width, type, doors }) => {
+                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                }, 0)
             },
             L4: () => getItemQuantity("L3"),
 

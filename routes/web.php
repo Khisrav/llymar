@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\CommercialOfferController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SketchController;
@@ -182,7 +183,7 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/simple-list-from-calc', [OrderController::class, 'simpleListFromCalcPDF'])
     ->name('orders.simple_list_from_calc');
-Route::post('/orders/commercial-offer', [OrderController::class, 'commercialOfferPDF'])
+Route::post('/orders/commercial-offer', [CommercialOfferController::class, 'generatePDF'])
     ->name('orders.commercial_offer_pdf');
 Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
     ->name('orders.sketch_pdf');
@@ -221,6 +222,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
     Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');
+    
+    Route::get('/app/commercial-offers', [CommercialOfferController::class, 'index'])->name('app.commercial_offers');
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
     

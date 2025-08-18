@@ -88,6 +88,16 @@ class User extends Authenticatable implements FilamentUser
     }
     
     /**
+     * Relationship: User has many CommercialOffers.
+     *
+     * @return HasMany
+     */
+    public function commercialOffers(): HasMany
+    {
+        return $this->hasMany(CommercialOffer::class);
+    }
+    
+    /**
      * Relationship: User belongs to a parent User.
      *
      * @return BelongsTo

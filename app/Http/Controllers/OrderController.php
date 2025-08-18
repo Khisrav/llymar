@@ -28,12 +28,12 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user->can('access app history')) {
             return redirect()->route('app.home');
         }
         
-        $orders = Order::where('user_id', auth()->id())
+        $orders = Order::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -105,7 +105,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($order_id);
     
         // Get the authenticated user
-        $user = auth()->user();
+        $user = Auth::user();
     
         // Check if the order can be deleted
         if ($order->user_id !== $user->id || in_array($order->status, ['paid', 'sent']) || !$user->can('delete order')) {
@@ -163,7 +163,7 @@ class OrderController extends Controller
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
-            'user_id'          => auth()->id(),
+            'user_id'          => Auth::id(),
             'customer_name'    => $fields['name'],
             'customer_phone'   => $fields['phone'],
             'customer_address' => $fields['address'],
@@ -245,7 +245,7 @@ class OrderController extends Controller
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
-            'user_id'          => auth()->id(),
+            'user_id'          => Auth::id(),
             'customer_name'    => $fields['name'],
             'customer_phone'   => $fields['phone'],
             'customer_address' => $fields['address'],
@@ -307,41 +307,7 @@ class OrderController extends Controller
         return $pdf->stream($pdfName);
     }
 
-    /**
-     * Generate and download a commercial offer PDF.
-     */
-    public function commercialOfferPDF(Request $request)
-    {
-        $customer = $request->get('customer');
-        $manufacturer = $request->get('manufacturer');
-        $openings = $request->get('openings');
-        $additional_items = $request->get('additional_items');
-        $glass = $request->get('glass');
-        $services = $request->get('services');
-        $cart_items = $request->get('cart_items');
-        $total_price = $request->get('total_price');
-        $markup_percentage = $request->get('markup_percentage');
-        $selected_factor = $request->get('selected_factor', 'kz');
 
-        $offer = [
-            'customer' => $customer,
-            'manufacturer' => $manufacturer,
-            'openings' => $openings,
-            'additional_items' => $additional_items,
-            'glass' => $glass,
-            'services' => $services,
-            'cart_items' => $cart_items,
-            'total_price' => $total_price,
-            'markup_percentage' => $markup_percentage,
-        ];
-
-        $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
-            'offer',
-            'selected_factor'
-        ))->setPaper('a4', 'landscape');
-
-        return $pdf->download('commercial_offer.pdf');
-    }
 
     /**
      * Generate and download a sketch PDF.
@@ -437,7 +403,7 @@ class OrderController extends Controller
     private function createOrder(array $data): Order
     {
         $order = Order::create([
-            'user_id'          => auth()->id(),
+            'user_id'          => Auth::id(),
             'customer_name'    => $data['name'] ?? '',
             'customer_phone'   => $data['phone'] ?? '',
             'customer_address' => $data['address'] ?? '',
@@ -607,38 +573,7 @@ class OrderController extends Controller
         ];
     }
 
-    /**
-     * Calculate the price of additional items and services for a commercial offer.
-     */
-    private static function calculateOfferAdditionalsPrice(array $offer): float
-    {
-        $offerAdditionalsPrice = 0;
-        $selectedFactor = $offer['selected_factor'] ?? 'kz';
 
-        foreach ($offer['additional_items'] as $item) {
-            if (isset($offer['cart_items'][$item['id']])) {
-                $price = Item::itemPrice($item['id'], $selectedFactor);
-                $quantity = $offer['cart_items'][$item['id']]['quantity'];
-                $offerAdditionalsPrice += $price * $quantity;
-            }
-        }
-
-        foreach ($offer['services'] ?? [] as $service) {
-            if (isset($offer['cart_items'][$service['id']])) {
-                $price = Item::itemPrice($service['id'], $selectedFactor);
-                $quantity = $offer['cart_items'][$service['id']]['quantity'];
-                $offerAdditionalsPrice += $price * $quantity;
-            }
-        }
-
-        if (isset($offer['glass']['id'], $offer['cart_items'][$offer['glass']['id']])) {
-            $price = Item::itemPrice($offer['glass']['id'], $selectedFactor);
-            $quantity = $offer['cart_items'][$offer['glass']['id']]['quantity'];
-            $offerAdditionalsPrice += $price * $quantity;
-        }
-
-        return $offerAdditionalsPrice;
-    }
 
     /**
      * Download bill PDF from Tochka Bank.

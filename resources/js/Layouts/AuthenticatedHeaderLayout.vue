@@ -20,6 +20,8 @@ const navigationMenu = computed(() => {
         menu.push({ title: 'История', to: '/app/history' })
     }
 
+    menu.push({ title: 'КП', to: '/app/commercial-offers' })
+
     if (can_access_app_calculator) {
         menu.push({ title: 'Калькулятор', to: '/app/calculator' })
     }

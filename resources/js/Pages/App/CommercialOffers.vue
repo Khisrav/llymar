@@ -1,0 +1,3 @@
+<template>
+    commercial offers
+</template>

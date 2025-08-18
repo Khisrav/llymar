@@ -16,18 +16,18 @@ class CommercialOfferController extends Controller
      */
     public function index(Request $request)
     {
-        // $user = auth()->user();
-        // if (!$user || !$user->can('access app history')) {
-        //     return redirect()->route('app.home');
-        // }
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('app.home');
+        }
         
-        // $offers = CommercialOffer::where('user_id', auth()->id())
-        //     ->orderBy('created_at', 'desc')
-        //     ->paginate(10);
+        $offers = CommercialOffer::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        // return Inertia::render('App/CommercialOffers', [
-        //     'offers' => $offers,
-        // ]);
+        return Inertia::render('App/CommercialOffers', [
+            'offers' => $offers,
+        ]);
     }
 
     /**

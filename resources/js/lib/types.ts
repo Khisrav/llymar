@@ -143,6 +143,27 @@ export interface CommercialOffer {
     },
 }
 
+export interface CommercialOfferRecord {
+    id: number;
+    user_id: number;
+    customer_name?: string;
+    customer_phone?: string;
+    customer_address?: string;
+    customer_comment?: string;
+    manufacturer_name?: string;
+    manufacturer_phone?: string;
+    total_price: number;
+    markup_percentage: number;
+    selected_factor?: string;
+    openings: Opening[];
+    additional_items: Item[];
+    glass: Item;
+    cart_items: CartItem[];
+    services: Item[];
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Contract {
     counterparty_type: 'Физ. лицо' | 'Юр. лицо' | 'ИП';
     counterparty_fullname: string;

@@ -253,18 +253,18 @@ function groupArraysByProperties($arrays, $properties) {
                     <thead>
                         <tr>
                             <th>Информация о клиенте</th>
-                            <th>{{ $offer['manufacturer']['title'] }}</th>
+                            <th>{{ $offer['manufacturer']['title'] ?? 'Информация о производителе' }}</th>
                         </tr>
                     </thead>
             
                     <tbody>
                         <tr>
                             <td><b>{{ $offer['customer']['name'] }}</b></td>
-                            <td><b>{{ $offer['manufacturer']['manufacturer'] }}</b></td>
+                            <td><b>{{ $offer['manufacturer']['manufacturer'] ?? '-' }}</b></td>
                         </tr>
                         <tr>
                             <td><b>{{ $offer['customer']['address'] }}</b></td>
-                            <td><b>{{ $offer['manufacturer']['phone'] }}</b></td>
+                            <td><b>{{ $offer['manufacturer']['phone'] ?? '-' }}</b></td>
                         </tr>
                         <tr>
                             <td><b>{{ $offer['customer']['phone'] }}</b></td>

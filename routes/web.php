@@ -224,6 +224,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');
     
     Route::get('/app/commercial-offers', [CommercialOfferController::class, 'index'])->name('app.commercial_offers');
+    Route::delete('/app/commercial-offers/{commercialOffer}', [CommercialOfferController::class, 'destroy'])->name('app.commercial_offers.delete');
+    Route::get('/app/commercial-offers/{commercialOffer}/pdf', [CommercialOfferController::class, 'downloadPDF'])->name('app.commercial_offers.pdf');
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
     

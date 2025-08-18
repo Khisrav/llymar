@@ -158,7 +158,7 @@ export interface CommercialOfferRecord {
     openings: Opening[];
     additional_items: Item[];
     glass: Item;
-    cart_items: CartItem[];
+    cart_items: CartItem[] | Record<string, CartItem>;
     services: Item[];
     created_at: string;
     updated_at: string;

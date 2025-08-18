@@ -325,7 +325,7 @@ const downloadBill = (order_id: number) => {
 									<TableCell class="text-right">
 										<DropdownMenu>
 											<DropdownMenuTrigger>
-												<Button variant="ghost" size="icon" class="h-8 w-8">
+												<Button variant="outline" size="icon" class="h-8 w-8">
 													<EllipsisVerticalIcon class="h-4 w-4" />
 												</Button>
 											</DropdownMenuTrigger>

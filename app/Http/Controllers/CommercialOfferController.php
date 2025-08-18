@@ -53,7 +53,7 @@ class CommercialOfferController extends Controller
             'customer_phone' => $customer['phone'] ?? null,
             'customer_address' => $customer['address'] ?? null,
             'customer_comment' => $customer['comment'] ?? null,
-            'manufacturer_name' => $manufacturer['name'] ?? null,
+            'manufacturer_name' => $manufacturer['manufacturer'] ?? null,
             'manufacturer_phone' => $manufacturer['phone'] ?? null,
             'openings' => $openings,
             'additional_items' => $additional_items,

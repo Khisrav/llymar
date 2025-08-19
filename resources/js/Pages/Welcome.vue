@@ -971,7 +971,7 @@ const structuredData = computed(() => ({
 		<button
 			v-if="showBackToTop"
 			@click="scrollToTop"
-			class="fixed bottom-6 right-6 z-40 bg-dark-green hover:bg-dark-green/90 text-light-gold p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+			class="fixed bottom-6 right-6 z-40 bg-dark-green  hover:bg-dark-green/90 text-light-gold p-3 rounded-full border-2 border-light-gold transition-all duration-300 hover:scale-110"
 			aria-label="Вернуться к началу"
 		>
 			<ChevronUpIcon class="w-6 h-6" />

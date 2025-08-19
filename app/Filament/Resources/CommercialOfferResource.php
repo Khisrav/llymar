@@ -305,6 +305,12 @@ class CommercialOfferResource extends Resource
                     ->sortable()
                     ->searchable(),
                     
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создано')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                    
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Ответственный')
                     ->sortable()
@@ -373,12 +379,6 @@ class CommercialOfferResource extends Resource
                     ->badge()
                     ->color('info')
                     ->toggleable(),
-                    
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создано')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                     
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Обновлено')
@@ -475,6 +475,10 @@ class CommercialOfferResource extends Resource
     
     public static function getNavigationBadge(): ?string
     {
+        if (!auth()->user()?->hasRole('Super-Admin')) {
+            return null;
+        }
+        
         return static::getModel()::count();
     }
 }

@@ -6,7 +6,16 @@ import NavigationMenuList from '../Components/ui/navigation-menu/NavigationMenuL
 import NavigationMenuItem from '../Components/ui/navigation-menu/NavigationMenuItem.vue';
 import NavigationMenuLink from '../Components/ui/navigation-menu/NavigationMenuLink.vue';
 import { Link } from '@inertiajs/vue3';
-import { UserIcon, Menu, X } from 'lucide-vue-next';
+import { UserIcon, Menu, X, HandshakeIcon } from 'lucide-vue-next';
+import LandingButton from '../Components/LandingButton.vue';
+
+// Props
+const props = defineProps({
+    openConsultationDialog: {
+        type: Function,
+        required: true
+    }
+});
 
 const isMenuOpen = ref(false)
 
@@ -44,10 +53,10 @@ const scrollToSection = (sectionId) => {
                 
                 <!-- <li><a href="tel:+7 (989) 804 12-34" class="font-semibold underline hover:text-light-gold transition-colors">+7 (989) 804 12-34</a></li> -->
                 <li>
-                    <a href="/auth" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-colors rounded-full px-3 py-2 inline-block flex items-center gap-2 text-sm">
-                        <UserIcon class="w-4 h-4"/>
-                        <span class="font-medium">Войти</span>
-                    </a>
+                    <LandingButton variant="secondary" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog">Дилерам</LandingButton>
+                </li>
+                <li>
+                    <LandingButton variant="badge" size="sm" iconPosition="left" :icon="UserIcon" @click="props.openConsultationDialog">Войти</LandingButton>
                 </li>
             </ul>
         </nav>
@@ -119,10 +128,10 @@ const scrollToSection = (sectionId) => {
                             </a>
                         </li>
                         <li class="mt-6 menu-item" style="animation-delay: 0.6s">
-                            <a href="/auth" @click="isMenuOpen = false" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-all duration-300 rounded-full px-6 py-4 inline-block flex items-center justify-center gap-3 text-base w-full max-w-xs mx-auto hover:shadow-lg hover:shadow-light-gold/20">
+                            <button @click="props.openConsultationDialog(); isMenuOpen = false" class="border border-light-gold text-light-gold hover:bg-light-gold hover:text-black transition-all duration-300 rounded-full px-6 py-4 inline-block flex items-center justify-center gap-3 text-base w-full max-w-xs mx-auto hover:shadow-lg hover:shadow-light-gold/20">
                                 <UserIcon class="w-5 h-5"/>
                                 <span class="font-medium">Войти</span>
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>

@@ -51,8 +51,8 @@ const buttonClasses = computed(() => {
     const variantClasses = {
         primary: 'bg-light-gold hover:bg-light-gold/90 text-black hover:shadow-lg hover:shadow-light-gold/25 hover:scale-105',
         secondary: 'border-2 border-white/30 hover:border-light-gold hover:bg-light-gold/10 backdrop-blur-md text-white hover:text-light-gold',
-        outline: 'border border-dark-green text-dark-green hover:bg-dark-green hover:text-white',
-        badge: 'bg-light-gold/10 backdrop-blur-md border border-light-gold text-light-gold hover:bg-light-gold/20',
+        outline: 'border-2 border-dark-green text-dark-green hover:bg-dark-green hover:text-white',
+        badge: 'bg-light-gold/10 backdrop-blur-md border-2 border-light-gold text-light-gold hover:bg-light-gold/20',
         dark: 'bg-dark-green text-white hover:scale-105'
     };
     

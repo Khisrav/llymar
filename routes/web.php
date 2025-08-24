@@ -176,6 +176,9 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/about-glazing-system', function () {
+    return Inertia::render('AboutGlazingSystem');
+});
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');

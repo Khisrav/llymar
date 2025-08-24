@@ -19,36 +19,39 @@ class WordTemplateService
      */
     public function fillTemplate(ContractTemplate $template, Contract $contract): string
     {
-        // Get template file path
-        $templatePath = Storage::path($template->attachment);
-        
-        // Create template processor
+        // Get absolute path for TemplateProcessor
+        $templatePath = Storage::disk('public')->path($template->attachment);
+    
+        if (!file_exists($templatePath)) {
+            throw new \Exception("Template file not found at: " . $templatePath);
+        }
+    
+        // Create TemplateProcessor
         $templateProcessor = new TemplateProcessor($templatePath);
-        
-        // Get template fields
+    
+        // Fill fields
         $templateFields = $template->fields ?? [];
-        
-        // Fill template with contract data
         foreach ($templateFields as $field) {
             $value = $this->getContractFieldValue($contract, $field);
             $templateProcessor->setValue($field, $value);
         }
-        
-        // Generate unique filename for filled document
+    
+        // Generate new filename
         $filename = 'filled_contract_' . $contract->id . '_' . Str::random(8) . '.docx';
-        $outputPath = storage_path('app/filled_contracts/' . $filename);
-        
+    
+        // Save in public/contracts
+        $path = 'contracts/' . $filename;
+        $fullPath = Storage::disk('public')->path($path);
+    
         // Ensure directory exists
-        $directory = dirname($outputPath);
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-        
-        // Save filled document
-        $templateProcessor->saveAs($outputPath);
-        
-        return $outputPath;
+        Storage::disk('public')->makeDirectory('contracts');
+    
+        // Save the file
+        $templateProcessor->saveAs($fullPath);
+    
+        return Storage::url($path);
     }
+
     
     /**
      * Get the value of a specific field from the contract

@@ -478,7 +478,7 @@ const structuredData = computed(() => ({
 	<!-- Hero Section -->
 	<section id="hero" class="bg-[url('/assets/hero.jpg')] bg-cover bg-center text-white relative min-h-screen overflow-hidden">
 		<div class="bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70 min-h-screen flex flex-col">
-			<GuestHeaderLayout />
+			<GuestHeaderLayout theme="transparent" :openConsultationDialog="openConsultationDialog" />
 
 			<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
 				<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">

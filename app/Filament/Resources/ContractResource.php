@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\Order;
+use App\Services\WordTemplateService;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -242,6 +243,14 @@ class ContractResource extends Resource
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('download')
+                        ->label('Скачать')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function ($record) {
+                            $wordTemplateService = new WordTemplateService();
+                            $path = $wordTemplateService->fillTemplate($record->template, $record);
+                            return response()->download($path);
+                        }),
                 ]),
             ])
             ->bulkActions([

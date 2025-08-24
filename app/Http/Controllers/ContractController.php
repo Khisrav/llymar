@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use ContractTemplate;
+use App\Models\ContractTemplate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

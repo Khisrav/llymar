@@ -54,6 +54,8 @@ class ContractTemplateResource extends Resource
                                 FileUpload::make('attachment')
                                     ->label('Шаблон договора Word')
                                     ->downloadable()
+                                    ->visibility('public')
+                                    ->disk('public')
                                     ->directory(fn () => 'contracts/' . Auth::id())
                                     ->storeFileNamesIn('attachment_original_filename')
                                     ->maxSize(1024 * 16) // 16MB

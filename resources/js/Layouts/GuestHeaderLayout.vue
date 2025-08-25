@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import { UserIcon, Menu, X, HandshakeIcon } from "lucide-vue-next"
 import LandingButton from "../Components/LandingButton.vue"
+import { Link } from "@inertiajs/vue3"
 
 // Props
 const props = defineProps({
@@ -23,7 +24,7 @@ const menuItems = [
 	{ label: "Наши работы", url: "/#portfolio" }, 
 	{ label: "О нас", url: "/#about" }, 
 	{ label: "Стекло", url: "/#glass-types" }, 
-	// { label: "О системе", url: "/about-glazing-system" },
+	{ label: "О системе", url: "/about-glazing-system" },
 	{ label: "Контакты", url: "/#contact" },  
 ]
 
@@ -48,10 +49,15 @@ const toggleMenu = () => {
 		<img :src="props.theme === 'transparent' ? '/assets/golden-logo-llymar.png' : '/assets/logo.png'" alt="Logo" class="h-8 md:h-12" />
 
 		<!-- Mobile Menu Toggle -->
-		<button @click="toggleMenu" class="lg:hidden p-2 hover:text-light-gold transition-colors z-50" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
-			<Menu v-if="!isMenuOpen" class="w-8 h-8" />
-			<X v-else class="w-8 h-8" />
-		</button>
+		<div class="lg:hidden flex flex-row items-center gap-4">
+			<Link href="/auth">
+				<LandingButton :variant="props.theme === 'transparent' ? 'badge' : 'outline'" size="sm" display="inline" :icon="UserIcon" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'"></LandingButton>
+			</Link>
+			<button @click="toggleMenu" class="p-2 hover:text-light-gold transition-colors z-50" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
+				<Menu v-if="!isMenuOpen" class="w-8 h-8" />
+				<X v-else class="w-8 h-8" />
+			</button>
+		</div>
 
 		<!-- Desktop Navigation -->
 		<nav class="hidden lg:block">
@@ -67,7 +73,9 @@ const toggleMenu = () => {
 					<LandingButton :variant="props.theme === 'transparent' ? 'secondary' : 'outline'" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog"> Дилерам </LandingButton>
 				</li>
 				<li>
-					<LandingButton :variant="props.theme === 'transparent' ? 'badge' : 'dark'" size="sm" iconPosition="left" :icon="UserIcon" @click="props.openConsultationDialog"> Войти </LandingButton>
+					<Link href="/auth">
+						<LandingButton :variant="props.theme === 'transparent' ? 'badge' : 'dark'" size="sm" iconPosition="left" :icon="UserIcon"> Войти </LandingButton>
+					</Link>
 				</li>
 			</ul>
 		</nav>
@@ -97,7 +105,9 @@ const toggleMenu = () => {
 							<LandingButton variant="outline" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" class="block w-full"> Дилерам </LandingButton>
 						</li>
 						<li class="">
-							<LandingButton :variant="props.theme === 'transparent' ? 'badge' : 'dark'" size="sm" iconPosition="left" :icon="UserIcon" @click="props.openConsultationDialog" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" display="block"> Войти </LandingButton>
+							<Link href="/auth">
+								<LandingButton :variant="props.theme === 'transparent' ? 'badge' : 'dark'" size="sm" iconPosition="left" :icon="UserIcon" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" display="block"> Войти </LandingButton>
+							</Link>
 						</li>
 					</ul>
 				</div>

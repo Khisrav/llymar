@@ -5,7 +5,7 @@ const props = defineProps({
 	variant: {
 		type: String,
 		default: "primary",
-		validator: (value) => ["primary", "secondary", "outline", "badge", "dark"].includes(value),
+		validator: (value) => ["primary", "secondary", "outline", "badge", "dark", "transparent"].includes(value),
 	},
 	size: {
 		type: String,
@@ -59,6 +59,7 @@ const buttonClasses = computed(() => {
 		outline: "border-2 border-dark-green text-dark-green hover:bg-dark-green hover:text-white",
 		badge: "bg-light-gold/10 backdrop-blur-md border-2 border-light-gold text-light-gold hover:bg-light-gold/20",
 		dark: "bg-dark-green border-2 border-dark-green text-white hover:scale-105",
+		transparent: "bg-transparent border-2 border-transparent text-white hover:scale-105",
 	};
 
 	const sizeClasses = {

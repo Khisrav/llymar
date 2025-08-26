@@ -23,6 +23,8 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Vite;
+use App\Filament\Widgets\OrdersStatisticsWidget;
+use App\Filament\Widgets\UsersByRolesWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -48,8 +50,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
+                OrdersStatisticsWidget::class,
+                UsersByRolesWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

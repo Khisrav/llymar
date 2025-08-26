@@ -19,6 +19,7 @@ class RestrictApiAccess
         $appUrl = config('app.url');
         $allowedOrigins = [
             $appUrl,
+            'https://лумар.рф',
             parse_url($appUrl, PHP_URL_HOST), // Just the host without protocol
         ];
 

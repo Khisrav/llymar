@@ -19,6 +19,8 @@ import { Toaster } from "../../Components/ui/sonner"
 // @ts-ignore - RAL library doesn't have proper types
 import { RAL } from 'ral-colors/index.js'
 
+const { can_access_sketcher } = usePage().props as any
+
 const page = usePage() as any
 const orders = ref(page.props.orders.data as Order[])
 const pagination = ref(page.props.orders.links as Pagination[])
@@ -253,7 +255,7 @@ const downloadBill = (order_id: number) => {
 									<DropdownMenuContent align="end">
 										<DropdownMenuLabel>Действия</DropdownMenuLabel>
 										<DropdownMenuSeparator />
-										<DropdownMenuItem @click="visitSketcherPage(order.id)">
+										<DropdownMenuItem v-if="can_access_sketcher" @click="visitSketcherPage(order.id)">
 											<DraftingCompassIcon class="h-4 w-4" />
 											<span>Чертеж</span>
 										</DropdownMenuItem>
@@ -332,7 +334,7 @@ const downloadBill = (order_id: number) => {
 											<DropdownMenuContent align="end">
 												<DropdownMenuLabel>Действия</DropdownMenuLabel>
 												<DropdownMenuSeparator />
-												<DropdownMenuItem @click="visitSketcherPage(order.id)">
+												<DropdownMenuItem v-if="can_access_sketcher" @click="visitSketcherPage(order.id)">
 													<DraftingCompassIcon class="h-4 w-4" />
 													<span>Чертеж</span>
 												</DropdownMenuItem>

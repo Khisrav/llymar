@@ -337,8 +337,13 @@ class OrderController extends Controller
      */
     public static function sketcherPage(int $order_id)
     {
+        $user = auth()->user();
+        
+        //does user own this order
         $order = Order::with(['orderOpenings', 'orderItems.item.itemProperties'])
-            ->findOrFail($order_id);
+        ->findOrFail($order_id);
+        
+        if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) return redirect()->route('app.history');
 
         $openings = $order->orderOpenings;
 

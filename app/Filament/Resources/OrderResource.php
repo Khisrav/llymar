@@ -143,7 +143,8 @@ class OrderResource extends Resource
                                 TextInput::make('selected_factor')
                                     ->label('Коэффициент')
                                     ->disabled()
-                                    ->numeric()
+                                    // ->numeric()
+                                    ->default('kz')
                                     ->columnSpan(1),
                             ]),
                         
@@ -192,7 +193,7 @@ class OrderResource extends Resource
                                 TextInput::make('customer_phone')
                                     ->label('Номер телефона')
                                     ->required()
-                                    ->tel()
+                                    // ->tel()
                                     ->mask('+7 (999) 999 99-99')
                                     ->placeholder('+7 (___) ___ __-__')
                                     ->columnSpan(1),
@@ -202,7 +203,6 @@ class OrderResource extends Resource
                             ->schema([
                                 TextInput::make('customer_email')
                                     ->label('Email')
-                                    ->required()
                                     ->email()
                                     ->placeholder('example@mail.com')
                                     ->columnSpan(1),

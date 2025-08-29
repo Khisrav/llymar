@@ -14,6 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\CommissionCredit;
+use App\Models\News;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -241,4 +242,16 @@ class User extends Authenticatable implements FilamentUser
         // Ensure this user inherits DXF access from dealer parent if applicable
         $this->ensureDxfAccessInheritance();
     }
+
+    /**
+     * Get the user's news articles.
+     */
+    public function news(): HasMany
+    {
+        return $this->hasMany(News::class, 'author_id');
+    }
+
+    /**
+     * Get commission records received by this user.
+     */
 }

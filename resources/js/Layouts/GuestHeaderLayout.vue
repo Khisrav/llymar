@@ -25,6 +25,7 @@ const menuItems = [
 	{ label: "О нас", url: "/#about" }, 
 	{ label: "Стекло", url: "/#glass-types" }, 
 	{ label: "О системе", url: "/about-glazing-system" },
+	{ label: "Новости", url: "/news" },
 	{ label: "Контакты", url: "/#contact" },  
 ]
 

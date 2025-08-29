@@ -25,6 +25,7 @@ const menuItems = [
 	{ label: "О нас", url: "/#about" }, 
 	{ label: "Стекло", url: "/#glass-types" }, 
 	{ label: "О системе", url: "/about-glazing-system" },
+	{ label: "Новости", url: "/news" },
 	{ label: "Контакты", url: "/#contact" },  
 ]
 
@@ -63,9 +64,9 @@ const toggleMenu = () => {
 		<nav class="hidden lg:block">
 			<ul class="flex gap-6 items-center">
 				<li v-for="item in menuItems" :key="item.label">
-					<a :href="item.url" class="hover:text-light-gold transition-colors cursor-pointer" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
+					<Link :href="item.url" class="hover:text-light-gold transition-colors cursor-pointer" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
 						{{ item.label }}
-					</a>
+					</Link>
 				</li>
 
 				<!-- Action buttons -->
@@ -91,15 +92,15 @@ const toggleMenu = () => {
 				<div class="py-6 px-6 flex-1">
 					<ul class="flex flex-col gap-6">
 						<li v-for="(item, index) in menuItems" :key="item.label" class="menu-item" :style="{ animationDelay: `${0.1 + index * 0.1}s` }">
-							<a :href="item.url" class="block text-lg hover:text-light-gold transition-colors cursor-pointer" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
+							<Link :href="item.url" class="block text-lg hover:text-light-gold transition-colors cursor-pointer" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">
 								{{ item.label }}
-							</a>
+							</Link>
 						</li>
 
 						<li class="border-t border-light-gold/20"></li>
 
 						<li>
-							<a href="tel:+7 (989) 804 12-34" class="block text-lg font-semibold hover:text-light-gold transition-colors" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'"> +7 (989) 804 12-34 </a>
+							<Link href="tel:+7 (989) 804 12-34" class="block text-lg font-semibold hover:text-light-gold transition-colors" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'"> +7 (989) 804 12-34 </Link>
 						</li>
 						<li class="">
 							<LandingButton variant="outline" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" class="block w-full"> Дилерам </LandingButton>

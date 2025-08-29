@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\CommercialOfferController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SketchController;
 use App\Http\Controllers\UserController;
@@ -179,6 +180,10 @@ Route::get('/', function () {
 Route::get('/about-glazing-system', function () {
     return Inertia::render('AboutGlazingSystem');
 });
+
+// News routes
+Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+Route::get('/news/{news:slug}', [NewsController::class, 'show'])->name('news.show');
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');

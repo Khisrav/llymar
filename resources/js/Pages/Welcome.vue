@@ -471,9 +471,6 @@ const structuredData = computed(() => ({
 		<meta name="geo.placename" content="Краснодар" />
 		<meta name="geo.position" content="44.979477;39.095646" />
 		<meta name="ICBM" content="44.979477, 39.095646" />
-
-		<!-- Canonical URL -->
-		<link rel="canonical" href="https://llymar.ru/" />
 	</Head>
 
 	<!-- Hero Section -->

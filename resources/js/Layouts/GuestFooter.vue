@@ -3,8 +3,8 @@ import { ref } from "vue";
 
 const socialLinks = ref([
 	{
-		title: "YouTube",
-		url: "https://youtube.com/@llymar_ru?si=ZpeH6ll5FRq3KY5N",
+		title: "Rutube",
+		url: "https://rutube.ru/channel/43806382/",
 		icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
       <path d="M23.498 6.186a2.965 2.965 0 0 0-2.087-2.098C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.411.588a2.965 2.965 0 0 0-2.087 2.098A30.12 30.12 0 0 0 .5 12a30.12 30.12 0 0 0 .002 5.814 2.965 2.965 0 0 0 2.087 2.098C4.8 20.5 12 20.5 12 20.5s7.2 0 9.411-.588a2.965 2.965 0 0 0 2.087-2.098A30.12 30.12 0 0 0 23.5 12a30.12 30.12 0 0 0-.002-5.814zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/>
     </svg>`,
@@ -20,7 +20,7 @@ const socialLinks = ref([
 	},
 	{
 		title: "Dzen",
-		url: "https ://dzen.ru/llymar?share_to=whatsapp",
+		url: "https://dzen.ru/llymar?share_to=whatsapp",
 		icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor">
       <circle cx="16" cy="16" r="16" fill="#000"/>
       <path fill="#fff" d="M17.8 17.8v6.2a8.03 8.03 0 0 0 6.2-6.2h-6.2zm-3.6 0H8a8.03 8.03 0 0 0 6.2 6.2v-6.2zm3.6-3.6h6.2a8.03 8.03 0 0 0-6.2-6.2v6.2zm-3.6 0V8a8.03 8.03 0 0 0-6.2 6.2h6.2z"/>

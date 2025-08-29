@@ -4,6 +4,8 @@ import { Head, Link, router } from "@inertiajs/vue3";
 import GuestHeaderLayout from "@/Layouts/GuestHeaderLayout.vue";
 import Badge from "../../Components/ui/badge/Badge.vue";
 import { EyeIcon } from "lucide-vue-next";
+import Input from "../../Components/ui/input/Input.vue";
+import Button from "../../Components/ui/button/Button.vue";
 
 defineProps({
 	news: Object,
@@ -42,32 +44,18 @@ const formatDate = (dateString) => {
 	<GuestHeaderLayout />
 	<div class="min-h-screen bg-gray-50">
 		<!-- Hero Section -->
-		<div class="bg-white border-b">
-			<div class="container mx-auto fle flex-row gap-4 items-center justify-between px-4 sm:px-6 lg:px-8 py-12">
+		<div class="bg-white">
+			<div class="container mx-auto flex flex-col md:flex-row gap-4 items-center justify-between px-4 py-12">
 				<div class="text-center">
-					<h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">Новости компании</h1>
-					<p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">Читайте последние новости о наших продуктах, достижениях и событиях</p>
+					<h1 class="text-4xl font-light text-gray-900 sm:text-5xl montserrat">Новости компании</h1>
 				</div>
 
 				<div>
 					<!-- Search -->
-					<div class="mt-8 max-w-md mx-auto">
-						<div class="relative">
-							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-								<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-								</svg>
-							</div>
-							<input
-								v-model="searchQuery"
-								@keyup.enter="searchNews"
-								type="text"
-								placeholder="Поиск новостей..."
-								class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-300 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-							/>
-							<div class="absolute inset-y-0 right-0 flex items-center">
-								<button @click="searchNews" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md transition-colors duration-200">Найти</button>
-							</div>
+					<div class="max-w-md mx-auto">
+						<div class="flex w-full max-w-sm items-center gap-1.5">
+						    <Input v-model="searchQuery" @keyup.enter="searchNews" placeholder="Поиск новостей..." />
+						    <Button @click="searchNews" variant="default">Найти</Button>
 						</div>
 					</div>
 	

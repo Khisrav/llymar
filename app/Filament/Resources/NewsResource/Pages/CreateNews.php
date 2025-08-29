@@ -10,11 +10,6 @@ class CreateNews extends CreateRecord
 {
     protected static string $resource = NewsResource::class;
 
-    public function getTitle(): string
-    {
-        return 'Создать новость';
-    }
-
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

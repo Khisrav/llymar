@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
 use App\Models\User;
+use Filament\Actions\ActionGroup;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup as ActionsActionGroup;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -167,6 +169,11 @@ class NewsResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 ImageColumn::make('cover_image')
                     ->label('Обложка')
                     ->disk('public')
@@ -184,13 +191,14 @@ class NewsResource extends Resource
                         return strlen($state) > 50 ? $state : null;
                     }),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Статус')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'draft' => 'Черновик',
                         'published' => 'Опубликовано',
                         'archived' => 'В архиве',
                     })
+                    ->badge()
                     ->colors([
                         'warning' => 'draft',
                         'success' => 'published',
@@ -204,6 +212,8 @@ class NewsResource extends Resource
 
                 TextColumn::make('views')
                     ->label('Просмотры')
+                    ->badge()
+                    ->color('gray')
                     ->sortable()
                     ->numeric(),
 
@@ -241,10 +251,11 @@ class NewsResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->url(fn (News $record): string => route('news.show', $record)),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionsActionGroup::make([
+                    Tables\Actions\ViewAction::make()->url(fn (News $record): string => route('news.show', $record)),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
                 BulkActionGroup::make([

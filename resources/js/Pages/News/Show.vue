@@ -67,7 +67,7 @@ const formatDate = (dateString) => {
 			<div class="rounded-lg overflow-hidden">
 				<!-- Header -->
 				<div class="md:px-8 md:py-8">
-					<div class="flex flex-row items-center justify-between text-xs md:text-sm text-gray-500 mb-4">
+					<div class="montserrat flex flex-row items-center justify-between text-xs md:text-sm text-gray-500 mb-4">
 						<time :datetime="news.published_at">
 							{{ formatDate(news.published_at) }}
 						</time>
@@ -77,7 +77,7 @@ const formatDate = (dateString) => {
 						</Badge>
 					</div>
 
-					<h1 class="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-6">
+					<h1 class="text-3xl montserrat md:text-4xl font-bold text-gray-900 leading-tight mb-6">
 						{{ news.title }}
 					</h1>
 
@@ -87,7 +87,7 @@ const formatDate = (dateString) => {
 					</div>
 
 					<!-- Content -->
-					<div class="prose text-justify prose-lg max-w-none prose-blue prose-headings:font-semibold prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900" v-html="news.content"></div>
+					<div class="prose space-y-4 pb-4 text-justify prose-lg max-w-none prose-blue prose-headings:font-semibold prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900" v-html="news.content"></div>
 				</div>
 
 				<!-- Author Info -->
@@ -171,16 +171,18 @@ const formatDate = (dateString) => {
 	</div>
 </template>
 
-<style scoped>
+<style scope>
 /* Custom prose styles for rich content */
+
 .prose img {
 	@apply rounded-lg shadow-md;
 }
 
 .prose table {
-	@apply border-collapse border border-gray-300;
+	border-width: 1px;
+	border-collapse: revert;
+	width: 100%;
 }
-
 .prose ul {
 	list-style: revert;
 	margin: revert;
@@ -189,7 +191,8 @@ const formatDate = (dateString) => {
 
 .prose th,
 .prose td {
-	@apply border border-gray-300 px-4 py-2;
+	border-width: 1px;
+	border-collapse: revert;
 }
 
 .prose th {

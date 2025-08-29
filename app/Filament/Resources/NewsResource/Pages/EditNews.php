@@ -21,11 +21,6 @@ class EditNews extends EditRecord
         ];
     }
 
-    public function getTitle(): string
-    {
-        return 'Редактировать новость';
-    }
-
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

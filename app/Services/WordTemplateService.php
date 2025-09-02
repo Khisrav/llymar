@@ -49,7 +49,7 @@ class WordTemplateService
         // Save the file
         $templateProcessor->saveAs($fullPath);
     
-        return Storage::url($path);
+        return $fullPath;
     }
 
     

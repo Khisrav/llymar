@@ -39,7 +39,7 @@ class NewsResource extends Resource
     protected static ?string $navigationLabel = 'Новости';
     protected static ?string $modelLabel = 'Новость';
     protected static ?string $pluralModelLabel = 'Новости';
-    protected static ?string $navigationGroup = 'Контент';
+    protected static ?string $navigationGroup = 'Настройки';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form

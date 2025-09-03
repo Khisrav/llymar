@@ -24,6 +24,7 @@ class Company extends Model
         'vat',
         'type',
         'warehouse_id',
+        'contact_person',
     ];
     
     /**

@@ -2,3 +2,47 @@
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
 }
+
+/* table header sticky*/
+.fi-ta-table thead {
+    position: sticky !important;
+    top: 0;
+    z-index: 30;
+}
+
+.fi-ta-content {
+    max-height: 600px;
+    position: relative;
+}
+/* filters and columns modal*/
+.fi-dropdown-panel {
+    z-index: 40 !important;
+}
+
+/* stick row with individual search and add border to it*/
+.fi-ta-row:not(
+        :has(.fi-ta-group-header),
+        .record-row,
+        .fi-ta-summary-row,
+        .fi-ta-summary-header-row
+    ) {
+    position: sticky !important;
+    top: 48.5px;
+    z-index: 30;
+    background-color: white;
+}
+.fi-ta-row:not(
+        :has(.fi-ta-group-header),
+        .record-row,
+        .fi-ta-summary-row,
+        .fi-ta-summary-header-row
+    )::after {
+    content: "";
+    position: absolute;
+    top: 0.5px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 1px);
+    z-index: 30;
+    outline: 1px solid rgb(229 231 235);
+}

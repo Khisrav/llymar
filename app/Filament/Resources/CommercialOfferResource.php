@@ -27,7 +27,7 @@ class CommercialOfferResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     
-    protected static ?string $navigationLabel = 'Коммерческие предложения';
+    protected static ?string $navigationLabel = 'КП';
         
     public static function form(Form $form): Form
     {

@@ -57,8 +57,8 @@ class CompanyResource extends Resource
                             ->required(),
                         
                         TextInput::make('boss_name')
-                            ->label('ФИО руководителя')
-                            ->required(),
+                            ->label('ФИО руководителя'),
+                            // ->required(),
                         Select::make('boss_title')
                             ->label('Должность руководителя')
                             ->options([
@@ -69,12 +69,12 @@ class CompanyResource extends Resource
                             ])
                             ->default('director')
                             ->native(false)
-                            ->selectablePlaceholder(false)
-                            ->required(),
+                            ->selectablePlaceholder(false),
+                            // ->required(),
                         
                         TextInput::make('legal_address')
-                            ->label('Юридический адрес')
-                            ->required(),
+                            ->label('Юридический адрес'),
+                            // ->required(),
                         TextInput::make('email')
                             ->label('Email')
                             ->type('email'),
@@ -104,8 +104,8 @@ class CompanyResource extends Resource
                             ->url(),
                         
                         TextInput::make('inn')
-                            ->label('ИНН')
-                            ->required(),
+                            ->label('ИНН'),
+                            // ->required(),
                         TextInput::make('kpp')
                             ->label('КПП'),
                         TextInput::make('ogrn')
@@ -123,6 +123,8 @@ class CompanyResource extends Resource
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->required(),
+                        TextInput::make('contact_person')
+                            ->label('Контактное лицо'),
                     ])->columns(4),
             ]);
     }

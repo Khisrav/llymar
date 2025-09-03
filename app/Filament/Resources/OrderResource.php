@@ -119,7 +119,7 @@ class OrderResource extends Resource
         return $form
             ->schema([
                 Section::make('Основная информация')
-                    ->description('Основные данные заказа')
+                    // ->description('Основные данные заказа')
                     ->icon('heroicon-o-document-text')
                     ->collapsible()
                     ->schema([
@@ -177,7 +177,7 @@ class OrderResource extends Resource
                     ]),
                     
                 Section::make('Информация о клиенте')
-                    ->description('Контактные данные заказчика')
+                    // ->description('Контактные данные заказчика')
                     ->icon('heroicon-o-user')
                     ->collapsible()
                     ->schema([
@@ -185,14 +185,14 @@ class OrderResource extends Resource
                             ->schema([
                                 TextInput::make('customer_name')
                                     ->label('ФИО клиента')
-                                    ->required()
+                                    // ->required()
                                     ->maxLength(255)
                                     ->placeholder('Иванов Иван Иванович')
                                     ->columnSpan(1),
 
                                 TextInput::make('customer_phone')
                                     ->label('Номер телефона')
-                                    ->required()
+                                    // ->required()
                                     // ->tel()
                                     ->mask('+7 (999) 999 99-99')
                                     ->placeholder('+7 (___) ___ __-__')
@@ -209,14 +209,14 @@ class OrderResource extends Resource
 
                                 TextInput::make('customer_address')
                                     ->label('Адрес доставки')
-                                    ->required()
+                                    // ->required()
                                     ->maxLength(255)
                                     ->placeholder('г. Москва, ул. Примерная, д. 1')
                                     ->columnSpan(1),
                             ]),
                             
                         Textarea::make('comment')
-                            ->label('Комментарий заказчика')
+                            ->label('Примечание')
                             ->rows(3)
                             ->maxLength(500)
                             ->placeholder('Дополнительные пожелания или комментарии...')
@@ -398,6 +398,12 @@ class OrderResource extends Resource
                 ActionGroup::make([
                     EditAction::make()
                         ->visible(fn () => $hasEditAccess),
+                    
+                    Action::make('sketcher')
+                        ->label('Чертеж')
+                        ->url(fn (Order $record) => route('app.sketcher', $record->id))
+                        ->openUrlInNewTab()
+                        ->icon('heroicon-o-pencil-square'),
                         
                     Action::make('list_pdf')
                         ->label('Спецификация')

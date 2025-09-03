@@ -94,6 +94,8 @@ class AdminPanelProvider extends PanelProvider
                     // ->collapsed()
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
+            ->plugins([
+            ])
             ->spa();
     }
 }

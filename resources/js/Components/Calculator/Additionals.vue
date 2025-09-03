@@ -80,6 +80,12 @@ const closeImageModal = () => {
 	isModalOpen.value = false
 	selectedItem.value = null
 }
+
+const getCategoryName = (categoryId: number | string) => {
+	const id = typeof categoryId === 'string' ? parseInt(categoryId) : categoryId
+	const category = itemsStore.categories.find(cat => cat.id === id)
+	return category ? category.name : `Категория ${id}`
+}
 </script>
 
 <template>
@@ -208,7 +214,9 @@ const closeImageModal = () => {
 		</div>
 
 		<div class="flex flex-col gap-2 md:gap-4 mt-4 transition-all duration-1000">
-			<div v-for="(categoryItems, categoryId) in itemsStore.additional_items" :key="categoryId" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
+			<div v-for="(categoryItems, categoryId) in itemsStore.additional_items" :key="categoryId" class="space-y-4">
+				<h3 class="text-base font-semibold text-muted-foreground">{{ getCategoryName(categoryId) }}</h3>
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
 				<div v-for="item in categoryItems" :key="item.vendor_code" class="flex flex-col justify-between p-2 md:p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-2xl hover:shadow-slate-100 dark:hover:shadow-slate-800 transition-all hover:z-10">
 					<div class="flex justify-between items-start mb-2 md:mb-4">
 						<p class="font-medium text-sm md:text-base flex-1" :class="itemsStore.cartItems[item.id || 0]?.checked === false ? 'text-muted-foreground line-through' : ''">
@@ -274,6 +282,7 @@ const closeImageModal = () => {
 							</div>
 						</div>
 					</div>
+				</div>
 				</div>
 			</div>
 		</div>

@@ -8,6 +8,7 @@
     position: sticky !important;
     top: 0;
     z-index: 30;
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
 }
 
 .fi-ta-content {
@@ -16,33 +17,31 @@
 }
 /* filters and columns modal*/
 .fi-dropdown-panel {
-    z-index: 40 !important;
+    z-index: 90 !important;
 }
 
-/* stick row with individual search and add border to it*/
-.fi-ta-row:not(
-        :has(.fi-ta-group-header),
-        .record-row,
-        .fi-ta-summary-row,
-        .fi-ta-summary-header-row
-    ) {
-    position: sticky !important;
-    top: 48.5px;
-    z-index: 30;
-    background-color: white;
+@media  (min-width: 768px) {
+    /* make the header sticky*/
+    .fi-ta-table thead {
+        position: sticky !important;
+        top: 0;
+        z-index: 9;
+    }
+
+    /* opacity does not looks good in dark mode, so insert the corresponding bg color here */
+    .fi-ta-table :is(:where(.dark) .dark\:bg-white\/5){
+        background-color: rgb(36 36 39); 
+    }
+
+    /* sset the height of content (table) */
+    .fi-ta-content {
+        height: calc(100vh - 20rem);
+        position: relative;
+    }
+
+    /* fix filters and columns modal */
+    .fi-dropdown-panel{
+        z-index: 90 !important;
+    }
 }
-.fi-ta-row:not(
-        :has(.fi-ta-group-header),
-        .record-row,
-        .fi-ta-summary-row,
-        .fi-ta-summary-header-row
-    )::after {
-    content: "";
-    position: absolute;
-    top: 0.5px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 1px);
-    z-index: 30;
-    outline: 1px solid rgb(229 231 235);
-}
+/* Table sticky header end */

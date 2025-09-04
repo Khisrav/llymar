@@ -34,4 +34,14 @@ class OrderOpening extends Model
     {
         return $this->belongsTo(Order::class);
     }
+    
+    /**
+     * Relationship: OrderOpening belongs to a door handle Item.
+     *
+     * @return BelongsTo
+     */
+    public function doorHandle(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'door_handle_item_id');
+    }
 }

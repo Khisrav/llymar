@@ -32,7 +32,8 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
-    protected static ?string $navigationLabel = 'Заказы';
+    protected static ?string $navigationLabel = 'История заказов';
+    protected static ?string $navigationGroup = 'Заказы';
     protected static ?string $recordTitleAttribute = 'order_number';
     
     // Order status constants for consistency

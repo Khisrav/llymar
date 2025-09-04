@@ -3,8 +3,7 @@
     scrollbar-color: transparent transparent;
 }
 
-/* table header sticky*/
-.fi-ta-table thead {
+/* .fi-ta-table thead {
     position: sticky !important;
     top: 0;
     z-index: 30;
@@ -15,33 +14,28 @@
     max-height: 600px;
     position: relative;
 }
-/* filters and columns modal*/
+
 .fi-dropdown-panel {
     z-index: 90 !important;
 }
 
 @media  (min-width: 768px) {
-    /* make the header sticky*/
     .fi-ta-table thead {
         position: sticky !important;
         top: 0;
         z-index: 9;
     }
 
-    /* opacity does not looks good in dark mode, so insert the corresponding bg color here */
     .fi-ta-table :is(:where(.dark) .dark\:bg-white\/5){
         background-color: rgb(36 36 39); 
     }
 
-    /* sset the height of content (table) */
     .fi-ta-content {
         height: calc(100vh - 20rem);
         position: relative;
     }
 
-    /* fix filters and columns modal */
     .fi-dropdown-panel{
         z-index: 90 !important;
     }
-}
-/* Table sticky header end */
+} */

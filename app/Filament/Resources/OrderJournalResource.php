@@ -22,8 +22,8 @@ class OrderJournalResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Журнал заказов';
-    protected static ?string $navigationGroup = 'Заказы';
+    protected static ?string $navigationLabel = 'Журнал цеха';
+    // protected static ?string $navigationGroup = 'Заказы';
 
     public static function form(Form $form): Form
     {

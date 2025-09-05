@@ -22,6 +22,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -32,8 +33,7 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
-    protected static ?string $navigationLabel = 'История заказов';
-    protected static ?string $navigationGroup = 'Заказы';
+    protected static ?string $navigationLabel = 'Заказы';
     protected static ?string $recordTitleAttribute = 'order_number';
     
     // Order status constants for consistency
@@ -275,11 +275,12 @@ class OrderResource extends Resource
                         return $name;
                     })
                     ->html()
+                    ->wrap()
                     ->lineClamp(2)
                     ->sortable(['user.name'])
                     ->searchable(['user.name', 'user.phone'])
                     ->icon('heroicon-o-user')
-                    ->copyable()
+                    // ->copyable()
                     ->copyMessage('Контакты менеджера скопированы!')
                     ->toggleable(isToggledHiddenByDefault: false),
                     
@@ -297,9 +298,10 @@ class OrderResource extends Resource
                     ->html()
                     ->lineClamp(2)
                     ->sortable()
+                    ->wrap()
                     ->searchable(['customer_name', 'customer_phone'])
                     ->icon('heroicon-o-user-circle')
-                    ->copyable()
+                    // ->copyable()
                     ->copyMessage('Контакты клиента скопированы!')
                     ->toggleable(isToggledHiddenByDefault: false),
                     
@@ -441,12 +443,11 @@ class OrderResource extends Resource
                         ->modalSubmitActionLabel('Да, удалить')
                         ->visible(fn () => $user && $user->hasRole(self::ROLES['SUPER_ADMIN'])),
                 ])
-                ->label('Действия')
                 ->icon('heroicon-o-ellipsis-vertical')
                 ->size('sm')
                 ->color('gray')
                 ->button()
-            ])
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()

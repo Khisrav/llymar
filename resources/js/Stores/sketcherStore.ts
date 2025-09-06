@@ -381,6 +381,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				{
 					openings: combinedOpenings.value,
 					saveData: false,
+					order_id: order.value.id,
 				},
 				{
 					responseType: "blob",

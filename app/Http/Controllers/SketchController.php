@@ -10,12 +10,60 @@ use DXFighter\DXFighter;
 use DXFighter\lib\Circle;
 use DXFighter\lib\Polyline;
 use DXFighter\lib\Text;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response; 
 
 
 class SketchController extends Controller
 {
+    public function generateDXF(Request $request)
+    {
+        $requestData = $request->validate([
+            'openings' => 'required|array',
+            'order_id' => 'required|integer',
+            'saveData' => 'boolean',
+        ]);
+        
+        $requestOpenings = [];
+        foreach ($requestData['openings'] as $opening) {
+            $requestOpenings[$opening['id']] = $opening;
+        }
+        
+        $order_id = $requestData['order_id'];
+        
+        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
+        $this->getOrderParameters($order);
+
+        foreach ($order->orderOpenings as $opening) {
+            $opening->mp = $requestOpenings[$opening->id]['mp'];
+            $opening->g = $requestOpenings[$opening->id]['g'];
+            $opening->d = $requestOpenings[$opening->id]['d'];
+            $opening->i = $requestOpenings[$opening->id]['i'];
+            $opening->a = $requestOpenings[$opening->id]['a'];
+            $opening->b = $requestOpenings[$opening->id]['b'];
+            $opening->e = $requestOpenings[$opening->id]['e'];
+            $opening->f = $requestOpenings[$opening->id]['f'];
+        }
+
+        $order->orderOpenings = $order->orderOpenings->reverse();
+
+        $currentY = 0; 
+        $holes = $this->getHolesCoordinates($order->orderOpenings);
+
+        foreach ($order->orderOpenings as $index => $opening) {
+            $opening['coordinates'] = $this->getOpeningSketchCoordinates($opening['doorsWidths'], $opening['doorsHeight'], $currentY);
+            $currentY += $opening['doorsHeight'] + 250; 
+            $opening['doorHandleHolesCoordinates'] = $holes[$index];
+        }
+        
+        $glassItemIDs = Item::where('category_id', 1)->pluck('id');
+        $glassOrderItem = $order->orderItems->whereIn('item_id', $glassItemIDs)->first();
+        $glass = Item::where('id', $glassOrderItem->item_id)->first();
+
+        return $this->DXFighterGenerator($order->orderOpenings, $glass, $order->order_number);
+    }
+    
     public function getOrderParameters(Order $order)
     {
         $openings = $order->orderOpenings;
@@ -70,6 +118,10 @@ class SketchController extends Controller
                 else if ($i == 1) { $temp += $doorsGap['end']; }
                 
                 $shirinaStvorok[$i] = intval($temp);
+            }
+            
+            if ($opening['type'] == 'left') {
+                $shirinaStvorok = array_reverse($shirinaStvorok);
             }
         }
 
@@ -133,6 +185,7 @@ class SketchController extends Controller
             }
 
             $doorHandleMP = $defaultHandleMP;
+            
             $doorHandleD = $defaultHandleDiameter;
             if ($doorHandleItemId) {
                 if (!isset($doorHandlePropertiesCache[$doorHandleItemId])) {
@@ -208,7 +261,6 @@ class SketchController extends Controller
             $calculatedCoordinates[] = $openingHoleSets;
         }
         
-        Log::info('getHolesCoordinates: calculated coordinates: ' . json_encode($calculatedCoordinates));
         return $calculatedCoordinates;
     }
 
@@ -387,9 +439,6 @@ class SketchController extends Controller
                 return Response::json(['error' => 'Failed to save DXF file.'], 500);
             }
 
-
-            Log::info("DXFFighterGenerator: Successfully generated DXF file: $filePath");
-
              return Response::download($filePath, $fileName)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error("DXFFighterGenerator: Failed to save or send DXF file. Path: $filePath. Error: " . $e->getMessage(), ['exception' => $e]);
@@ -422,28 +471,5 @@ class SketchController extends Controller
         );
     
         return strtr($text, $cyrillicToLatinMap);
-    }
-
-    public function generateDXF($order_id = 36)
-    {
-        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
-        $this->getOrderParameters($order);
-
-        $order->orderOpenings = $order->orderOpenings->reverse();
-
-        $currentY = 0; 
-        $holes = $this->getHolesCoordinates($order->orderOpenings);
-
-        foreach ($order->orderOpenings as $index => $opening) {
-            $opening['coordinates'] = $this->getOpeningSketchCoordinates($opening['doorsWidths'], $opening['doorsHeight'], $currentY);
-            $currentY += $opening['doorsHeight'] + 250; 
-            $opening['doorHandleHolesCoordinates'] = $holes[$index];
-        }
-        
-        $glassItemIDs = Item::where('category_id', 1)->pluck('id');
-        $glassOrderItem = $order->orderItems->whereIn('item_id', $glassItemIDs)->first();
-        $glass = Item::where('id', $glassOrderItem->item_id)->first();
-
-        return $this->DXFighterGenerator($order->orderOpenings, $glass, $order->order_number);
     }
 }

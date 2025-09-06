@@ -50,7 +50,7 @@ class OrderResource extends Resource
     
     // Status colors for badges
     public const ORDER_STATUS_COLORS = [
-        'created' => 'gray',
+        'created' => 'cyan',
         'paid' => 'success',
         'expired' => 'danger',
         'assembled' => 'info',

@@ -40,13 +40,13 @@ class OrderJournalResource extends Resource
     
     // Status colors for badges
     public const ORDER_STATUS_COLORS = [
-        'created' => 'gray',
+        'created' => 'cyan',
         'paid' => 'success',
         'expired' => 'danger',
         'assembled' => 'info',
         'sent' => 'warning',
         'completed' => 'success',
-        'archived' => 'secondary',
+        'archived' => 'gray',
         'unknown' => 'danger'
     ];
 
@@ -66,14 +66,19 @@ class OrderJournalResource extends Resource
             })
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
-                    ->label('Номер заказа')
+                    ->label('№')
                     ->wrapHeader()
                     ->badge()
-                    ->color('gray')
+                    ->color(function ($state): string {
+                        $number = explode('-', $state);
+                        if ($number[0] == '1') return 'cyan';
+                        else if ($number[0] == '4') return 'gray';
+                        else return 'success';
+                    })
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Дата создания')
+                    ->label('Создан')
                     ->wrapHeader()
                     ->dateTime('d M Y')
                     ->tooltip(fn ($state): string => $state->format('d.m.Y H:i'))
@@ -92,7 +97,9 @@ class OrderJournalResource extends Resource
                         self::ORDER_STATUSES[$state] ?? ($state ?? '—')
                     )
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->colors(self::ORDER_STATUS_COLORS),
+                    ->color(function ($state): string {
+                        return self::ORDER_STATUS_COLORS[$state];
+                    }),
                 //which glass is in the order
                 Tables\Columns\TextColumn::make('glass_name')
                     ->label('Стекло')
@@ -144,6 +151,7 @@ class OrderJournalResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->wrap(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

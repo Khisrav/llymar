@@ -153,6 +153,32 @@ class Order extends Model
     {
         return $this->contracts()->first();
     }
+    
+    /**
+     * Get the glass name for this order.
+     *
+     * @return string
+     */
+    public function getGlassNameAttribute()
+    {
+        $glass = $this->getGlass();
+        return $glass ? $glass->name : '—';
+    }
+    
+    /**
+     * Get the handles for this order.
+     *
+     * @return string
+     */
+    public function getHandlesAttribute()
+    {
+        $items = $this->getAdditionalItems();
+        $html = '';
+        foreach ($items as $item) {
+            $html .= $item->item->name . ' - ' . $item->quantity . '' . $item->item->unit . ' <br>';
+        }
+        return $html;
+    }
 
     /**
      * Relationship: Order has many Commission Credits.
@@ -162,5 +188,34 @@ class Order extends Model
     public function commissionCredits(): HasMany
     {
         return $this->hasMany(CommissionCredit::class);
+    }
+    
+    public function getGlass()
+    {
+        $glassItemIDs = Item::where('category_id', '1')->pluck('id')->toArray();
+        foreach ($this->orderItems as $orderItem) {
+            if (in_array($orderItem->item_id, $glassItemIDs)) {
+                return $orderItem->item;
+            }
+        }
+        return null;
+    }
+    
+    public function getAdditionalItems()
+    {
+        Log::info('getAdditionalItems');
+        //llymar system items, services and glass
+        $notAdditionalItemIDs = Item::where('category_id', '2')
+                                    ->orWhere('category_id', '26')
+                                    ->orWhere('category_id', '1')
+                                    ->pluck('id')
+                                    ->toArray();
+        $additionalItems = [];
+        foreach ($this->orderItems as $orderItem) {
+            if (!in_array($orderItem->item_id, $notAdditionalItemIDs)) {
+                $additionalItems[] = $orderItem;
+            }
+        }
+        return $additionalItems;
     }
 }

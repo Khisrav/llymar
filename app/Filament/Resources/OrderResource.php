@@ -322,7 +322,7 @@ class OrderResource extends Resource
                     
                 TextColumn::make('created_at')
                     ->label('Дата создания')
-                    ->dateTime('d.m.Y H:i')
+                    ->dateTime('d.m.Y')
                     ->sortable()
                     ->since()
                     ->tooltip(fn ($state) => $state?->format('d.m.Y H:i:s'))

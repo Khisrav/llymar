@@ -23,7 +23,32 @@ class OrderJournalResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Журнал цеха';
+    protected static ?string $pluralModelLabel = 'Журнал цеха';
     // protected static ?string $navigationGroup = 'Заказы';
+    
+    // Order status constants for consistency
+    public const ORDER_STATUSES = [
+        'created' => 'Создан',
+        'paid' => 'Оплачен', 
+        'expired' => 'Просрочен',
+        'assembled' => 'Собран',
+        'sent' => 'Отправлен',
+        'completed' => 'Завершен',
+        'archived' => 'Архивирован',
+        'unknown' => 'Неизвестно'
+    ];
+    
+    // Status colors for badges
+    public const ORDER_STATUS_COLORS = [
+        'created' => 'cyan',
+        'paid' => 'success',
+        'expired' => 'danger',
+        'assembled' => 'info',
+        'sent' => 'warning',
+        'completed' => 'success',
+        'archived' => 'gray',
+        'unknown' => 'danger'
+    ];
 
     public static function form(Form $form): Form
     {
@@ -41,61 +66,92 @@ class OrderJournalResource extends Resource
             })
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
-                    ->label('Номер заказа')
+                    ->label('№')
+                    ->wrapHeader()
+                    ->badge()
+                    ->color(function ($state): string {
+                        $number = explode('-', $state);
+                        if ($number[0] == '1') return 'cyan';
+                        else if ($number[0] == '4') return 'gray';
+                        else return 'success';
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Дата создания')
-                    ->dateTime()
+                    ->label('Создан')
+                    ->wrapHeader()
+                    ->dateTime('d M Y')
+                    ->tooltip(fn ($state): string => $state->format('d.m.Y H:i'))
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('customer_address')
                     ->label('Адрес')
+                    ->searchable()
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->limit(50),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
-                    ->badge(),
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => 
+                        self::ORDER_STATUSES[$state] ?? ($state ?? '—')
+                    )
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->color(function ($state): string {
+                        return self::ORDER_STATUS_COLORS[$state];
+                    }),
                 //which glass is in the order
                 Tables\Columns\TextColumn::make('glass_name')
                     ->label('Стекло')
-                    ->formatStateUsing(function (Model $record) {
-                        Log::info($record);
-                        return $record->orderItems;
-                    }),
+                    ->searchable()
+                    ->size('xs')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
                 //door handles from order openings
-                // Tables\Columns\TextColumn::make('door_handles')
-                //     ->label('Ручки')
-                //     ->formatStateUsing(function (Model $record) {
-                //         try {
-                //             $doorHandles = [];
-                //             $orderOpenings = $record->orderOpenings;
-                //             Log::info('DEBUG: Order ID: ' . $record->id . ', OrderOpenings count: ' . $orderOpenings->count());
-                            
-                //             if ($orderOpenings->count() === 0) {
-                //                 Log::info('DEBUG: No order openings found for order ' . $record->id);
-                //                 return 'Нет проемов';
-                //             }
-                            
-                //             foreach ($orderOpenings as $opening) {
-                //                 Log::info('DEBUG: Opening ID: ' . $opening->id . ', door_handle_item_id: ' . ($opening->door_handle_item_id ?? 'null'));
-                                
-                //                 if ($opening->door_handle_item_id) {
-                //                     if ($opening->doorHandle) {
-                //                         Log::info('DEBUG: Door handle found: ' . $opening->doorHandle->name);
-                //                         $doorHandles[] = $opening->doorHandle->name;
-                //                     } else {
-                //                         Log::info('DEBUG: Door handle is null for door_handle_item_id: ' . $opening->door_handle_item_id);
-                //                     }
-                //                 }
-                //             }
-                            
-                //             Log::info('DEBUG: Total door handles found: ' . count($doorHandles));
-                //             return $doorHandles ? implode('<br>', array_unique($doorHandles)) : 'Ручки не найдены';
-                //         } catch (\Exception $e) {
-                //             Log::error('DEBUG: Error in door_handles: ' . $e->getMessage());
-                //             return 'Ошибка: ' . $e->getMessage();
-                //         }
-                //     })
-                //     ->html(),
+                Tables\Columns\TextColumn::make('handles')
+                    ->label('Ручки')
+                    ->searchable()
+                    ->size('xs')
+                    ->html()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('raspil')
+                    ->label('Распил')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('ral_code')
+                    ->label('RAL')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->badge()
+                    ->color('gray')
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('priem_stekla')
+                    ->label('Прием стекла')
+                    ->wrapHeader()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('pokleyka')
+                    ->label('Поклейка')
+                    ->wrapHeader()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('upakovka')
+                    ->label('Упаковка')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('montazh')
+                    ->label('Мотнаж \ Отправка')
+                    ->wrapHeader()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->label('Общая \ Аванс \ Остаток')
+                    ->wrapHeader()
+                    ->money('RUB')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

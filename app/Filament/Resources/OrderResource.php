@@ -50,7 +50,7 @@ class OrderResource extends Resource
     
     // Status colors for badges
     public const ORDER_STATUS_COLORS = [
-        'created' => 'gray',
+        'created' => 'cyan',
         'paid' => 'success',
         'expired' => 'danger',
         'assembled' => 'info',
@@ -322,7 +322,7 @@ class OrderResource extends Resource
                     
                 TextColumn::make('created_at')
                     ->label('Дата создания')
-                    ->dateTime('d.m.Y H:i')
+                    ->dateTime('d.m.Y')
                     ->sortable()
                     ->since()
                     ->tooltip(fn ($state) => $state?->format('d.m.Y H:i:s'))

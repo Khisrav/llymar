@@ -22,8 +22,8 @@ class OrderJournalResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Журнал цеха';
-    protected static ?string $pluralModelLabel = 'Журнал цеха';
+    protected static ?string $navigationLabel = 'ЦЕХ';
+    protected static ?string $pluralModelLabel = 'ЦЕХ';
     // protected static ?string $navigationGroup = 'Заказы';
     
     // Order status constants for consistency

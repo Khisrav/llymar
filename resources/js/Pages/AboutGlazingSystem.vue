@@ -36,80 +36,89 @@ const detailsAndEffect = ref([
 
 	<GuestHeaderLayout :openConsultationDialog="openConsultationDialog" />
 
-	<div class="montserrat container text-center max-w-screen-2xl mt-16 mb-8 md:mt-32 md:mb-16 px-2 md:px-4 flex-1 flex flex-col gap-8 justify-center">
-		<h1 class="text-4xl md:text-6xl font-light">О системе безрамочного остекления</h1>
-		<a target="_blank" href="/assets/llymar-glazing-system.pdf">
-			<LandingButton>Скачать PDF</LandingButton>
-		</a>
+	<!-- Hero Section -->
+	<div class="montserrat container text-center max-w-screen-2xl mt-8 mb-6 sm:mt-16 sm:mb-8 md:mt-32 md:mb-16 px-4 sm:px-6 lg:px-8 flex-1 flex flex-col gap-6 sm:gap-8 justify-center">
+		<h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-tight">О системе безрамочного остекления</h1>
+		<div class="flex justify-center">
+			<a target="_blank" href="/assets/llymar-glazing-system.pdf">
+				<LandingButton>Скачать PDF</LandingButton>
+			</a>
+		</div>
 	</div>
 
-	<section class="montserrat container max-w-screen-2xl my-32 px-2 md:px-4">
-		<div class="flex flex-row gap-4 mb-8 justify-between items-center">
-			<h2 class="text-4xl md:text-5xl font-light">Внимание к деталям</h2>
-			<div v-html="SVGdecor" class="flex items-center justify-center"></div>
+	<!-- Details Section -->
+	<section class="montserrat container max-w-screen-2xl my-16 sm:my-24 md:my-32 px-4 sm:px-6 lg:px-8">
+		<div class="flex flex-col sm:flex-row gap-4 mb-8 sm:justify-between sm:items-center">
+			<h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light">Внимание к деталям</h2>
+			<div v-html="SVGdecor" class="hidden sm:flex items-center justify-center"></div>
 		</div>
-		<div class="flex flex-col gap-4 justify-center items-center gap-4">
-			<div class="">
-				<img src="/assets/vnimanie-k-detalyam.svg" alt="Внимание к деталям" class="w-full h-auto" />
+		<div class="flex flex-col gap-6 sm:gap-8 justify-center items-center">
+			<div class="w-full flex justify-center">
+				<img src="/assets/vnimanie-k-detalyam.svg" alt="Внимание к деталям" class="w-full max-w-4xl h-auto" />
 			</div>
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-				<div v-for="detail in detailsAndEffect" :key="detail.detail" class="flex flex-col gap-2 p-6 border border-gray-200 bg-white rounded-xl">
-					<p class="text-dark-green font-medium">{{ detail.detail }}</p>
-					<p class="text-gray-500">{{ detail.effect }}</p>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full">
+				<div v-for="detail in detailsAndEffect" :key="detail.detail" class="flex flex-col gap-2 p-4 sm:p-6 border border-gray-200 bg-white rounded-xl shadow-sm">
+					<p class="text-dark-green font-medium text-sm sm:text-base">{{ detail.detail }}</p>
+					<p class="text-gray-500 text-sm sm:text-base">{{ detail.effect }}</p>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<section class="montserrat container max-w-screen-2xl my-32 px-2 md:px-4">
-		<div class="flex flex-row gap-4 mb-8 justify-between items-center">
-			<h2 class="text-4xl md:text-5xl font-light">Внимание к деталям</h2>
-			<div v-html="SVGdecor" class="flex items-center justify-center"></div>
+	<!-- Features Section -->
+	<section class="montserrat container max-w-screen-2xl my-16 sm:my-24 md:my-32 px-4 sm:px-6 lg:px-8">
+		<div class="flex flex-col sm:flex-row gap-4 mb-8 sm:justify-between sm:items-center">
+			<h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light">Преимущества системы</h2>
+			<div v-html="SVGdecor" class="hidden sm:flex items-center justify-center"></div>
 		</div>
 
-		<div class="grid md:grid-cols-2 lg:grid-cols-3 justify-center gap-8">
-			<div class="group p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300">
-				<!-- <div class="text-emerald-600 text-3xl mb-4">💨</div> -->
-				<h3 class="font-medium mb-2">Прочность и устойчивость</h3>
-				<p class="text-gray-500">Выдерживают значительные ветровые, снеговые и другие нагрузки.</p>
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+			<div class="group p-4 sm:p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300 shadow-sm">
+				<h3 class="font-medium mb-2 text-sm sm:text-base">Прочность и устойчивость</h3>
+				<p class="text-gray-500 text-sm sm:text-base">Выдерживают значительные ветровые, снеговые и другие нагрузки.</p>
 			</div>
 
-			<div class="group p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300">
-				<!-- <div class="text-emerald-600 text-3xl mb-4">🧹</div> -->
-				<h3 class="font-medium mb-2">Легкость в уходе</h3>
-				<p class="text-gray-500">Не требуют сложного обслуживания или специальных средств.</p>
+			<div class="group p-4 sm:p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300 shadow-sm">
+				<h3 class="font-medium mb-2 text-sm sm:text-base">Легкость в уходе</h3>
+				<p class="text-gray-500 text-sm sm:text-base">Не требуют сложного обслуживания или специальных средств.</p>
 			</div>
 
-			<div class="group p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300">
-				<!-- <div class="text-emerald-600 text-3xl mb-4">🔧</div> -->
-				<h3 class="font-medium mb-2">Премиум фурнитура</h3>
-				<p class="text-gray-500">Фурнитура из нержавеющей стали обеспечивает надежность и долговечность.</p>
+			<div class="group p-4 sm:p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300 shadow-sm">
+				<h3 class="font-medium mb-2 text-sm sm:text-base">Премиум фурнитура</h3>
+				<p class="text-gray-500 text-sm sm:text-base">Фурнитура из нержавеющей стали обеспечивает надежность и долговечность.</p>
 			</div>
 
-			<div class="group p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300">
-				<!-- <div class="text-emerald-600 text-3xl mb-4">🏗️</div> -->
-				<h3 class="font-medium mb-2">Алюминиевый профиль</h3>
-				<p class="text-gray-500">Долговечный межстворочный алюминиевый профиль для надежных конструкций.</p>
+			<div class="group p-4 sm:p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300 shadow-sm">
+				<h3 class="font-medium mb-2 text-sm sm:text-base">Алюминиевый профиль</h3>
+				<p class="text-gray-500 text-sm sm:text-base">Долговечный межстворочный алюминиевый профиль для надежных конструкций.</p>
 			</div>
 
-			<div class="group p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300">
-				<!-- <div class="text-emerald-600 text-3xl mb-4">🪟</div> -->
-				<h3 class="font-medium mb-2">Закалённое стекло</h3>
-				<p class="text-gray-500">Стекло толщиной 10 мм позволяет изготавливать створки высотой до 3,2 м.</p>
+			<div class="group p-4 sm:p-6 bg-white rounded-2xl transition duration-300 border border-gray-200 hover:border-gray-300 shadow-sm col-span-1 sm:col-span-2 lg:col-span-1">
+				<h3 class="font-medium mb-2 text-sm sm:text-base">Закалённое стекло</h3>
+				<p class="text-gray-500 text-sm sm:text-base">Стекло толщиной 10 мм позволяет изготавливать створки высотой до 3,2 м.</p>
 			</div>
 		</div>
 
-		<div class="flex justify-center">
-			<!-- Certification section -->
-    		<div class="mt-8 inline-block bg-gradient-to-r from-dark-green to-green-900 text-white rounded-3xl shadow-lg p-10 relative overflow-hidden">
-    			<div class="absolute top-0 left-0 w-full h-full bg-white opacity-5 rounded-3xl"></div>
-    			<h3 class="text-2xl md:text-3xl font-bold mb-6 relative">Система сертифицирована и внесена в реестр СТО!</h3>
-    			<ul class="space-y-3 text-lg relative">
-    				<li class="flex items-center gap-3"><CheckIcon class="w-12 h-12 text-light-gold" /> <span>Наша система и материалы предполагают долгую и безпроблемную эксплуатацию.</span></li>
-    				<li class="flex items-center gap-3"><CheckIcon class="w-12 h-12 text-light-gold" /> <span>Мы постоянно совершенствуем систему с расчетом на долговечное использование.</span></li>
-    				<li class="flex items-center gap-3"><CheckIcon class="w-12 h-12 text-light-gold" /> <span>Конструкции имеют безупречные характеристики, не требуя специального обслуживания.</span></li>
-    			</ul>
-    		</div>
+		<!-- Certification Section -->
+		<div class="flex justify-center mt-12 sm:mt-16">
+			<div class="w-full max-w-4xl bg-gradient-to-r from-dark-green to-green-900 text-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 md:p-10 relative overflow-hidden">
+				<div class="absolute top-0 left-0 w-full h-full bg-white opacity-5 rounded-2xl sm:rounded-3xl"></div>
+				<h3 class="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 relative text-center sm:text-left">Система сертифицирована и внесена в реестр СТО!</h3>
+				<ul class="space-y-3 sm:space-y-4 text-sm sm:text-base md:text-lg relative">
+					<li class="flex items-start sm:items-center gap-3">
+						<CheckIcon class="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-light-gold flex-shrink-0 mt-1 sm:mt-0" />
+						<span>Наша система и материалы предполагают долгую и безпроблемную эксплуатацию.</span>
+					</li>
+					<li class="flex items-start sm:items-center gap-3">
+						<CheckIcon class="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-light-gold flex-shrink-0 mt-1 sm:mt-0" />
+						<span>Мы постоянно совершенствуем систему с расчетом на долговечное использование.</span>
+					</li>
+					<li class="flex items-start sm:items-center gap-3">
+						<CheckIcon class="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-light-gold flex-shrink-0 mt-1 sm:mt-0" />
+						<span>Конструкции имеют безупречные характеристики, не требуя специального обслуживания.</span>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</section>
 </template>

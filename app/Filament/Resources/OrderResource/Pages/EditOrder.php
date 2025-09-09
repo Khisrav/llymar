@@ -33,4 +33,10 @@ class EditOrder extends EditRecord
                 ->icon('heroicon-o-document-currency-dollar'),
         ];
     }
+    
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['order_number'] = $data['order_number'] . '-' . $this->record->id;
+        return $data;
+    }
 }

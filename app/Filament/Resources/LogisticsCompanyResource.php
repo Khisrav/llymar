@@ -22,7 +22,7 @@ class LogisticsCompanyResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-truck';
     protected static ?string $navigationGroup = 'Настройки';
     protected static ?string $navigationLabel = 'ТК';//траспортные компании
-    protected static ?string $pluralModelLabel = 'ТК';//ТК
+    protected static ?string $pluralModelLabel = 'ТК';
 
     public static function form(Form $form): Form
     {

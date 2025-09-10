@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderJournalResource\Pages;
 use App\Filament\Resources\OrderJournalResource\RelationManagers;
+use App\Http\Controllers\SketchController;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Item;
+use App\Models\LogisticsCompany;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 
 class OrderJournalResource extends Resource
 {
@@ -97,7 +100,7 @@ class OrderJournalResource extends Resource
                             ->formatStateUsing(function (?Model $record) {
                                 $prefix = explode('-', $record->order_number)[0];
                                 if ($prefix == '1') {
-                                    return $record->city;
+                                    return $record->city . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
                                 } else if ($prefix == '4') {
                                     return $record->customer_address;
                                 } else if ($prefix == '6') {
@@ -112,12 +115,15 @@ class OrderJournalResource extends Resource
                             ->limit(50),
                     ]),
                     
-                    Tables\Columns\TextColumn::make('glass_name')
-                        ->label('Стекло')
+                    Tables\Columns\TextColumn::make('glass_code')
                         ->searchable()
-                        ->size('xs')
-                        ->toggleable(isToggledHiddenByDefault: false)
+                        ->suffix(fn (?Model $record): HtmlString => new HtmlString(
+                            '<br>' . SketchController::calculateGlassArea($record->id)['total_area_m2'] . ' м²'
+                        ))
+                        ->html()
+                        // ->size('xs')
                         ->wrap(),
+
                     //door handles from order openings
                     Tables\Columns\TextColumn::make('handles')
                         ->label('Ручки')

@@ -6,6 +6,7 @@ use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Company;
+use App\Models\LogisticsCompany;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\TochkaBankService;
@@ -15,6 +16,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\Resource;
@@ -136,6 +138,7 @@ class OrderResource extends Resource
                             ->schema([
                                 TextInput::make('id')
                                     ->label('ID')
+                                    ->hidden()
                                     ->disabled()
                                     ->columnSpan(1),
             
@@ -156,6 +159,14 @@ class OrderResource extends Resource
                                     // ->numeric()
                                     ->default('kz')
                                     ->columnSpan(1),
+            
+                                TextInput::make('total_price')
+                                    ->label('Общая стоимость')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('₽')
+                                    ->step(1)
+                                    ->columnSpan(1),
                             ]),
                         
                         Grid::make(4)
@@ -175,14 +186,6 @@ class OrderResource extends Resource
                                     ->native(false)
                                     ->options(self::ORDER_STATUSES)
                                     ->columnSpan(1),
-            
-                                TextInput::make('total_price')
-                                    ->label('Общая стоимость')
-                                    ->required()
-                                    ->numeric()
-                                    ->prefix('₽')
-                                    ->step(1)
-                                    ->columnSpan(1),
                                 
                                 Select::make('factory_id')
                                     ->label('Завод')
@@ -197,6 +200,17 @@ class OrderResource extends Resource
                                     ->native(false)
                                     ->placeholder('Выберите вид заказа')
                                     ->options(self::ORDER_TYPES)
+                                    ->live()
+                                    ->columnSpan(1),
+                                
+                                //if order_type is 'Отправка', then logistics_company_id is required
+                                Select::make('logistics_company_id')
+                                    ->label('ТК')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->placeholder('Выберите ТК')
+                                    ->options(LogisticsCompany::pluck('name', 'id'))
+                                    ->required(fn (Get $get) => $get('order_type') === 'Отправка')
                                     ->columnSpan(1),
                             ])
                     ]),

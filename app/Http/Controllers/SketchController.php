@@ -63,8 +63,134 @@ class SketchController extends Controller
 
         return $this->DXFighterGenerator($order->orderOpenings, $glass, $order->order_number);
     }
-    
-    public function getOrderParameters(Order $order)
+
+    /**
+     * Calculates the total glass area based on calculated door widths and heights
+     *
+     * @param int $orderId
+     * @return array Returns array with total_area_m2, total_doors, and detailed breakdown by opening
+     */
+    public static function calculateGlassArea($orderId)
+    {
+        $order = Order::with(['orderOpenings'])->findOrFail($orderId);
+        static::getOrderParametersStatic($order);
+        
+        $totalArea = 0; // in square millimeters
+        $totalDoors = 0;
+        $openingsBreakdown = [];
+        
+        foreach ($order->orderOpenings as $opening) {
+            $openingArea = 0;
+            $doorCount = count($opening['doorsWidths']);
+            $totalDoors += $doorCount;
+            
+            foreach ($opening['doorsWidths'] as $doorWidth) {
+                $doorArea = $doorWidth * $opening['doorsHeight'];
+                $openingArea += $doorArea;
+                $totalArea += $doorArea;
+            }
+            
+            $openingsBreakdown[] = [
+                'opening_id' => $opening->id,
+                'door_count' => $doorCount,
+                'door_widths' => $opening['doorsWidths'],
+                'door_height' => $opening['doorsHeight'],
+                'opening_area_m2' => round($openingArea / 1000000, 2)
+            ];
+        }
+        
+        return [
+            'total_area_m2' => round($totalArea / 1000000, 2),
+            'total_doors' => $totalDoors,
+            'openings_breakdown' => $openingsBreakdown
+        ];
+    }
+
+    /**
+     * Static version of getOrderParameters for use in static context
+     */
+    private static function getOrderParametersStatic(Order $order)
+    {
+        $openings = $order->orderOpenings;
+        $orderDoorHandles = $order->orderItems->filter(function ($orderItem) {
+            return $orderItem->item->category_id == 29;
+        })->pluck('item');
+
+        foreach ($openings as $opening) {
+            $opening['doorsWidths'] = static::getOpeningDoorsWidthsStatic($opening);
+            $opening['doorsHeight'] = $opening['height'] - 103;
+        }
+    }
+
+    /**
+     * Static version of getOpeningDoorsWidths for use in static context
+     */
+    private static function getOpeningDoorsWidthsStatic(OrderOpening $opening)
+    {
+        $stvorki = $opening['doors'];
+        
+        // Prevent division by zero - return empty array if no doors
+        if ($stvorki <= 0) {
+            return [];
+        }
+        
+        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 130;
+        $doorsGap = [
+            'start' => $opening['e'] + $opening['g'],
+            'end' => $opening['b'],
+        ];
+
+        $divisor = $stvorki / ($opening['type'] == 'center' ? 2 : 1);
+        
+        // Prevent division by zero
+        if ($divisor <= 0) {
+            return [];
+        }
+        
+        $overlaps = $divisor - 1;
+        $middle = intval(($overlaps * 13) / $divisor);
+
+        if ($opening['type'] == 'center') {
+            $edges = intval(($overlaps * 13 - $middle * ($stvorki / 2 - 2)) / 2);
+        } else {
+            $edges = intval(($overlaps * 13 - $middle * ($stvorki - 2)) / 2);
+        }
+
+        $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
+        $z = $y / $divisor;
+
+        $shirinaStvorok = [];
+
+        if ($opening['type'] == 'center') {
+            for ($i = 1; $i <= $stvorki / 2; $i++) {
+                $temp = $z + ($i == $stvorki / 2 || $i == 1 ? $edges : $middle);
+
+                if ($i == $stvorki / 2) { $temp += $doorsGap['start']; } 
+                else if ($i == 1) { $temp += $doorsGap['end']; }
+
+                $shirinaStvorok[$i] = intval($temp);
+                $shirinaStvorok[$stvorki - $i + 1] = intval($temp);
+            }
+        } else if ($opening['type'] == 'left' || $opening['type'] == 'right') {
+            for ($i = 1; $i <= $stvorki; $i++) {
+                $temp = $z + ($i == $stvorki || $i == 1 ? $edges : $middle);
+
+                if ($i == $stvorki) { $temp += $doorsGap['start']; }
+                else if ($i == 1) { $temp += $doorsGap['end']; }
+                
+                $shirinaStvorok[$i] = intval($temp);
+            }
+            
+            if ($opening['type'] == 'left') {
+                $shirinaStvorok = array_reverse($shirinaStvorok);
+            }
+        }
+
+        ksort($shirinaStvorok);
+        return $shirinaStvorok;
+    }
+
+    private function getOrderParameters(Order $order)
     {
         $openings = $order->orderOpenings;
         $orderDoorHandles = $order->orderItems->filter(function ($orderItem) {
@@ -80,14 +206,27 @@ class SketchController extends Controller
     private function getOpeningDoorsWidths(OrderOpening $opening)
     {
         $stvorki = $opening['doors'];
+        
+        // Prevent division by zero - return empty array if no doors
+        if ($stvorki <= 0) {
+            return [];
+        }
+        
         $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 130;
         $doorsGap = [
             'start' => $opening['e'] + $opening['g'],
             'end' => $opening['b'],
         ];
 
-        $overlaps = $stvorki / ($opening['type'] == 'center' ? 2 : 1) - 1;
-        $middle = intval(($overlaps * 13) / ($stvorki / ($opening['type'] == 'center' ? 2 : 1)));
+        $divisor = $stvorki / ($opening['type'] == 'center' ? 2 : 1);
+        
+        // Prevent division by zero
+        if ($divisor <= 0) {
+            return [];
+        }
+        
+        $overlaps = $divisor - 1;
+        $middle = intval(($overlaps * 13) / $divisor);
 
         if ($opening['type'] == 'center') {
             $edges = intval(($overlaps * 13 - $middle * ($stvorki / 2 - 2)) / 2);
@@ -96,7 +235,7 @@ class SketchController extends Controller
         }
 
         $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
-        $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
+        $z = $y / $divisor;
 
         $shirinaStvorok = [];
 

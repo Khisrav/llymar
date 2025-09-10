@@ -24,6 +24,14 @@ class Order extends Model
         'customer_address',
         'ral_code',
         'selected_factor',
+        'city',
+        'when_started_working_on_it',
+        'factory_id',
+        'order_type',
+        'logistics_company_id',
+        'is_sketch_sent',
+        'readiness_date',
+        'glasses_area',
     ];
     
     //do changes into warehouse_records when order is created/deleted
@@ -155,14 +163,14 @@ class Order extends Model
     }
     
     /**
-     * Get the glass name for this order.
+     * Get the glass vendor code for this order.
      *
      * @return string
      */
-    public function getGlassNameAttribute()
+    public function getGlassCodeAttribute()
     {
         $glass = $this->getGlass();
-        return $glass ? $glass->name : '—';
+        return $glass ? $glass->vendor_code : '—';
     }
     
     /**

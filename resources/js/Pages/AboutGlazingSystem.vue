@@ -40,9 +40,9 @@ const detailsAndEffect = ref([
 	<div class="montserrat container text-center max-w-screen-2xl mt-8 mb-6 sm:mt-16 sm:mb-8 md:mt-32 md:mb-16 px-4 sm:px-6 lg:px-8 flex-1 flex flex-col gap-6 sm:gap-8 justify-center">
 		<h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-tight">О системе безрамочного остекления</h1>
 		<div class="flex justify-center">
-			<a target="_blank" href="/assets/llymar-glazing-system.pdf">
-				<LandingButton>Скачать PDF</LandingButton>
-			</a>
+		<a target="_blank" href="/assets/llymar-glazing-system.pdf">
+			<LandingButton>Скачать PDF</LandingButton>
+		</a>
 		</div>
 	</div>
 
@@ -117,8 +117,8 @@ const detailsAndEffect = ref([
 						<CheckIcon class="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-light-gold flex-shrink-0 mt-1 sm:mt-0" />
 						<span>Конструкции имеют безупречные характеристики, не требуя специального обслуживания.</span>
 					</li>
-				</ul>
-			</div>
+    			</ul>
+    		</div>
 		</div>
 	</section>
 </template>

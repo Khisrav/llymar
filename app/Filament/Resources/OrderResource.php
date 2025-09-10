@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OpeningsRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
+use App\Models\Company;
+use App\Models\LogisticsCompany;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\TochkaBankService;
@@ -14,6 +16,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\Resource;
@@ -85,6 +88,13 @@ class OrderResource extends Resource
         'AGENT' => 'Agent',
         'DEALER' => 'Dealer'
     ];
+    
+    // Order type constants
+    public const ORDER_TYPES = [
+        'Отправка' => 'Отправка',
+        'Самовывоз' => 'Самовывоз',
+        'Монтаж' => 'Монтаж'
+    ];
 
     public static function getEloquentQuery(): Builder
     {
@@ -128,17 +138,19 @@ class OrderResource extends Resource
                             ->schema([
                                 TextInput::make('id')
                                     ->label('ID')
+                                    ->hidden()
                                     ->disabled()
                                     ->columnSpan(1),
             
-                                TextInput::make('order_number')
-                                    ->label('№ заказа')
-                                    ->disabled()
+                                    TextInput::make('order_number')
+                                    ->label('Префикс № заказа')
+                                    ->suffix(fn ($record) => $record->id ?? '')
+                                    ->formatStateUsing(fn ($state) => explode('-', $state)[0] ?? '')
                                     ->columnSpan(1),
                                     
                                 TextInput::make('ral_code')
                                     ->label('Цвет RAL')
-                                    ->placeholder('RAL 9010')
+                                    ->placeholder('RAL9010')
                                     ->columnSpan(1),
                                     
                                 TextInput::make('selected_factor')
@@ -147,9 +159,17 @@ class OrderResource extends Resource
                                     // ->numeric()
                                     ->default('kz')
                                     ->columnSpan(1),
+            
+                                TextInput::make('total_price')
+                                    ->label('Общая стоимость')
+                                    ->required()
+                                    ->numeric()
+                                    ->prefix('₽')
+                                    ->step(1)
+                                    ->columnSpan(1),
                             ]),
                         
-                        Grid::make(3)
+                        Grid::make(4)
                             ->schema([
                                 TextInput::make('user_id')
                                     ->label('Создатель заказа')
@@ -166,13 +186,31 @@ class OrderResource extends Resource
                                     ->native(false)
                                     ->options(self::ORDER_STATUSES)
                                     ->columnSpan(1),
-            
-                                TextInput::make('total_price')
-                                    ->label('Общая стоимость')
-                                    ->required()
-                                    ->numeric()
-                                    ->prefix('₽')
-                                    ->step(0.01)
+                                
+                                Select::make('factory_id')
+                                    ->label('Завод')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->placeholder('Выберите завод')
+                                    ->options(Company::where('type', 'factory')->pluck('short_name', 'id'))
+                                    ->columnSpan(1),
+                                    
+                                Select::make('order_type')
+                                    ->label('Вид заказа')
+                                    ->native(false)
+                                    ->placeholder('Выберите вид заказа')
+                                    ->options(self::ORDER_TYPES)
+                                    ->live()
+                                    ->columnSpan(1),
+                                
+                                //if order_type is 'Отправка', then logistics_company_id is required
+                                Select::make('logistics_company_id')
+                                    ->label('ТК')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->placeholder('Выберите ТК')
+                                    ->options(LogisticsCompany::pluck('name', 'id'))
+                                    ->required(fn (Get $get) => $get('order_type') === 'Отправка')
                                     ->columnSpan(1),
                             ])
                     ]),
@@ -182,14 +220,21 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-user')
                     ->collapsible()
                     ->schema([
-                        Grid::make(2)
+                        Grid::make(12)
                             ->schema([
                                 TextInput::make('customer_name')
                                     ->label('ФИО клиента')
                                     // ->required()
                                     ->maxLength(255)
                                     ->placeholder('Иванов Иван Иванович')
-                                    ->columnSpan(1),
+                                    ->columnSpan(6),
+
+                                    TextInput::make('customer_address')
+                                        ->label('Адрес доставки/монтажа')
+                                        // ->required()
+                                        ->maxLength(255)
+                                        ->placeholder('г. Москва, ул. Примерная, д. 1')
+                                        ->columnSpan(6),
 
                                 TextInput::make('customer_phone')
                                     ->label('Номер телефона')
@@ -197,23 +242,18 @@ class OrderResource extends Resource
                                     // ->tel()
                                     ->mask('+7 (999) 999 99-99')
                                     ->placeholder('+7 (___) ___ __-__')
-                                    ->columnSpan(1),
-                            ]),
-                            
-                        Grid::make(2)
-                            ->schema([
+                                    ->columnSpan(4),
+
                                 TextInput::make('customer_email')
                                     ->label('Email')
                                     ->email()
                                     ->placeholder('example@mail.com')
-                                    ->columnSpan(1),
+                                    ->columnSpan(4),
 
-                                TextInput::make('customer_address')
-                                    ->label('Адрес доставки')
-                                    // ->required()
-                                    ->maxLength(255)
-                                    ->placeholder('г. Москва, ул. Примерная, д. 1')
-                                    ->columnSpan(1),
+                                TextInput::make('city')
+                                    ->label('Город')
+                                    ->placeholder('Москва')
+                                    ->columnSpan(4),
                             ]),
                             
                         Textarea::make('comment')
@@ -259,8 +299,8 @@ class OrderResource extends Resource
                     ->badge()
                     ->color('gray')
                     ->weight('medium')
-                    ->copyable()
-                    ->copyMessage('Номер заказа скопирован!')
+                    // ->copyable()
+                    // ->copyMessage('Номер заказа скопирован!')
                     ->toggleable(isToggledHiddenByDefault: false),
                     
                 TextColumn::make('user.name')
@@ -281,7 +321,7 @@ class OrderResource extends Resource
                     ->searchable(['user.name', 'user.phone'])
                     ->icon('heroicon-o-user')
                     // ->copyable()
-                    ->copyMessage('Контакты менеджера скопированы!')
+                    // ->copyMessage('Контакты менеджера скопированы!')
                     ->toggleable(isToggledHiddenByDefault: false),
                     
                 TextColumn::make('customer_name')
@@ -302,7 +342,7 @@ class OrderResource extends Resource
                     ->searchable(['customer_name', 'customer_phone'])
                     ->icon('heroicon-o-user-circle')
                     // ->copyable()
-                    ->copyMessage('Контакты клиента скопированы!')
+                    // ->copyMessage('Контакты клиента скопированы!')
                     ->toggleable(isToggledHiddenByDefault: false),
                     
                 TextColumn::make('ral_code')
@@ -615,7 +655,8 @@ class OrderResource extends Resource
     
     public static function getNavigationBadge(): ?string
     {
-        if (Auth::user()->hasRole(self::ROLES['SUPER_ADMIN'])) {
+        $user = Auth::user();
+        if ($user && $user->hasRole(self::ROLES['SUPER_ADMIN'])) {
             return Cache::remember(
                 'orders_badge_count', 
                 60, // 1 minute
@@ -625,7 +666,7 @@ class OrderResource extends Resource
             return Cache::remember(
                 'orders_badge_count', 
                 60, // 1 minute
-                fn() => static::getModel()::where('status', 'created')->where('user_id', Auth::user()->id)->count()
+                fn() => static::getModel()::where('status', 'created')->where('user_id', $user->id)->count()
             );
         }
     }

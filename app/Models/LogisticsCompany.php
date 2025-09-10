@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LogisticsCompany extends Model
 {
-    //
+    protected $fillable = [
+        'name'
+    ];
 }

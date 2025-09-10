@@ -6,9 +6,11 @@ use App\Filament\Resources\LogisticsCompanyResource\Pages;
 use App\Filament\Resources\LogisticsCompanyResource\RelationManagers;
 use App\Models\LogisticsCompany;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -17,13 +19,19 @@ class LogisticsCompanyResource extends Resource
 {
     protected static ?string $model = LogisticsCompany::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?string $navigationGroup = 'Настройки';
+    protected static ?string $navigationLabel = 'ТК';//траспортные компании
+    protected static ?string $pluralModelLabel = 'ТК';//ТК
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->label('Название')
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 
@@ -31,13 +39,15 @@ class LogisticsCompanyResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')
+                    ->label('Название'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -46,19 +56,10 @@ class LogisticsCompanyResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLogisticsCompanies::route('/'),
-            'create' => Pages\CreateLogisticsCompany::route('/create'),
-            'edit' => Pages\EditLogisticsCompany::route('/{record}/edit'),
+            'index' => Pages\ManageLogisticsCompanies::route('/'),
         ];
     }
 }

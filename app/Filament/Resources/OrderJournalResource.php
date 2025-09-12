@@ -13,6 +13,8 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ColumnGroup;
+use Filament\Tables\Columns\Layout\Grid;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
@@ -66,116 +68,127 @@ class OrderJournalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            //show only orders with status paid (i.e. not created or archived)
             ->modifyQueryUsing(function (Builder $query) {
                 $query->with(['orderItems.item', 'orderOpenings.doorHandle']);
             })
+            ->recordClasses(fn (Model $record): string => match ($record->id) {
+                default => ' khisrav',
+            })
+            ->striped()
             ->columns([
-                Split::make([
-                    Stack::make([
-                        Tables\Columns\TextColumn::make('order_number')
-                            ->badge()
-                            ->color(function ($state): string {
-                                $number = explode('-', $state);
-                                if ($number[0] == '1') return 'cyan';
-                                else if ($number[0] == '4') return 'gray';
-                                else return 'success';
-                            }),
-                            
-                        Tables\Columns\TextColumn::make('created_at')
-                            ->dateTime('d.m.Y')
-                            ->suffix(function ($record) {
-                                if ($record->when_started_working_on_it) {
-                                    $days = date_diff(date_create($record->when_started_working_on_it), date_create(now()));
-                                    return ' (' . $days->days . 'дн.)';
-                                }
-                                return '';
-                            })
-                            ->tooltip(fn ($state): string => $state->format('d M Y H:i')),
-                    ]),
-                    
-                    Stack::make([
-                        Tables\Columns\TextColumn::make('customer_address')
-                            ->searchable()
-                            ->wrap()
-                            ->formatStateUsing(function (?Model $record) {
-                                $prefix = explode('-', $record->order_number)[0];
-                                if ($prefix == '1') {
-                                    return $record->city . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
-                                } else if ($prefix == '4') {
-                                    return $record->customer_address;
-                                } else if ($prefix == '6') {
-                                    return 'Самовывоз';
-                                } else return '';
-                            })
-                            ->limit(50),
+                Tables\Columns\TextColumn::make('order_number')
+                    ->label('№ | Дата')
+                    ->formatStateUsing(function ($state, $record): string {
+                        $number = explode('-', $state);
+                        $color = $number[0] == '1' ? 'cyan' : ($number[0] == '4' ? 'gray' : 'success');
                         
-                        Tables\Columns\TextColumn::make('city')
-                            ->searchable()
-                            ->wrap()
-                            ->limit(50),
+                        $days = date_diff(date_create($record->when_started_working_on_it), date_create(now()));
+                        $days_str = $days->days > 0 ? '| ' . $days->days . 'дн.' : '';
+                        
+                        return '<span style="background-color: ' . ($color == 'cyan' ? '#06b6d4' : ($color == 'gray' ? '#6b7280' : '#10b981')) . '; color: white; padding: 2px 6px; border-radius: 4px;">' . $state . '</span><br>' . $record->created_at->format('d.m.Y') . ' ' . $days_str;
+                    })
+                    // ->wrap()
+                    ->html()
+                    ->sortable()
+                    ->tooltip(fn ($record): string => $record->created_at->format('d M Y H:i'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('customer_address')
+                    ->label('Адрес')
+                    ->searchable()
+                    ->wrap()
+                    ->formatStateUsing(function (?Model $record) {
+                        $prefix = explode('-', $record->order_number)[0];
+                        if ($prefix == '1') {
+                            return $record->city . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
+                        } else if ($prefix == '4') {
+                            return $record->customer_address;
+                        } else if ($prefix == '6') {
+                            return 'Самовывоз';
+                        } else return $record->customer_address;
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->size('xs')
+                    ->limit(50),
+                
+                Tables\Columns\TextColumn::make('glass_code')
+                    ->label('Стекло')
+                    ->searchable()
+                    ->suffix(fn (?Model $record): HtmlString => new HtmlString(
+                        '<br>' . SketchController::calculateGlassArea($record->id)['total_area_m2'] . 'м²'
+                    ))
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->size('xs')
+                    ->html()
+                    ->wrap(),
+
+                Tables\Columns\TextColumn::make('handles')
+                    ->label('Ручки')
+                    ->searchable()
+                    ->html()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->size('xs')
+                    ->wrap(),
+                    
+                Tables\Columns\SelectColumn::make('raspil')
+                    ->label('Распил')
+                    // ->native(false)
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->options([
+                        'Сборка' => 'Сборка',
+                        'Фрезеровка' => 'Фрезеровка',
+                        'Готово' => 'Готово',
                     ]),
                     
-                    Tables\Columns\TextColumn::make('glass_code')
-                        ->searchable()
-                        ->suffix(fn (?Model $record): HtmlString => new HtmlString(
-                            '<br>' . SketchController::calculateGlassArea($record->id)['total_area_m2'] . ' м²'
-                        ))
-                        ->html()
-                        // ->size('xs')
-                        ->wrap(),
-
-                    //door handles from order openings
-                    Tables\Columns\TextColumn::make('handles')
-                        ->label('Ручки')
-                        ->searchable()
-                        ->size('xs')
-                        ->html()
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('raspil')
-                        ->label('Распил')
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('ral_code')
-                        ->label('RAL')
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->badge()
-                        ->color('gray')
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('priem_stekla')
-                        ->label('Прием стекла')
-                        ->wrapHeader()
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('pokleyka')
-                        ->label('Поклейка')
-                        ->wrapHeader()
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('upakovka')
-                        ->label('Упаковка')
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('montazh')
-                        ->label('Мотнаж \ Отправка')
-                        ->wrapHeader()
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                    Tables\Columns\TextColumn::make('total_price')
-                        ->label('Общая \ Аванс \ Остаток')
-                        ->wrapHeader()
-                        ->money('RUB')
-                        ->toggleable(isToggledHiddenByDefault: false)
-                        ->wrap(),
-                ]),
-                
+                Tables\Columns\CheckboxColumn::make('pokraska')
+                    ->label('Покраска')
+                    ->alignCenter()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->disabled(fn ($record) => !$record->ral_code),
+                    
+                Tables\Columns\SelectColumn::make('priem_stekla')
+                    ->label('Прием стекла')
+                    ->wrapHeader()
+                    ->disabled(fn ($record) => !$record->getGlassCodeAttribute())
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->options([
+                        'Рекламация' => 'Рекламация',
+                        'Переделка' => 'Переделка',
+                        'Готово' => 'Готово',
+                    ]),
+                    
+                Tables\Columns\CheckboxColumn::make('pokleyka')
+                    ->label('Поклейка')
+                    ->wrapHeader()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
+                    
+                Tables\Columns\CheckboxColumn::make('upakovka')
+                    ->label('Упаковка')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->alignCenter(),
+                    
+                Tables\Columns\TextColumn::make('montazh')
+                    ->label('Монтаж / Отправка')
+                    ->wrapHeader()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
+                    
+                Tables\Columns\TextColumn::make('total_price')
+                    ->label('Общая / Аванс / Остаток')
+                    ->wrapHeader()
+                    ->money('RUB')
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->wrap(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([

@@ -87,6 +87,10 @@ class ItemResource extends Resource
                             ->default(0)
                             ->type('integer')
                             ->minValue(0),
+                        Forms\Components\TextInput::make('abbreviation')
+                            ->label('Аббр.')
+                            ->placeholder('Напр. М1/10')
+                            ->helperText('Аббревиатура товара, используется в заказах'),
                         Forms\Components\FileUpload::make('images')
                             ->label('Дополнительные изображения')
                             ->image()
@@ -142,6 +146,11 @@ class ItemResource extends Resource
                     ->label('Наименование')
                     ->searchable()
                     ->wrap()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('abbreviation')
+                    ->label('Аббр.')
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 // Tables\Columns\TextInputColumn::make('retail_price')

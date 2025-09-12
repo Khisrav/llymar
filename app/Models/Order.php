@@ -170,7 +170,7 @@ class Order extends Model
     public function getGlassCodeAttribute()
     {
         $glass = $this->getGlass();
-        return $glass ? $glass->vendor_code : '—';
+        return $glass ? $glass->abbreviation : '—';
     }
     
     /**
@@ -183,7 +183,7 @@ class Order extends Model
         $items = $this->getAdditionalItems();
         $html = '';
         foreach ($items as $item) {
-            $html .= $item->item->name . ' - ' . $item->quantity . '' . $item->item->unit . ' <br>';
+            $html .= ($item->item->abbreviation ?? substr($item->item->name, 0, 10) . '...') . ' - ' . $item->quantity . '' . $item->item->unit . ' <br>';
         }
         return $html;
     }

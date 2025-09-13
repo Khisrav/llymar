@@ -37,6 +37,12 @@ class EditOrder extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['order_number'] = $data['order_number'] . '-' . $this->record->id;
+        //if is_completed is true, set status to 'Завершен'
+        if ($this->record->is_completed && str_starts_with($this->record->order_number, '1-')) {
+            $data['status'] = 'sent';
+        } else if ($this->record->is_completed && (str_starts_with($this->record->order_number, '4-') || str_starts_with($this->record->order_number, '6-'))) {
+            $data['status'] = 'completed';
+        }
         return $data;
     }
 }

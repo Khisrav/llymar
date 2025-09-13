@@ -32,6 +32,12 @@ class Order extends Model
         'is_sketch_sent',
         'readiness_date',
         'glasses_area',
+        'is_completed',
+        'is_packed',
+        'is_sworn',
+        'is_painted',
+        'is_cut',
+        'glass_acceptance',
     ];
     
     //do changes into warehouse_records when order is created/deleted

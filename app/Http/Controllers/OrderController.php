@@ -418,10 +418,15 @@ class OrderController extends Controller
             'selected_factor'  => $data['selected_factor'] ?? 'kz',
         ]);
 
-        // Generate a simple order number.
-        $order->order_number = '6-' . $order->id;
+        $hasServiceItems = false;
+        if (isset($data['cart_items'])) {
+            $itemIds = array_keys($data['cart_items']);
+            $serviceItems = Item::whereIn('id', $itemIds)->where('category_id', 35)->exists();
+            $hasServiceItems = $serviceItems;
+        }
+        
+        $order->order_number = ($hasServiceItems ? '4-' : '6-') . $order->id;
         $order->save();
-
         return $order;
     }
 

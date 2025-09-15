@@ -30,7 +30,7 @@ const detailsAndEffect = ref([
 
 <template>
 	<Head>
-		<title>О системе безрамочного остекления</title>
+		<title>О системе безрамного остекления</title>
 		<meta name="description" content="О системе безрамочного остекления" />
 	</Head>
 

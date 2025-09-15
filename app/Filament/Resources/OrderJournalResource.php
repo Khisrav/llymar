@@ -140,6 +140,17 @@ class OrderJournalResource extends Resource
                         return ($hasMilling ? ['Фрезеровка' => 'Фрезеровка'] : ['Сборка' => 'Сборка']) + ['Готово' => 'Готово'];
                     }),
                     
+                Tables\Columns\SelectColumn::make('glass_acceptance')
+                    ->label('Прием стекла')
+                    ->wrapHeader()
+                    ->disabled(fn ($record) => !$record->getGlassCodeAttribute())
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->options([
+                        'Рекламация' => 'Рекламация',
+                        'Переделка' => 'Переделка',
+                        'Готово' => 'Готово',
+                    ]),
+                    
                 Tables\Columns\IconColumn::make('is_painted')
                     ->label('Покраска')
                     ->alignCenter()
@@ -162,17 +173,6 @@ class OrderJournalResource extends Resource
                             })
                             ->disabled(fn ($record) => !$record || !$record->ral_code)
                     ),
-                    
-                Tables\Columns\SelectColumn::make('glass_acceptance')
-                    ->label('Прием стекла')
-                    ->wrapHeader()
-                    ->disabled(fn ($record) => !$record->getGlassCodeAttribute())
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->options([
-                        'Рекламация' => 'Рекламация',
-                        'Переделка' => 'Переделка',
-                        'Готово' => 'Готово',
-                    ]),
                     
                 Tables\Columns\IconColumn::make('is_sworn')
                     ->label('Поклейка')

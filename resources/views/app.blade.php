@@ -1,9 +1,9 @@
-{{-- @if (!Request::is('/'))
-    @php($__inertiaSsr = null)
-@endif --}}
-@if (Request::is('/'))
+@if (Request::is('app/*'))
     @php($__inertiaSsr = null)
 @endif
+{{-- @if (Request::is('/'))
+    @php($__inertiaSsr = null)
+@endif --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

@@ -373,6 +373,12 @@ onMounted(() => {
 	// Add scroll event listener for back to top button
 	window.addEventListener("scroll", handleScroll);
 
+	// Add structured data to document head
+	const structuredDataScript = document.createElement('script');
+	structuredDataScript.type = 'application/ld+json';
+	structuredDataScript.textContent = JSON.stringify(structuredData.value);
+	document.head.appendChild(structuredDataScript);
+
 	const observerOptions = {
 		threshold: 0.1,
 		rootMargin: "0px 0px -50px 0px",
@@ -395,6 +401,12 @@ onMounted(() => {
 onUnmounted(() => {
 	document.removeEventListener("keydown", handleKeydown);
 	window.removeEventListener("scroll", handleScroll);
+	
+	// Remove structured data script
+	const structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+	if (structuredDataScript) {
+		structuredDataScript.remove();
+	}
 });
 
 // Structured data for SEO
@@ -471,6 +483,8 @@ const structuredData = computed(() => ({
 		<meta name="geo.placename" content="Краснодар" />
 		<meta name="geo.position" content="44.979477;39.095646" />
 		<meta name="ICBM" content="44.979477, 39.095646" />
+
+
 	</Head>
 
 	<!-- Hero Section -->

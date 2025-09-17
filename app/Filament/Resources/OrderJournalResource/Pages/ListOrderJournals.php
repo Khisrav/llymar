@@ -14,6 +14,11 @@ class ListOrderJournals extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('statistics')
+                ->label('Статистика')
+                ->url(fn () => route('filament.admin.resources.order-journal-statistics.index'))
+                ->color('gray')
+                ->icon('heroicon-o-chart-bar'),
         ];
     }
 }

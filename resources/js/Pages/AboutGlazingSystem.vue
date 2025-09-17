@@ -31,14 +31,14 @@ const detailsAndEffect = ref([
 <template>
 	<Head>
 		<title>О системе безрамного остекления</title>
-		<meta name="description" content="О системе безрамочного остекления" />
+		<meta name="description" content="О системе безрамного остекления" />
 	</Head>
 
 	<GuestHeaderLayout :openConsultationDialog="openConsultationDialog" />
 
 	<!-- Hero Section -->
 	<div class="montserrat container text-center max-w-screen-2xl mt-8 mb-6 sm:mt-16 sm:mb-8 md:mt-32 md:mb-16 px-4 sm:px-6 lg:px-8 flex-1 flex flex-col gap-6 sm:gap-8 justify-center">
-		<h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-tight">О системе безрамочного остекления</h1>
+		<h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-tight">О системе безрамного остекления</h1>
 		<div class="flex justify-center">
 		<a target="_blank" href="/assets/llymar-glazing-system.pdf">
 			<LandingButton>Скачать PDF</LandingButton>

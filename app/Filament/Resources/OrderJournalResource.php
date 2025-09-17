@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Item;
 use App\Models\LogisticsCompany;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -89,7 +90,6 @@ class OrderJournalResource extends Resource
                         
                         return '<span style="border-color: ' . ($color == 'cyan' ? '#06b6d4' : ($color == 'gray' ? '#6b7280' : '#10b981')) . ';border-width: 1px;border-style: solid;color: ' . ($color == 'cyan' ? '#06b6d4' : ($color == 'gray' ? '#6b7280' : '#10b981')) . '; padding: 2px 6px;border-radius: 6px;">' . $state . '</span><br>' . $record->created_at->format('d.m.Y') . ' ' . $days_str;
                     })
-                    // ->wrap()
                     ->html()
                     ->sortable()
                     ->tooltip(fn ($record): string => $record->created_at->format('d M Y H:i'))
@@ -132,24 +132,34 @@ class OrderJournalResource extends Resource
                     ->size('xs')
                     ->wrap(),
                     
-                Tables\Columns\SelectColumn::make('cut_status')
-                    ->label('Распил')
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->options(function (Model $record) {
-                        $hasMilling = $record->orderItems->contains(fn ($item) => $item->item_id == 388);
-                        return ($hasMilling ? ['Фрезеровка' => 'Фрезеровка'] : ['Сборка' => 'Сборка']) + ['Готово' => 'Готово'];
-                    }),
-                    
                 Tables\Columns\SelectColumn::make('glass_acceptance')
                     ->label('Прием стекла')
                     ->wrapHeader()
                     ->disabled(fn ($record) => !$record->getGlassCodeAttribute())
                     ->toggleable(isToggledHiddenByDefault: false)
+                    ->afterStateUpdated(function ($state, $record) {
+                        if ($state == 'Готово') {
+                            $record->update(['glass_ready_at' => now()]);
+                        } else if ($state == 'Рекламация') {
+                            $record->update(['glass_complaint_at' => now()]);
+                        } else if ($state == 'Переделка') {
+                            $record->update(['glass_rework_at' => now()]);
+                        }
+                    })
                     ->options([
                         'Рекламация' => 'Рекламация',
                         'Переделка' => 'Переделка',
                         'Готово' => 'Готово',
                     ]),
+                    
+                Tables\Columns\IconColumn::make('cut_status')
+                    ->label('Распил')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->icon(''),
+                    // ->options(function (Model $record) {
+                    //     $hasMilling = $record->orderItems->contains(fn ($item) => $item->item_id == 388);
+                    //     return ($hasMilling ? ['Фрезеровка' => 'Фрезеровка'] : ['Сборка' => 'Сборка']) + ['Готово' => 'Готово'];
+                    // }),
                     
                 Tables\Columns\IconColumn::make('is_painted')
                     ->label('Покраска')

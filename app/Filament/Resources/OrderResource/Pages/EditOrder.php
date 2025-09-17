@@ -20,15 +20,22 @@ class EditOrder extends EditRecord
             Actions\DeleteAction::make()
                 ->requiresConfirmation(),
             Actions\Action::make('list_pdf')
-                ->label('Перечень PDF')
+                ->label('Спецификация')
                 ->url(fn (Order $record) => route('orders.list_pdf', $record->id))
                 ->openUrlInNewTab()
                 ->color('gray')
                 ->icon('heroicon-o-arrow-down-tray'),
+            Actions\Action::make('sketcher')
+                        ->label('Чертеж')
+                        ->url(fn (Order $record) => route('app.sketcher', $record->id))
+                        ->openUrlInNewTab()
+                        ->color('gray')
+                        ->icon('heroicon-o-pencil-square'),
             Actions\Action::make('invoice_pdf')
                 ->label('Счет PDF')
-                ->url(fn (Order $record) => 'https://enter.tochka.com/uapi/invoice/v1.0/bills/{customerCode}/' . $record->invoice_id . '/file')
+                ->url(fn (Order $record) => route('orders.download_bill', ['order' => $record->id]))
                 ->openUrlInNewTab()
+                ->disabled(fn (Order $record) => empty($record->invoice_id))
                 ->color('gray')
                 ->icon('heroicon-o-document-currency-dollar'),
         ];

@@ -38,6 +38,16 @@ class Order extends Model
         'is_painted',
         'is_cut',
         'glass_acceptance',
+        'sketched_at',
+        'cut_at',
+        'painted_at',
+        'packed_at',
+        'sworn_at',
+        'glass_rework_at',
+        'glass_complaint_at',
+        'glass_ready_at',
+        'completed_at',
+        'technical_comment',
     ];
     
     //do changes into warehouse_records when order is created/deleted

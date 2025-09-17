@@ -17,11 +17,11 @@ class OrderJournalAverageHoursWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        // Base query for orders with 'paid' status
-        $baseQuery = Order::where('status', 'paid');
+        // Base query for orders with 'paid', 'completed', 'assembled', 'sent' statuses
+        $baseQuery = Order::whereIn('status', ['paid', 'completed', 'assembled', 'sent']);
 
         // Calculate average hours for each date column
-        $avgSketchedHours = $this->calculateAverageHours($baseQuery->clone(), 'sketched_at');
+        $avgSketchSentHours = $this->calculateAverageHours($baseQuery->clone(), 'sketched_at');
         $avgCutHours = $this->calculateAverageHours($baseQuery->clone(), 'cut_at');
         $avgPaintedHours = $this->calculateAverageHours($baseQuery->clone(), 'painted_at');
         $avgPackedHours = $this->calculateAverageHours($baseQuery->clone(), 'packed_at');
@@ -32,47 +32,47 @@ class OrderJournalAverageHoursWidget extends BaseWidget
         $avgCompletedHours = $this->calculateAverageHours($baseQuery->clone(), 'completed_at');
 
         return [
-            Stat::make('Среднее время чертежа', $avgSketchedHours !== null ? round($avgSketchedHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Среднее время чертежа', $avgSketchSentHours !== null ? number_format($avgSketchSentHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время с чертежа')
                 ->descriptionIcon('heroicon-m-pencil')
                 ->color('primary'),
 
-            Stat::make('Среднее время распила', $avgCutHours !== null ? round($avgCutHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Среднее время распила', $avgCutHours !== null ? number_format($avgCutHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время с распила')
                 ->descriptionIcon('heroicon-m-scissors')
                 ->color('warning'),
 
-            Stat::make('Среднее время покраски', $avgPaintedHours !== null ? round($avgPaintedHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Среднее время покраски', $avgPaintedHours !== null ? number_format($avgPaintedHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время с покраски')
                 ->descriptionIcon('heroicon-m-paint-brush')
                 ->color('success'),
 
-            Stat::make('Среднее время упаковки', $avgPackedHours !== null ? round($avgPackedHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Среднее время упаковки', $avgPackedHours !== null ? number_format($avgPackedHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время с упаковки')
                 ->descriptionIcon('heroicon-m-archive-box')
                 ->color('info'),
 
-            Stat::make('Среднее время поклейки', $avgSwornHours !== null ? round($avgSwornHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Среднее время поклейки', $avgSwornHours !== null ? number_format($avgSwornHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время с поклейки')
                 ->descriptionIcon('heroicon-m-document-plus')
                 ->color('indigo'),
 
-            Stat::make('Переделка стекла', $avgGlassReworkHours !== null ? round($avgGlassReworkHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Переделка стекла', $avgGlassReworkHours !== null ? number_format($avgGlassReworkHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время переделки')
                 ->descriptionIcon('heroicon-m-arrow-path')
                 ->color('danger'),
 
-            Stat::make('Рекламация стекла', $avgGlassComplaintHours !== null ? round($avgGlassComplaintHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Рекламация стекла', $avgGlassComplaintHours !== null ? number_format($avgGlassComplaintHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время рекламации')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color('danger'),
 
-            Stat::make('Готовность стекла', $avgGlassReadyHours !== null ? round($avgGlassReadyHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Готовность стекла', $avgGlassReadyHours !== null ? number_format($avgGlassReadyHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время готовности')
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
 
-            Stat::make('Завершение заказа', $avgCompletedHours !== null ? round($avgCompletedHours, 1) . 'ч' : 'Н/Д')
+            Stat::make('Завершение заказа', $avgCompletedHours !== null ? number_format($avgCompletedHours, 2) . 'ч' : 'Н/Д')
                 ->description('Среднее время завершения')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success'),
@@ -93,7 +93,7 @@ class OrderJournalAverageHoursWidget extends BaseWidget
         foreach ($orders as $order) {
             if ($order->{$dateColumn}) {
                 $date = Carbon::parse($order->{$dateColumn});
-                $hoursAgo = $date->diffInHours(now());
+                $hoursAgo = $date->diffInHours(now(), true); // Use absolute value for consistent calculations
                 $totalHours += $hoursAgo;
                 $count++;
             }

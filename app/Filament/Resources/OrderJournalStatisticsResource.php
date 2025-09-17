@@ -47,8 +47,9 @@ class OrderJournalStatisticsResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                $query->where('status', 'paid');
+                $query->whereIn('status', ['paid', 'completed', 'assembled', 'sent']);
             })
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
                     ->label('№ Заказа')
@@ -65,8 +66,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true); // Use true for absolute value
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -77,8 +78,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -89,8 +90,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -101,8 +102,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -113,8 +114,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -125,8 +126,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -137,8 +138,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -149,8 +150,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
                 
@@ -161,8 +162,8 @@ class OrderJournalStatisticsResource extends Resource
                             return new HtmlString('<span class="text-gray-400">—</span>');
                         }
                         $date = Carbon::parse($state);
-                        $hoursAgo = $date->diffInHours(now());
-                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i') . '">' . $hoursAgo . 'ч назад</span>');
+                        $hoursAgo = $date->diffInHours(now(), true);
+                        return new HtmlString('<span title="' . $date->format('d.m.Y H:i:s') . '">' . number_format($hoursAgo, 2) . 'ч назад</span>');
                     })
                     ->sortable(),
             ])

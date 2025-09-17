@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->date('sketched_at')->nullable();
-            $table->date('cut_at')->nullable();
-            $table->date('painted_at')->nullable();
-            $table->date('packed_at')->nullable();
-            $table->date('sworn_at')->nullable();
-            $table->date('glass_rework_at')->nullable();//переделка стекла
-            $table->date('glass_complaint_at')->nullable();//рекламация стекла
-            $table->date('glass_ready_at')->nullable();//готовность стекла
-            $table->date('completed_at')->nullable();
+            $table->datetime('sketched_at')->nullable();
+            $table->datetime('cut_at')->nullable();
+            $table->datetime('painted_at')->nullable();
+            $table->datetime('packed_at')->nullable();
+            $table->datetime('sworn_at')->nullable();
+            $table->datetime('glass_rework_at')->nullable();//переделка стекла
+            $table->datetime('glass_complaint_at')->nullable();//рекламация стекла
+            $table->datetime('glass_ready_at')->nullable();//готовность стекла
+            $table->datetime('completed_at')->nullable();
             $table->text('technical_comment')->nullable();
         });
     }

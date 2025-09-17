@@ -37,6 +37,7 @@ class Order extends Model
         'is_sworn',
         'is_painted',
         'is_cut',
+        'cut_status',
         'glass_acceptance',
         'sketched_at',
         'cut_at',
@@ -48,6 +49,18 @@ class Order extends Model
         'glass_ready_at',
         'completed_at',
         'technical_comment',
+    ];
+
+    protected $casts = [
+        'sketched_at' => 'datetime',
+        'cut_at' => 'datetime',
+        'painted_at' => 'datetime',
+        'packed_at' => 'datetime',
+        'sworn_at' => 'datetime',
+        'glass_rework_at' => 'datetime',
+        'glass_complaint_at' => 'datetime',
+        'glass_ready_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
     
     //do changes into warehouse_records when order is created/deleted

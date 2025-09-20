@@ -209,7 +209,7 @@ class Order extends Model
      */
     public function getHandlesAttribute()
     {
-        $items = $this->getAdditionalItems();
+        $items = $this->getDoorHandleItems();
         $html = '';
         foreach ($items as $item) {
             $html .= ($item->item->abbreviation ?? substr($item->item->name, 0, 10) . '...') . ' - ' . $item->quantity . '' . $item->item->unit . ' <br>';
@@ -238,21 +238,17 @@ class Order extends Model
         return null;
     }
     
-    public function getAdditionalItems()
+    public function getDoorHandleItems()
     {
-        Log::info('getAdditionalItems');
-        //llymar system items, services and glass
-        $notAdditionalItemIDs = Item::where('category_id', '2')
-                                    ->orWhere('category_id', '26')
-                                    ->orWhere('category_id', '1')
-                                    ->pluck('id')
-                                    ->toArray();
-        $additionalItems = [];
+        $doorHandleItemIDs = Item::whereIn('category_id', [29, 31, 32])
+                                ->pluck('id')
+                                ->toArray();
+        $doorHandleItems = [];
         foreach ($this->orderItems as $orderItem) {
-            if (!in_array($orderItem->item_id, $notAdditionalItemIDs)) {
-                $additionalItems[] = $orderItem;
+            if (in_array($orderItem->item_id, $doorHandleItemIDs)) {
+                $doorHandleItems[] = $orderItem;
             }
         }
-        return $additionalItems;
+        return $doorHandleItems;
     }
 }

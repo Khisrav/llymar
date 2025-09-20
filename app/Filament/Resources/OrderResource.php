@@ -512,6 +512,14 @@ class OrderResource extends Resource
                 ->options(self::ORDER_STATUSES)
                 ->selectablePlaceholder(false)
                 ->sortable()
+                //if order status is set from 'created' to 'paid' then set when_started_working_on_it to now
+                // ->live()
+                ->beforeStateUpdated(function (Order $record, ?string $state) {
+                    if ($state === 'paid' && $record->status === 'created') {
+                        $record->when_started_working_on_it = now();
+                        $record->save();
+                    }
+                })
                 ->toggleable(isToggledHiddenByDefault: false);
         }
 

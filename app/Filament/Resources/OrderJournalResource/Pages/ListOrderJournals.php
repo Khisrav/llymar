@@ -13,7 +13,7 @@ class ListOrderJournals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
             Actions\Action::make('statistics')
                 ->label('Статистика')
                 ->url(fn () => route('filament.admin.resources.order-journal-statistics.index'))

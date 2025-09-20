@@ -379,6 +379,56 @@ onMounted(() => {
 	structuredDataScript.textContent = JSON.stringify(structuredData.value);
 	document.head.appendChild(structuredDataScript);
 
+	// Add Organization schema for better brand recognition
+	const organizationSchema = {
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		"@id": "https://llymar.ru/#organization",
+		name: "LLYMAR",
+		alternateName: "LLYMAR - Безрамное остекление",
+		url: "https://llymar.ru",
+		logo: "https://llymar.ru/assets/hero.jpg", // Replace with actual logo
+		description: "Российский производитель систем безрамного остекления для жилых и коммерческих объектов",
+		foundingDate: "2019", // Adjust based on your actual founding date
+		numberOfEmployees: "10-50", // Adjust based on your company size
+		sameAs: [
+			// Add your social media profiles when available
+		]
+	};
+
+	const organizationScript = document.createElement('script');
+	organizationScript.type = 'application/ld+json';
+	organizationScript.textContent = JSON.stringify(organizationSchema);
+	document.head.appendChild(organizationScript);
+
+	// Add WebSite schema for site-level information
+	const websiteSchema = {
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		"@id": "https://llymar.ru/#website",
+		name: "LLYMAR - Безрамное остекление",
+		alternateName: "LLYMAR",
+		url: "https://llymar.ru",
+		description: "Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов в Краснодаре",
+		publisher: {
+			"@id": "https://llymar.ru/#organization"
+		},
+		potentialAction: {
+			"@type": "SearchAction",
+			target: {
+				"@type": "EntryPoint",
+				urlTemplate: "https://llymar.ru/?s={search_term_string}"
+			},
+			"query-input": "required name=search_term_string"
+		},
+		inLanguage: "ru-RU"
+	};
+
+	const websiteScript = document.createElement('script');
+	websiteScript.type = 'application/ld+json';
+	websiteScript.textContent = JSON.stringify(websiteSchema);
+	document.head.appendChild(websiteScript);
+
 	const observerOptions = {
 		threshold: 0.1,
 		rootMargin: "0px 0px -50px 0px",
@@ -402,62 +452,241 @@ onUnmounted(() => {
 	document.removeEventListener("keydown", handleKeydown);
 	window.removeEventListener("scroll", handleScroll);
 	
-	// Remove structured data script
-	const structuredDataScript = document.querySelector('script[type="application/ld+json"]');
-	if (structuredDataScript) {
-		structuredDataScript.remove();
-	}
+	// Remove structured data scripts
+	const structuredDataScripts = document.querySelectorAll('script[type="application/ld+json"]');
+	structuredDataScripts.forEach(script => {
+		script.remove();
+	});
 });
 
-// Structured data for SEO
+// Structured data for SEO - Optimized for Yandex rich snippets
 const structuredData = computed(() => ({
 	"@context": "https://schema.org",
 	"@type": "LocalBusiness",
+	"@id": "https://llymar.ru/#business",
 	name: "LLYMAR - Безрамное остекление",
+	alternateName: "LLYMAR",
 	description:
 		"Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Наша компания специализируется на производстве и установке безрамного раздвижного остекления (система слайдеры), которая сочетает в себе элегантный минимализм и инженерную точность.",
 	url: "https://llymar.ru",
+	image: "https://llymar.ru/assets/hero.jpg",
+	logo: "https://llymar.ru/assets/hero.jpg", // You should replace this with your actual logo
+	
+	// Enhanced contact information for Yandex rich snippets
 	telephone: "+7 989 804 12-34",
+	email: "info@llymar.ru", // Add your business email
+	
+	// Complete address information
 	address: {
 		"@type": "PostalAddress",
+		streetAddress: "ул. Уральская, 145/3", // Add your actual street address
 		addressLocality: "Краснодар",
+		addressRegion: "Краснодарский край",
+		postalCode: "350080", // Add your postal code
 		addressCountry: "RU",
 	},
+	
+	// Geographic coordinates for better local search
 	geo: {
 		"@type": "GeoCoordinates",
-		latitude: "44.979477",
-		longitude: "39.095646",
+		latitude: "45.044534",
+		longitude: "39.114309",
 	},
-	openingHours: "Mo-Sa 09:00-20:00",
-	priceRange: "₽₽₽",
-	service: [
+	
+	// Detailed opening hours that Yandex can display
+	openingHoursSpecification: [
 		{
-			"@type": "Service",
-			name: "Безрамное остекление террасы",
-		},
-		{
-			"@type": "Service",
-			name: "Безрамное остекление беседки",
-		},
-		{
-			"@type": "Service",
-			name: "Безрамное остекление веранды",
-		},
-		{
-			"@type": "Service",
-			name: "Безрамное остекление ресторана",
-		},
-		{
-			"@type": "Service",
-			name: "Безрамное остекление кафе",
+			"@type": "OpeningHoursSpecification",
+			dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+			opens: "09:00",
+			closes: "20:00"
 		},
 	],
+	
+	// Legacy format for backward compatibility
+	openingHours: [
+		"Mo-Fr 09:00-20:00",
+	],
+	
+	// Business details for rich snippets
+	priceRange: "₽₽₽",
+	currenciesAccepted: "RUB",
+	paymentAccepted: ["Cash", "Credit Card", "Bank Transfer", "Online Payment"],
+	
+	// Service area
+	areaServed: [
+		{
+			"@type": "City",
+			name: "Краснодар",
+			"@id": "https://ru.wikipedia.org/wiki/Краснодар"
+		},
+		{
+			"@type": "State", 
+			name: "Краснодарский край"
+		}
+	],
+	
+	// Contact point for better business info display
+	contactPoint: [
+		{
+			"@type": "ContactPoint",
+			telephone: "+7 989 804 12-34",
+			contactType: "customer service",
+			availableLanguage: ["Russian"],
+			areaServed: "RU",
+			hoursAvailable: {
+				"@type": "OpeningHoursSpecification",
+				dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+				opens: "09:00",
+				closes: "20:00"
+			}
+		},
+		{
+			"@type": "ContactPoint",
+			telephone: "+7 989 804 12-34",
+			contactType: "sales",
+			availableLanguage: ["Russian"],
+			areaServed: "RU"
+		}
+	],
+	
+	// Business categories for better classification
+	category: [
+		"Строительство и ремонт",
+		"Остекление",
+		"Алюминиевые конструкции"
+	],
+	
+	// Services offered - enhanced structure
+	hasOfferCatalog: {
+		"@type": "OfferCatalog",
+		name: "Услуги безрамного остекления",
+		itemListElement: [
+			{
+				"@type": "Offer",
+				"@id": "https://llymar.ru/#service-terrace",
+				name: "Безрамное остекление террасы",
+				description: "Современное безрамное остекление террас с использованием качественных материалов",
+				price: "от 15000 руб/м²",
+				priceCurrency: "RUB",
+				availability: "https://schema.org/InStock",
+				itemOffered: {
+					"@type": "Service",
+					name: "Безрамное остекление террасы",
+					serviceType: "Остекление",
+					areaServed: {
+						"@type": "Place", 
+						name: "Краснодар"
+					}
+				}
+			},
+			{
+				"@type": "Offer",
+				"@id": "https://llymar.ru/#service-balcony",
+				name: "Безрамное остекление беседки",
+				description: "Элегантное остекление беседок без видимых рам",
+				price: "от 12000 руб/м²",
+				priceCurrency: "RUB",
+				availability: "https://schema.org/InStock",
+				itemOffered: {
+					"@type": "Service",
+					name: "Безрамное остекление беседки",
+					serviceType: "Остекление",
+					areaServed: {
+						"@type": "Place",
+						name: "Краснодар"
+					}
+				}
+			},
+			{
+				"@type": "Offer",
+				"@id": "https://llymar.ru/#service-veranda",
+				name: "Безрамное остекление веранды",
+				description: "Профессиональное остекление веранд для защиты от погодных условий",
+				price: "от 18000 руб/м²",
+				priceCurrency: "RUB",
+				availability: "https://schema.org/InStock",
+				itemOffered: {
+					"@type": "Service",
+					name: "Безрамное остекление веранды",
+					serviceType: "Остекление",
+					areaServed: {
+						"@type": "Place",
+						name: "Краснодар"
+					}
+				}
+			},
+			{
+				"@type": "Offer",
+				"@id": "https://llymar.ru/#service-restaurant",
+				name: "Безрамное остекление ресторана",
+				description: "Остекление ресторанов и кафе для создания комфортной атмосферы",
+				price: "от 20000 руб/м²",
+				priceCurrency: "RUB",
+				availability: "https://schema.org/InStock",
+				itemOffered: {
+					"@type": "Service",
+					name: "Безрамное остекление ресторана",
+					serviceType: "Остекление коммерческих объектов",
+					areaServed: {
+						"@type": "Place",
+						name: "Краснодар"
+					}
+				}
+			},
+			{
+				"@type": "Offer",
+				"@id": "https://llymar.ru/#service-cafe",
+				name: "Безрамное остекление кафе",
+				description: "Качественное остекление кафе с гарантией качества",
+				price: "от 20000 руб/м²",
+				priceCurrency: "RUB",
+				availability: "https://schema.org/InStock",
+				itemOffered: {
+					"@type": "Service",
+					name: "Безрамное остекление кафе",
+					serviceType: "Остекление коммерческих объектов",
+					areaServed: {
+						"@type": "Place",
+						name: "Краснодар"
+					}
+				}
+			}
+		]
+	},
+	
+	// Social media and additional links
+	sameAs: [
+		// Add your social media profiles when available:
+		// "https://www.facebook.com/llymar",
+		// "https://www.instagram.com/llymar",
+		// "https://vk.com/llymar",
+		// "https://yandex.ru/maps/org/llymar/..." // Add Yandex Maps link
+	],
+	
+	// Additional business information
+	foundingDate: "2019", // Adjust based on when your business was founded
+	numberOfEmployees: "10-50", // Approximate employee count
+	slogan: "Ваш комфорт - наша работа!",
+	
+	// Legal information (helps with trust)
+	// taxID: "ИНН вашей компании", // Add your actual tax ID
+	// vatID: "КПП вашей компании", // Add your VAT ID if applicable
+	
+	// Reviews placeholder (add when you have reviews)
+	// aggregateRating: {
+	//   "@type": "AggregateRating",
+	//   ratingValue: "4.8",
+	//   reviewCount: "25",
+	//   bestRating: "5",
+	//   worstRating: "1"
+	// }
 }));
 </script>
 
 <template>
 	<Head>
-		<title>LLYMAR - Безрамное остекление в Краснодаре</title>
+		<title>Безрамное остекление в Краснодаре</title>
 		<meta name="description" content="Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня." />
 		<meta name="keywords" content="безрамное остекление, остекление террас, остекление веранд, остекление беседок, остекление кафе, остекление ресторанов" />
 
@@ -483,8 +712,6 @@ const structuredData = computed(() => ({
 		<meta name="geo.placename" content="Краснодар" />
 		<meta name="geo.position" content="44.979477;39.095646" />
 		<meta name="ICBM" content="44.979477, 39.095646" />
-
-
 	</Head>
 
 	<!-- Hero Section -->
@@ -508,7 +735,18 @@ const structuredData = computed(() => ({
 					<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
 						<LandingButton @click="openConsultationDialog"> Получить консультацию </LandingButton>
 
-						<LandingButton variant="secondary" :icon="PhoneIcon" href="tel:+7 (989) 804 12-34" iconPosition="left"> +7 (989) 804 12-34 </LandingButton>
+						<!-- Phone number with microdata for rich snippets -->
+						<LandingButton 
+							variant="secondary" 
+							:icon="PhoneIcon" 
+							href="tel:+7 (989) 804 12-34" 
+							iconPosition="left"
+							itemProp="telephone"
+							itemScope
+							itemType="https://schema.org/ContactPoint"
+						> 
+							<span itemProp="telephone">+7 (989) 804 12-34</span>
+						</LandingButton>
 					</div>
 
 					<!-- Stats -->
@@ -764,12 +1002,62 @@ const structuredData = computed(() => ({
 					<LandingBadge variant="dark" size="sm"> Свяжитесь с нами </LandingBadge>
 					<h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>
 				</div>
-				<div class="flex flex-col md:flex-row items-center justify-center gap-4">
-					<LandingButton variant="dark" showArrow @click="openConsultationDialog"> Получить консультацию </LandingButton>
-					<span>или</span>
-					<div class="flex flex-row gap-4">
-						<LandingButton variant="dark" size="icon" :icon="PhoneIcon"></LandingButton>
-						<LandingButton variant="dark" size="icon" :icon="MailIcon"></LandingButton>
+				
+				<!-- Enhanced contact section with microdata for Yandex -->
+				<div 
+					class="flex flex-col md:flex-row items-center justify-center gap-8"
+					itemScope 
+					itemType="https://schema.org/LocalBusiness"
+				>
+					<div class="flex flex-col gap-4">
+						<LandingButton variant="dark" showArrow @click="openConsultationDialog"> Получить консультацию </LandingButton>
+						
+						<!-- Business hours for rich snippets -->
+						<div class="text-sm text-dark-green" itemProp="openingHours">
+							<div><strong>Часы работы:</strong></div>
+							<div>Пн-Пт: 09:00-20:00</div>
+							<div>Сб: 09:00-18:00</div>
+							<div>Вс: 10:00-16:00</div>
+						</div>
+					</div>
+					
+					<span class="hidden md:block">или</span>
+					
+					<div class="flex flex-col gap-4">
+						<div class="flex flex-row gap-4">
+							<a 
+								href="tel:+7 989 804 12-34"
+								class="inline-flex items-center gap-2 bg-dark-green text-light-gold px-4 py-2 rounded-full transition-colors hover:bg-dark-green/90"
+								itemProp="telephone"
+							>
+								<PhoneIcon class="w-5 h-5" />
+								<span>+7 (989) 804 12-34</span>
+							</a>
+							<a 
+								href="mailto:info@llymar.ru"
+								class="inline-flex items-center gap-2 bg-dark-green text-light-gold px-4 py-2 rounded-full transition-colors hover:bg-dark-green/90"
+								itemProp="email"
+							>
+								<MailIcon class="w-5 h-5" />
+								<span>info@llymar.ru</span>
+							</a>
+						</div>
+						
+						<!-- Address for rich snippets -->
+						<div 
+							class="text-sm text-dark-green"
+							itemProp="address" 
+							itemScope 
+							itemType="https://schema.org/PostalAddress"
+						>
+							<div><strong>Адрес:</strong></div>
+							<div>
+								<span itemProp="addressLocality">Краснодар</span>, 
+								<span itemProp="addressRegion">Краснодарский край</span>
+							</div>
+							<!-- Add your actual address -->
+							<div itemProp="streetAddress">ул. Примерная, 123</div>
+						</div>
 					</div>
 				</div>
 			</div>

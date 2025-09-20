@@ -20,12 +20,16 @@ use Filament\Tables\Columns\Layout\Grid;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 use Carbon\Carbon;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 
 class OrderJournalResource extends Resource
 {
@@ -35,6 +39,24 @@ class OrderJournalResource extends Resource
     protected static ?string $navigationLabel = 'ЦЕХ';
     protected static ?string $pluralModelLabel = 'ЦЕХ';
     // protected static ?string $navigationGroup = 'Заказы';
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'paid')->count();
+    }
+    
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::where('status', 'paid')->count();
+        
+        if ($count === 0) {
+            return 'success';
+        } elseif ($count <= 5) {
+            return 'warning';
+        } else {
+            return 'danger';
+        }
+    }
     
     // Order status constants for consistency
     public const ORDER_STATUSES = [
@@ -78,6 +100,7 @@ class OrderJournalResource extends Resource
             ->recordClasses(fn (Model $record): string => match ($record->id) {
                 default => ' khisrav',
             })
+            ->recordAction('view_order_details')
             ->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
@@ -116,22 +139,18 @@ class OrderJournalResource extends Resource
                 
                 Tables\Columns\TextColumn::make('glass_code')
                     ->label('Стекло')
-                    ->searchable()
                     ->suffix(fn (?Model $record): HtmlString => new HtmlString(
                         '<br>' . SketchController::calculateGlassArea($record->id)['total_area_m2'] . 'м²'
                     ))
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->size('xs')
-                    ->html()
-                    ->wrap(),
+                    ->html(),
 
                 Tables\Columns\TextColumn::make('handles')
                     ->label('Ручки')
-                    ->searchable()
                     ->html()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->size('xs')
-                    ->wrap(),
+                    ->size('xs'),
 
                 // New is_sketch_sent column
                 Tables\Columns\IconColumn::make('is_sketch_sent')
@@ -167,7 +186,6 @@ class OrderJournalResource extends Resource
                     ->action(
                         Tables\Actions\Action::make('toggle_sketch_sent')
                             ->label('')
-                            ->icon('')
                             ->color('primary')
                             ->requiresConfirmation()
                             ->modalHeading('Подтверждение')
@@ -183,22 +201,28 @@ class OrderJournalResource extends Resource
                             ->disabled(fn ($record) => $record->is_sketch_sent)
                     ),
                     
-                Tables\Columns\IconColumn::make('cut_status')
+                Tables\Columns\IconColumn::make('cut_status_display')
                     ->label('Распил')
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->alignCenter()
                     ->size(IconColumnSize::TwoExtraLarge)
+                    ->state(function ($record) {
+                        // Always return a non-null value so icon shows
+                        return 'active';
+                    })
                     ->icon(function ($record) {
-                        if ($record->cut_status === 'Готово') {
+                        // Check for milling (фрезеровка)
+                        $hasMillingItem = $record->orderItems->contains(fn ($item) => $item->item_id == 388);
+                        
+                        if ($record->cut_status) {
                             return 'heroicon-o-check-circle';
                         }
                         
-                        // if (!$record->is_sketch_sent) {
-                        //     return 'heroicon-o-no-symbol';
-                        // }
+                        if (!$hasMillingItem) {
+                            return 'heroicon-o-no-symbol';
+                        }
                         
-                        // Check for milling (фрезеровка)
-                        if ($record->orderItems->contains(fn ($item) => $item->item_id == 388)) {
+                        if ($hasMillingItem) {
                             return 'heroicon-o-scissors';
                         }
                         
@@ -213,7 +237,7 @@ class OrderJournalResource extends Resource
                         return 'heroicon-o-bell';
                     })
                     ->color(function ($record) {
-                        if ($record->cut_status === 'Готово') {
+                        if ($record->cut_status) {
                             return 'success';
                         }
                         
@@ -238,51 +262,97 @@ class OrderJournalResource extends Resource
                             ->requiresConfirmation()
                             ->modalHeading('Обновить статус распила')
                             ->modalDescription('Выберите новый статус распила')
-                            ->form([
-                                Forms\Components\Select::make('cut_status')
-                                    ->label('Статус распила')
-                                    ->default(fn ($record) => $record->cut_status)
-                                    ->options(function ($record) {
-                                        $hasMillingItem = $record->orderItems->contains(fn ($item) => $item->item_id == 388);
-                                        return [
-                                            $hasMillingItem ? 'Фрезеровка' : 'Сборка' => $hasMillingItem ? 'Фрезеровка' : 'Сборка',
-                                            'Готово' => 'Готово'
-                                        ];
-                                    })
-                                    ->required()
-                            ])
-                            ->action(function ($record, array $data) {
-                                $updates = ['cut_status' => $data['cut_status']];
-                                if ($data['cut_status'] === 'Готово') {
-                                    $updates['cut_at'] = now();
-                                }
-                                $record->update($updates);
+                            ->action(function ($record) {
+                                $record->update([
+                                    'cut_status' => true,
+                                    'cut_at' => now()
+                                ]);
                             })
                             ->disabled(fn ($record) => !$record->is_sketch_sent)
                     ),
                 
-                Tables\Columns\SelectColumn::make('glass_acceptance')
+                Tables\Columns\IconColumn::make('glass_status_display')
                     ->label('Прием стекла')
                     ->wrapHeader()
-                    ->disabled(function ($record) {
-                        // Disabled if sketch not sent OR if no glass items
-                        return !$record->is_sketch_sent || !$record->getGlassCodeAttribute();
-                    })
+                    ->alignCenter()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->afterStateUpdated(function ($state, $record) {
-                        if ($state == 'Готово') {
-                            $record->update(['glass_ready_at' => now()]);
-                        } else if ($state == 'Рекламация') {
-                            $record->update(['glass_complaint_at' => now()]);
-                        } else if ($state == 'Переделка') {
-                            $record->update(['glass_rework_at' => now()]);
-                        }
+                    ->size(IconColumnSize::TwoExtraLarge)
+                    ->state(function ($record) {
+                        // Always return a non-null value so icon shows
+                        return 'active';
                     })
-                    ->options([
-                        'Рекламация' => 'Рекламация',
-                        'Переделка' => 'Переделка',
-                        'Готово' => 'Готово',
-                    ]),
+                    ->icon(function ($record) {
+                        if ($record->glass_acceptance == 'Готово') {
+                            return 'heroicon-o-check-circle';
+                        }
+                        
+                        if ($record->glass_acceptance != 'Готово' && $record->glass_acceptance != null) {
+                            return 'heroicon-o-arrow-path';
+                        }
+                        
+                        // Disabled if sketch not sent OR if no glass items
+                        if (!$record->getGlassCodeAttribute()) {
+                            return 'heroicon-o-no-symbol';
+                        }
+                        
+                        return 'heroicon-o-bell';
+                    })
+                    ->color(function ($record) {
+                        if ($record->glass_acceptance == 'Готово') {
+                            return 'success';
+                        }
+                        
+                        if ($record->glass_acceptance == 'Рекламация') {
+                            return 'danger';
+                        }
+                        
+                        if ($record->glass_acceptance == 'Переделка') {
+                            return 'warning';
+                        }
+                        
+                        // Disabled if sketch not sent OR if no glass items
+                        if (!$record->is_sketch_sent || !$record->getGlassCodeAttribute()) {
+                            return 'gray';
+                        }
+                        
+                        return 'warning';
+                    })
+                    ->action(
+                        Tables\Actions\Action::make('update_glass_acceptance')
+                            ->label('')
+                            ->icon('')
+                            ->color('primary')
+                            ->form([
+                                Forms\Components\Select::make('glass_acceptance')
+                                    ->label('Статус приема стекла')
+                                    ->options([
+                                        'Рекламация' => 'Рекламация',
+                                        'Переделка' => 'Переделка',
+                                        'Готово' => 'Готово',
+                                    ])
+                                    ->default(fn ($record) => $record->glass_acceptance)
+                                    ->required(),
+                            ])
+                            ->modalHeading('Обновить статус приема стекла')
+                            ->modalDescription('Выберите новый статус приема стекла')
+                            ->action(function ($record, array $data) {
+                                $updates = ['glass_acceptance' => $data['glass_acceptance']];
+                                
+                                if ($data['glass_acceptance'] == 'Готово') {
+                                    $updates['glass_ready_at'] = now();
+                                } else if ($data['glass_acceptance'] == 'Рекламация') {
+                                    $updates['glass_complaint_at'] = now();
+                                } else if ($data['glass_acceptance'] == 'Переделка') {
+                                    $updates['glass_rework_at'] = now();
+                                }
+                                
+                                $record->update($updates);
+                            })
+                            ->disabled(function ($record) {
+                                // Disabled if sketch not sent OR if no glass items
+                                return !$record->is_sketch_sent || !$record->getGlassCodeAttribute();
+                            })
+                    ),
                     
                 Tables\Columns\IconColumn::make('is_painted')
                     ->label('Покраска')
@@ -296,7 +366,7 @@ class OrderJournalResource extends Resource
                         
                         // Check if painting is disabled
                         $hasPaintItems = $record->orderItems->contains(fn ($item) => in_array($item->item_id, [386, 435]));
-                        if (!$hasPaintItems || $record->glass_acceptance !== 'Готово') {
+                        if (!$hasPaintItems) {
                             return 'heroicon-o-no-symbol';
                         }
                         
@@ -315,9 +385,10 @@ class OrderJournalResource extends Resource
                             return 'success';
                         }
                         
+                        $cut_at = $record->cut_at;
                         $hasPaintItems = $record->orderItems->contains(fn ($item) => in_array($item->item_id, [386, 435]));
-                        if (!$hasPaintItems || $record->glass_acceptance !== 'Готово') {
-                            return 'black';
+                        if (!$hasPaintItems || !$cut_at) {
+                            return 'gray';
                         }
                         
                         if ($record->cut_at) {
@@ -385,7 +456,7 @@ class OrderJournalResource extends Resource
                         }
                         
                         $hasSwornItems = $record->orderItems->contains(fn ($item) => $item->item_id == 389);
-                        if (!$hasSwornItems && $record->glass_acceptance !== 'Готово') {
+                        if (!$hasSwornItems || $record->glass_acceptance !== 'Готово') {
                             return 'gray';
                         }
                         
@@ -430,10 +501,6 @@ class OrderJournalResource extends Resource
                     ->icon(function ($record) {
                         if ($record->is_packed) {
                             return 'heroicon-o-check-circle';
-                        }
-                        
-                        if (!$record->is_sworn) {
-                            return 'heroicon-o-no-symbol';
                         }
                         
                         // Check timing for urgency
@@ -495,10 +562,6 @@ class OrderJournalResource extends Resource
                             return 'heroicon-o-check-circle';
                         }
                         
-                        // if (!$record->is_packed) {
-                        //     return 'heroicon-o-no-symbol';
-                        // }
-                        
                         // Check timing for urgency
                         if ($record->packed_at) {
                             $hoursPassed = Carbon::parse($record->packed_at)->diffInHours(now());
@@ -550,6 +613,13 @@ class OrderJournalResource extends Resource
                                     } else if (str_starts_with($record->order_number, '4-') || str_starts_with($record->order_number, '6-')) {
                                         $updates['status'] = 'completed';
                                     }
+                                    
+                                    // Show success notification
+                                    Notification::make()
+                                        ->title('Заказ успешно завершен')
+                                        ->body("Заказ {$record->order_number} успешно завершен")
+                                        ->success()
+                                        ->send();
                                 }
                                 
                                 $record->update($updates);
@@ -570,17 +640,32 @@ class OrderJournalResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->wrap(),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('when_started_working_on_it', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make('view_order_details')
+                        ->label('Сводка')
+                        ->icon('heroicon-o-eye')
+                        // ->color('primary')
+                        ->modalHeading(fn ($record) => 'Детали заказа ' . $record->order_number)
+                        ->infolist(fn ($record) => static::orderInfolist($record))
+                        ->modalWidth('7xl')
+                        ->slideOver(),
+                    //open order editing (only for admins, operators, workmans and rops)
+                    Tables\Actions\Action::make('open_order')
+                        ->label('К заказу')
+                        ->icon('heroicon-o-arrow-right')
+                        // ->color('primary')
+                        ->url(fn ($record) => route('filament.admin.resources.orders.edit', $record->id))
+                        // ->visible(fn ($record) => $record->status === 'sent')
+                ])
+                ->label('')
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->color('primary')
+                // ->size(ActionSize::ExtraSmall)
             ]);
     }
 
@@ -591,12 +676,197 @@ class OrderJournalResource extends Resource
         ];
     }
 
+    public static function orderInfolist($record): Infolist
+    {
+        return Infolist::make()
+            ->record($record)
+            ->schema([
+                Infolists\Components\Section::make('Информация о заказе')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('order_number')
+                            ->label('Номер заказа')
+                            ->badge()
+                            ->color('primary'),
+                        Infolists\Components\TextEntry::make('status')
+                            ->label('Статус')
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'paid' => 'Оплачен',
+                                'created' => 'Создан',
+                                'sent' => 'Отправлен',
+                                'completed' => 'Завершен',
+                                default => ucfirst($state)
+                            })
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'paid' => 'success',
+                                'completed' => 'success',
+                                'sent' => 'warning',
+                                default => 'gray'
+                            }),
+                        Infolists\Components\TextEntry::make('total_price')
+                            ->label('Общая стоимость')
+                            ->money('RUB')
+                            ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                            ->weight('bold'),
+                        Infolists\Components\TextEntry::make('created_at')
+                            ->label('Дата создания')
+                            ->dateTime('d.m.Y H:i'),
+                    ])
+                    ->compact()
+                    ->collapsible()
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 4,
+                    ]),
+
+                Infolists\Components\Section::make('Информация о клиенте')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('customer_name')
+                            ->label('Имя клиента')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('customer_email')
+                            ->label('Email')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('customer_phone')
+                            ->label('Телефон')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('customer_address')
+                            ->label('Адрес')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('city')
+                            ->label('Город')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('ral_code')
+                            ->label('RAL код')
+                            ->placeholder('—'),
+                    ])
+                    ->compact()
+                    ->collapsible()
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 3,
+                    ]),
+
+                Infolists\Components\Section::make('Статус производства')
+                    ->schema([
+                        Infolists\Components\IconEntry::make('is_sketch_sent')
+                            ->label('Чертеж отправлен')
+                            ->boolean()
+                            ->trueIcon('heroicon-o-check-circle')
+                            ->falseIcon('heroicon-o-x-circle')
+                            ->trueColor('success')
+                            ->falseColor('danger'),
+                        Infolists\Components\IconEntry::make('cut_status')
+                            ->label('Распил выполнен')
+                            ->boolean()
+                            ->getStateUsing(fn ($record) => !empty($record->cut_status))
+                            ->trueIcon('heroicon-o-check-circle')
+                            ->falseIcon('heroicon-o-x-circle')
+                            ->trueColor('success')
+                            ->falseColor('danger'),
+                        Infolists\Components\IconEntry::make('is_painted')
+                            ->label('Покраска выполнена')
+                            ->boolean()
+                            ->trueIcon('heroicon-o-check-circle')
+                            ->falseIcon('heroicon-o-x-circle')
+                            ->trueColor('success')
+                            ->falseColor('danger'),
+                        Infolists\Components\IconEntry::make('is_completed')
+                            ->label('Заказ завершен')
+                            ->boolean()
+                            ->trueIcon('heroicon-o-check-circle')
+                            ->falseIcon('heroicon-o-x-circle')
+                            ->trueColor('success')
+                            ->falseColor('danger'),
+                        Infolists\Components\TextEntry::make('sketched_at')
+                            ->label('Чертеж отправлен')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('cut_at')
+                            ->label('Распил выполнен')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('painted_at')
+                            ->label('Покраска выполнена')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('completed_at')
+                            ->label('Заказ завершен')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                    ])
+                    ->compact()
+                    ->collapsible()
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 4,
+                    ]),
+
+                Infolists\Components\Section::make('Информация о стекле')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('glass_code')
+                            ->label('Код стекла')
+                            ->getStateUsing(fn ($record) => $record->getGlassCodeAttribute())
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('glass_area')
+                            ->label('Площадь стекла')
+                            ->getStateUsing(function ($record) {
+                                $area = \App\Http\Controllers\SketchController::calculateGlassArea($record->id);
+                                return ($area['total_area_m2'] ?? '0') . ' м²';
+                            }),
+                        Infolists\Components\TextEntry::make('glass_acceptance')
+                            ->label('Статус приема стекла')
+                            ->badge()
+                            ->color(fn (?string $state): string => match ($state) {
+                                'Готово' => 'success',
+                                'Рекламация' => 'danger',
+                                'Переделка' => 'warning',
+                                default => 'gray'
+                            })
+                            ->placeholder('Ожидает'),
+                    ])
+                    ->compact()
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 3,
+                    ])
+                    ->collapsible()
+                    ->visible(fn ($record) => $record->getGlassCodeAttribute() !== '—'),
+
+                Infolists\Components\Section::make('Дополнительная информация')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('when_started_working_on_it')
+                            ->label('Дата начала работы')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('readiness_date')
+                            ->label('Дата готовности')
+                            ->date('d.m.Y')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('comment')
+                            ->label('Комментарий')
+                            ->placeholder('—')
+                            ->columnSpanFull(),
+                        Infolists\Components\TextEntry::make('technical_comment')
+                            ->label('Технический комментарий')
+                            ->placeholder('—')
+                            ->columnSpanFull(),
+                    ])
+                    ->compact()
+                    ->columns([
+                        'sm' => 2,
+                        'md' => 2,
+                    ])
+                    ->collapsible(),
+            ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListOrderJournals::route('/'),
-            'create' => Pages\CreateOrderJournal::route('/create'),
-            'edit' => Pages\EditOrderJournal::route('/{record}/edit'),
+            // 'create' => Pages\CreateOrderJournal::route('/create'),
+            // 'edit' => Pages\EditOrderJournal::route('/{record}/edit'),
         ];
     }
 }

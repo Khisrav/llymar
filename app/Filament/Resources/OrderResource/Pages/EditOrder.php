@@ -50,6 +50,11 @@ class EditOrder extends EditRecord
         } else if ($this->record->is_completed && (str_starts_with($this->record->order_number, '4-') || str_starts_with($this->record->order_number, '6-'))) {
             $data['status'] = 'completed';
         }
+        
+        if ($this->record->status === 'created' && $data['status'] === 'paid') {
+            $data['when_started_working_on_it'] = now();
+        }
+        
         return $data;
     }
 }

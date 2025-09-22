@@ -356,6 +356,7 @@ class OrderJournalResource extends Resource
                     
                 Tables\Columns\IconColumn::make('is_painted')
                     ->label('Покраска')
+                    ->tooltip(fn ($record) => $record->ral_code)
                     ->alignCenter()
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->size(IconColumnSize::TwoExtraLarge)

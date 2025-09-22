@@ -347,10 +347,10 @@ class OrderController extends Controller
 
         $openings = $order->orderOpenings;
 
+        $allDoorHandles = Item::where('category_id', 29)->get();
         $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
             return $orderItem->item->category_id == 29;
         });
-        Log::info($doorHandleOrderItems);
 
         // For each door handle order item, repeat the item according to its quantity
         $orderDoorHandles = [];
@@ -359,12 +359,12 @@ class OrderController extends Controller
                 $orderDoorHandles[] = $orderItem->item;
             }
         }
-        Log::info($orderDoorHandles);
-
+        
         return Inertia::render('App/Order/Sketcher', [
             'order' => $order,
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
+            'all_door_handles' => $allDoorHandles,
         ]);
     }
 

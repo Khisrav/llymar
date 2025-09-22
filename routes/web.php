@@ -102,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/orders/sketcher/{order_id}', [OrderController::class, 'sketcherPage'])->name('app.sketcher');
     Route::post('/app/order/sketch/download', [OrderController::class, 'sketchPDF'])->name('app.sketch');
     Route::post('/app/order/sketch/save', [OrderController::class, 'saveSketch'])->name('app.save.sketch');
+    Route::get('/app/orders/{order_id}/sketch-pdf', [OrderController::class, 'downloadSketchPDF'])->name('app.sketch.pdf');
+    Route::get('/app/orders/{order_id}/sketch-dxf', [SketchController::class, 'downloadSketchDXF'])->name('app.sketch.dxf');
     Route::delete('/app/order/{order_id}/delete', [OrderController::class, 'destroy'])->name('app.order.delete');
     
     Route::get('/app/contract', [ContractController::class, 'index'])->name('app.contract');

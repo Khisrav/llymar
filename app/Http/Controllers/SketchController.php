@@ -590,6 +590,57 @@ class SketchController extends Controller
         }
     }
     
+    /**
+     * Generate and download a sketch DXF for an order using its stored data.
+     */
+    public function downloadSketchDXF(int $order_id)
+    {
+        $user = auth()->user();
+        
+        // Check if user owns this order and has sketcher access
+        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
+        
+        if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check DXF access permission
+        if (!$user->can('access app dxf')) {
+            return response()->json(['error' => 'DXF access denied'], 403);
+        }
+
+        // Convert stored openings to the format expected by the DXF generator
+        $openings = $order->orderOpenings->map(function ($opening) {
+            return [
+                'id' => $opening->id,
+                'type' => $opening->type,
+                'doors' => $opening->doors,
+                'width' => $opening->width,
+                'height' => $opening->height,
+                'a' => $opening->a,
+                'b' => $opening->b,
+                'd' => $opening->d,
+                'e' => $opening->e,
+                'f' => $opening->f,
+                'g' => $opening->g,
+                'i' => $opening->i,
+                'mp' => $opening->mp ?? 0,
+                'door_handle_item_id' => $opening->door_handle_item_id,
+            ];
+        })->toArray();
+
+        // Create a mock request object for the existing generateDXF method
+        $request = new Request();
+        $request->merge([
+            'openings' => $openings,
+            'order_id' => $order_id,
+            'saveData' => false,
+        ]);
+
+        // Use the existing generateDXF method
+        return $this->generateDXF($request);
+    }
+
     private function cyrillicToLatin($text) {
         $cyrillicToLatinMap = array(
             'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',

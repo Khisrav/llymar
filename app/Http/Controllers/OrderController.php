@@ -615,4 +615,48 @@ class OrderController extends Controller
         }
     }
 
+    /**
+     * Generate and download a sketch PDF for an order using its stored data.
+     */
+    public function downloadSketchPDF(int $order_id)
+    {
+        $user = auth()->user();
+        
+        // Check if user owns this order and has sketcher access
+        $order = Order::with(['orderOpenings'])->findOrFail($order_id);
+        
+        if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Convert stored openings to the format expected by the PDF generator
+        $openings = $order->orderOpenings->map(function ($opening) {
+            return [
+                'id' => $opening->id,
+                'type' => $opening->type,
+                'doors' => $opening->doors,
+                'width' => $opening->width,
+                'height' => $opening->height,
+                'a' => $opening->a,
+                'b' => $opening->b,
+                'd' => $opening->d,
+                'e' => $opening->e,
+                'f' => $opening->f,
+                'g' => $opening->g,
+                'i' => $opening->i,
+                'mp' => $opening->mp ?? 0,
+                'door_handle_item_id' => $opening->door_handle_item_id,
+            ];
+        })->toArray();
+
+        $pdf = Pdf::loadView('orders.sketch_pdf', [
+                'openings' => $openings,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
+
+        $pdfName = "sketch_" . $order_id . "_" . date('Y-m-d') . ".pdf";
+        return $pdf->download($pdfName);
+    }
+
 }

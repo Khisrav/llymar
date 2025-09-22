@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from "@inertiajs/vue3"
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
-import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon, CalendarIcon, UserIcon, PhoneIcon, FileTextIcon, PaletteIcon, SearchIcon, FilterIcon } from "lucide-vue-next"
+import { ArrowLeft, DraftingCompassIcon, EllipsisVerticalIcon, FolderClockIcon, ReceiptRussianRubleIcon, ScrollTextIcon, TrashIcon, CalendarIcon, UserIcon, PhoneIcon, FileTextIcon, PaletteIcon, SearchIcon, FilterIcon, FileType2Icon, FileAxis3DIcon } from "lucide-vue-next"
 import { ref, computed } from "vue"
 import { Order, Pagination } from "../../lib/types"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../../Components/ui/table"
@@ -67,6 +67,62 @@ const downloadListPDF = (order_id: number) => {
 
 const visitSketcherPage = (order_id: number) => {
 	window.location.href = "/app/orders/sketcher/" + order_id
+}
+
+const downloadSketchPDF = async (order_id: number) => {
+	try {
+		toast.info("Подготовка PDF чертежа...");
+		
+		const response = await axios.get(`/app/orders/${order_id}/sketch-pdf`, {
+			responseType: "blob",
+		});
+
+		const fileBlob = new Blob([response.data], { type: "application/pdf" });
+		const fileURL = URL.createObjectURL(fileBlob);
+
+		const link = document.createElement("a");
+		link.href = fileURL;
+		link.setAttribute("download", `sketch_${order_id}.pdf`);
+		document.body.appendChild(link);
+		link.click();
+
+		document.body.removeChild(link);
+		URL.revokeObjectURL(fileURL);
+		toast.success("PDF чертеж успешно загружен.");
+	} catch (error) {
+		console.error("Failed to download sketch PDF:", error);
+		toast.error("Ошибка при загрузке PDF чертежа.");
+	}
+}
+
+const downloadSketchDXF = async (order_id: number) => {
+	try {
+		toast.info("Подготовка DXF чертежа...");
+		
+		const response = await axios.get(`/app/orders/${order_id}/sketch-dxf`, {
+			responseType: "blob",
+		});
+
+		const fileBlob = new Blob([response.data], { type: "application/dxf" });
+		const fileURL = URL.createObjectURL(fileBlob);
+
+		const link = document.createElement("a");
+		link.href = fileURL;
+		link.setAttribute("download", `sketch_${order_id}.dxf`);
+		document.body.appendChild(link);
+		link.click();
+
+		document.body.removeChild(link);
+		URL.revokeObjectURL(fileURL);
+		toast.success("DXF чертеж успешно загружен.");
+	} catch (error) {
+		console.error("Failed to download sketch DXF:", error);
+		if (axios.isAxiosError(error) && error.response?.status === 403) {
+			toast.error("У вас нет доступа для скачивания DXF.");
+		} else {
+			toast.error("Ошибка при загрузке DXF чертежа.");
+		}
+	}
 }
 
 const createContract = (order_id: number) => {
@@ -259,6 +315,15 @@ const downloadBill = (order_id: number) => {
 											<DraftingCompassIcon class="h-4 w-4" />
 											<span>Чертеж</span>
 										</DropdownMenuItem>
+										<DropdownMenuItem @click="downloadSketchPDF(order.id)">
+											<FileType2Icon class="h-4 w-4" />
+											<span>Чертеж PDF</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem @click="downloadSketchDXF(order.id)">
+											<FileAxis3DIcon class="h-4 w-4" />
+											<span>Чертеж DXF</span>
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
 										<DropdownMenuItem @click="downloadListPDF(order.id)">
 											<ScrollTextIcon class="h-4 w-4" />
 											<span>Спецификация</span>
@@ -267,7 +332,7 @@ const downloadBill = (order_id: number) => {
 											<ReceiptRussianRubleIcon class="h-4 w-4" />
 											<span>Счет PDF</span>
 										</DropdownMenuItem>
-										<DropdownMenuSeparator />
+										<DropdownMenuSeparator v-if="canDeleteOrder(order)" />
 										<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
 											<TrashIcon class="h-4 w-4" />
 											<span>Удалить</span>
@@ -338,6 +403,15 @@ const downloadBill = (order_id: number) => {
 													<DraftingCompassIcon class="h-4 w-4" />
 													<span>Чертеж</span>
 												</DropdownMenuItem>
+												<DropdownMenuItem @click="downloadSketchPDF(order.id)">
+													<FileType2Icon class="h-4 w-4" />
+													<span>Чертеж PDF</span>
+												</DropdownMenuItem>
+												<DropdownMenuItem @click="downloadSketchDXF(order.id)">
+													<FileAxis3DIcon class="h-4 w-4" />
+													<span>Чертеж DXF</span>
+												</DropdownMenuItem>
+												<DropdownMenuSeparator />
 												<DropdownMenuItem @click="downloadListPDF(order.id)">
 													<ScrollTextIcon class="h-4 w-4" />
 													<span>Спецификация</span>
@@ -346,7 +420,7 @@ const downloadBill = (order_id: number) => {
 													<ReceiptRussianRubleIcon class="h-4 w-4" />
 													<span>Счет PDF</span>
 												</DropdownMenuItem>
-												<DropdownMenuSeparator />
+												<DropdownMenuSeparator v-if="canDeleteOrder(order)" />
 												<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
 													<TrashIcon class="h-4 w-4" />
 													<span>Удалить</span>

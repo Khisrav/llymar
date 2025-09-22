@@ -22,6 +22,7 @@ class OrderOpening extends Model
         'f',
         'g',
         'i',
+        'mp',
         'door_handle_item_id',
     ];
     

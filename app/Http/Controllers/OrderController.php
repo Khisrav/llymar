@@ -347,10 +347,10 @@ class OrderController extends Controller
 
         $openings = $order->orderOpenings;
 
+        $allDoorHandles = Item::where('category_id', 29)->get();
         $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
             return $orderItem->item->category_id == 29;
         });
-        Log::info($doorHandleOrderItems);
 
         // For each door handle order item, repeat the item according to its quantity
         $orderDoorHandles = [];
@@ -359,12 +359,12 @@ class OrderController extends Controller
                 $orderDoorHandles[] = $orderItem->item;
             }
         }
-        Log::info($orderDoorHandles);
-
+        
         return Inertia::render('App/Order/Sketcher', [
             'order' => $order,
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
+            'all_door_handles' => $allDoorHandles,
         ]);
     }
 
@@ -613,6 +613,50 @@ class OrderController extends Controller
                 'error' => 'Failed to download bill: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Generate and download a sketch PDF for an order using its stored data.
+     */
+    public function downloadSketchPDF(int $order_id)
+    {
+        $user = auth()->user();
+        
+        // Check if user owns this order and has sketcher access
+        $order = Order::with(['orderOpenings'])->findOrFail($order_id);
+        
+        if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Convert stored openings to the format expected by the PDF generator
+        $openings = $order->orderOpenings->map(function ($opening) {
+            return [
+                'id' => $opening->id,
+                'type' => $opening->type,
+                'doors' => $opening->doors,
+                'width' => $opening->width,
+                'height' => $opening->height,
+                'a' => $opening->a,
+                'b' => $opening->b,
+                'd' => $opening->d,
+                'e' => $opening->e,
+                'f' => $opening->f,
+                'g' => $opening->g,
+                'i' => $opening->i,
+                'mp' => $opening->mp ?? 0,
+                'door_handle_item_id' => $opening->door_handle_item_id,
+            ];
+        })->toArray();
+
+        $pdf = Pdf::loadView('orders.sketch_pdf', [
+                'openings' => $openings,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
+
+        $pdfName = "sketch_" . $order_id . "_" . date('Y-m-d') . ".pdf";
+        return $pdf->download($pdfName);
     }
 
 }

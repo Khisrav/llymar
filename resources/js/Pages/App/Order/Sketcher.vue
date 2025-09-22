@@ -26,6 +26,7 @@ const pageData = usePage().props;
 const order = pageData.order as Order;
 const openings = pageData.openings as Opening[];
 const doorHandles = pageData.door_handles as ItemWithProperties[];
+const allDoorHandles = pageData.all_door_handles as ItemWithProperties[];
 const can_access_dxf = pageData.can_access_dxf as boolean;
 
 // Initialize stores

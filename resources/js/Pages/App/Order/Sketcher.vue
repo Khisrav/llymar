@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { Head, usePage, useForm } from "@inertiajs/vue3";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
 import { Slider } from "../../../Components/ui/slider";
 import { Separator } from "../../../Components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "../../../Components/ui/radio-group";
 import { Label } from "../../../Components/ui/label";
 import { Button } from "../../../Components/ui/button";
-import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, PlusIcon, TrashIcon } from "lucide-vue-next";
+import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SlidersHorizontalIcon, HashIcon } from "lucide-vue-next";
 import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { useSketcherStore } from "../../../Stores/sketcherStore";
 import { toast } from "vue-sonner";
 import { Toaster } from "../../../Components/ui/sonner";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup } from "../../../Components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "../../../Components/ui/select";
 import DoorHandleSVG from "../../../Components/Sketcher/DoorHandleSVG.vue";
 import { Input } from "../../../Components/ui/input";
 
@@ -29,16 +29,32 @@ const doorHandles = pageData.door_handles as ItemWithProperties[];
 const allDoorHandles = pageData.all_door_handles as ItemWithProperties[];
 const can_access_dxf = pageData.can_access_dxf as boolean;
 
+const canEditOrderSketch  = order.status != 'sketch'
+
+// Store initial dimensions for range calculation
+const initialDimensions = ref<Record<number, { width: number; height: number }>>({});
+
 // Initialize stores
 const openingStore = useOpeningStore();
 const sketcherStore = useSketcherStore();
 
 onMounted(() => {
+	// Store initial dimensions for range calculation
+	openings.forEach(opening => {
+		if (opening.id) {
+			initialDimensions.value[opening.id] = {
+				width: opening.width || 0,
+				height: opening.height || 0
+			};
+		}
+	});
+
 	// Initialize the sketcher store with page data
 	sketcherStore.initializeStore({
 		order,
 		openings,
 		doorHandles,
+		allDoorHandles,
 		canAccessDxf: can_access_dxf
 	});
 });
@@ -66,6 +82,8 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 		});
 	});
 };
+
+// Methods are no longer needed since we're using v-model directly
 </script>
 
 <template>
@@ -76,7 +94,19 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 	<div class="container p-0 md:p-4">
 		<div class="p-4 md:p-8 md:mt-8 mb-8 md:border rounded-2xl bg-background">
-			<h2 class="text-3xl font-semibold mb-6">Чертеж</h2>
+			<div class="flex gap-4 items-center justify-between">
+				<h2 class="text-3xl font-semibold">Чертеж</h2>
+				<Button 
+					variant="outline" 
+					size="sm" 
+					@click="sketcherStore.toggleInputMode()" 
+					class="flex items-center gap-2"
+				>
+					<SlidersHorizontalIcon v-if="sketcherStore.useInputFields" class="h-4 w-4" />
+					<HashIcon v-else class="h-4 w-4" />
+					{{ sketcherStore.useInputFields ? 'Слайдеры' : 'Ввод' }}
+				</Button>
+			</div>
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 mt-4">
 				<div class="col-span-9">
 
@@ -104,35 +134,58 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											{{ openingStore.openingTypes[opening.type] }}
 										</Label>
 									</div>
-									<div class="text-sm text-muted-foreground flex justify-between items-center italic">
-										<span>
-											{{ opening.width }}мм
-											<span class="text-xs">✕</span>
-											{{ opening.height }}мм
-										</span>
-										<span>{{ opening.doors }} ств.</span>
+									<div class="text-sm text-muted-foreground space-y-2">
+										<div class="grid grid-cols-2 gap-2">
+											<div class="flex flex-col">
+												<label class="text-xs text-muted-foreground mb-1">Ширина (мм)</label>
+												<Input
+													:disabled="!canEditOrderSketch"
+													type="number"
+													:min="(initialDimensions[opening.id || 0]?.width || opening.width || 0) - 100"
+													:max="(initialDimensions[opening.id || 0]?.width || opening.width || 0) + 100"
+													:model-value="opening.width"
+													@update:model-value="(value) => sketcherStore.updateOpeningDimension(opening.id || 0, 'width', Number(value))"
+													class="h-7 text-xs"
+												/>
+											</div>
+											<div class="flex flex-col">
+												<label class="text-xs text-muted-foreground mb-1">Высота (мм)</label>
+												<Input
+													:disabled="!canEditOrderSketch"
+													type="number"
+													:min="(initialDimensions[opening.id || 0]?.height || opening.height || 0) - 100"
+													:max="(initialDimensions[opening.id || 0]?.height || opening.height || 0) + 100"
+													:model-value="opening.height"
+													@update:model-value="(value) => sketcherStore.updateOpeningDimension(opening.id || 0, 'height', Number(value))"
+													class="h-7 text-xs"
+												/>
+											</div>
+										</div>
+										<div class="flex justify-between items-center italic text-xs">
+											<span>{{ opening.doors }} ств.</span>
+										</div>
 									</div>
 								</div>
 
 								<div class="mt-2 flex items-center justify-between gap-2">
 									<div class="flex-1 overflow-hidden">
 										<Select
+											:disabled="!canEditOrderSketch"
 											:model-value="sketcherStore.selectedDoorHandles[opening.id || 0] ? String(sketcherStore.selectedDoorHandles[opening.id || 0]) : ''"
 											@update:model-value="(value) => opening.id && sketcherStore.selectDoorHandle(opening.id, Number(value))"
 										>
 											<SelectTrigger>
-												<SelectValue :placeholder="sketcherStore.selectedDoorHandles[opening.id || 0] ? sketcherStore.doorHandles.find(dh => dh.id === sketcherStore.selectedDoorHandles[opening.id || 0])?.name : 'Выберите ручку'" />
+												<SelectValue :placeholder="sketcherStore.selectedDoorHandles[opening.id || 0] ? sketcherStore.allDoorHandles.find(dh => dh.id === sketcherStore.selectedDoorHandles[opening.id || 0])?.name : 'Выберите ручку'" />
 											</SelectTrigger>
 
 											<SelectContent class="max-w-xs sm:max-w-max">
 												<SelectGroup>
-													<!-- <SelectLabel>Все ручки</SelectLabel> -->
 													<SelectItem v-for="doorHandle in sketcherStore.doorHandles" :key="doorHandle.id" :value="String(doorHandle.id)">{{ doorHandle.name }}</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>
 									</div>
-									<Button variant="outline" size="icon" @click="sketcherStore.clearSelectedDoorHandles(opening.id)">
+									<Button v-if="canEditOrderSketch" variant="outline" size="icon" @click="sketcherStore.clearSelectedDoorHandles(opening.id)">
 										<EraserIcon class="h-4 w-4" />
 									</Button>
 								</div>
@@ -182,23 +235,27 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 				<div class="col-span-9 md:col-span-3 space-y-4">
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between gap-4">
-							<h3 class="text-xl text-muted-foreground font-semibold">Свои ручки</h3>
-							<Button variant="outline" size="icon" @click="sketcherStore.addCustomDoorHandle">
-								<PlusIcon class="h-4 w-4" />
-							</Button>
+							<h3 class="text-xl text-muted-foreground font-semibold">Добавить ручку</h3>
 						</div>
-						<template v-for="doorHandle in sketcherStore.doorHandles" :key="doorHandle.id">
-							<div v-if="(doorHandle.id ?? 0) < 0" class="flex flex-col gap-1.5 mt-2">
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex-1 overflow-hidden">
-										<Input v-model="doorHandle.name" class="h-9 text-sm" />
-									</div>
-									<Button variant="outline" size="icon" @click="sketcherStore.removeCustomDoorHandle(doorHandle.id ?? 0)">
-										<TrashIcon class="h-4 w-4" />
-									</Button>
-								</div>
+						<div class="mt-4">
+							<Select v-if="sketcherStore.availableDoorHandles.length > 0" @update:model-value="(value) => sketcherStore.addDoorHandleToOpening(Number(value))">
+								<SelectTrigger>
+									<SelectValue placeholder="Выберите ручку для добавления к проему" />
+								</SelectTrigger>
+								<SelectContent class="max-w-xs sm:max-w-max">
+									<SelectGroup>
+										<SelectLabel>Доступные ручки</SelectLabel>
+										<SelectItem v-for="doorHandle in sketcherStore.availableDoorHandles" :key="doorHandle.id" :value="String(doorHandle.id)">
+											{{ doorHandle.name }}
+										</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+							<div v-else class="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+								Все доступные ручки уже добавлены к заказу
 							</div>
-						</template>
+							<p class="text-xs text-muted-foreground mt-2">Выберите ручку из списка, чтобы добавить её к выбранному проему</p>
+						</div>
 					</div>
 
 					<div class="p-4 rounded-lg border">
@@ -208,11 +265,15 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
 							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
-								<div class="">
+								<div :class="{'opacity-50': !canEditOrderSketch}">
 									<span class="font-medium">{{ key }}: </span>
 									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
 								</div>
+								
+								<!-- Slider Mode -->
 								<Slider
+									v-if="!sketcherStore.useInputFields"
+									:disabled="!canEditOrderSketch"
 									v-model="sketcherStore.currentSketch[key]"
 									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
 									:min="sketcherStore.sketch_constraints[key]?.start || 0"
@@ -220,6 +281,23 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
 									class="my-1"
 								/>
+								
+								<!-- Input Mode -->
+								<div v-else class="flex items-center gap-2">
+									<Input
+										:disabled="!canEditOrderSketch"
+										type="number"
+										:min="sketcherStore.sketch_constraints[key]?.start || 0"
+										:max="sketcherStore.sketch_constraints[key]?.end || 100"
+										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
+										:model-value="parseInt(String(value[0]))"
+										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, Number(val))"
+										class="h-8 text-sm"
+									/>
+									<span class="text-xs text-muted-foreground whitespace-nowrap">
+										{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
+									</span>
+								</div>
 							</div>
 						</template>
 
@@ -231,29 +309,52 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div
 									:class="{
-										'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd'),
+										'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,
 									}"
 								>
 									<span class="font-medium">{{ key }}: </span>
 									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
 								</div>
+								
+								<!-- Slider Mode -->
 								<Slider
+									v-if="!sketcherStore.useInputFields"
 									v-model="sketcherStore.currentSketch[key]"
 									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
 									:min="sketcherStore.sketch_constraints[key]?.start || 0"
 									:max="sketcherStore.sketch_constraints[key]?.end || 100"
 									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
-									:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd')"
+									:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch"
 									class="my-1"
 								/>
+								
+								<!-- Input Mode -->
+								<div v-else class="flex items-center gap-2">
+									<Input
+										type="number"
+										:min="sketcherStore.sketch_constraints[key]?.start || 0"
+										:max="sketcherStore.sketch_constraints[key]?.end || 100"
+										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
+										:model-value="parseInt(String(value[0]))"
+										:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch"
+										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, Number(val))"
+										class="h-8 text-sm"
+										:class="{
+											'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,
+										}"
+									/>
+									<span class="text-xs text-muted-foreground whitespace-nowrap">
+										{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
+									</span>
+								</div>
 							</div>
 						</template>
 
 						<div class="flex flex-col gap-2">
 							<!-- <Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button> -->
 							<div class="flex flex-row gap-2 justify-between items-center">
-								<Button type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-								<Button v-if="sketcherStore.canAccessDxf" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+								<Button v-if="canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
+								<Button v-if="sketcherStore.canAccessDxf && canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
 								<!-- доступ к DXF -->
 								<!-- <Button v-else type="button" class="w-full" variant="outline" @click="toast('Нет доступа к DXF')"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button> -->
 							</div>

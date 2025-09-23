@@ -347,7 +347,7 @@ class OrderController extends Controller
 
         $openings = $order->orderOpenings;
 
-        $allDoorHandles = Item::where('category_id', 29)->get();
+        $allDoorHandles = Item::with('itemProperties')->where('category_id', 29)->get();
         $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
             return $orderItem->item->category_id == 29;
         });
@@ -365,6 +365,7 @@ class OrderController extends Controller
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
             'all_door_handles' => $allDoorHandles,
+            'can_access_dxf' => $user->can('access app dxf'),
         ]);
     }
 

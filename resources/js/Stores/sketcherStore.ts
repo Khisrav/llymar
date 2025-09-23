@@ -20,9 +20,10 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	const order = ref<Order>({} as Order)
 	const openings = ref<Opening[]>([])
 	const doorHandles = ref<ItemWithProperties[]>([])
+	const allDoorHandles = ref<ItemWithProperties[]>([])
 	const canAccessDxf = ref(false)
 	const selectedOpeningID = ref<number>(0)
-	const customHandleIdCounter = ref(1)
+	const useInputFields = ref(false)
 	
 	// Sketch constraints
 	const sketch_constraints: Record<string, Constraint> = {
@@ -63,17 +64,26 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				flatSketch[key] = updatedSketch[key][0];
 			}
 			
-			// For custom handles (negative IDs), save null to database
-			// For regular handles, save the actual ID
+			// Save the actual door handle ID to database
 			const selectedHandleId = selectedDoorHandles.value[opening.id as number];
-			const door_handle_item_id = selectedHandleId && selectedHandleId > 0 ? selectedHandleId : null;
+			const door_handle_item_id = selectedHandleId || null;
 			
 			return {
 				...opening,
 				...flatSketch,
 				door_handle_item_id: door_handle_item_id,
+				// Include updated dimensions
+				width: opening.width,
+				height: opening.height,
 			};
 		});
+	})
+
+	const availableDoorHandles = computed(() => {
+		// Return all door handles that are not already in the order's doorHandles
+		return allDoorHandles.value.filter(handle => 
+			!doorHandles.value.some(orderHandle => orderHandle.id === handle.id)
+		);
 	})
 
 	// Actions
@@ -81,11 +91,14 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		order: Order,
 		openings: Opening[],
 		doorHandles: ItemWithProperties[],
+		allDoorHandles: ItemWithProperties[],
 		canAccessDxf: boolean
 	}) => {
 		order.value = initialData.order
-		openings.value = initialData.openings
+		// Make sure openings are reactive
+		openings.value = [...initialData.openings]
 		doorHandles.value = initialData.doorHandles
+		allDoorHandles.value = initialData.allDoorHandles
 		canAccessDxf.value = initialData.canAccessDxf
 
 		// Initialize sketch variables and selected door handles
@@ -108,9 +121,6 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			selectedOpeningID.value = openings.value[0].id as number;
 		}
 
-		// Load custom door handles from localStorage
-		loadCustomDoorHandles();
-
 		// Apply door handle properties to sketch_vars for each opening
 		openings.value.forEach((opening) => {
 			const handleId = selectedDoorHandles.value[opening.id as number] || opening.door_handle_item_id;
@@ -132,48 +142,9 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		});
 	}
 
-	const loadCustomDoorHandles = () => {
-		try {
-			const saved = localStorage.getItem("customDoorHandles");
-			if (saved) {
-				const customHandles = JSON.parse(saved);
-				// Add custom handles to the doorHandles array
-				doorHandles.value.push(...customHandles);
-			}
-			
-			// Load and increment the counter to ensure uniqueness
-			const savedCounter = localStorage.getItem("customHandleIdCounter");
-			if (savedCounter) {
-				customHandleIdCounter.value = parseInt(savedCounter);
-			}
-		} catch (error) {
-			console.error("Error loading custom door handles:", error);
-		}
-	}
-
-	// Clear localStorage data related to custom handles only
-	const clearStoredData = () => {
-		try {
-			localStorage.removeItem("customDoorHandles");
-			localStorage.removeItem("customHandleIdCounter");
-		} catch (error) {
-			console.error("Error clearing stored data:", error);
-		}
-	}
-
-	const saveCustomDoorHandles = () => {
-		try {
-			const customHandles = doorHandles.value.filter((handle) => (handle.id ?? 0) < 0);
-			localStorage.setItem("customDoorHandles", JSON.stringify(customHandles));
-			// Save the counter as well
-			localStorage.setItem("customHandleIdCounter", customHandleIdCounter.value.toString());
-		} catch (error) {
-			console.error("Error saving custom door handles:", error);
-		}
-	}
-
 	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {
-		const item = doorHandles.value.find((dh) => dh.id === item_id);
+		// Look for the handle in all door handles (from database)
+		const item = allDoorHandles.value.find((dh) => dh.id === item_id);
 
 		if (!item) {
 			throw new Error("Item not found");
@@ -255,11 +226,11 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		try {
 			const handleProps = getHandleProperties(doorHandleId);
 
-			// If item properties are 0, use opening's properties
-			sketch_vars.value[openingId].d = [handleProps.d || sketch_vars.value[openingId].d[0]];
-			sketch_vars.value[openingId].g = [handleProps.g || sketch_vars.value[openingId].g[0]];
-			sketch_vars.value[openingId].i = [handleProps.i || sketch_vars.value[openingId].i[0]];
-			sketch_vars.value[openingId].mp = [handleProps.mp || sketch_vars.value[openingId].mp[0]];
+			// Update sketch vars with handle properties
+			sketch_vars.value[openingId].d = [handleProps.d];
+			sketch_vars.value[openingId].g = [handleProps.g];
+			sketch_vars.value[openingId].i = [handleProps.i];
+			sketch_vars.value[openingId].mp = [handleProps.mp];
 
 			console.log(sketch_vars.value[openingId]);
 		} catch (error) {
@@ -275,75 +246,41 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		}
 	}
 
-	const addCustomDoorHandle = () => {
-		const uniqueId = -(Date.now() + customHandleIdCounter.value);
-		customHandleIdCounter.value++;
-		
-		const newHandle = {
-			id: uniqueId,
-			name: "Своя ручка",
-			img: "",
-			purchase_price: 0,
-			discount: 0,
-			retail_price: 0,
-			unit: "",
-			category_id: 0,
-			item_properties: [
-				{
-					id: -(Date.now() + 1000 + customHandleIdCounter.value),
-					item_id: uniqueId,
-					name: "d",
-					value: "8",
-					created_at: null,
-					updated_at: null,
-				},
-				{
-					id: -(Date.now() + 1001 + customHandleIdCounter.value),
-					item_id: uniqueId,
-					name: "g",
-					value: "0",
-					created_at: null,
-					updated_at: null,
-				},
-				{
-					id: -(Date.now() + 1002 + customHandleIdCounter.value),
-					item_id: uniqueId,
-					name: "i",
-					value: "0",
-					created_at: null,
-					updated_at: null,
-				},
-				{
-					id: -(Date.now() + 1003 + customHandleIdCounter.value),
-					item_id: uniqueId,
-					name: "MP",
-					value: "100",
-					created_at: null,
-					updated_at: null,
-				},
-			],
-		};
-
-		doorHandles.value.push(newHandle);
-		saveCustomDoorHandles();
-		toast.success("Своя ручка добавлена");
+	const toggleInputMode = () => {
+		useInputFields.value = !useInputFields.value;
 	}
 
-	const removeCustomDoorHandle = (handleId: number) => {
-		// Remove from doorHandles array
-		const index = doorHandles.value.findIndex((handle) => handle.id === handleId);
-		if (index > -1) {
-			doorHandles.value.splice(index, 1);
+	const updateSketchVar = (openingId: number, key: string, value: number) => {
+		if (!sketch_vars.value[openingId]) {
+			sketch_vars.value[openingId] = {};
+		}
+		sketch_vars.value[openingId][key] = [value];
+	}
 
-			// Remove from selected handles if it was selected
-			Object.keys(selectedDoorHandles.value).forEach((openingId) => {
-				if (selectedDoorHandles.value[parseInt(openingId)] === handleId) {
-					delete selectedDoorHandles.value[parseInt(openingId)];
+	const updateOpeningDimension = (openingId: number, dimension: 'width' | 'height', value: number) => {
+		const opening = openings.value.find(o => o.id === openingId);
+		if (opening) {
+			opening[dimension] = value;
+		}
+	}
+
+	const addDoorHandleToOpening = (doorHandleId: number) => {
+		const currentOpeningId = selectedOpeningID.value;
+		if (currentOpeningId) {
+			// Find the door handle in allDoorHandles
+			const doorHandle = allDoorHandles.value.find(dh => dh.id === doorHandleId);
+			
+			if (doorHandle) {
+				// Add to doorHandles if not already present
+				const existingHandle = doorHandles.value.find(dh => dh.id === doorHandleId);
+				if (!existingHandle) {
+					doorHandles.value.push(doorHandle);
 				}
-			});
-
-			// Save custom handles to localStorage
-			saveCustomDoorHandles();
+				
+				// Select the handle for the current opening
+				selectDoorHandle(currentOpeningId, doorHandleId);
+				toast.success("Ручка добавлена к проему");
+			}
 		}
 	}
 
@@ -450,61 +387,15 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		}
 	}
 
-	// Watchers
-	watch(
-		() => doorHandles.value.filter((handle) => (handle.id ?? 0) < 0),
-		() => {
-			saveCustomDoorHandles();
-		},
-		{ deep: true }
-	);
-
-	watch(
-		() => {
-			const selectedHandleId = selectedDoorHandles.value[selectedOpeningID.value];
-			if (selectedHandleId && selectedHandleId < 0) {
-				return {
-					handleId: selectedHandleId,
-					properties: { ...sketch_vars.value[selectedOpeningID.value] }
-				};
-			}
-			return null;
-		},
-		(newValue) => {
-			if (newValue) {
-				const handleIndex = doorHandles.value.findIndex(h => h.id === newValue.handleId);
-				if (handleIndex !== -1) {
-					const updatedHandle = {
-						...doorHandles.value[handleIndex],
-						item_properties: doorHandles.value[handleIndex].item_properties.map(prop => {
-							// Map property names: MP in database -> mp in sketch_vars
-							const sketchVarName = prop.name === "MP" ? "mp" : prop.name;
-							
-							if (newValue.properties[sketchVarName]) {
-								return {
-									...prop,
-									value: newValue.properties[sketchVarName][0].toString()
-								};
-							}
-							return { ...prop };
-						})
-					};
-					
-					doorHandles.value[handleIndex] = updatedHandle;
-					saveCustomDoorHandles();
-				}
-			}
-		},
-		{ deep: true }
-	)
-
 	return {
 		// State
 		order,
 		openings,
 		doorHandles,
+		allDoorHandles,
 		canAccessDxf,
 		selectedOpeningID,
+		useInputFields,
 		sketch_constraints,
 		sketch_vars,
 		selectedDoorHandles,
@@ -514,18 +405,18 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		currentOpening,
 		isSliderDisabled,
 		combinedOpenings,
+		availableDoorHandles,
 		
 		// Actions
 		initializeStore,
-		loadCustomDoorHandles,
-		saveCustomDoorHandles,
-		clearStoredData,
 		getHandleProperties,
 		getOpeningSketchDimensions,
 		selectDoorHandle,
 		clearSelectedDoorHandles,
-		addCustomDoorHandle,
-		removeCustomDoorHandle,
+		toggleInputMode,
+		updateSketchVar,
+		updateOpeningDimension,
+		addDoorHandleToOpening,
 		downloadDXF,
 		downloadPDF,
 		

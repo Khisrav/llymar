@@ -263,7 +263,9 @@ const downloadBill = (order_id: number) => {
 						<div class="flex items-start justify-between mb-4">
 							<div class="flex items-center gap-2">
 								<span class="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">№</span>
-								<span class="font-semibold text-lg">{{ order.order_number || order.id }}</span>
+								<Link :href="`/app/orders/${order.id}`" class="font-semibold text-lg hover:text-primary transition-colors border-b-2 border-primary border-dotted">
+									{{ order.order_number || order.id }}
+								</Link>
 							</div>
 							<StatusBadge :status="order.status" />
 						</div>
@@ -365,7 +367,11 @@ const downloadBill = (order_id: number) => {
 									:key="order.id" 
 									class="group hover:bg-muted/20 transition-colors duration-150"
 								>
-									<TableCell class="font-mono font-medium">{{ order.order_number || order.id }}</TableCell>
+									<TableCell class="font-mono font-medium">
+										<Link :href="`/app/orders/${order.id}`" class="hover:text-primary transition-colors border-b-2 border-primary border-dotted">
+											{{ order.order_number || order.id }}
+										</Link>
+									</TableCell>
 									<TableCell class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</TableCell>
 									<TableCell>
 										<div class="space-y-1">

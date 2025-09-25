@@ -96,13 +96,32 @@ export interface Order {
     comment?: string | null;
     total_price: number;
     customer_name: string;
+    customer_email?: string | null;
     customer_phone: string;
     customer_address: string;
     order_number?: string | null;
     ral_code?: string | null;
+    city?: string | null;
+    order_type?: string | null;
+    logistics_company?: string | null;
+    readiness_date?: string | null;
     created_at?: string | null;
     update_at?: string | null;
     contracts?: Contract[];
+    orderOpenings?: Opening[];
+    orderItems?: OrderItem[];
+    // Laravel sends snake_case by default
+    order_openings?: Opening[];
+    order_items?: OrderItem[];
+}
+
+export interface OrderItem {
+    id: number;
+    order_id: number;
+    item_id: number;
+    quantity: number;
+    checked?: boolean;
+    item?: Item;
 }
 
 export interface Contract {

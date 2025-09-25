@@ -124,6 +124,66 @@ class OrderController extends Controller
             'success' => true
         ]);
     }
+
+    /**
+     * Display the specified order.
+     */
+    public function show(Order $order)
+    {
+        $user = Auth::user();
+        
+        // Check if user owns this order or is admin
+        if ($order->user_id !== $user->id && !$user->hasRole('Super-Admin')) {
+            return redirect()->route('app.history')->with('error', 'Unauthorized access to order');
+        }
+
+        // Fetch order with related data using with()
+        $orderWithRelations = Order::with(['orderOpenings', 'orderItems.item'])
+            ->findOrFail($order->id);
+
+        return Inertia::render('App/Order/View', [
+            'order' => $orderWithRelations,
+            'can_access_sketcher' => $user->can('access app sketcher'),
+        ]);
+    }
+
+    /**
+     * Update the specified order.
+     */
+    public function update(Request $request, Order $order)
+    {
+        $user = Auth::user();
+        
+        // Check if user owns this order
+        if ($order->user_id !== $user->id && !$user->hasRole('Super-Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Only allow updates if order status is 'created'
+        if ($order->status !== 'created') {
+            return response()->json(['error' => 'Order cannot be modified'], 422);
+        }
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:255',
+            'customer_address' => 'nullable|string|max:1000',
+            'city' => 'nullable|string|max:255',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $order->update($validated);
+
+        // Return updated order data for frontend
+        $freshOrder = Order::with(['orderOpenings', 'orderItems.item'])
+            ->findOrFail($order->id);
+            
+        return Inertia::render('App/Order/View', [
+            'order' => $freshOrder,
+            'can_access_sketcher' => $user->can('access app sketcher'),
+        ]);
+    }
     
     /**
      * Generate and download PDF for a saved order.
@@ -380,7 +440,7 @@ class OrderController extends Controller
             // 'openings.*.id' => 'required|integer|exists:order_openings,id',
         ]);
             
-        $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'door_handle_item_id'];
+        $allowedKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'mp', 'width', 'height', 'door_handle_item_id'];
     
         foreach ($validated['openings'] as $openingData) {
             $orderOpening = OrderOpening::findOrFail($openingData['id']);

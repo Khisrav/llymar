@@ -7,7 +7,7 @@ import { Separator } from "../../../Components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "../../../Components/ui/radio-group";
 import { Label } from "../../../Components/ui/label";
 import { Button } from "../../../Components/ui/button";
-import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SlidersHorizontalIcon, HashIcon } from "lucide-vue-next";
+import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SlidersHorizontalIcon, HashIcon, SaveIcon } from "lucide-vue-next";
 import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { useSketcherStore } from "../../../Stores/sketcherStore";
@@ -351,7 +351,9 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</template>
 
 						<div class="flex flex-col gap-2">
-							<!-- <Button type="button" class="w-full" size="icon" @click="saveAndClose"> <SaveIcon class="mr-2 h-4 w-4" /> Сохранить </Button> -->
+							<Button v-if="canEditOrderSketch" type="button" class="w-full" @click="sketcherStore.saveAndClose"> 
+								<SaveIcon class="mr-2 h-4 w-4" /> Сохранить 
+							</Button>
 							<div class="flex flex-row gap-2 justify-between items-center">
 								<Button v-if="canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
 								<Button v-if="sketcherStore.canAccessDxf && canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>

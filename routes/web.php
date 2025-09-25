@@ -87,6 +87,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
     Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');
+    Route::get('/app/orders/{order}', [OrderController::class, 'show'])->name('app.orders.show');
+    Route::put('/app/orders/{order}', [OrderController::class, 'update'])->name('app.orders.update');
     
     Route::get('/app/commercial-offers', [CommercialOfferController::class, 'index'])->name('app.commercial_offers');
     Route::delete('/app/commercial-offers/{commercialOffer}', [CommercialOfferController::class, 'destroy'])->name('app.commercial_offers.delete');

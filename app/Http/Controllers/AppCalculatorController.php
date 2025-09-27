@@ -24,6 +24,7 @@ class AppCalculatorController extends Controller
             'services' => $this->getServices(),
             'user' => $user,
             'categories' => Category::all()->toArray(),
+            'ghost_handles' => $this->getGhostHandles(),
         ]);
     }
     
@@ -57,5 +58,9 @@ class AppCalculatorController extends Controller
         }
         
         return [];
+    }
+    
+    public static function getGhostHandles() {
+        return Item::where('category_id', 31)->get()->toArray() ?? [];
     }
 }

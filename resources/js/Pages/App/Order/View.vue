@@ -88,6 +88,11 @@ const showItems = ref(false);
 const canEdit = computed(() => order.status === 'created');
 const canAccess = computed(() => order.user_id === pageData.auth?.user?.id || pageData.auth?.user?.roles?.some((role: any) => role.name === 'Super-Admin'));
 
+const canDeleteOrder = ref(order.status == 'created')
+const canDownloadSketchPDF_DXF = ref(order.status != 'created')
+const canDownloadListPDF = ref(true) //i.e. always
+const canDownloadBill = ref(order.status == 'created')
+
 const formatDate = (dateString: string | null) => {
 	if (!dateString) return '—';
 	return new Date(dateString).toLocaleDateString("ru-RU", {
@@ -244,22 +249,22 @@ const handleImageError = (event: Event) => {
 									<span>Чертеж</span>
 								</DropdownMenuItem>
 								
-								<DropdownMenuItem @click="downloadSpecification">
+								<DropdownMenuItem v-if="canDownloadListPDF" @click="downloadSpecification">
 									<ScrollTextIcon class="h-4 w-4" />
 									<span>Спецификация</span>
 								</DropdownMenuItem>
 								
-								<DropdownMenuItem @click="downloadBill">
+								<DropdownMenuItem v-if="canDownloadBill" @click="downloadBill">
 									<ReceiptRussianRubleIcon class="h-4 w-4" />
 									<span>Счет PDF</span>
 								</DropdownMenuItem>
 								
-								<DropdownMenuItem @click="downloadSketchPDF">
+								<DropdownMenuItem v-if="canDownloadSketchPDF_DXF" @click="downloadSketchPDF">
 									<FileType2Icon class="h-4 w-4" />
 									<span>Чертеж PDF</span>
 								</DropdownMenuItem>
 								
-								<DropdownMenuItem @click="downloadSketchDXF">
+								<DropdownMenuItem v-if="canDownloadSketchPDF_DXF" @click="downloadSketchDXF">
 									<FileAxis3DIcon class="h-4 w-4" />
 									<span>Чертеж DXF</span>
 								</DropdownMenuItem>
@@ -268,7 +273,7 @@ const handleImageError = (event: Event) => {
 								
 								<DropdownMenuItem 
 									@click="deleteOrder" 
-									:disabled="order.status !== 'created'"
+									:disabled="!canDeleteOrder"
 									class="text-destructive focus:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
 								>
 									<TrashIcon class="h-4 w-4" />

@@ -25,6 +25,7 @@ import {
 import { Separator } from "../ui/separator";
 import ItemImageModal from '../ItemImageModal.vue';
 import { Item } from '../../lib/types';
+import QuantitySelector from "../QuantitySelector.vue";
 
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find((glass) => glass.id === itemsStore.selectedGlassID) || null);
@@ -85,6 +86,28 @@ const getCategoryName = (categoryId: number | string) => {
 	const id = typeof categoryId === 'string' ? parseInt(categoryId) : categoryId
 	const category = itemsStore.categories.find(cat => cat.id === id)
 	return category ? category.name : `Категория ${id}`
+}
+
+const availableGhostHandles = computed(() => {
+	return itemsStore.ghost_handles.filter(handle => 
+		!itemsStore.selectedGhostHandlesID.includes(handle.id || 0)
+	)
+})
+
+const selectedGhostHandles = computed(() => {
+	return itemsStore.ghost_handles.filter(handle => 
+		itemsStore.selectedGhostHandlesID.includes(handle.id || 0)
+	)
+})
+
+const selectedHandleToAdd = ref<string>('')
+
+const addSelectedHandle = () => {
+	if (selectedHandleToAdd.value) {
+		const handleId = parseInt(selectedHandleToAdd.value)
+		itemsStore.addGhostHandle(handleId)
+		selectedHandleToAdd.value = '' // Reset selection
+	}
 }
 </script>
 
@@ -154,6 +177,73 @@ const getCategoryName = (categoryId: number | string) => {
 							@click="openImageModal(selectedGlass)"
 							:alt="selectedGlass.name"
 						/>
+					</div>
+				</div>
+					
+				<div class="flex flex-col gap-2 mt-4">
+					<div class="flex justify-between items-center">
+						<span class="font-semibold">Фантомные ручки</span>
+						<span class="text-xs text-muted-foreground">(не учитываются в цене)</span>
+					</div>
+					
+					<!-- Add handle selector -->
+					<div v-if="availableGhostHandles.length > 0" class="flex justify-between items-center gap-2">
+						<div class="flex-1 overflow-hidden">
+							<Select :model-value="selectedHandleToAdd" @update:modelValue="(value) => selectedHandleToAdd = value || ''">
+								<SelectTrigger class="h-9 text-sm shadow-sm">
+									<SelectValue placeholder="Выберите ручку для добавления" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem v-for="handle in availableGhostHandles" :key="handle.id" :value="(handle.id || 0).toString()">
+										{{ handle.name }}
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<Button
+							@click="addSelectedHandle"
+							:disabled="!selectedHandleToAdd"
+							size="icon"
+							variant="outline"
+							class="shrink-0"
+						>
+							<PlusIcon class="size-4" />
+						</Button>
+					</div>
+					
+					<!-- Selected handles with quantity controls -->
+					<div v-if="selectedGhostHandles.length > 0" class="space-y-2">
+						<!-- <span class="text-sm text-muted-foreground">Выбранные ручки:</span> -->
+						<div class="space-y-2">
+							<div v-for="handle in selectedGhostHandles" :key="handle.id" class="flex flex-col md:flex-row items-center justify-between gap-2 p-2 border rounded-lg bg-muted/30">
+								<div class="flex-1 w-full">
+									<div class="font-medium text-muted-foreground text-sm">{{ handle.name }}</div>
+								</div>
+								<div class="flex items-center justify-between gap-2 w-full md:w-auto">
+									<div class="flex items-center gap-4">
+										<div class="flex items-center gap-2">
+											<QuantitySelector v-model="itemsStore.cartItems[handle.id || 0].quantity" :min="1" :max="100" :step="1" :unit="handle.unit || 'шт.'" />
+										</div>
+									</div>
+									<Button 
+										variant="outline" 
+										size="icon" 
+										@click="itemsStore.removeGhostHandle(handle.id || 0)"
+										class="shrink-0"
+									>
+										<X class="size-4" />
+									</Button>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div v-if="itemsStore.ghost_handles.length === 0" class="text-center text-muted-foreground text-sm py-4">
+						Нет доступных ручек
+					</div>
+					
+					<div v-else-if="availableGhostHandles.length === 0 && selectedGhostHandles.length === 0" class="text-center text-muted-foreground text-sm py-2">
+						Все ручки добавлены
 					</div>
 				</div>
 			</div>

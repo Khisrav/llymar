@@ -29,7 +29,7 @@ const doorHandles = pageData.door_handles as ItemWithProperties[];
 const allDoorHandles = pageData.all_door_handles as ItemWithProperties[];
 const can_access_dxf = pageData.can_access_dxf as boolean;
 
-const canEditOrderSketch  = order.status != 'sketch'
+const canEditOrderSketch  = order.status == 'paid'
 
 // Store initial dimensions for range calculation
 const initialDimensions = ref<Record<number, { width: number; height: number }>>({});
@@ -257,6 +257,12 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							<p class="text-xs text-muted-foreground mt-2">Выберите ручку из списка, чтобы добавить её к выбранному проему</p>
 						</div>
 					</div>
+					
+					<div>
+						<Button v-if="canEditOrderSketch" type="button" class="w-full" @click="sketcherStore.saveAndClose"> 
+							<SaveIcon class="mr-2 h-4 w-4" /> Сохранить 
+						</Button>
+					</div>
 
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between mb-4 gap-4">
@@ -351,9 +357,6 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</template>
 
 						<div class="flex flex-col gap-2">
-							<Button v-if="canEditOrderSketch" type="button" class="w-full" @click="sketcherStore.saveAndClose"> 
-								<SaveIcon class="mr-2 h-4 w-4" /> Сохранить 
-							</Button>
 							<div class="flex flex-row gap-2 justify-between items-center">
 								<Button v-if="canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
 								<Button v-if="sketcherStore.canAccessDxf && canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>

@@ -10,6 +10,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const items = ref<Item[]>([])
     const additional_items = ref<{ [key: number]: Item[] }>([])
+    const ghost_handles = ref<Item[]>([])
     const glasses = ref<Item[]>([])
     const services = ref<Item[]>([])
     const cartItems = ref<{ [key: number]: CartItem }>({})
@@ -21,6 +22,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
+    const selectedGhostHandlesID = ref<number[]>([])
     
     watch(markupPercentage, (newMarkupPercentage) => {
         if (newMarkupPercentage === undefined) markupPercentage.value = 0
@@ -36,6 +38,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
     watch(selectedServicesID, (newSelectedServicesID) => {
         sessionStorage.setItem('selectedServicesID', JSON.stringify(newSelectedServicesID))
         updateServicesQuantity(newSelectedServicesID)
+        calculate()
+    }, { deep: true })
+
+    watch(selectedGhostHandlesID, (newSelectedGhostHandlesID) => {
+        sessionStorage.setItem('selectedGhostHandlesID', JSON.stringify(newSelectedGhostHandlesID))
+        updateGhostHandlesQuantity(newSelectedGhostHandlesID)
         calculate()
     }, { deep: true })
 
@@ -132,6 +140,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (sessionStorage.getItem('selectedServicesID')) {
             selectedServicesID.value = JSON.parse(sessionStorage.getItem('selectedServicesID') as string)
         } else { selectedServicesID.value = [] }
+
+        if (sessionStorage.getItem('selectedGhostHandlesID')) {
+            selectedGhostHandlesID.value = JSON.parse(sessionStorage.getItem('selectedGhostHandlesID') as string)
+        } else { selectedGhostHandlesID.value = [] }
 
         if (!sessionStorage.getItem('cartItems')) {
             const allItems = [...items.value]
@@ -410,6 +422,32 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
     }
 
+    const updateGhostHandlesQuantity = (ghostHandlesID: number[]) => {
+        // Store existing quantities before deletion
+        const existingQuantities: { [key: number]: number } = {}
+        ghost_handles.value.forEach(ghostHandle => {
+            if (ghostHandle.id && cartItems.value[ghostHandle.id as number]) {
+                existingQuantities[ghostHandle.id as number] = cartItems.value[ghostHandle.id as number].quantity
+            }
+        })
+
+        // Remove all ghost handle items from cart
+        ghost_handles.value.forEach(ghostHandle => {
+            if (ghostHandle.id) {
+                delete cartItems.value[ghostHandle.id as number]
+            }
+        })
+
+        ghostHandlesID.forEach(ghostHandleID => {
+            // Skip invalid ghost handle IDs
+            if (!ghostHandleID || ghostHandleID <= 0) return
+
+            // Ghost handles preserve existing quantity or default to 1, and are never checked (don't count towards price)
+            const quantity = existingQuantities[ghostHandleID] || 1
+            cartItems.value[ghostHandleID] = { quantity, checked: false }
+        })
+    }
+
     const calculate = () => {
         items.value.forEach(item => {
             const quantity = parseQuantity(calculateQuantity(item))
@@ -420,6 +458,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         updateGlassQuantity(selectedGlassID.value)
         updateServicesQuantity(selectedServicesID.value)
+        updateGhostHandlesQuantity(selectedGhostHandlesID.value)
     }
 
     const itemPrice = (item_id: number): number => {
@@ -456,7 +495,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const total_price = computed(() => {
         let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
         // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
-        const allItems = [...items.value, ...glasses.value, ...services.value]
+        const allItems = [...items.value, ...glasses.value, ...services.value, ...ghost_handles.value]
 
         Object.keys(additional_items.value).forEach(key => {
             allItems.push(...additional_items.value[+key])
@@ -481,7 +520,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const getItemInfo = (id: number) => {
         // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
-        const allItems = [...items.value, ...glasses.value, ...services.value]
+        const allItems = [...items.value, ...glasses.value, ...services.value, ...ghost_handles.value]
 
         Object.keys(additional_items.value).forEach(key => {
             allItems.push(...additional_items.value[+key])
@@ -498,6 +537,15 @@ export const useItemsStore = defineStore('itemsStore', () => {
     // }
 
     const toggleItemChecked = (itemId: number) => {
+        // Check if this is a ghost handle - ghost handles should never be checked
+        const isGhostHandle = ghost_handles.value.some(handle => handle.id === itemId)
+        if (isGhostHandle) {
+            if (cartItems.value[itemId]) {
+                cartItems.value[itemId].checked = false
+            }
+            return
+        }
+
         // Initialize item if it doesn't exist
         if (!cartItems.value[itemId]) {
             // Check if this is a calculated item or manually added item
@@ -514,6 +562,16 @@ export const useItemsStore = defineStore('itemsStore', () => {
         // The quantity should remain as is for user flexibility
     }
 
+    const addGhostHandle = (handleId: number) => {
+        if (!selectedGhostHandlesID.value.includes(handleId)) {
+            selectedGhostHandlesID.value.push(handleId)
+        }
+    }
+
+    const removeGhostHandle = (handleId: number) => {
+        selectedGhostHandlesID.value = selectedGhostHandlesID.value.filter(id => id !== handleId)
+    }
+
     return {
         items,
         glasses,
@@ -522,6 +580,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         selectedServicesID,
         updateServicesQuantity,
         additional_items,
+        ghost_handles,
         cartItems,
         total_price,
         calculate,
@@ -536,5 +595,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
         markupPercentage,
         selectedFactor,
         userDefaultFactor,
+        selectedGhostHandlesID,
+        addGhostHandle,
+        removeGhostHandle,
+        updateGhostHandlesQuantity,
     }
 })

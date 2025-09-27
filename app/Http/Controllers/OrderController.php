@@ -407,17 +407,18 @@ class OrderController extends Controller
 
         $openings = $order->orderOpenings;
 
-        $allDoorHandles = Item::with('itemProperties')->where('category_id', 29)->get();
+        $allDoorHandles = Item::with('itemProperties')->whereIn('category_id', [29, 31])->get();
         $doorHandleOrderItems = $order->orderItems->filter(function ($orderItem) {
-            return $orderItem->item->category_id == 29;
+            return $orderItem->item->category_id == 29 || $orderItem->item->category_id == 31;
         });
 
         // For each door handle order item, repeat the item according to its quantity
         $orderDoorHandles = [];
         foreach ($doorHandleOrderItems as $orderItem) {
-            for ($i = 0; $i < $orderItem->quantity; $i++) {
-                $orderDoorHandles[] = $orderItem->item;
-            }
+            // for ($i = 0; $i < $orderItem->quantity; $i++) {
+            //     $orderDoorHandles[] = $orderItem->item;
+            // }
+            $orderDoorHandles[] = $orderItem->item;
         }
         
         return Inertia::render('App/Order/Sketcher', [

@@ -143,9 +143,11 @@ const hasContract = (order: Order) => {
 	return order.contracts && order.contracts.length > 0
 }
 
-const canDeleteOrder = (order: Order) => {
-	return order.status === 'created'
-}
+const canDeleteOrder = (order: Order) => order.status == 'created'
+const canDownloadSketchPDF_DXF = (order: Order) => order.status != 'created'
+const canDownloadListPDF = (order: Order) => true //i.e. always
+const canDownloadBill = (order: Order) => order.status == 'created'
+
 
 const openDeleteDialog = (order_id: number) => {
 	orderToDelete.value = order_id
@@ -409,20 +411,20 @@ const downloadBill = (order_id: number) => {
 													<DraftingCompassIcon class="h-4 w-4" />
 													<span>Чертеж</span>
 												</DropdownMenuItem>
-												<DropdownMenuItem @click="downloadSketchPDF(order.id)">
+												<DropdownMenuItem v-if="canDownloadSketchPDF_DXF(order)" @click="downloadSketchPDF(order.id)">
 													<FileType2Icon class="h-4 w-4" />
 													<span>Чертеж PDF</span>
 												</DropdownMenuItem>
-												<DropdownMenuItem @click="downloadSketchDXF(order.id)">
+												<DropdownMenuItem v-if="canDownloadSketchPDF_DXF(order)" @click="downloadSketchDXF(order.id)">
 													<FileAxis3DIcon class="h-4 w-4" />
 													<span>Чертеж DXF</span>
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
-												<DropdownMenuItem @click="downloadListPDF(order.id)">
+												<DropdownMenuItem v-if="canDownloadListPDF(order)" @click="downloadListPDF(order.id)">
 													<ScrollTextIcon class="h-4 w-4" />
 													<span>Спецификация</span>
 												</DropdownMenuItem>
-												<DropdownMenuItem @click="downloadBill(order.id)">
+												<DropdownMenuItem v-if="canDownloadBill(order)" @click="downloadBill(order.id)">
 													<ReceiptRussianRubleIcon class="h-4 w-4" />
 													<span>Счет PDF</span>
 												</DropdownMenuItem>

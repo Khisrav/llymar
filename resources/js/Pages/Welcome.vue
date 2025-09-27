@@ -997,7 +997,7 @@ const structuredData = computed(() => ({
 
 	<section id="contact" class="bg-light-gold text-dark-green py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4 text-center">
-			<div class="flex flex-col gap-8 mb-16">
+			<div class="flex flex-col gap-8">
 				<div class="animate-on-scroll opacity-0 space-y-4 translate-y-8 transition-all duration-700">
 					<LandingBadge variant="dark" size="sm"> Свяжитесь с нами </LandingBadge>
 					<h4 class="text-3xl md:text-4xl font-light mb-4">Проконсультируем и обсудим детали</h4>
@@ -1013,17 +1013,17 @@ const structuredData = computed(() => ({
 						<LandingButton variant="dark" showArrow @click="openConsultationDialog"> Получить консультацию </LandingButton>
 						
 						<!-- Business hours for rich snippets -->
-						<div class="text-sm text-dark-green" itemProp="openingHours">
+						<!-- <div class="text-sm text-dark-green" itemProp="openingHours">
 							<div><strong>Часы работы:</strong></div>
 							<div>Пн-Пт: 09:00-20:00</div>
 							<div>Сб: 09:00-18:00</div>
 							<div>Вс: 10:00-16:00</div>
-						</div>
+						</div> -->
 					</div>
 					
-					<span class="hidden md:block">или</span>
+					<!-- <span class="hidden md:block">или</span> -->
 					
-					<div class="flex flex-col gap-4">
+					<!-- <div class="flex flex-col gap-4">
 						<div class="flex flex-row gap-4">
 							<a 
 								href="tel:+7 989 804 12-34"
@@ -1043,7 +1043,6 @@ const structuredData = computed(() => ({
 							</a>
 						</div>
 						
-						<!-- Address for rich snippets -->
 						<div 
 							class="text-sm text-dark-green"
 							itemProp="address" 
@@ -1055,10 +1054,9 @@ const structuredData = computed(() => ({
 								<span itemProp="addressLocality">Краснодар</span>, 
 								<span itemProp="addressRegion">Краснодарский край</span>
 							</div>
-							<!-- Add your actual address -->
 							<div itemProp="streetAddress">ул. Примерная, 123</div>
 						</div>
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>

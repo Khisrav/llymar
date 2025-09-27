@@ -16,6 +16,7 @@ const { user_default_factor } = usePage().props as any
 console.log(usePage().props.additional_items)
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
+itemsStore.ghost_handles = usePage().props.ghost_handles as Item[]
 itemsStore.glasses = usePage().props.glasses as Item[]
 itemsStore.services = usePage().props.services as Item[]
 itemsStore.user = usePage().props.user as User

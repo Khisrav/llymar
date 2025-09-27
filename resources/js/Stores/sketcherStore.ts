@@ -23,7 +23,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	const allDoorHandles = ref<ItemWithProperties[]>([])
 	const canAccessDxf = ref(false)
 	const selectedOpeningID = ref<number>(0)
-	const useInputFields = ref(false)
+	const useInputFields = ref(true)
 	
 	// Sketch constraints
 	const sketch_constraints: Record<string, Constraint> = {

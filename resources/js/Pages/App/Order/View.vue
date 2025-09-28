@@ -146,13 +146,61 @@ const downloadBill = () => {
 };
 
 const downloadSketchPDF = () => {
-	// Will be implemented
-	toast.info("Функция будет добавлена в ближайшее время");
+	// Check if user has access to sketcher
+	if (!can_access_sketcher) {
+		toast.error("У вас нет доступа к чертежам");
+		return;
+	}
+	
+	try {
+		toast.info("Подготовка PDF чертежа...");
+		
+		// Create a temporary link to handle the download
+		const link = document.createElement('a');
+		link.href = `/app/orders/${order.id}/sketch-pdf`;
+		link.target = '_blank';
+		link.style.display = 'none';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		
+		// Success message will be shown after a short delay
+		setTimeout(() => {
+			toast.success("PDF чертеж готов к загрузке");
+		}, 1000);
+	} catch (error) {
+		toast.error("Ошибка при загрузке PDF чертежа");
+		console.error('Error downloading sketch PDF:', error);
+	}
 };
 
 const downloadSketchDXF = () => {
-	// Will be implemented
-	toast.info("Функция будет добавлена в ближайшее время");
+	// Check if user has access to sketcher
+	if (!can_access_sketcher) {
+		toast.error("У вас нет доступа к чертежам");
+		return;
+	}
+	
+	try {
+		toast.info("Подготовка DXF чертежа...");
+		
+		// Create a temporary link to handle the download
+		const link = document.createElement('a');
+		link.href = `/app/orders/${order.id}/sketch-dxf`;
+		link.target = '_blank';
+		link.style.display = 'none';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		
+		// Success message will be shown after a short delay
+		setTimeout(() => {
+			toast.success("DXF чертеж готов к загрузке");
+		}, 1000);
+	} catch (error) {
+		toast.error("Ошибка при загрузке DXF чертежа");
+		console.error('Error downloading sketch DXF:', error);
+	}
 };
 
 const downloadSpecification = () => {
@@ -313,7 +361,7 @@ const handleImageError = (event: Event) => {
 								</div>
 							</div>
 						</CardHeader>
-						<CardContent class="space-y-4 p-4">
+						<CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
 							<!-- Customer Name -->
 							<div class="space-y-2">
 								<Label class="text-sm font-medium flex items-center gap-2">
@@ -462,8 +510,32 @@ const handleImageError = (event: Event) => {
 								</div>
 
 								<div class="flex justify-between items-center">
-									<span class="text-sm text-muted-foreground">Дата создания:</span>
+									<span class="text-sm text-muted-foreground">Создан:</span>
 									<span class="text-sm">{{ formatDate(order.created_at || '') }}</span>
+								</div>
+								
+								<div class="flex justify-between items-center">
+									<span class="text-sm text-muted-foreground">Принят:</span>
+									<span class="text-sm">{{ formatDate(order.when_started_working_on_it || '') }}</span>
+								</div>
+
+								<div class="flex justify-between items-center">
+									<span class="text-sm text-muted-foreground">Завершен:</span>
+									<span class="text-sm">{{ formatDate(order.completed_at || '') }}</span>
+								</div>
+
+								<div class="flex justify-between items-center">
+									<span class="text-sm text-muted-foreground">В работе:</span>
+									<span class="text-sm">
+										<template v-if="order.status === 'created'">—</template>
+										<template v-else-if="order.status === 'completed' && order.completed_at && order.when_started_working_on_it">
+											{{ Math.ceil((new Date(order.completed_at).getTime() - new Date(order.when_started_working_on_it).getTime()) / (1000 * 60 * 60 * 24)) }} дн.
+										</template>
+										<template v-else-if="order.when_started_working_on_it">
+											{{ Math.ceil((Date.now() - new Date(order.when_started_working_on_it).getTime()) / (1000 * 60 * 60 * 24)) }} дн.
+										</template>
+										<template v-else>—</template>
+									</span>
 								</div>
 
 								<div v-if="order.ral_code" class="flex justify-between items-center">
@@ -481,11 +553,6 @@ const handleImageError = (event: Event) => {
 								<div v-if="order.order_type" class="flex justify-between items-center">
 									<span class="text-sm text-muted-foreground">Тип заказа:</span>
 									<span class="text-sm">{{ order.order_type }}</span>
-								</div>
-
-								<div v-if="order.readiness_date" class="flex justify-between items-center">
-									<span class="text-sm text-muted-foreground">Дата готовности:</span>
-									<span class="text-sm">{{ formatDate(order.readiness_date) }}</span>
 								</div>
 
 								<div v-if="order.logistics_company" class="flex justify-between items-center">

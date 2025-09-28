@@ -85,6 +85,7 @@ export interface User {
     current_account?: string;
     correspondent_account?: string;
     telegram?: string;
+    roles?: Array<{ name: string; [key: string]: any }>;
     created_at?: string | null;
     updated_at?: string | null;
 }
@@ -113,6 +114,8 @@ export interface Order {
     // Laravel sends snake_case by default
     order_openings?: Opening[];
     order_items?: OrderItem[];
+    when_started_working_on_it?: string | null;
+    completed_at?: string | null;
 }
 
 export interface OrderItem {

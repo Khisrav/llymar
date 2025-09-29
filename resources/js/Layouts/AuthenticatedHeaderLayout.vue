@@ -47,9 +47,9 @@ export default {
     <div class="h-16"></div>
     <header class="fixed w-full top-0 flex h-16 items-center gap-4 ring-1 ring-black/5 bg-background/75 backdrop-blur-sm px-4 md:px-6 z-20">
         <!-- <div class="block"> -->
-            <!-- <a href="/"> -->
-                <img src="/assets/logo.png" alt="" class="inline-block h-6 mr-3 dark:invert"/>
-            <!-- </a> -->
+            <Link href="/" class="mr-2 h-6 block">
+                <img src="/assets/logo.png" alt="" class="h-6 min-w-24 dark:invert"/>
+            </Link>
         <!-- </div> -->
         <nav class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
             

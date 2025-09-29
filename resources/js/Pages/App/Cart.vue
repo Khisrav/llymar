@@ -22,12 +22,21 @@ import CommandList from "../../Components/ui/command/CommandList.vue"
 import CommandItem from "../../Components/ui/command/CommandItem.vue"
 import PopoverTrigger from "../../Components/ui/popover/PopoverTrigger.vue"
 import CommandGroup from "../../Components/ui/command/CommandGroup.vue"
+import Select from "../../Components/ui/select/Select.vue"
+import SelectContent from "../../Components/ui/select/SelectContent.vue"
+import SelectItem from "../../Components/ui/select/SelectItem.vue"
+import SelectTrigger from "../../Components/ui/select/SelectTrigger.vue"
+import SelectValue from "../../Components/ui/select/SelectValue.vue"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
-const { user_default_factor } = usePage().props as any
+const selectedDealerId = ref<string>("")
+const { user_default_factor, dealers, can_select_dealer } = usePage().props as any
+
+// Debug logging
+console.log('Cart debug:', { dealers, can_select_dealer, dealersLength: dealers?.length })
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
@@ -81,6 +90,7 @@ const checkout = () => {
 		total_price: itemsStore.total_price.with_discount,
 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
 		selected_factor: itemsStore.selectedFactor,
+		selected_dealer_id: selectedDealerId.value ? parseInt(selectedDealerId.value) : null,
 	}
 
 	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
@@ -155,7 +165,27 @@ const checkout = () => {
 						</div>
 					</div>
 
-					<form @submit.prevent="checkout" class="text-center bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+					<form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+						<!-- Dealer Selector -->
+						<div v-if="can_select_dealer && dealers && dealers.length > 0">
+							<div class="space-y-4">
+								<Label class="inline-block">Дилер</Label>
+								<Select :model-value="selectedDealerId" @update:model-value="(value: string) => selectedDealerId = value">
+									<SelectTrigger>
+										<SelectValue placeholder="Выберите дилера (необязательно)" />
+									</SelectTrigger>
+									<SelectContent>
+										<!-- <SelectItem value="" class="text-muted-foreground">
+											Не выбран (текущий пользователь)
+										</SelectItem> -->
+										<SelectItem v-for="dealer in dealers" :key="dealer.id" :value="dealer.id.toString()">
+											#{{ dealer.id }} - {{ dealer.name }}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
 						<!-- <h3 class="text-lg font-semibold">Информация о клиенте</h3>
 
 						<div>

@@ -182,7 +182,6 @@ const updateUser = () => {
 								id="telegram"
 								v-model="form.telegram" 
 								type="text" 
-								required 
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="@username"
 							/>

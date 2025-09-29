@@ -27,7 +27,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	
 	// Sketch constraints
 	const sketch_constraints: Record<string, Constraint> = {
-		a: { start: 3, end: 25, default: 14, interval: 1 },
+		a: { start: 3, end: 25, default: 12, interval: 1 },
 		b: { start: 14, end: 25, default: 17, interval: 1 },
 		d: { start: 8, end: 55, default: 6, interval: 1 },
 		e: { start: 20, end: 80, default: 30, interval: 1 },

@@ -200,7 +200,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							<span>Вид изнутри</span>
 						</div>
 						<div v-for="i in sketcherStore.currentOpening?.doors" :key="i" class="mx-1 inline-block">
-							<span class="text-xs">СТ{{ i }}</span>
+							<span class="text-sm">СТ{{ i }}</span>
 							<div class="glass border border-blue-300 h-24 sm:h-36 relative col-span-1 aspect-[9/16]">
 								<span
 									class="text-xs absolute top-1/2 rotate-[-90deg]"

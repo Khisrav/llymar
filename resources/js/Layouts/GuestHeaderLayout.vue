@@ -24,8 +24,8 @@ const menuItems = [
 	{ label: "Наши работы", url: "/#portfolio" }, 
 	{ label: "О нас", url: "/#about" }, 
 	{ label: "Стекло", url: "/#glass-types" }, 
-	{ label: "О системе", url: "/about-glazing-system" },
-	{ label: "Новости", url: "/news" },
+	{ label: "Система", url: "/about-glazing-system" },
+	{ label: "Статьи", url: "/articles" },
 	{ label: "Контакты", url: "/#contact" },  
 ]
 

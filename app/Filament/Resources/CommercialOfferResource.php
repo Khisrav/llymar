@@ -423,26 +423,7 @@ class CommercialOfferResource extends Resource
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
                     ->url(fn (CommercialOffer $record): string => 
-                        route('orders.commercial_offer_pdf', [
-                            'customer' => [
-                                'name' => $record->customer_name,
-                                'phone' => $record->customer_phone,
-                                'address' => $record->customer_address,
-                                'comment' => $record->customer_comment,
-                            ],
-                            'manufacturer' => [
-                                'name' => $record->manufacturer_name,
-                                'phone' => $record->manufacturer_phone,
-                            ],
-                            'openings' => $record->openings,
-                            'additional_items' => $record->additional_items,
-                            'glass' => $record->glass,
-                            'services' => $record->services,
-                            'cart_items' => $record->cart_items,
-                            'total_price' => $record->total_price,
-                            'markup_percentage' => $record->markup_percentage,
-                            'selected_factor' => $record->selected_factor,
-                        ])
+                        route('app.commercial_offers.pdf', $record)
                     )
                     ->openUrlInNewTab(),
             ], position: ActionsPosition::BeforeColumns)
@@ -474,9 +455,22 @@ class CommercialOfferResource extends Resource
         ];
     }
     
+    protected static function getCurrentUser(): ?User
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        return $user;
+    }
+
+    protected static function isSuperAdmin(): bool
+    {
+        $user = static::getCurrentUser();
+        return $user && $user->hasRole('Super-Admin');
+    }
+
     public static function getNavigationBadge(): ?string
     {
-        if (!auth()->user()?->hasRole('Super-Admin')) {
+        if (!static::isSuperAdmin()) {
             return null;
         }
         

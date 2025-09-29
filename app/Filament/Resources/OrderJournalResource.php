@@ -30,6 +30,7 @@ use Illuminate\Support\HtmlString;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Enums\ActionsPosition;
 
 class OrderJournalResource extends Resource
 {
@@ -667,7 +668,7 @@ class OrderJournalResource extends Resource
                 ->icon('heroicon-o-ellipsis-vertical')
                 ->color('primary')
                 // ->size(ActionSize::ExtraSmall)
-            ]);
+            ], position: ActionsPosition::BeforeColumns);
     }
 
     public static function getRelations(): array

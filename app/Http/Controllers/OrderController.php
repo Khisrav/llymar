@@ -57,6 +57,7 @@ class OrderController extends Controller
             'total_price' => 'required|numeric',
             'ral_code'    => 'nullable',
             'selected_factor' => 'sometimes|string',
+            'selected_dealer_id' => 'nullable|integer|exists:users,id',
         ]);
 
         try {
@@ -469,8 +470,18 @@ class OrderController extends Controller
      */
     private function createOrder(array $data): Order
     {
+        // Determine the user_id for the order
+        $currentUser = Auth::user();
+        $userId = Auth::id();
+        
+        // If a dealer is selected and current user has permission to select dealers
+        if (isset($data['selected_dealer_id']) && $data['selected_dealer_id'] && 
+            $currentUser && $currentUser->hasRole(['Super-Admin', 'Operator', 'ROP'])) {
+            $userId = $data['selected_dealer_id'];
+        }
+        
         $order = Order::create([
-            'user_id'          => Auth::id(),
+            'user_id'          => $userId,
             'customer_name'    => $data['name'] ?? '',
             'customer_phone'   => $data['phone'] ?? '',
             'customer_address' => $data['address'] ?? '',

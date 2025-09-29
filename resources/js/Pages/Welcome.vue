@@ -234,6 +234,7 @@ const currentTestimonial = ref(0);
 const currentImageIndex = ref(0);
 const isConsultationDialogOpen = ref(false);
 const showBackToTop = ref(false);
+const mailButtonPulse = ref(false);
 
 // Touch/swipe support
 const touchStartX = ref(0);
@@ -362,6 +363,16 @@ const handleScroll = () => {
 	showBackToTop.value = window.scrollY > 500;
 };
 
+// Pulse animation for mail button
+const triggerMailButtonPulse = () => {
+	mailButtonPulse.value = true;
+	setTimeout(() => {
+		mailButtonPulse.value = false;
+	}, 1000); // Pulse duration
+};
+
+let pulseInterval = null;
+
 // Intersection Observer for animations
 onMounted(() => {
 	// Fetch portfolio data from API
@@ -372,6 +383,42 @@ onMounted(() => {
 
 	// Add scroll event listener for back to top button
 	window.addEventListener("scroll", handleScroll);
+
+	// Start pulse animation interval when buttons are visible
+	const startPulseInterval = () => {
+		if (pulseInterval) clearInterval(pulseInterval);
+		pulseInterval = setInterval(triggerMailButtonPulse, 5000); // Every 5 seconds
+	};
+
+	// Watch for showBackToTop changes to start/stop pulse
+	const stopPulseInterval = () => {
+		if (pulseInterval) {
+			clearInterval(pulseInterval);
+			pulseInterval = null;
+		}
+	};
+
+	// Start pulse when buttons become visible
+	const checkPulseStart = () => {
+		if (showBackToTop.value && !pulseInterval) {
+			startPulseInterval();
+		} else if (!showBackToTop.value) {
+			stopPulseInterval();
+		}
+	};
+
+	// Watch for scroll changes to manage pulse
+	const originalHandleScroll = handleScroll;
+	const enhancedHandleScroll = () => {
+		const wasVisible = showBackToTop.value;
+		originalHandleScroll();
+		if (wasVisible !== showBackToTop.value) {
+			checkPulseStart();
+		}
+	};
+
+	window.removeEventListener("scroll", handleScroll);
+	window.addEventListener("scroll", enhancedHandleScroll);
 
 	// Add structured data to document head
 	const structuredDataScript = document.createElement('script');
@@ -451,6 +498,12 @@ onMounted(() => {
 onUnmounted(() => {
 	document.removeEventListener("keydown", handleKeydown);
 	window.removeEventListener("scroll", handleScroll);
+	
+	// Clear pulse interval
+	if (pulseInterval) {
+		clearInterval(pulseInterval);
+		pulseInterval = null;
+	}
 	
 	// Remove structured data scripts
 	const structuredDataScripts = document.querySelectorAll('script[type="application/ld+json"]');
@@ -729,7 +782,7 @@ const structuredData = computed(() => ({
 							<span class="text-light-gold">безрамное</span> остекление
 						</h1>
 
-						<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">Превратите свое пространство в произведение искусства с нашими безрамными системами остекления. Максимальный обзор, минимальные рамы.</p>
+						<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">Превратите свое пространство в произведение искусства с нашими безрамными системами остекления.</p>
 					</div>
 
 					<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
@@ -1182,7 +1235,7 @@ const structuredData = computed(() => ({
 	<!-- Consultation Dialog -->
 	<ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />
 
-	<!-- Back to Top Button -->
+	<!-- Floating Action Buttons -->
 	<Transition
 		enter-active-class="transition-all duration-300 ease-out"
 		leave-active-class="transition-all duration-300 ease-in"
@@ -1191,14 +1244,26 @@ const structuredData = computed(() => ({
 		leave-from-class="opacity-100 translate-y-0 scale-100"
 		leave-to-class="opacity-0 translate-y-2 scale-90"
 	>
-		<button
-			v-if="showBackToTop"
-			@click="scrollToTop"
-			class="fixed bottom-6 right-6 z-40 bg-dark-green  hover:bg-dark-green/90 text-light-gold p-3 rounded-full border-2 border-light-gold transition-all duration-300 hover:scale-110"
-			aria-label="Вернуться к началу"
-		>
-			<ChevronUpIcon class="w-6 h-6" />
-		</button>
+		<div v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+			<!-- Mail Button -->
+			<button
+				@click="openConsultationDialog"
+				class="bg-light-gold hover:bg-light-gold/90 text-dark-green p-3 rounded-full border-2 border-light-gold transition-all duration-300 hover:scale-110"
+				:class="{ 'mail-button-pulse': mailButtonPulse }"
+				aria-label="Получить консультацию"
+			>
+				<MailIcon class="w-6 h-6" />
+			</button>
+			
+			<!-- Back to Top Button -->
+			<button
+				@click="scrollToTop"
+				class="bg-dark-green hover:bg-dark-green/90 text-light-gold p-3 rounded-full border-2 border-light-gold transition-all duration-300 hover:scale-110"
+				aria-label="Вернуться к началу"
+			>
+				<ChevronUpIcon class="w-6 h-6" />
+			</button>
+		</div>
 	</Transition>
 </template>
 
@@ -1307,5 +1372,25 @@ a:focus-visible {
 
 .modal-scroll::-webkit-scrollbar-thumb:hover {
 	background: #e6c77a;
+}
+
+/* Mail button pulse animation */
+.mail-button-pulse {
+	animation: mailPulse 1s ease-in-out;
+}
+
+@keyframes mailPulse {
+	0% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 rgba(231, 200, 134, 0.7);
+	}
+	50% {
+		transform: scale(1.1);
+		box-shadow: 0 0 0 10px rgba(231, 200, 134, 0.3);
+	}
+	100% {
+		transform: scale(1);
+		box-shadow: 0 0 0 20px rgba(231, 200, 134, 0);
+	}
 }
 </style>

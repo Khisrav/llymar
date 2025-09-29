@@ -4,16 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\LlymarCalculatorItem;
 use App\Http\Controllers\AppCalculatorController;
+use Illuminate\Support\Facades\Auth;
 
 class AppCartController extends Controller
 {
     public function index() {
-        $user = auth()->user();
-        if (!$user->can('access app cart')) {
+        $user = Auth::user();
+        if (!$user || !$user->can('access app cart')) {
             return redirect()->route('app.home');
+        }
+        
+        // Get dealers if user has permission to select dealers
+        $dealers = collect();
+        if ($user->hasRole(['Super-Admin', 'Operator', 'ROP'])) {
+            $dealers = User::whereHas('roles', function($query) {
+                $query->whereIn('name', ['Dealer']);
+            })->select('id', 'name', 'email', 'company')->get();
         }
         
         return Inertia::render('App/Cart', [
@@ -23,6 +33,8 @@ class AppCartController extends Controller
             'services' => AppCalculatorController::getServices(),
             'user' => $user,
             'categories' => Category::all()->toArray(),
+            'dealers' => $dealers,
+            'can_select_dealer' => $user->hasRole(['Super-Admin', 'Operator', 'ROP']),
         ]);
     }
     

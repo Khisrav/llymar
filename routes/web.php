@@ -39,8 +39,8 @@ Route::get('/about-glazing-system', function () {
 });
 
 // News routes
-Route::get('/news', [NewsController::class, 'index'])->name('news.index');
-Route::get('/news/{news:slug}', [NewsController::class, 'show'])->name('news.show');
+Route::get('/articles', [NewsController::class, 'index'])->name('news.index');
+Route::get('/articles/{news:slug}', [NewsController::class, 'show'])->name('news.show');
 
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');

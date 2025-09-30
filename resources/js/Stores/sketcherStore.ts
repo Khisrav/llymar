@@ -232,6 +232,15 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			sketch_vars.value[openingId].i = [handleProps.i];
 			sketch_vars.value[openingId].mp = [handleProps.mp];
 
+			// Ensure the selected handle is part of the order handles list for grouping in UI
+			const existsInOrder = doorHandles.value.some(dh => dh.id === doorHandleId);
+			if (!existsInOrder) {
+				const handle = allDoorHandles.value.find(dh => dh.id === doorHandleId);
+				if (handle) {
+					doorHandles.value.push(handle);
+				}
+			}
+
 			console.log(sketch_vars.value[openingId]);
 		} catch (error) {
 			console.error("Error setting door handle properties:", error);

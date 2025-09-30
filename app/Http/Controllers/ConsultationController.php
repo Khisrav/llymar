@@ -106,15 +106,14 @@ class ConsultationController extends Controller
     {
         $message = "🔔 <b>Новая заявка на консультацию</b>\n\n";
         $message .= "👤 <b>Имя:</b> " . htmlspecialchars($data['name']) . "\n";
-        $message .= "📞 <b>Телефон:</b> " . htmlspecialchars($data['phone']) . "\n";
+        $message .= "📞 <b>Телефон:</b> <code>" . htmlspecialchars($data['phone']) . "</code>\n";
         $message .= "🏙️ <b>Город:</b> " . htmlspecialchars($data['city']) . "\n";
         
-        if (!empty($data['message'])) {
-            $message .= "💬 <b>Сообщение:</b>\n" . htmlspecialchars($data['message']) . "\n";
-        }
+        // if (!empty($data['message'])) {
+        //     $message .= "💬 <b>Сообщение:</b>\n" . htmlspecialchars($data['message']) . "\n";
+        // }
         
         $message .= "\n📍 <b>Источник:</b> " . htmlspecialchars($data['source'] ?? 'Лендинг') . "\n";
-        $message .= "🕐 <b>Время:</b> " . now()->format('d.m.Y H:i') . "\n";
 
         return $message;
     }

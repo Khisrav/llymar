@@ -146,9 +146,9 @@ watch(form, () => {
         <DialogContent class="sm:max-w-md">
             <DialogHeader>
                 <DialogTitle>Получить консультацию</DialogTitle>
-                <DialogDescription>
+                <!-- <DialogDescription>
                     Оставьте свои контактные данные, и наш специалист свяжется с вами в течение 15 минут
-                </DialogDescription>
+                </DialogDescription> -->
             </DialogHeader>
             
             <form @submit.prevent="submitForm" class="space-y-4">
@@ -192,7 +192,7 @@ watch(form, () => {
                     <div v-if="errors.city" class="text-xs text-red-500">{{ errors.city }}</div>
                 </div>
                 
-                <div class="grid gap-2">
+                <!-- <div class="grid gap-2">
                     <Label for="message">Сообщение</Label>
                     <textarea 
                         id="message"
@@ -202,7 +202,7 @@ watch(form, () => {
                         placeholder="Расскажите о вашем проекте..."
                         :disabled="isSubmitting"
                     ></textarea>
-                </div>
+                </div> -->
                 
                 <div class="flex items-center space-x-2">
                     <input 
@@ -239,14 +239,14 @@ watch(form, () => {
                         </span>
                         <span v-else>Отправить заявку</span>
                     </Button>
-                    <Button 
+                    <!-- <Button 
                         type="button" 
                         variant="outline" 
                         @click="closeDialog"
                         :disabled="isSubmitting"
                     >
                         Отмена
-                    </Button>
+                    </Button> -->
                 </div>
             </form>
         </DialogContent>

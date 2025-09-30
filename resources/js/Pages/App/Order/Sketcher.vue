@@ -179,8 +179,25 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											</SelectTrigger>
 
 											<SelectContent class="max-w-xs sm:max-w-max">
-												<SelectGroup>
-													<SelectItem v-for="doorHandle in sketcherStore.doorHandles" :key="doorHandle.id" :value="String(doorHandle.id)">{{ doorHandle.name }}</SelectItem>
+												<SelectGroup v-if="sketcherStore.doorHandles.length">
+													<SelectLabel>В заказе</SelectLabel>
+													<SelectItem 
+														v-for="doorHandle in sketcherStore.doorHandles" 
+														:key="doorHandle.id" 
+														:value="String(doorHandle.id)"
+													>
+														{{ doorHandle.name }}
+													</SelectItem>
+												</SelectGroup>
+												<SelectGroup v-if="sketcherStore.availableDoorHandles.length">
+													<SelectLabel>Доступные</SelectLabel>
+													<SelectItem 
+														v-for="doorHandle in sketcherStore.availableDoorHandles" 
+														:key="doorHandle.id" 
+														:value="String(doorHandle.id)"
+													>
+														{{ doorHandle.name }}
+													</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>
@@ -203,14 +220,14 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							<span class="text-sm">СТ{{ i }}</span>
 							<div class="glass border border-blue-300 h-24 sm:h-36 relative col-span-1 aspect-[9/16]">
 								<span
-									class="text-xs absolute top-1/2 rotate-[-90deg]"
+									class="text-sm absolute top-1/2 rotate-[-90deg]"
 									:class="{
 										'left-[-8px]': sketcherStore.currentOpening?.type == 'right' || (sketcherStore.currentOpening?.type == 'center' && i <= sketcherStore.currentOpening?.doors / 2),
 										'right-[-6px]': sketcherStore.currentOpening?.type == 'left' || (sketcherStore.currentOpening?.type == 'center' && i > sketcherStore.currentOpening?.doors / 2),
 									}"
 									>{{ sketcherStore.getOpeningSketchDimensions(i).height }}</span
 								>
-								<span style="position: absolute; top: 0; left: 50%; transform: translateX(-50%)" class="text-xs">{{ sketcherStore.getOpeningSketchDimensions(sketcherStore.currentOpening?.type == "left" ? sketcherStore.currentOpening?.doors - i + 1 : i).width }}</span>
+								<span style="position: absolute; top: 0; left: 50%; transform: translateX(-50%)" class="text-sm">{{ sketcherStore.getOpeningSketchDimensions(sketcherStore.currentOpening?.type == "left" ? sketcherStore.currentOpening?.doors - i + 1 : i).width }}</span>
 
 								<DoorHandleSVG v-if="sketcherStore.currentOpening?.type == 'left' && i == 1" type="left" class="absolute top-1/2 left-1.5 transform -translate-y-1/2" />
 								<DoorHandleSVG v-else-if="sketcherStore.currentOpening?.type == 'right' && i == sketcherStore.currentOpening?.doors" type="right" class="absolute top-1/2 right-1.5 transform -translate-y-1/2" />
@@ -233,30 +250,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 				</div>
 
 				<div class="col-span-9 md:col-span-3 space-y-4">
-					<div class="p-4 rounded-lg border">
-						<div class="flex items-center justify-between gap-4">
-							<h3 class="text-xl text-muted-foreground font-semibold">Добавить ручку</h3>
-						</div>
-						<div class="mt-4">
-							<Select v-if="sketcherStore.availableDoorHandles.length > 0" @update:model-value="(value) => sketcherStore.addDoorHandleToOpening(Number(value))">
-								<SelectTrigger>
-									<SelectValue placeholder="Выберите ручку для добавления к проему" />
-								</SelectTrigger>
-								<SelectContent class="max-w-xs sm:max-w-max">
-									<SelectGroup>
-										<SelectLabel>Доступные ручки</SelectLabel>
-										<SelectItem v-for="doorHandle in sketcherStore.availableDoorHandles" :key="doorHandle.id" :value="String(doorHandle.id)">
-											{{ doorHandle.name }}
-										</SelectItem>
-									</SelectGroup>
-								</SelectContent>
-							</Select>
-							<div v-else class="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
-								Все доступные ручки уже добавлены к заказу
-							</div>
-							<p class="text-xs text-muted-foreground mt-2">Выберите ручку из списка, чтобы добавить её к выбранному проему</p>
-						</div>
-					</div>
+					<!-- removed add-handle panel: selection is integrated within each opening card -->
 					
 					<div>
 						<Button v-if="canEditOrderSketch" type="button" class="w-full" @click="sketcherStore.saveAndClose"> 

@@ -16,6 +16,14 @@ Route::get('/portfolio/latest', [PortfolioController::class, 'getLatest'])
     ->middleware('throttle:60,1') // 60 requests per minute
     ->name('api.portfolio.latest');
 
+Route::get('/portfolio', [PortfolioController::class, 'index'])
+    ->middleware('throttle:60,1')
+    ->name('api.portfolio.index');
+
+Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])
+    ->middleware('throttle:60,1')
+    ->name('api.portfolio.show');
+
 /*
  * CONSULTATION ROUTES
  */

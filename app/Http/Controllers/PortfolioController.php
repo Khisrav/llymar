@@ -9,36 +9,17 @@ use Illuminate\Http\JsonResponse;
 class PortfolioController extends Controller
 {
     /**
-     * Get the latest 4 portfolio records for API
+     * Get the latest 8 portfolio records for carousel
      * 
-     * This endpoint returns the 4 most recent portfolio entries.
+     * This endpoint returns the 8 most recent portfolio entries for homepage carousel.
      * It's protected by CORS restrictions and rate limiting.
      * 
      * @return JsonResponse
-     * 
-     * @response 200 {
-     *   "success": true,
-     *   "data": [
-     *     {
-     *       "id": 1,
-     *       "title": "Project Title",
-     *       "description": "Project description",
-     *       "images": ["path/to/image1.jpg", "path/to/image2.jpg"],
-     *       "area": 56,
-     *       "color": "Black",
-     *       "glass": "Bronze 10mm",
-     *       "location": "City",
-     *       "year": 2025,
-     *       "created_at": "2025-08-08T06:31:20.000000Z"
-     *     }
-     *   ],
-     *   "count": 1
-     * }
      */
     public function getLatest(): JsonResponse
     {
         $portfolios = Portfolio::latest()
-            ->take(4)
+            ->take(8)
             ->get([
                 'id',
                 'title',
@@ -56,6 +37,48 @@ class PortfolioController extends Controller
             'success' => true,
             'data' => $portfolios,
             'count' => $portfolios->count()
+        ]);
+    }
+
+    /**
+     * Get all portfolios for catalogue page
+     * 
+     * @return JsonResponse
+     */
+    public function index(): JsonResponse
+    {
+        $portfolios = Portfolio::latest()
+            ->get([
+                'id',
+                'title',
+                'description',
+                'images',
+                'area',
+                'color',
+                'glass',
+                'location',
+                'year',
+                'created_at'
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $portfolios,
+            'count' => $portfolios->count()
+        ]);
+    }
+
+    /**
+     * Get single portfolio by ID
+     * 
+     * @param Portfolio $portfolio
+     * @return JsonResponse
+     */
+    public function show(Portfolio $portfolio): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $portfolio
         ]);
     }
 }

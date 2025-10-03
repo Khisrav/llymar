@@ -15,13 +15,8 @@ import {
 	ClockIcon,
 	AwardIcon,
 	ChevronDownIcon,
-	PlayIcon,
 	MailIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
 	ChevronUpIcon,
-	CalendarIcon,
-	XIcon,
 	FlameIcon,
 	ShieldIcon,
 	LockIcon,
@@ -228,71 +223,39 @@ const glassTypes = ref([
 ]);
 
 // Reactive state
-const selectedPortfolioItem = ref(null);
-const isModalOpen = ref(false);
 const currentTestimonial = ref(0);
-const currentImageIndex = ref(0);
 const isConsultationDialogOpen = ref(false);
 const showBackToTop = ref(false);
 const mailButtonPulse = ref(false);
 
-// Touch/swipe support
-const touchStartX = ref(0);
-const touchEndX = ref(0);
-
-// Modal functionality
-const openModal = (item) => {
-	selectedPortfolioItem.value = item;
-	currentImageIndex.value = 0;
-	isModalOpen.value = true;
-	document.body.style.overflow = "hidden";
-};
-
-const closeModal = () => {
-	isModalOpen.value = false;
-	selectedPortfolioItem.value = null;
-	currentImageIndex.value = 0;
-	document.body.style.overflow = "auto";
-};
+// Carousel state
+const carouselOffset = ref(0);
+const isAutoScrolling = ref(true);
+let autoScrollInterval = null;
 
 // Carousel functionality
-const nextImage = () => {
-	if (selectedPortfolioItem.value && selectedPortfolioItem.value.images) {
-		currentImageIndex.value = (currentImageIndex.value + 1) % selectedPortfolioItem.value.images.length;
-	}
-};
-
-const prevImage = () => {
-	if (selectedPortfolioItem.value && selectedPortfolioItem.value.images) {
-		currentImageIndex.value = currentImageIndex.value === 0 ? selectedPortfolioItem.value.images.length - 1 : currentImageIndex.value - 1;
-	}
-};
-
-const goToImage = (index) => {
-	currentImageIndex.value = index;
-};
-
-// Touch/swipe handlers
-const handleTouchStart = (event) => {
-	touchStartX.value = event.touches[0].clientX;
-};
-
-const handleTouchEnd = (event) => {
-	touchEndX.value = event.changedTouches[0].clientX;
-	handleSwipe();
-};
-
-const handleSwipe = () => {
-	const swipeThreshold = 50;
-	const diff = touchStartX.value - touchEndX.value;
-
-	if (Math.abs(diff) > swipeThreshold) {
-		if (diff > 0) {
-			nextImage(); // Swipe left - next image
-		} else {
-			prevImage(); // Swipe right - previous image
+const startAutoScroll = () => {
+	if (autoScrollInterval) clearInterval(autoScrollInterval);
+	autoScrollInterval = setInterval(() => {
+		if (isAutoScrolling.value && portfolio.value.length > 0) {
+			carouselOffset.value = (carouselOffset.value + 1) % portfolio.value.length;
 		}
+	}, 5000); // Auto-scroll every 5 seconds
+};
+
+const stopAutoScroll = () => {
+	if (autoScrollInterval) {
+		clearInterval(autoScrollInterval);
+		autoScrollInterval = null;
 	}
+};
+
+const pauseAutoScroll = () => {
+	isAutoScrolling.value = false;
+};
+
+const resumeAutoScroll = () => {
+	isAutoScrolling.value = true;
 };
 
 // Format date helper
@@ -331,25 +294,6 @@ const openConsultationDialog = () => {
 	isConsultationDialogOpen.value = true;
 };
 
-// Keyboard navigation for carousel
-const handleKeydown = (event) => {
-	if (!isModalOpen.value) return;
-
-	switch (event.key) {
-		case "Escape":
-			closeModal();
-			break;
-		case "ArrowLeft":
-			event.preventDefault();
-			prevImage();
-			break;
-		case "ArrowRight":
-			event.preventDefault();
-			nextImage();
-			break;
-	}
-};
-
 // Back to top functionality
 const scrollToTop = () => {
 	window.scrollTo({
@@ -376,10 +320,10 @@ let pulseInterval = null;
 // Intersection Observer for animations
 onMounted(() => {
 	// Fetch portfolio data from API
-	fetchPortfolio();
-
-	// Add keyboard event listener
-	document.addEventListener("keydown", handleKeydown);
+	fetchPortfolio().then(() => {
+		// Start auto-scroll after portfolio data is loaded
+		startAutoScroll();
+	});
 
 	// Add scroll event listener for back to top button
 	window.addEventListener("scroll", handleScroll);
@@ -496,7 +440,6 @@ onMounted(() => {
 
 // Cleanup on unmount
 onUnmounted(() => {
-	document.removeEventListener("keydown", handleKeydown);
 	window.removeEventListener("scroll", handleScroll);
 	
 	// Clear pulse interval
@@ -504,6 +447,9 @@ onUnmounted(() => {
 		clearInterval(pulseInterval);
 		pulseInterval = null;
 	}
+	
+	// Stop auto-scroll
+	stopAutoScroll();
 	
 	// Remove structured data scripts
 	const structuredDataScripts = document.querySelectorAll('script[type="application/ld+json"]');
@@ -875,13 +821,20 @@ const structuredData = computed(() => ({
 	</section>
 
 	<!-- Portfolio Section -->
-	<section id="portfolio" class="bg-dark-green text-white py-16 md:py-24">
+	<section id="portfolio" class="bg-dark-green text-white py-16 md:py-24 overflow-hidden">
 		<div class="container max-w-screen-2xl px-4">
-			<div class="flex flex-col gap-8 mb-16">
+			<div class="flex flex-col md:flex-row md:justify-between md:items-end gap-8 mb-16">
 				<div class="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
 					<LandingBadge size="sm"> Примеры работ </LandingBadge>
 					<h4 class="text-3xl md:text-4xl font-light mb-4">Результат говорит сам за себя</h4>
 					<p class="text-gray-300">Каждый проект — это уникальное решение, созданное с учетом пожеланий клиента и особенностей объекта</p>
+				</div>
+				<div class="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
+					<Link href="/portfolio">
+						<LandingButton variant="secondary" size="lg">
+							<span class="montserrat font-semibold">Смотреть все работы</span>
+						</LandingButton>
+					</Link>
 				</div>
 			</div>
 
@@ -897,37 +850,152 @@ const structuredData = computed(() => ({
 				</div>
 			</div>
 
-			<!-- Portfolio Items -->
-			<div v-else-if="portfolio.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-				<div v-for="(item, index) in portfolio" :key="item.id" class="group cursor-pointer translate-y-8 transition-all duration-700" :style="`animation-delay: ${index * 150}ms`" @click="openModal(item)">
-					<div class="relative overflow-hidden rounded-2xl">
-						<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
-						<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-							<div class="absolute bottom-4 left-4 right-4">
-								<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
-								<div class="text-white text-lg font-semibold">{{ item.area }}</div>
+			<!-- Portfolio Carousel -->
+			<div 
+				v-else-if="portfolio.length > 0" 
+				class="relative -mx-4 px-4 md:mx-0 md:px-0"
+				@mouseenter="pauseAutoScroll"
+				@mouseleave="resumeAutoScroll"
+			>
+				<!-- Carousel Container -->
+				<div class="overflow-hidden">
+					<!-- Mobile: 1 column -->
+					<div 
+						class="flex md:hidden transition-transform duration-700 ease-in-out gap-4"
+						:style="{
+							transform: `translateX(calc(-${carouselOffset * 100}% - ${carouselOffset * 16}px))`,
+						}"
+					>
+						<Link
+							v-for="item in portfolio"
+							:key="`mobile-${item.id}`"
+							:href="`/portfolio/${item.id}`"
+							class="group cursor-pointer flex-shrink-0 w-full transition-all duration-300 hover:-translate-y-2"
+						>
+							<div class="relative overflow-hidden rounded-2xl">
+								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
+								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+									<div class="absolute bottom-4 left-4 right-4">
+										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
+										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-light-gold/20">
-							<PlayIcon class="w-5 h-5 text-white" />
-						</div>
+
+							<div class="flex flex-col gap-3 mt-4 montserrat">
+								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<MapPinIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.location }}</span>
+									<span class="text-gray-400">• {{ item.year }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.glass }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<PaletteIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.profile }}</span>
+								</div>
+							</div>
+						</Link>
 					</div>
 
-					<div class="flex flex-col gap-3 mt-4 montserrat">
-						<div class="flex flex-row gap-2 items-center text-sm">
-							<MapPinIcon class="text-light-gold w-4 h-4" />
-							<span>{{ item.location }}</span>
-							<span class="text-gray-400">• {{ item.year }}</span>
-						</div>
-						<div class="flex flex-row gap-2 items-center text-sm">
-							<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
-							<span>{{ item.glass }}</span>
-						</div>
-						<div class="flex flex-row gap-2 items-center text-sm">
-							<PaletteIcon class="text-light-gold w-4 h-4" />
-							<span>{{ item.profile }}</span>
-						</div>
+					<!-- Tablet: 2 columns -->
+					<div 
+						class="hidden md:flex lg:hidden transition-transform duration-700 ease-in-out gap-8"
+						:style="{
+							transform: `translateX(calc(-${carouselOffset * 50}% - ${carouselOffset * 16}px))`,
+						}"
+					>
+						<Link
+							v-for="item in portfolio"
+							:key="`tablet-${item.id}`"
+							:href="`/portfolio/${item.id}`"
+							class="group cursor-pointer flex-shrink-0 w-[calc(50%-16px)] transition-all duration-300 hover:-translate-y-2"
+						>
+							<div class="relative overflow-hidden rounded-2xl">
+								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
+								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+									<div class="absolute bottom-4 left-4 right-4">
+										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
+										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3 mt-4 montserrat">
+								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<MapPinIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.location }}</span>
+									<span class="text-gray-400">• {{ item.year }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.glass }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<PaletteIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.profile }}</span>
+								</div>
+							</div>
+						</Link>
 					</div>
+
+					<!-- Desktop: 4 columns -->
+					<div 
+						class="hidden lg:flex transition-transform duration-700 ease-in-out gap-8"
+						:style="{
+							transform: `translateX(calc(-${carouselOffset * 25}% - ${carouselOffset * 24}px))`,
+						}"
+					>
+						<Link
+							v-for="item in portfolio"
+							:key="`desktop-${item.id}`"
+							:href="`/portfolio/${item.id}`"
+							class="group cursor-pointer flex-shrink-0 w-[calc(25%-24px)] transition-all duration-300 hover:-translate-y-2"
+						>
+							<div class="relative overflow-hidden rounded-2xl">
+								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
+								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+									<div class="absolute bottom-4 left-4 right-4">
+										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
+										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3 mt-4 montserrat">
+								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<MapPinIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.location }}</span>
+									<span class="text-gray-400">• {{ item.year }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.glass }}</span>
+								</div>
+								<div class="flex flex-row gap-2 items-center text-sm">
+									<PaletteIcon class="text-light-gold w-4 h-4" />
+									<span>{{ item.profile }}</span>
+								</div>
+							</div>
+						</Link>
+					</div>
+				</div>
+
+				<!-- Carousel Indicators -->
+				<div class="flex justify-center gap-2 mt-8">
+					<button
+						v-for="(item, index) in portfolio"
+						:key="`indicator-${index}`"
+						@click="carouselOffset = index"
+						class="w-2 h-2 rounded-full transition-all duration-300"
+						:class="carouselOffset === index ? 'bg-light-gold w-8' : 'bg-white/30 hover:bg-white/50'"
+						:aria-label="`Перейти к слайду ${index + 1}`"
+					></button>
 				</div>
 			</div>
 
@@ -1117,121 +1185,6 @@ const structuredData = computed(() => ({
 
 	<GuestFooter />
 
-	<!-- Portfolio Modal with Carousel -->
-	<Transition enter-active-class="transition-opacity duration-300" leave-active-class="transition-opacity duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-		<div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-			<div class="absolute inset-0 backdrop-blur-sm" @click="closeModal"></div>
-
-			<div class="relative overflow-y-scroll bg-white sm:rounded-2xl max-w-6xl w-[calc(100vw-16px)] overflow-hidden flex flex-col modal-content">
-				<!-- Close Button -->
-				<button @click="closeModal" class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all hover:scale-110">
-					<XIcon class="w-5 h-5 sm:w-6 sm:h-6" />
-				</button>
-
-				<div v-if="selectedPortfolioItem" class="flex flex-col h-full">
-					<!-- Image Carousel Section -->
-					<div class="relative flex-shrink-0 h-96 md:h-[500px] bg-gray-900">
-						<!-- Main Image -->
-						<div class="relative w-full h-full overflow-hidden" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-							<img :src="selectedPortfolioItem.images[currentImageIndex]" :alt="selectedPortfolioItem.type" class="w-full h-full object-contain carousel-image select-none" draggable="false" />
-
-							<!-- Image Counter -->
-							<div class="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">{{ currentImageIndex + 1 }} / {{ selectedPortfolioItem.images.length }}</div>
-						</div>
-
-						<!-- Navigation Arrows (only show if more than 1 image) -->
-						<template v-if="selectedPortfolioItem.images.length > 1">
-							<button @click="prevImage" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 sm:p-3 transition-all hover:scale-110">
-								<ChevronLeftIcon class="w-5 h-5 sm:w-6 sm:h-6" />
-							</button>
-							<button @click="nextImage" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 sm:p-3 transition-all hover:scale-110">
-								<ChevronRightIcon class="w-5 h-5 sm:w-6 sm:h-6" />
-							</button>
-						</template>
-
-						<!-- Thumbnail Navigation (only show if more than 1 image) -->
-						<div v-if="selectedPortfolioItem.images.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-full overflow-x-auto px-4">
-							<button
-								v-for="(image, index) in selectedPortfolioItem.images"
-								:key="index"
-								@click="goToImage(index)"
-								class="flex-shrink-0 w-12 h-8 sm:w-16 sm:h-10 rounded border-2 overflow-hidden carousel-thumbnail"
-								:class="currentImageIndex === index ? 'border-light-gold' : 'border-white/50 hover:border-white'"
-							>
-								<img :src="image" :alt="`Thumbnail ${index + 1}`" class="w-full h-full object-cover" />
-							</button>
-						</div>
-					</div>
-
-					<!-- Content Section -->
-					<div class="flex-1 overflow-y-auto p-4 sm:p-6 modal-scroll">
-						<!-- Header -->
-						<div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
-							<div class="flex-1">
-								<h3 class="text-xl montserrat sm:text-2xl lg:text-3xl font-semibold text-dark-green mb-2">
-									{{ selectedPortfolioItem.type }}
-								</h3>
-								<div class="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-600 mb-2">
-									<MapPinIcon class="w-4 h-4 text-light-gold" />
-									<span>{{ selectedPortfolioItem.location }}</span>
-									<span class="text-gray-400">•</span>
-									<CalendarIcon class="w-4 h-4 text-light-gold" />
-									<span>{{ selectedPortfolioItem.year }}</span>
-								</div>
-								<template v-if="selectedPortfolioItem.created_at">
-									<span class="text-gray-500 text-sm sm:text-base">{{ formatDate(selectedPortfolioItem.created_at) }}</span>
-								</template>
-							</div>
-							<div class="text-center sm:text-right bg-gray-50 p-3 rounded-lg">
-								<div class="text-2xl sm:text-3xl font-bold text-dark-green montserrat">{{ selectedPortfolioItem.area }}</div>
-								<div class="text-xs sm:text-sm text-gray-500">площадь остекления</div>
-							</div>
-						</div>
-
-						<!-- Description -->
-						<div v-if="selectedPortfolioItem.description" class="mb-6">
-							<h4 class="text-lg font-semibold text-dark-green mb-3 montserrat">Описание проекта</h4>
-							<p class="text-gray-700 leading-relaxed">{{ selectedPortfolioItem.description }}</p>
-						</div>
-
-						<!-- Technical Details -->
-						<div class="mb-6 montserrat">
-							<h4 class="text-lg font-semibold text-dark-green mb-4">Технические характеристики</h4>
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-									<RectangleVerticalIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
-									<div>
-										<div class="text-sm text-gray-500">Тип стекла</div>
-										<div class="font-medium">{{ selectedPortfolioItem.glass }}</div>
-									</div>
-								</div>
-								<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-									<PaletteIcon class="text-light-gold w-6 h-6 flex-shrink-0" />
-									<div>
-										<div class="text-sm text-gray-500">Цвет профиля</div>
-										<div class="font-medium">{{ selectedPortfolioItem.profile }}</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<!-- Action Buttons -->
-						<div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-							<!-- <button @click="openConsultationDialog" class="bg-dark-green hover:bg-dark-green/90 text-white px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg flex-1 sm:flex-none">
-                                Заказать похожий проект
-                            </button>
-                            <button @click="openConsultationDialog" class="border border-dark-green text-dark-green hover:bg-dark-green hover:text-white px-6 py-3 rounded-full font-medium transition-all flex-1 sm:flex-none">
-                                Получить консультацию
-                            </button> -->
-							<LandingButton variant="dark" size="icon" iconPosition="left" :icon="PhoneIcon" @click="openConsultationDialog"> Заказать похожий проект </LandingButton>
-							<LandingButton variant="outline" size="icon" iconPosition="left" :icon="MailIcon" @click="openConsultationDialog"> Получить консультацию </LandingButton>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</Transition>
-
 	<!-- Consultation Dialog -->
 	<ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />
 
@@ -1331,47 +1284,11 @@ a:focus-visible {
 	outline-offset: 2px;
 }
 
-/* Carousel specific styles */
-.carousel-image {
-	transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-}
-
-.carousel-thumbnail {
-	transition: all 0.2s ease-in-out;
-}
-
-.carousel-thumbnail:hover {
-	transform: scale(1.05);
-}
-
-.modal-content {
-	max-height: calc(100vh - 86px);
-	border-radius: 8px;
-}
 /* Smooth transitions */
 * {
 	transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	transition-duration: 150ms;
-}
-
-/* Custom scrollbar for modal content */
-.modal-scroll::-webkit-scrollbar {
-	width: 4px;
-}
-
-.modal-scroll::-webkit-scrollbar-track {
-	background: #f1f1f1;
-	border-radius: 2px;
-}
-
-.modal-scroll::-webkit-scrollbar-thumb {
-	background: var(--light-gold);
-	border-radius: 2px;
-}
-
-.modal-scroll::-webkit-scrollbar-thumb:hover {
-	background: #e6c77a;
 }
 
 /* Mail button pulse animation */

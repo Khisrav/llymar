@@ -42,6 +42,17 @@ Route::get('/about-glazing-system', function () {
 Route::get('/articles', [NewsController::class, 'index'])->name('news.index');
 Route::get('/articles/{news:slug}', [NewsController::class, 'show'])->name('news.show');
 
+// Portfolio routes
+Route::get('/portfolio', function () {
+    return Inertia::render('Portfolio/Index');
+})->name('portfolio.index');
+
+Route::get('/portfolio/{portfolio}', function (App\Models\Portfolio $portfolio) {
+    return Inertia::render('Portfolio/Show', [
+        'portfolio' => $portfolio
+    ]);
+})->name('portfolio.show');
+
 Route::get('/orders/{orderId}/list-pdf', [OrderController::class, 'listPDF'])
     ->name('orders.list_pdf');
 Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalcPDF'])

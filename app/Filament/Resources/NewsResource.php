@@ -26,9 +26,11 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentLexicalEditor\FilamentLexicalEditor;
 
 class NewsResource extends Resource
 {
@@ -77,11 +79,8 @@ class NewsResource extends Resource
                                             ->image()
                                             ->directory('news/covers')
                                             ->disk('public')
-                                            ->imageEditor()
-                                            ->imageResizeMode('cover')
-                                            ->imageCropAspectRatio('16:9')
-                                            ->imageResizeTargetWidth('800')
-                                            ->imageResizeTargetHeight('450')
+                                            ->optimize('webp')
+                                            ->resize(50)
                                             ->helperText('Рекомендуемый размер: 800x450px. Если не загружена, будет использовано случайное изображение.'),
 
                                         Textarea::make('excerpt')
@@ -90,28 +89,22 @@ class NewsResource extends Resource
                                             ->maxLength(500)
                                             ->helperText('Краткое описание статьи. Если не заполнено, будет сгенерировано автоматически из содержания.'),
 
-                                        RichEditor::make('content')
+                                        // RichEditor::make('content')
+                                        //     ->label('Содержание')
+                                        //     ->required()
+                                        //     ->columnSpanFull()
+                                        //     ->fileAttachmentsDisk('public')
+                                        //     ->fileAttachmentsDirectory('news/attachments'),
+                                        
+                                        // FilamentLexicalEditor::make('content')
+                                        //     ->label('Содержание')
+                                        //     ->required(),
+                                        
+                                        TiptapEditor::make('content')
                                             ->label('Содержание')
-                                            ->required()
+                                            ->maxSize(512)
                                             ->columnSpanFull()
-                                            ->fileAttachmentsDisk('public')
-                                            ->fileAttachmentsDirectory('news/attachments')
-                                            ->toolbarButtons([
-                                                'attachFiles',
-                                                'blockquote',
-                                                'bold',
-                                                'bulletList',
-                                                'codeBlock',
-                                                'h2',
-                                                'h3',
-                                                'italic',
-                                                'link',
-                                                'orderedList',
-                                                'redo',
-                                                'strike',
-                                                'table',
-                                                'undo',
-                                            ]),
+                                            ->required(),
                                     ])
                                     ->columns(2),
                             ]),
@@ -144,6 +137,7 @@ class NewsResource extends Resource
 
                                         Select::make('status')
                                             ->label('Статус')
+                                            ->native(false)
                                             ->options([
                                                 'draft' => 'Черновик',
                                                 'published' => 'Опубликовано',

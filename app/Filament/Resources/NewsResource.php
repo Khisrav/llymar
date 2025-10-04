@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use AmidEsfahani\FilamentTinyEditor\TinyEditor;
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
 use App\Models\User;
@@ -100,10 +101,19 @@ class NewsResource extends Resource
                                         //     ->label('Содержание')
                                         //     ->required(),
                                         
-                                        TiptapEditor::make('content')
+                                        // TiptapEditor::make('content')
+                                        //     ->label('Содержание')
+                                        //     ->maxSize(512)
+                                        //     ->columnSpanFull()
+                                        //     ->required(),
+
+                                        TinyEditor::make('content')
                                             ->label('Содержание')
-                                            ->maxSize(512)
                                             ->columnSpanFull()
+                                            ->resize('both')
+                                            ->fileAttachmentsDisk('public')
+                                            ->fileAttachmentsDirectory('news/attachments')
+                                            ->profile('full')
                                             ->required(),
                                     ])
                                     ->columns(2),

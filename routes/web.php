@@ -29,8 +29,33 @@ use Illuminate\Support\Facades\Storage;
  *  PUBLIC ROUTES
  */
 Route::get('/', function () {
+    // Get landing page options
+    $options = \App\Models\LandingPageOption::orderBy('group')->orderBy('order')->get();
+    $optionsMap = [];
+    foreach ($options as $option) {
+        $optionsMap[$option->key] = $option->value;
+    }
+    
+    // Get latest 8 portfolios for carousel
+    $portfolios = \App\Models\Portfolio::latest()
+        ->take(8)
+        ->get([
+            'id',
+            'title',
+            'description',
+            'images',
+            'area',
+            'color',
+            'glass',
+            'location',
+            'year',
+            'created_at'
+        ]);
+    
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('auth'),
+        'landingOptions' => $optionsMap,
+        'initialPortfolio' => $portfolios,
     ]);
 });
 
@@ -44,7 +69,22 @@ Route::get('/articles/{news:slug}', [NewsController::class, 'show'])->name('news
 
 // Portfolio routes
 Route::get('/portfolio', function () {
-    return Inertia::render('Portfolio/Index');
+    $portfolios = \App\Models\Portfolio::latest()->get([
+        'id',
+        'title',
+        'description',
+        'images',
+        'area',
+        'color',
+        'glass',
+        'location',
+        'year',
+        'created_at'
+    ]);
+    
+    return Inertia::render('Portfolio/Index', [
+        'portfolios' => $portfolios,
+    ]);
 })->name('portfolio.index');
 
 Route::get('/portfolio/{portfolio}', function (App\Models\Portfolio $portfolio) {

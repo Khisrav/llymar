@@ -17,6 +17,8 @@ import {
 	ChevronDownIcon,
 	MailIcon,
 	ChevronUpIcon,
+	ChevronLeftIcon,
+	ChevronRightIcon,
 	FlameIcon,
 	ShieldIcon,
 	LockIcon,
@@ -30,106 +32,39 @@ import LandingButton from "../Components/LandingButton.vue";
 import ConsultationDialog from "../Components/ConsultationDialog.vue";
 import GuestFooter from "../Layouts/GuestFooter.vue";
 
-// Portfolio data from API
-const portfolio = ref([]);
-const isLoadingPortfolio = ref(true);
+// Define props from Inertia
+const props = defineProps({
+	canLogin: Boolean,
+	landingOptions: {
+		type: Object,
+		default: () => ({}),
+	},
+	initialPortfolio: {
+		type: Array,
+		default: () => [],
+	},
+});
 
-// Fetch portfolio data from API
-const fetchPortfolio = async () => {
-	try {
-		const response = await fetch("/api/portfolio/latest", {
-			method: "GET",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			credentials: "same-origin",
-		});
+// Transform portfolio data
+const portfolio = computed(() => {
+	return props.initialPortfolio.map((item) => ({
+		id: item.id,
+		image: item.images && item.images.length > 0 ? `/storage/${item.images[0]}` : "/assets/hero.jpg",
+		images: item.images && item.images.length > 0 ? item.images.map((img) => `/storage/${img}`) : ["/assets/hero.jpg"],
+		location: item.location || "Не указано",
+		glass: item.glass || "Не указано",
+		profile: item.color || "Не указано",
+		year: item.year || new Date().getFullYear(),
+		area: item.area ? `${item.area} м²` : "Не указано",
+		type: item.title || "Проект",
+		description: item.description || "",
+		created_at: item.created_at,
+	}));
+});
 
-		if (response.ok) {
-			const data = await response.json();
-			if (data.success && data.data) {
-				// Transform API data to match the expected format
-				portfolio.value = data.data.map((item) => ({
-					id: item.id,
-					image: item.images && item.images.length > 0 ? `/storage/${item.images[0]}` : "/assets/hero.jpg",
-					images: item.images && item.images.length > 0 ? item.images.map((img) => `/storage/${img}`) : ["/assets/hero.jpg"],
-					location: item.location || "Не указано",
-					glass: item.glass || "Не указано",
-					profile: item.color || "Не указано",
-					year: item.year || new Date().getFullYear(),
-					area: item.area ? `${item.area} м²` : "Не указано",
-					type: item.title || "Проект",
-					description: item.description || "",
-					created_at: item.created_at,
-				}));
-			}
-		} else {
-			console.error("Failed to fetch portfolio data");
-			// Fallback to hardcoded data if API fails
-			setFallbackPortfolio();
-		}
-	} catch (error) {
-		console.error("Error fetching portfolio:", error);
-		// Fallback to hardcoded data if API fails
-		setFallbackPortfolio();
-	} finally {
-		isLoadingPortfolio.value = false;
-	}
-};
-
-// Fallback portfolio data in case API fails
-const setFallbackPortfolio = () => {
-	portfolio.value = [
-		{
-			id: 1,
-			image: "/assets/hero.jpg",
-			images: ["/assets/hero.jpg"],
-			location: "г. Краснодар",
-			glass: "Стекло СЕРОЕ 10мм",
-			profile: "Цвет профиля СЕРЫЙ 7024",
-			year: "2024",
-			area: "45 м²",
-			type: "Панорамное остекление",
-			description: "Современное панорамное остекление с использованием безрамных систем.",
-		},
-		{
-			id: 2,
-			image: "/assets/hero.jpg",
-			images: ["/assets/hero.jpg"],
-			location: "г. Сочи",
-			glass: "Стекло ПРОЗРАЧНОЕ 12мм",
-			profile: "Цвет профиля БЕЛЫЙ 9010",
-			year: "2024",
-			area: "32 м²",
-			type: "Балконное остекление",
-			description: "Элегантное балконное остекление с максимальным проникновением света.",
-		},
-		{
-			id: 3,
-			image: "/assets/hero.jpg",
-			images: ["/assets/hero.jpg"],
-			location: "г. Ростов-на-Дону",
-			glass: "Стекло ТОНИРОВАННОЕ 10мм",
-			profile: "Цвет профиля АНТРАЦИТ 7016",
-			year: "2023",
-			area: "68 м²",
-			type: "Терраса",
-			description: "Просторная терраса с тонированным остеклением для комфортного отдыха.",
-		},
-		{
-			id: 4,
-			image: "/assets/hero.jpg",
-			images: ["/assets/hero.jpg"],
-			location: "г. Краснодар",
-			glass: "Стекло СЕРОЕ 10мм",
-			profile: "Цвет профиля СЕРЫЙ 7024",
-			year: "2023",
-			area: "28 м²",
-			type: "Лоджия",
-			description: "Уютная лоджия с серым остеклением в современном стиле.",
-		},
-	];
+// Helper function to get option value with fallback
+const getOption = (key, fallback = "") => {
+	return props.landingOptions[key] || fallback;
 };
 
 // Features data
@@ -233,6 +168,11 @@ const carouselOffset = ref(0);
 const isAutoScrolling = ref(true);
 let autoScrollInterval = null;
 
+// Touch/drag support for carousel
+const carouselTouchStartX = ref(0);
+const carouselTouchEndX = ref(0);
+const isDragging = ref(false);
+
 // Carousel functionality
 const startAutoScroll = () => {
 	if (autoScrollInterval) clearInterval(autoScrollInterval);
@@ -256,6 +196,75 @@ const pauseAutoScroll = () => {
 
 const resumeAutoScroll = () => {
 	isAutoScrolling.value = true;
+};
+
+const nextSlide = () => {
+	if (portfolio.value.length > 0) {
+		carouselOffset.value = (carouselOffset.value + 1) % portfolio.value.length;
+	}
+};
+
+const prevSlide = () => {
+	if (portfolio.value.length > 0) {
+		carouselOffset.value = carouselOffset.value === 0 ? portfolio.value.length - 1 : carouselOffset.value - 1;
+	}
+};
+
+// Touch/Swipe handlers for carousel
+const handleCarouselTouchStart = (event) => {
+	carouselTouchStartX.value = event.touches[0].clientX;
+	pauseAutoScroll();
+};
+
+const handleCarouselTouchMove = (event) => {
+	// Optional: Add visual feedback during drag
+};
+
+const handleCarouselTouchEnd = (event) => {
+	carouselTouchEndX.value = event.changedTouches[0].clientX;
+	handleCarouselSwipe();
+	resumeAutoScroll();
+};
+
+const handleCarouselSwipe = () => {
+	const swipeThreshold = 50;
+	const diff = carouselTouchStartX.value - carouselTouchEndX.value;
+
+	if (Math.abs(diff) > swipeThreshold) {
+		if (diff > 0) {
+			nextSlide(); // Swipe left - next slide
+		} else {
+			prevSlide(); // Swipe right - previous slide
+		}
+	}
+};
+
+// Mouse drag handlers for desktop
+const handleCarouselMouseDown = (event) => {
+	isDragging.value = true;
+	carouselTouchStartX.value = event.clientX;
+	pauseAutoScroll();
+	event.preventDefault();
+};
+
+const handleCarouselMouseMove = (event) => {
+	if (!isDragging.value) return;
+	// Optional: Add visual feedback during drag
+};
+
+const handleCarouselMouseUp = (event) => {
+	if (!isDragging.value) return;
+	isDragging.value = false;
+	carouselTouchEndX.value = event.clientX;
+	handleCarouselSwipe();
+	resumeAutoScroll();
+};
+
+const handleCarouselMouseLeave = () => {
+	if (isDragging.value) {
+		isDragging.value = false;
+		resumeAutoScroll();
+	}
 };
 
 // Format date helper
@@ -319,11 +328,10 @@ let pulseInterval = null;
 
 // Intersection Observer for animations
 onMounted(() => {
-	// Fetch portfolio data from API
-	fetchPortfolio().then(() => {
-		// Start auto-scroll after portfolio data is loaded
+	// Start auto-scroll if portfolio data exists
+	if (portfolio.value.length > 0) {
 		startAutoScroll();
-	});
+	}
 
 	// Add scroll event listener for back to top button
 	window.addEventListener("scroll", handleScroll);
@@ -375,16 +383,20 @@ onMounted(() => {
 		"@context": "https://schema.org",
 		"@type": "Organization",
 		"@id": "https://llymar.ru/#organization",
-		name: "LLYMAR",
-		alternateName: "LLYMAR - Безрамное остекление",
+		name: getOption('site_name', 'LLYMAR'),
+		alternateName: `${getOption('site_name', 'LLYMAR')} - Безрамное остекление`,
 		url: "https://llymar.ru",
-		logo: "https://llymar.ru/assets/hero.jpg", // Replace with actual logo
-		description: "Российский производитель систем безрамного остекления для жилых и коммерческих объектов",
-		foundingDate: "2019", // Adjust based on your actual founding date
-		numberOfEmployees: "10-50", // Adjust based on your company size
+		logo: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
+		description: getOption('meta_description', "Российский производитель систем безрамного остекления для жилых и коммерческих объектов"),
+		foundingDate: getOption('founding_year', '2019'),
+		numberOfEmployees: getOption('employees_count', '10-50'),
 		sameAs: [
-			// Add your social media profiles when available
-		]
+			getOption('social_facebook', ''),
+			getOption('social_instagram', ''),
+			getOption('social_vk', ''),
+			getOption('social_youtube', ''),
+			getOption('yandex_maps_link', ''),
+		].filter(link => link) // Remove empty links
 	};
 
 	const organizationScript = document.createElement('script');
@@ -397,10 +409,10 @@ onMounted(() => {
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"@id": "https://llymar.ru/#website",
-		name: "LLYMAR - Безрамное остекление",
-		alternateName: "LLYMAR",
+		name: `${getOption('site_name', 'LLYMAR')} - Безрамное остекление`,
+		alternateName: getOption('site_name', 'LLYMAR'),
 		url: "https://llymar.ru",
-		description: "Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов в Краснодаре",
+		description: getOption('meta_description', "Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов в Краснодаре"),
 		publisher: {
 			"@id": "https://llymar.ru/#organization"
 		},
@@ -463,33 +475,32 @@ const structuredData = computed(() => ({
 	"@context": "https://schema.org",
 	"@type": "LocalBusiness",
 	"@id": "https://llymar.ru/#business",
-	name: "LLYMAR - Безрамное остекление",
-	alternateName: "LLYMAR",
-	description:
-		"Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Наша компания специализируется на производстве и установке безрамного раздвижного остекления (система слайдеры), которая сочетает в себе элегантный минимализм и инженерную точность.",
+	name: `${getOption('site_name', 'LLYMAR')} - Безрамное остекление`,
+	alternateName: getOption('site_name', 'LLYMAR'),
+	description: getOption('meta_description', "Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Наша компания специализируется на производстве и установке безрамного раздвижного остекления (система слайдеры), которая сочетает в себе элегантный минимализм и инженерную точность."),
 	url: "https://llymar.ru",
-	image: "https://llymar.ru/assets/hero.jpg",
-	logo: "https://llymar.ru/assets/hero.jpg", // You should replace this with your actual logo
+	image: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
+	logo: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
 	
 	// Enhanced contact information for Yandex rich snippets
-	telephone: "+7 989 804 12-34",
-	email: "info@llymar.ru", // Add your business email
+	telephone: getOption('phone', '+7 989 804 12-34'),
+	email: getOption('email', 'info@llymar.ru'),
 	
 	// Complete address information
 	address: {
 		"@type": "PostalAddress",
-		streetAddress: "ул. Уральская, 145/3", // Add your actual street address
-		addressLocality: "Краснодар",
-		addressRegion: "Краснодарский край",
-		postalCode: "350080", // Add your postal code
+		streetAddress: getOption('address', 'ул. Уральская, 145/3'),
+		addressLocality: getOption('address_city', 'Краснодар'),
+		addressRegion: getOption('address_region', 'Краснодарский край'),
+		postalCode: getOption('postal_code', '350080'),
 		addressCountry: "RU",
 	},
 	
 	// Geographic coordinates for better local search
 	geo: {
 		"@type": "GeoCoordinates",
-		latitude: "45.044534",
-		longitude: "39.114309",
+		latitude: getOption('geo_latitude', '45.044534'),
+		longitude: getOption('geo_longitude', '39.114309'),
 	},
 	
 	// Detailed opening hours that Yandex can display
@@ -529,7 +540,7 @@ const structuredData = computed(() => ({
 	contactPoint: [
 		{
 			"@type": "ContactPoint",
-			telephone: "+7 989 804 12-34",
+			telephone: getOption('phone', '+7 989 804 12-34'),
 			contactType: "customer service",
 			availableLanguage: ["Russian"],
 			areaServed: "RU",
@@ -542,7 +553,7 @@ const structuredData = computed(() => ({
 		},
 		{
 			"@type": "ContactPoint",
-			telephone: "+7 989 804 12-34",
+			telephone: getOption('phone', '+7 989 804 12-34'),
 			contactType: "sales",
 			availableLanguage: ["Russian"],
 			areaServed: "RU"
@@ -664,9 +675,9 @@ const structuredData = computed(() => ({
 	],
 	
 	// Additional business information
-	foundingDate: "2019", // Adjust based on when your business was founded
-	numberOfEmployees: "10-50", // Approximate employee count
-	slogan: "Ваш комфорт - наша работа!",
+	foundingDate: getOption('founding_year', '2019'),
+	numberOfEmployees: getOption('employees_count', '10-50'),
+	slogan: getOption('site_tagline', 'Ваш комфорт - наша работа!'),
 	
 	// Legal information (helps with trust)
 	// taxID: "ИНН вашей компании", // Add your actual tax ID
@@ -685,24 +696,24 @@ const structuredData = computed(() => ({
 
 <template>
 	<Head>
-		<title>Безрамное остекление в Краснодаре</title>
-		<meta name="description" content="Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня." />
-		<meta name="keywords" content="безрамное остекление, остекление террас, остекление веранд, остекление беседок, остекление кафе, остекление ресторанов" />
+		<title>{{ getOption('meta_title', 'Безрамное остекление в Краснодаре') }}</title>
+		<meta name="description" :content="getOption('meta_description', 'Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня.')" />
+		<meta name="keywords" :content="getOption('meta_keywords', 'безрамное остекление, остекление террас, остекление веранд, остекление беседок, остекление кафе, остекление ресторанов')" />
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="https://llymar.ru/" />
-		<meta property="og:title" content="LLYMAR - Безрамное остекление в Краснодаре" />
-		<meta property="og:description" content="Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня." />
-		<meta property="og:image" content="/assets/hero.jpg" />
+		<meta property="og:title" :content="`${getOption('site_name', 'LLYMAR')} - ${getOption('meta_title', 'Безрамное остекление в Краснодаре')}`" />
+		<meta property="og:description" :content="getOption('meta_description', 'Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня.')" />
+		<meta property="og:image" :content="getOption('og_image', '/assets/hero.jpg')" />
 		<meta property="og:locale" content="ru_RU" />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content="https://llymar.ru/" />
-		<meta property="twitter:title" content="LLYMAR - Безрамное остекление в Краснодаре" />
-		<meta property="twitter:description" content="Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня." />
-		<meta property="twitter:image" content="/assets/hero.jpg" />
+		<meta property="twitter:title" :content="`${getOption('site_name', 'LLYMAR')} - ${getOption('meta_title', 'Безрамное остекление в Краснодаре')}`" />
+		<meta property="twitter:description" :content="getOption('meta_description', 'Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Европейское качество, установка за 1-3 дня.')" />
+		<meta property="twitter:image" :content="getOption('og_image', '/assets/hero.jpg')" />
 
 		<!-- Additional SEO -->
 		<meta name="robots" content="index, follow" />
@@ -721,14 +732,10 @@ const structuredData = computed(() => ({
 			<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
 				<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
 					<div class="space-y-4">
-						<!-- <LandingBadge variant="gold" size="sm" :icon="StarIcon"> Премиум качество • Гарантия 10 лет </LandingBadge> -->
-
-						<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
-							Премиальное <br />
-							<span class="text-light-gold">безрамное</span> остекление
+						<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight" v-html="getOption('hero_title', 'Премиальное <br /><span class=\'text-light-gold\'>безрамное</span> остекление')">
 						</h1>
 
-						<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">Превратите свое пространство в произведение искусства с нашими безрамными системами остекления.</p>
+						<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">{{ getOption('hero_subtitle', 'Превратите свое пространство в произведение искусства с нашими безрамными системами остекления.') }}</p>
 					</div>
 
 					<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
@@ -738,13 +745,13 @@ const structuredData = computed(() => ({
 						<LandingButton 
 							variant="secondary" 
 							:icon="PhoneIcon" 
-							href="tel:+7 (989) 804 12-34" 
+							:href="`tel:${getOption('phone', '+7 989 804 12-34')}`" 
 							iconPosition="left"
 							itemProp="telephone"
 							itemScope
 							itemType="https://schema.org/ContactPoint"
 						> 
-							<span itemProp="telephone">+7 (989) 804 12-34</span>
+							<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
 						</LandingButton>
 					</div>
 
@@ -838,33 +845,44 @@ const structuredData = computed(() => ({
 				</div>
 			</div>
 
-			<!-- Loading State -->
-			<div v-if="isLoadingPortfolio" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-				<div v-for="n in 4" :key="n" class="animate-pulse">
-					<div class="aspect-square bg-gray-700 rounded-2xl mb-4"></div>
-					<div class="space-y-2">
-						<div class="h-4 bg-gray-700 rounded w-3/4"></div>
-						<div class="h-3 bg-gray-700 rounded w-1/2"></div>
-						<div class="h-3 bg-gray-700 rounded w-2/3"></div>
-					</div>
-				</div>
-			</div>
-
 			<!-- Portfolio Carousel -->
 			<div 
-				v-else-if="portfolio.length > 0" 
+				v-if="portfolio.length > 0" 
 				class="relative -mx-4 px-4 md:mx-0 md:px-0"
 				@mouseenter="pauseAutoScroll"
-				@mouseleave="resumeAutoScroll"
+				@mouseleave="handleCarouselMouseLeave"
 			>
+				<!-- Navigation Arrows -->
+				<button 
+					@click="prevSlide"
+					class="absolute left-0 md:-left-6 top-1/2 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
+					aria-label="Previous slide"
+				>
+					<ChevronLeftIcon class="w-5 h-5 md:w-6 md:h-6" />
+				</button>
+				<button 
+					@click="nextSlide"
+					class="absolute right-0 md:-right-6 top-1/2 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
+					aria-label="Next slide"
+				>
+					<ChevronRightIcon class="w-5 h-5 md:w-6 md:h-6" />
+				</button>
+
 				<!-- Carousel Container -->
 				<div class="overflow-hidden">
 					<!-- Mobile: 1 column -->
 					<div 
-						class="flex md:hidden transition-transform duration-700 ease-in-out gap-4"
+						class="flex md:hidden transition-transform duration-700 ease-in-out gap-4 select-none"
+						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
 						:style="{
 							transform: `translateX(calc(-${carouselOffset * 100}% - ${carouselOffset * 16}px))`,
 						}"
+						@touchstart="handleCarouselTouchStart"
+						@touchmove="handleCarouselTouchMove"
+						@touchend="handleCarouselTouchEnd"
+						@mousedown="handleCarouselMouseDown"
+						@mousemove="handleCarouselMouseMove"
+						@mouseup="handleCarouselMouseUp"
 					>
 						<Link
 							v-for="item in portfolio"
@@ -903,10 +921,17 @@ const structuredData = computed(() => ({
 
 					<!-- Tablet: 2 columns -->
 					<div 
-						class="hidden md:flex lg:hidden transition-transform duration-700 ease-in-out gap-8"
+						class="hidden md:flex lg:hidden transition-transform duration-700 ease-in-out gap-8 select-none"
+						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
 						:style="{
 							transform: `translateX(calc(-${carouselOffset * 50}% - ${carouselOffset * 16}px))`,
 						}"
+						@touchstart="handleCarouselTouchStart"
+						@touchmove="handleCarouselTouchMove"
+						@touchend="handleCarouselTouchEnd"
+						@mousedown="handleCarouselMouseDown"
+						@mousemove="handleCarouselMouseMove"
+						@mouseup="handleCarouselMouseUp"
 					>
 						<Link
 							v-for="item in portfolio"
@@ -945,10 +970,17 @@ const structuredData = computed(() => ({
 
 					<!-- Desktop: 4 columns -->
 					<div 
-						class="hidden lg:flex transition-transform duration-700 ease-in-out gap-8"
+						class="hidden lg:flex transition-transform duration-700 ease-in-out gap-8 select-none"
+						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
 						:style="{
 							transform: `translateX(calc(-${carouselOffset * 25}% - ${carouselOffset * 24}px))`,
 						}"
+						@touchstart="handleCarouselTouchStart"
+						@touchmove="handleCarouselTouchMove"
+						@touchend="handleCarouselTouchEnd"
+						@mousedown="handleCarouselMouseDown"
+						@mousemove="handleCarouselMouseMove"
+						@mouseup="handleCarouselMouseUp"
 					>
 						<Link
 							v-for="item in portfolio"
@@ -1000,7 +1032,7 @@ const structuredData = computed(() => ({
 			</div>
 
 			<!-- Empty State -->
-			<div v-else class="text-center py-16">
+			<div v-else-if="portfolio.length === 0" class="text-center py-16">
 				<div class="text-gray-400 text-lg mb-4">Портфолио временно недоступно</div>
 				<p class="text-gray-500">Мы работаем над обновлением наших проектов</p>
 			</div>

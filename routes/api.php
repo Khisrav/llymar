@@ -25,6 +25,17 @@ Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])
     ->name('api.portfolio.show');
 
 /*
+ * LANDING PAGE OPTIONS ROUTES
+ */
+Route::get('/landing-page-options', function () {
+    $options = \App\Models\LandingPageOption::orderBy('group')->orderBy('order')->get();
+    return response()->json([
+        'success' => true,
+        'data' => $options,
+    ]);
+})->middleware('throttle:60,1')->name('api.landing_page_options');
+
+/*
  * CONSULTATION ROUTES
  */
 Route::post('/consultation-request', [ConsultationController::class, 'store'])

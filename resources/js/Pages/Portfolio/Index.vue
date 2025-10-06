@@ -8,50 +8,33 @@ import LandingButton from "../../Components/LandingButton.vue";
 import ConsultationDialog from "../../Components/ConsultationDialog.vue";
 import { MapPinIcon, PaletteIcon, RectangleVerticalIcon, CalendarIcon, ChevronUpIcon } from "lucide-vue-next";
 
-// Portfolio data from API
-const portfolio = ref([]);
-const isLoadingPortfolio = ref(true);
+// Define props from Inertia
+const props = defineProps({
+	portfolios: {
+		type: Array,
+		default: () => [],
+	},
+});
+
+// Transform portfolio data
+const portfolio = computed(() => {
+	return props.portfolios.map((item) => ({
+		id: item.id,
+		image: item.images && item.images.length > 0 ? `/storage/${item.images[0]}` : "/assets/hero.jpg",
+		images: item.images && item.images.length > 0 ? item.images.map((img) => `/storage/${img}`) : ["/assets/hero.jpg"],
+		location: item.location || "Не указано",
+		glass: item.glass || "Не указано",
+		profile: item.color || "Не указано",
+		year: item.year || new Date().getFullYear(),
+		area: item.area ? `${item.area} м²` : "Не указано",
+		type: item.title || "Проект",
+		description: item.description || "",
+		created_at: item.created_at,
+	}));
+});
+
 const isConsultationDialogOpen = ref(false);
 const showBackToTop = ref(false);
-
-// Fetch portfolio data from API
-const fetchPortfolio = async () => {
-	try {
-		const response = await fetch("/api/portfolio", {
-			method: "GET",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			credentials: "same-origin",
-		});
-
-		if (response.ok) {
-			const data = await response.json();
-			if (data.success && data.data) {
-				portfolio.value = data.data.map((item) => ({
-					id: item.id,
-					image: item.images && item.images.length > 0 ? `/storage/${item.images[0]}` : "/assets/hero.jpg",
-					images: item.images && item.images.length > 0 ? item.images.map((img) => `/storage/${img}`) : ["/assets/hero.jpg"],
-					location: item.location || "Не указано",
-					glass: item.glass || "Не указано",
-					profile: item.color || "Не указано",
-					year: item.year || new Date().getFullYear(),
-					area: item.area ? `${item.area} м²` : "Не указано",
-					type: item.title || "Проект",
-					description: item.description || "",
-					created_at: item.created_at,
-				}));
-			}
-		} else {
-			console.error("Failed to fetch portfolio data");
-		}
-	} catch (error) {
-		console.error("Error fetching portfolio:", error);
-	} finally {
-		isLoadingPortfolio.value = false;
-	}
-};
 
 // Open consultation dialog
 const openConsultationDialog = () => {
@@ -119,7 +102,6 @@ const structuredData = computed(() => ({
 
 // Lifecycle hooks
 onMounted(() => {
-	fetchPortfolio();
 	window.addEventListener("scroll", handleScroll);
 
 	// Add structured data
@@ -199,20 +181,8 @@ onUnmounted(() => {
 		<!-- Portfolio Grid -->
 		<section class="py-16 md:py-24">
 			<div class="container max-w-screen-2xl px-4">
-				<!-- Loading State -->
-				<div v-if="isLoadingPortfolio" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-					<div v-for="n in 8" :key="n" class="animate-pulse">
-						<div class="aspect-square bg-gray-300 rounded-2xl mb-4"></div>
-						<div class="space-y-2">
-							<div class="h-4 bg-gray-300 rounded w-3/4"></div>
-							<div class="h-3 bg-gray-300 rounded w-1/2"></div>
-							<div class="h-3 bg-gray-300 rounded w-2/3"></div>
-						</div>
-					</div>
-				</div>
-
 				<!-- Portfolio Items -->
-				<div v-else-if="portfolio.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+				<div v-if="portfolio.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 					<Link
 						v-for="item in portfolio"
 						:key="item.id"

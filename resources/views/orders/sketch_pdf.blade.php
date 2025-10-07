@@ -428,7 +428,8 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
         //central opening
         $opening = $openings[$oindex];
         $stvorki = $opening['doors'];
-        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 130;
+        
+        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 2 * $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'];
         $doorsGap = [
             'start' => $opening['e'] + $opening['g'],
             'end' => $opening['b'],

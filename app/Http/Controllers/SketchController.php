@@ -211,8 +211,8 @@ class SketchController extends Controller
         if ($stvorki <= 0) {
             return [];
         }
-        
-        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 130;
+
+        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 2 * $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'];
         $doorsGap = [
             'start' => $opening['e'] + $opening['g'],
             'end' => $opening['b'],

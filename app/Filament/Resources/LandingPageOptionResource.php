@@ -26,7 +26,6 @@ class LandingPageOptionResource extends Resource
     {
         return $form
             ->schema([
-                // This won't be used - we have a custom page
             ]);
     }
 
@@ -34,7 +33,6 @@ class LandingPageOptionResource extends Resource
     {
         return $table
             ->columns([
-                // This won't be used - we have a custom page
             ]);
     }
 

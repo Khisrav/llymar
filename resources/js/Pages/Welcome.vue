@@ -32,6 +32,16 @@ import LandingButton from "../Components/LandingButton.vue";
 import ConsultationDialog from "../Components/ConsultationDialog.vue";
 import GuestFooter from "../Layouts/GuestFooter.vue";
 
+// Import Swiper Vue.js components
+import { Swiper, SwiperSlide } from 'swiper/vue';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+// Import required modules
+import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
+
 // Define props from Inertia
 const props = defineProps({
 	canLogin: Boolean,
@@ -40,6 +50,10 @@ const props = defineProps({
 		default: () => ({}),
 	},
 	initialPortfolio: {
+		type: Array,
+		default: () => [],
+	},
+	heroCarousels: {
 		type: Array,
 		default: () => [],
 	},
@@ -157,115 +171,14 @@ const glassTypes = ref([
 	},
 ]);
 
+// Swiper modules
+const swiperModules = [Navigation, Pagination, Autoplay, EffectFade];
+
 // Reactive state
 const currentTestimonial = ref(0);
 const isConsultationDialogOpen = ref(false);
 const showBackToTop = ref(false);
 const mailButtonPulse = ref(false);
-
-// Carousel state
-const carouselOffset = ref(0);
-const isAutoScrolling = ref(true);
-let autoScrollInterval = null;
-
-// Touch/drag support for carousel
-const carouselTouchStartX = ref(0);
-const carouselTouchEndX = ref(0);
-const isDragging = ref(false);
-
-// Carousel functionality
-const startAutoScroll = () => {
-	if (autoScrollInterval) clearInterval(autoScrollInterval);
-	autoScrollInterval = setInterval(() => {
-		if (isAutoScrolling.value && portfolio.value.length > 0) {
-			carouselOffset.value = (carouselOffset.value + 1) % portfolio.value.length;
-		}
-	}, 5000); // Auto-scroll every 5 seconds
-};
-
-const stopAutoScroll = () => {
-	if (autoScrollInterval) {
-		clearInterval(autoScrollInterval);
-		autoScrollInterval = null;
-	}
-};
-
-const pauseAutoScroll = () => {
-	isAutoScrolling.value = false;
-};
-
-const resumeAutoScroll = () => {
-	isAutoScrolling.value = true;
-};
-
-const nextSlide = () => {
-	if (portfolio.value.length > 0) {
-		carouselOffset.value = (carouselOffset.value + 1) % portfolio.value.length;
-	}
-};
-
-const prevSlide = () => {
-	if (portfolio.value.length > 0) {
-		carouselOffset.value = carouselOffset.value === 0 ? portfolio.value.length - 1 : carouselOffset.value - 1;
-	}
-};
-
-// Touch/Swipe handlers for carousel
-const handleCarouselTouchStart = (event) => {
-	carouselTouchStartX.value = event.touches[0].clientX;
-	pauseAutoScroll();
-};
-
-const handleCarouselTouchMove = (event) => {
-	// Optional: Add visual feedback during drag
-};
-
-const handleCarouselTouchEnd = (event) => {
-	carouselTouchEndX.value = event.changedTouches[0].clientX;
-	handleCarouselSwipe();
-	resumeAutoScroll();
-};
-
-const handleCarouselSwipe = () => {
-	const swipeThreshold = 50;
-	const diff = carouselTouchStartX.value - carouselTouchEndX.value;
-
-	if (Math.abs(diff) > swipeThreshold) {
-		if (diff > 0) {
-			nextSlide(); // Swipe left - next slide
-		} else {
-			prevSlide(); // Swipe right - previous slide
-		}
-	}
-};
-
-// Mouse drag handlers for desktop
-const handleCarouselMouseDown = (event) => {
-	isDragging.value = true;
-	carouselTouchStartX.value = event.clientX;
-	pauseAutoScroll();
-	event.preventDefault();
-};
-
-const handleCarouselMouseMove = (event) => {
-	if (!isDragging.value) return;
-	// Optional: Add visual feedback during drag
-};
-
-const handleCarouselMouseUp = (event) => {
-	if (!isDragging.value) return;
-	isDragging.value = false;
-	carouselTouchEndX.value = event.clientX;
-	handleCarouselSwipe();
-	resumeAutoScroll();
-};
-
-const handleCarouselMouseLeave = () => {
-	if (isDragging.value) {
-		isDragging.value = false;
-		resumeAutoScroll();
-	}
-};
 
 // Format date helper
 const formatDate = (dateString) => {
@@ -328,11 +241,6 @@ let pulseInterval = null;
 
 // Intersection Observer for animations
 onMounted(() => {
-	// Start auto-scroll if portfolio data exists
-	if (portfolio.value.length > 0) {
-		startAutoScroll();
-	}
-
 	// Add scroll event listener for back to top button
 	window.addEventListener("scroll", handleScroll);
 
@@ -459,9 +367,6 @@ onUnmounted(() => {
 		clearInterval(pulseInterval);
 		pulseInterval = null;
 	}
-	
-	// Stop auto-scroll
-	stopAutoScroll();
 	
 	// Remove structured data scripts
 	const structuredDataScripts = document.querySelectorAll('script[type="application/ld+json"]');
@@ -725,51 +630,133 @@ const structuredData = computed(() => ({
 	</Head>
 
 	<!-- Hero Section -->
-	<section id="hero" class="bg-[url('/assets/hero.jpg')] bg-cover bg-center text-white relative min-h-screen overflow-hidden">
-		<div class="bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70 min-h-screen flex flex-col">
-			<GuestHeaderLayout theme="transparent" :openConsultationDialog="openConsultationDialog" />
+	<section id="hero" class="text-white relative min-h-screen overflow-hidden">
+		<!-- Hero Carousel with Swiper -->
+		<Swiper
+			v-if="heroCarousels && heroCarousels.length > 0"
+			:modules="swiperModules"
+			:slides-per-view="1"
+			:space-between="0"
+			:loop="true"
+			:effect="'fade'"
+			:autoplay="{ delay: 5000, disableOnInteraction: false }"
+			:pagination="{ clickable: true, el: '.hero-pagination' }"
+			:navigation="{ nextEl: '.hero-button-next', prevEl: '.hero-button-prev' }"
+			class="hero-swiper h-screen"
+		>
+			<SwiperSlide v-for="slide in heroCarousels" :key="slide.id">
+				<!-- Background Image -->
+				<div 
+					class="absolute inset-0 bg-cover bg-center"
+					:style="`background-image: url(/storage/${slide.background})`"
+				></div>
+				
+				<!-- Overlay -->
+				<div class="absolute inset-0 bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70"></div>
 
-			<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
-				<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
-					<div class="space-y-4">
-						<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight" v-html="getOption('hero_title', 'Премиальное <br /><span class=\'text-light-gold\'>безрамное</span> остекление')">
-						</h1>
+				<!-- Content -->
+				<div class="relative z-20 h-full flex flex-col">
+					<GuestHeaderLayout theme="transparent" :openConsultationDialog="openConsultationDialog" />
 
-						<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">{{ getOption('hero_subtitle', 'Превратите свое пространство в произведение искусства с нашими безрамными системами остекления.') }}</p>
-					</div>
+					<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
+						<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+							<div class="space-y-4">
+								<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
+									{{ slide.title }}
+								</h1>
 
-					<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
-						<LandingButton @click="openConsultationDialog"> Получить консультацию </LandingButton>
+								<p v-if="slide.description" class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">
+									{{ slide.description }}
+								</p>
+							</div>
 
-						<!-- Phone number with microdata for rich snippets -->
-						<LandingButton 
-							variant="secondary" 
-							:icon="PhoneIcon" 
-							:href="`tel:${getOption('phone', '+7 989 804 12-34')}`" 
-							iconPosition="left"
-							itemProp="telephone"
-							itemScope
-							itemType="https://schema.org/ContactPoint"
-						> 
-							<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
-						</LandingButton>
-					</div>
+							<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
+								<LandingButton @click="openConsultationDialog"> 
+									{{ slide.action_text || 'Получить консультацию' }}
+								</LandingButton>
 
-					<!-- Stats -->
-					<!-- <div class="grid grid-cols-2 md:flex flex-col md:flex-row items-center justify-between gap-6 mt-4 md:mt-12 pt-8 border-t border-white/20">
-						<div v-for="stat in stats" :key="stat.label" class="text-center animate-on-scroll opacity-0 translate-y-4 transition-all duration-700">
-							<div class="text-2xl md:text-3xl font-bold text-light-gold montserrat">{{ stat.number }}</div>
-							<div class="text-sm text-gray-300 mt-1">{{ stat.label }}</div>
-						</div>
-						<div class="hidden md:block animate-bounce cursor-pointer" @click="scrollToSection('portfolio')">
-							<div class="flex flex-col items-center gap-2 text-white/70 hover:text-light-gold transition-colors">
-								<img src="/assets/scrolldown.svg" alt="scroll" />
+								<!-- Phone number with microdata for rich snippets -->
+								<LandingButton 
+									variant="secondary" 
+									:icon="PhoneIcon" 
+									:href="`tel:${getOption('phone', '+7 989 804 12-34')}`" 
+									iconPosition="left"
+									itemProp="telephone"
+									itemScope
+									itemType="https://schema.org/ContactPoint"
+								> 
+									<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
+								</LandingButton>
+							</div>
+
+							<div class="text-right">
+								<div class="inline-block text-white/70 hover:text-light-gold transition-colors animate-bounce cursor-pointer mt-4 pt-8 md:mt-12" @click="scrollToSection('portfolio')">
+									<img src="/assets/scrolldown.svg" alt="scroll" />
+								</div>
 							</div>
 						</div>
-					</div> -->
-					<div class="text-right">
-						<div class="inline-block text-white/70 hover:text-light-gold transition-colors animate-bounce cursor-pointer mt-4 pt-8 md:mt-12" @click="scrollToSection('portfolio')">
-							<img src="/assets/scrolldown.svg" alt="scroll" />
+					</div>
+				</div>
+			</SwiperSlide>
+
+			<!-- Navigation Buttons (Desktop only) -->
+			<div class="hidden lg:block">
+				<button 
+					class="hero-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
+					aria-label="Previous slide"
+				>
+					<ChevronLeftIcon class="w-6 h-6" />
+				</button>
+				<button 
+					class="hero-button-next absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
+					aria-label="Next slide"
+				>
+					<ChevronRightIcon class="w-6 h-6" />
+				</button>
+			</div>
+
+			<!-- Pagination Dots -->
+			<div class="hero-pagination absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex gap-3"></div>
+		</Swiper>
+
+		<!-- Fallback: Default hero if no carousels -->
+		<div v-else class="relative min-h-screen">
+			<div class="absolute inset-0 bg-[url('/assets/hero.jpg')] bg-cover bg-center"></div>
+			<div class="absolute inset-0 bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70"></div>
+
+			<div class="relative z-20 min-h-screen flex flex-col">
+				<GuestHeaderLayout theme="transparent" :openConsultationDialog="openConsultationDialog" />
+
+				<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
+					<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+						<div class="space-y-4">
+							<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight" v-html="getOption('hero_title', 'Премиальное <br /><span class=\'text-light-gold\'>безрамное</span> остекление')">
+							</h1>
+
+							<p class="text md:text-xl text-gray-300 max-w-2xl leading-relaxed">{{ getOption('hero_subtitle', 'Превратите свое пространство в произведение искусства с нашими безрамными системами остекления.') }}</p>
+						</div>
+
+						<div class="flex flex-col sm:flex-row items-center gap-4 md:gap-8 mt-6">
+							<LandingButton @click="openConsultationDialog"> Получить консультацию </LandingButton>
+
+							<!-- Phone number with microdata for rich snippets -->
+							<LandingButton 
+								variant="secondary" 
+								:icon="PhoneIcon" 
+								:href="`tel:${getOption('phone', '+7 989 804 12-34')}`" 
+								iconPosition="left"
+								itemProp="telephone"
+								itemScope
+								itemType="https://schema.org/ContactPoint"
+							> 
+								<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
+							</LandingButton>
+						</div>
+
+						<div class="text-right">
+							<div class="inline-block text-white/70 hover:text-light-gold transition-colors animate-bounce cursor-pointer mt-4 pt-8 md:mt-12" @click="scrollToSection('portfolio')">
+								<img src="/assets/scrolldown.svg" alt="scroll" />
+							</div>
 						</div>
 					</div>
 				</div>
@@ -845,191 +832,74 @@ const structuredData = computed(() => ({
 				</div>
 			</div>
 
-			<!-- Portfolio Carousel -->
-			<div 
-				v-if="portfolio.length > 0" 
-				class="relative -mx-4 px-4 md:mx-0 md:px-0"
-				@mouseenter="pauseAutoScroll"
-				@mouseleave="handleCarouselMouseLeave"
+		<!-- Portfolio Carousel with Swiper -->
+		<div v-if="portfolio.length > 0" class="relative">
+			<Swiper
+				:modules="swiperModules"
+				:slides-per-view="1"
+				:space-between="16"
+				:loop="true"
+				:autoplay="{ delay: 5000, disableOnInteraction: false }"
+				:pagination="{ clickable: true, el: '.portfolio-pagination' }"
+				:navigation="{ nextEl: '.portfolio-button-next', prevEl: '.portfolio-button-prev' }"
+				:breakpoints="{
+					640: { slidesPerView: 2, spaceBetween: 24 },
+					1024: { slidesPerView: 4, spaceBetween: 32 }
+				}"
+				class="portfolio-swiper"
 			>
-				<!-- Navigation Arrows -->
-				<button 
-					@click="prevSlide"
-					class="absolute left-0 md:-left-6 top-1/2 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
-					aria-label="Previous slide"
-				>
-					<ChevronLeftIcon class="w-5 h-5 md:w-6 md:h-6" />
-				</button>
-				<button 
-					@click="nextSlide"
-					class="absolute right-0 md:-right-6 top-1/2 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
-					aria-label="Next slide"
-				>
-					<ChevronRightIcon class="w-5 h-5 md:w-6 md:h-6" />
-				</button>
-
-				<!-- Carousel Container -->
-				<div class="overflow-hidden">
-					<!-- Mobile: 1 column -->
-					<div 
-						class="flex md:hidden transition-transform duration-700 ease-in-out gap-4 select-none"
-						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
-						:style="{
-							transform: `translateX(calc(-${carouselOffset * 100}% - ${carouselOffset * 16}px))`,
-						}"
-						@touchstart="handleCarouselTouchStart"
-						@touchmove="handleCarouselTouchMove"
-						@touchend="handleCarouselTouchEnd"
-						@mousedown="handleCarouselMouseDown"
-						@mousemove="handleCarouselMouseMove"
-						@mouseup="handleCarouselMouseUp"
+				<SwiperSlide v-for="item in portfolio" :key="item.id">
+					<Link
+						:href="`/portfolio/${item.id}`"
+						class="group cursor-pointer block transition-all duration-300 hover:-translate-y-2"
 					>
-						<Link
-							v-for="item in portfolio"
-							:key="`mobile-${item.id}`"
-							:href="`/portfolio/${item.id}`"
-							class="group cursor-pointer flex-shrink-0 w-full transition-all duration-300 hover:-translate-y-2"
-						>
-							<div class="relative overflow-hidden rounded-2xl">
-								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
-								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-									<div class="absolute bottom-4 left-4 right-4">
-										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
-										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
-									</div>
+						<div class="relative overflow-hidden rounded-2xl">
+							<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
+							<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+								<div class="absolute bottom-4 left-4 right-4">
+									<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
+									<div class="text-white text-lg font-semibold">{{ item.area }}</div>
 								</div>
 							</div>
+						</div>
 
-							<div class="flex flex-col gap-3 mt-4 montserrat">
-								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<MapPinIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.location }}</span>
-									<span class="text-gray-400">• {{ item.year }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.glass }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<PaletteIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.profile }}</span>
-								</div>
+						<div class="flex flex-col gap-3 mt-4 montserrat">
+							<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
+							<div class="flex flex-row gap-2 items-center text-sm">
+								<MapPinIcon class="text-light-gold w-4 h-4" />
+								<span>{{ item.location }}</span>
+								<span class="text-gray-400">• {{ item.year }}</span>
 							</div>
-						</Link>
-					</div>
-
-					<!-- Tablet: 2 columns -->
-					<div 
-						class="hidden md:flex lg:hidden transition-transform duration-700 ease-in-out gap-8 select-none"
-						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
-						:style="{
-							transform: `translateX(calc(-${carouselOffset * 50}% - ${carouselOffset * 16}px))`,
-						}"
-						@touchstart="handleCarouselTouchStart"
-						@touchmove="handleCarouselTouchMove"
-						@touchend="handleCarouselTouchEnd"
-						@mousedown="handleCarouselMouseDown"
-						@mousemove="handleCarouselMouseMove"
-						@mouseup="handleCarouselMouseUp"
-					>
-						<Link
-							v-for="item in portfolio"
-							:key="`tablet-${item.id}`"
-							:href="`/portfolio/${item.id}`"
-							class="group cursor-pointer flex-shrink-0 w-[calc(50%-16px)] transition-all duration-300 hover:-translate-y-2"
-						>
-							<div class="relative overflow-hidden rounded-2xl">
-								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
-								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-									<div class="absolute bottom-4 left-4 right-4">
-										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
-										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
-									</div>
-								</div>
+							<div class="flex flex-row gap-2 items-center text-sm">
+								<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
+								<span>{{ item.glass }}</span>
 							</div>
-
-							<div class="flex flex-col gap-3 mt-4 montserrat">
-								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<MapPinIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.location }}</span>
-									<span class="text-gray-400">• {{ item.year }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.glass }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<PaletteIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.profile }}</span>
-								</div>
+							<div class="flex flex-row gap-2 items-center text-sm">
+								<PaletteIcon class="text-light-gold w-4 h-4" />
+								<span>{{ item.profile }}</span>
 							</div>
-						</Link>
-					</div>
+						</div>
+					</Link>
+			</SwiperSlide>
 
-					<!-- Desktop: 4 columns -->
-					<div 
-						class="hidden lg:flex transition-transform duration-700 ease-in-out gap-8 select-none"
-						:class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
-						:style="{
-							transform: `translateX(calc(-${carouselOffset * 25}% - ${carouselOffset * 24}px))`,
-						}"
-						@touchstart="handleCarouselTouchStart"
-						@touchmove="handleCarouselTouchMove"
-						@touchend="handleCarouselTouchEnd"
-						@mousedown="handleCarouselMouseDown"
-						@mousemove="handleCarouselMouseMove"
-						@mouseup="handleCarouselMouseUp"
-					>
-						<Link
-							v-for="item in portfolio"
-							:key="`desktop-${item.id}`"
-							:href="`/portfolio/${item.id}`"
-							class="group cursor-pointer flex-shrink-0 w-[calc(25%-24px)] transition-all duration-300 hover:-translate-y-2"
-						>
-							<div class="relative overflow-hidden rounded-2xl">
-								<div class="aspect-square bg-cover bg-center transition-transform duration-500 group-hover:scale-110" :style="`background-image: url(${item.image})`"></div>
-								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-									<div class="absolute bottom-4 left-4 right-4">
-										<div class="text-light-gold text-sm font-medium">{{ item.type }}</div>
-										<div class="text-white text-lg font-semibold">{{ item.area }}</div>
-									</div>
-								</div>
-							</div>
+			<!-- Pagination Dots -->
+			<div class="portfolio-pagination flex justify-center gap-2 mt-8"></div>
+		</Swiper>
 
-							<div class="flex flex-col gap-3 mt-4 montserrat">
-								<h3 class="text-lg font-semibold group-hover:text-light-gold transition-colors">{{ item.type }}</h3>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<MapPinIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.location }}</span>
-									<span class="text-gray-400">• {{ item.year }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<RectangleVerticalIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.glass }}</span>
-								</div>
-								<div class="flex flex-row gap-2 items-center text-sm">
-									<PaletteIcon class="text-light-gold w-4 h-4" />
-									<span>{{ item.profile }}</span>
-								</div>
-							</div>
-						</Link>
-					</div>
-				</div>
-
-				<!-- Carousel Indicators -->
-				<div class="flex justify-center gap-2 mt-8">
-					<button
-						v-for="(item, index) in portfolio"
-						:key="`indicator-${index}`"
-						@click="carouselOffset = index"
-						class="w-2 h-2 rounded-full transition-all duration-300"
-						:class="carouselOffset === index ? 'bg-light-gold w-8' : 'bg-white/30 hover:bg-white/50'"
-						:aria-label="`Перейти к слайду ${index + 1}`"
-					></button>
-				</div>
-			</div>
+		<!-- Navigation Buttons (Desktop only) - Outside Swiper -->
+		<button 
+			class="portfolio-button-prev hidden lg:block absolute left-0 md:-left-6 top-1/3 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
+			aria-label="Previous slide"
+		>
+			<ChevronLeftIcon class="w-5 h-5 md:w-6 md:h-6" />
+		</button>
+		<button 
+			class="portfolio-button-next hidden lg:block absolute right-0 md:-right-6 top-1/3 -translate-y-1/2 z-10 bg-light-gold hover:bg-light-gold/90 text-dark-green p-2 md:p-3 rounded-full shadow-lg transition-all hover:scale-110"
+			aria-label="Next slide"
+		>
+			<ChevronRightIcon class="w-5 h-5 md:w-6 md:h-6" />
+		</button>
+		</div>
 
 			<!-- Empty State -->
 			<div v-else-if="portfolio.length === 0" class="text-center py-16">
@@ -1341,5 +1211,43 @@ a:focus-visible {
 		transform: scale(1);
 		box-shadow: 0 0 0 20px rgba(231, 200, 134, 0);
 	}
+}
+
+/* Swiper Custom Styles */
+.hero-pagination :deep(.swiper-pagination-bullet) {
+	width: 8px;
+	height: 8px;
+	background: rgba(255, 255, 255, 0.3);
+	opacity: 1;
+	transition: all 0.3s ease;
+}
+
+.hero-pagination :deep(.swiper-pagination-bullet-active) {
+	background: #E7C886; /* light-gold */
+	width: 32px;
+	border-radius: 4px;
+}
+
+.portfolio-pagination :deep(.swiper-pagination-bullet) {
+	width: 8px;
+	height: 8px;
+	background: rgba(255, 255, 255, 0.3);
+	opacity: 1;
+	transition: all 0.3s ease;
+}
+
+.portfolio-pagination :deep(.swiper-pagination-bullet:hover) {
+	background: rgba(255, 255, 255, 0.5);
+}
+
+.portfolio-pagination :deep(.swiper-pagination-bullet-active) {
+	background: #E7C886; /* light-gold */
+	width: 32px;
+	border-radius: 4px;
+}
+
+/* Swiper fade effect */
+.hero-swiper :deep(.swiper-slide) {
+	transition-property: opacity;
 }
 </style>

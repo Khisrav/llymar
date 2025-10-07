@@ -95,7 +95,9 @@ class PortfolioResource extends Resource
                             ->reorderable()
                             ->directory('portfolio')
                             ->hint('Загрузите несколько изображений для карусели')
-                            ->maxSize(512)
+                            // ->maxSize(512)
+                            ->optimize('webp')
+                            ->resize(50)
                             ->panelLayout('grid')
                             ->downloadable(),
                     ])

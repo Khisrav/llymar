@@ -52,10 +52,14 @@ Route::get('/', function () {
             'created_at'
         ]);
     
+    // Get active hero carousels
+    $heroCarousels = \App\Models\HeroCarousel::active()->ordered()->get();
+    
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('auth'),
         'landingOptions' => $optionsMap,
         'initialPortfolio' => $portfolios,
+        'heroCarousels' => $heroCarousels,
     ]);
 });
 

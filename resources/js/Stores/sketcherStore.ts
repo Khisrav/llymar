@@ -209,7 +209,13 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				} else if (i == currentOpening.value.doors) {
 					temp += doorsGap["start"];
 				}
-
+				//gap = 2 * 24 + 17 + 30 + 33 = 128
+				//doorsGap["start"] = 30 + 33 = 63
+				//middle = (7 * 13) / 7 = 13
+				//edges = (7 * 13 - 13 * 6) / 2 = 6
+				//z = 2872 / 8 = 359
+				//temp = 359 + 6 = 365
+				//shirinaStvorok[0] = 365 + 63 = 428
 				shirinaStvorok[i] = Math.floor(temp);
 			}
 		}

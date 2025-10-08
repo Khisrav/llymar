@@ -1,0 +1,571 @@
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { Head, router } from "@inertiajs/vue3";
+import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../../Components/ui/table";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "../../../Components/ui/card";
+import { Badge } from "../../../Components/ui/badge";
+import { toast } from "vue-sonner";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../../Components/ui/select";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../../../Components/ui/dialog";
+import Label from "../../../Components/ui/label/Label.vue";
+import Input from "../../../Components/ui/input/Input.vue";
+import Textarea from "../../../Components/ui/textarea/Textarea.vue";
+import Button from "../../../Components/ui/button/Button.vue";
+import { Switch } from "../../../Components/ui/switch";
+import { PencilIcon, TrashIcon, UserIcon, PhoneIcon, BuildingIcon, MapPinIcon } from "lucide-vue-next";
+
+const props = defineProps<{
+	childUsers: Array<any>;
+	canManageUsers: boolean;
+}>();
+
+const showCreateUserDialog = ref(false);
+const showEditUserDialog = ref(false);
+const showRequisites = ref(false);
+const editingUser = ref<any>(null);
+
+const hasUsers = computed(() => props.childUsers.length > 0);
+
+const newUser = ref({
+	name: "",
+	email: "",
+	phone: "",
+	telegram: "",
+	country: "",
+	region: "",
+	address: "",
+	company: "",
+	password: "",
+	reward_fee: 0,
+	can_access_dxf: false,
+	inn: "",
+	kpp: "",
+	current_account: "",
+	correspondent_account: "",
+	bik: "",
+	bank: "",
+	legal_address: "",
+});
+
+const countries = {
+	Армения: ["Арагацотн", "Арарат", "Армавир", "Гегаркуник", "Котайк", "Лори", "Ширак", "Сюник", "Тавуш", "Вайоц Дзор", "Ереван"],
+	Беларусь: ["Брестская область", "Гомельская область", "Гродненская область", "Минская область", "Могилевская область", "Витебская область", "Минск"],
+	Казахстан: ["Акмолинская область", "Актюбинская область", "Алматинская область", "Атырауская область", "Восточно-Казахстанская область", "Жамбылская область", "Карагандинская область", "Костанайская область", "Кызылординская область", "Мангистауская область", "Северо-Казахстанская область", "Павлодарская область", "Туркестанская область", "Западно-Казахстанская область", "Алматы", "Астана", "Шымкент"],
+	Киргизия: ["Баткенская область", "Чуйская область", "Джалал-Абадская область", "Нарынская область", "Ошская область", "Таласская область", "Иссык-Кульская область", "Бишкек", "Ош"],
+	Россия: ["Республика Адыгея", "Республика Башкортостан", "Республика Бурятия", "Республика Алтай", "Республика Дагестан", "Республика Ингушетия", "Кабардино-Балкарская Республика", "Республика Калмыкия", "Карачаево-Черкесская Республика", "Республика Карелия", "Республика Крым", "Республика Коми", "Республика Марий Эл", "Республика Мордовия", "Республика Саха (Якутия)", "Республика Северная Осетия-Алания", "Республика Татарстан", "Республика Тыва", "Удмуртская Республика", "Республика Хакасия", "Чеченская Республика", "Чувашская Республика", "Алтайский край", "Забайкальский край", "Камчатский край", "Краснодарский край", "Красноярский край", "Пермский край", "Приморский край", "Ставропольский край", "Хабаровский край", "Амурская область", "Архангельская область", "Астраханская область", "Белгородская область", "Брянская область", "Владимирская область", "Волгоградская область", "Вологодская область", "Воронежская область", "Ивановская область", "Иркутская область", "Калининградская область", "Калужская область", "Кемеровская область", "Кировская область", "Костромская область", "Курганская область", "Курская область", "Ленинградская область", "Липецкая область", "Магаданская область", "Московская область", "Мурманская область", "Нижегородская область", "Новгородская область", "Новосибирская область", "Омская область", "Оренбургская область", "Орловская область", "Пензенская область", "Псковская область", "Ростовская область", "Рязанская область", "Самарская область", "Саратовская область", "Сахалинская область", "Свердловская область", "Смоленская область", "Тамбовская область", "Тверская область", "Томская область", "Тульская область", "Тюменская область", "Ульяновская область", "Челябинская область", "Ярославская область", "Москва", "Санкт-Петербург", "Севастополь", "Еврейская автономная область", "Ненецкий автономный округ", "Ханты-Мансийский автономный округ", "Чукотский автономный округ", "Ямало-Ненецкий автономный округ"],
+};
+
+const regions = computed(() => {
+	return newUser.value.country ? countries[newUser.value.country as keyof typeof countries] || [] : [];
+});
+
+const editRegions = computed(() => {
+	return editingUser.value?.country ? countries[editingUser.value.country as keyof typeof countries] || [] : [];
+});
+
+const createUser = () => {
+	router.post("/app/users", newUser.value, {
+		onSuccess: () => {
+			toast({
+				title: "Успешно!",
+				description: "Пользователь создан",
+			});
+			showCreateUserDialog.value = false;
+			resetNewUser();
+		},
+		onError: (errors) => {
+			toast({
+				title: "Ошибка",
+				description: "Не удалось создать пользователя",
+				variant: "destructive",
+			});
+		},
+	});
+};
+
+const updateUser = () => {
+	router.put(`/app/users/${editingUser.value.id}`, editingUser.value, {
+		onSuccess: () => {
+			toast({
+				title: "Успешно!",
+				description: "Пользователь обновлен",
+			});
+			showEditUserDialog.value = false;
+			editingUser.value = null;
+		},
+		onError: (errors) => {
+			toast({
+				title: "Ошибка",
+				description: "Не удалось обновить пользователя",
+				variant: "destructive",
+			});
+		},
+	});
+};
+
+const deleteUser = (userId: number) => {
+	if (!confirm("Вы уверены, что хотите удалить этого пользователя?")) {
+		return;
+	}
+
+	router.delete(`/app/users/${userId}`, {
+		onSuccess: () => {
+			toast({
+				title: "Успешно!",
+				description: "Пользователь удален",
+			});
+		},
+		onError: () => {
+			toast({
+				title: "Ошибка",
+				description: "Не удалось удалить пользователя",
+				variant: "destructive",
+			});
+		},
+	});
+};
+
+const editUser = (user: any) => {
+	editingUser.value = { ...user };
+	showEditUserDialog.value = true;
+};
+
+const resetNewUser = () => {
+	newUser.value = {
+		name: "",
+		email: "",
+		phone: "",
+		telegram: "",
+		country: "",
+		region: "",
+		address: "",
+		company: "",
+		password: "",
+		reward_fee: 0,
+		can_access_dxf: false,
+		inn: "",
+		kpp: "",
+		current_account: "",
+		correspondent_account: "",
+		bik: "",
+		bank: "",
+		legal_address: "",
+	};
+};
+</script>
+
+<template>
+	<Head title="Управление пользователями" />
+	<AuthenticatedHeaderLayout />
+
+	<div class="container mx-auto p-0 md:p-6 lg:p-8">
+		<div class="bg-background md:border md:rounded-2xl md:shadow-sm overflow-hidden">
+			<!-- Header Section -->
+			<div class="p-4 md:p-8">
+				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+					<div class="flex items-center gap-3">
+						<div class="p-2 bg-primary/10 rounded-lg">
+							<UserIcon class="h-6 w-6 text-primary" />
+						</div>
+						<div>
+							<h1 class="text-2xl font-bold tracking-tight">Пользователи</h1>
+							<p class="text-sm text-muted-foreground mt-1">
+								{{ hasUsers ? `${childUsers.length} пользователей` : 'Управляйте дочерними пользователями' }}
+							</p>
+						</div>
+					</div>
+
+					<Button @click="showCreateUserDialog = true" variant="outline">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+						</svg>
+						Создать пользователя
+					</Button>
+				</div>
+			</div>
+
+			<!-- Empty State -->
+			<div v-if="!hasUsers" class="p-8 md:p-16">
+				<div class="text-center max-w-md mx-auto">
+					<div class="mb-6">
+						<div class="mx-auto w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+							<UserIcon class="h-10 w-10 text-muted-foreground" />
+						</div>
+					</div>
+					<h3 class="text-xl font-semibold mb-2">Пользователей пока нет</h3>
+					<p class="text-muted-foreground mb-6">Создайте первого дочернего пользователя</p>
+					<Button @click="showCreateUserDialog = true" size="lg" class="gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+						</svg>
+						Создать пользователя
+					</Button>
+				</div>
+			</div>
+
+			<!-- Users Content -->
+			<div v-else class="p-4 md:p-6 lg:p-8" style="padding-top: 0px !important;">
+				<!-- Mobile Cards View -->
+				<div class="md:hidden space-y-4">
+					<div 
+						v-for="(user, index) in childUsers" 
+						:key="user.id" 
+						class="border rounded-xl p-4 bg-card transition-all duration-200 hover:border-border/60"
+						:style="{ animationDelay: `${index * 50}ms` }"
+					>
+						<div class="flex items-center justify-between gap-2 mb-2">
+							<Badge variant="outline">{{ user.role }}</Badge>
+							<div class="flex items-center gap-2">
+								<div class="flex gap-2">
+									<Button @click="editUser(user)" size="icon" variant="outline">
+										<PencilIcon class="h-4 w-4" />
+									</Button>
+									<Button @click="deleteUser(user.id)" size="icon" variant="secondary" class="hover:bg-destructive/10 hover:text-destructive bg-gray-100 dark:bg-gray-800">
+										<TrashIcon class="h-4 w-4" />
+									</Button>
+								</div>
+							</div>
+						</div>
+						<div class="flex items-start justify-between mb-4">
+							<div class="flex-1">
+								<div class="font-semibold text-lg mb-1">{{ user.name }}</div>
+								<div class="text-sm text-muted-foreground">{{ user.email }}</div>
+							</div>
+						</div>
+
+						<div class="space-y-3">
+							<div class="flex items-center gap-2 text-sm">
+								<BuildingIcon class="h-4 w-4 text-muted-foreground" />
+								<span>{{ user.company }}</span>
+							</div>
+
+							<div class="flex items-center gap-2 text-sm">
+								<PhoneIcon class="h-4 w-4 text-muted-foreground" />
+								<a :href="'tel:' + user.phone" class="text-primary hover:underline font-mono">
+									{{ user.phone }}
+								</a>
+							</div>
+
+							<div class="flex items-center gap-2 text-sm">
+								<MapPinIcon class="h-4 w-4 text-muted-foreground" />
+								<span>{{ user.country }}, {{ user.region }}</span>
+							</div>
+
+							<div class="grid grid-cols-3 text-center gap-2 pt-3 border-t border-t-gray-200 dark:border-t-gray-800 text-sm">
+								<div class="flex items-center justify-center gap-1">
+									<div>
+										<span class="text-muted-foreground">Комиссия:</span>
+										<span class="font-semibold ml-1">{{ user.reward_fee }}%</span>
+									</div>
+								</div>
+								<div class="text-gray-200 dark:text-gray-800">|</div>
+								<div class="flex items-center justify-center gap-1">
+									<span class="text-muted-foreground">DXF:</span>
+									<Badge variant="outline">
+										{{ user.can_access_dxf ? "Да" : "Нет" }}
+									</Badge>
+								</div>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+
+				<!-- Desktop Table View -->
+				<div class="hidden md:block">
+					<div class="rounded-lg border overflow-hidden shadow-sm">
+						<Table>
+							<TableHeader>
+								<TableRow class="bg-muted/30 hover:bg-muted/30">
+									<TableHead class="font-semibold text-sm">Пользователь</TableHead>
+									<TableHead class="font-semibold text-sm">Компания</TableHead>
+									<TableHead class="font-semibold text-sm">Местоположение</TableHead>
+									<TableHead class="font-semibold text-sm">Комиссия</TableHead>
+									<TableHead class="font-semibold text-sm">DXF</TableHead>
+									<TableHead class="font-semibold text-sm">Роль</TableHead>
+									<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								<TableRow 
+									v-for="user in childUsers" 
+									:key="user.id" 
+									class="group hover:bg-muted/20 transition-colors duration-150"
+								>
+									<TableCell>
+										<div class="space-y-1">
+											<p class="font-medium">{{ user.name }}</p>
+											<p class="text-sm text-muted-foreground">{{ user.email }}</p>
+											<a :href="'tel:' + user.phone" class="text-sm text-primary hover:underline font-mono">
+												{{ user.phone }}
+											</a>
+										</div>
+									</TableCell>
+									<TableCell class="font-medium">{{ user.company }}</TableCell>
+									<TableCell class="text-sm text-muted-foreground">
+										<div>{{ user.country }}</div>
+										<div class="text-xs">{{ user.region }}</div>
+									</TableCell>
+									<TableCell class="font-semibold">{{ user.reward_fee }}%</TableCell>
+									<TableCell>
+										<Badge :variant="user.can_access_dxf ? 'verified' : 'outline'">
+											{{ user.can_access_dxf ? "Да" : "Нет" }}
+										</Badge>
+									</TableCell>
+									<TableCell>
+										<Badge>{{ user.role }}</Badge>
+									</TableCell>
+									<TableCell class="text-right">
+										<div class="flex justify-end gap-2">
+											<Button @click="editUser(user)" size="icon" variant="outline" class="h-8 w-8">
+												<PencilIcon class="h-4 w-4" />
+											</Button>
+											<Button @click="deleteUser(user.id)" size="icon" variant="destructive" class="h-8 w-8">
+												<TrashIcon class="h-4 w-4" />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							</TableBody>
+						</Table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create User Dialog -->
+	<Dialog v-model:open="showCreateUserDialog">
+		<DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
+			<DialogHeader>
+				<DialogTitle>Создать пользователя</DialogTitle>
+				<DialogDescription>Заполните форму для создания нового пользователя</DialogDescription>
+			</DialogHeader>
+			<div class="grid gap-4 py-4">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="space-y-2">
+						<Label>ФИО *</Label>
+						<Input v-model="newUser.name" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Email *</Label>
+						<Input v-model="newUser.email" type="email" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Телефон *</Label>
+						<Input v-model="newUser.phone" type="tel" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Telegram</Label>
+						<Input v-model="newUser.telegram" placeholder="@username" />
+					</div>
+					<div class="space-y-2">
+						<Label>Страна *</Label>
+						<Select v-model="newUser.country" required>
+							<SelectTrigger>
+								<SelectValue placeholder="Выберите страну" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectItem value="Армения">Армения</SelectItem>
+									<SelectItem value="Беларусь">Беларусь</SelectItem>
+									<SelectItem value="Казахстан">Казахстан</SelectItem>
+									<SelectItem value="Киргизия">Киргизия</SelectItem>
+									<SelectItem value="Россия">Россия</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</div>
+					<div class="space-y-2">
+						<Label>Регион *</Label>
+						<Select v-model="newUser.region" :disabled="!newUser.country" required>
+							<SelectTrigger>
+								<SelectValue placeholder="Выберите регион" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectItem v-for="region in regions" :key="region" :value="region">
+										{{ region }}
+									</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</div>
+					<div class="col-span-2 space-y-2">
+						<Label>Адрес *</Label>
+						<Textarea v-model="newUser.address" required rows="2" />
+					</div>
+					<div class="col-span-2 space-y-2">
+						<Label>Компания *</Label>
+						<Input v-model="newUser.company" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Пароль *</Label>
+						<Input v-model="newUser.password" type="password" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Комиссия (%) *</Label>
+						<Input v-model.number="newUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
+					</div>
+					<div class="col-span-2 flex items-center space-x-2">
+						<Switch v-model:checked="newUser.can_access_dxf" />
+						<Label>Доступ к DXF</Label>
+					</div>
+					<div class="col-span-2">
+						<Button type="button" variant="outline" @click="showRequisites = !showRequisites" class="w-full">
+							{{ showRequisites ? "Скрыть реквизиты" : "Показать реквизиты" }}
+						</Button>
+					</div>
+					<template v-if="showRequisites">
+						<div class="space-y-2">
+							<Label>ИНН</Label>
+							<Input v-model="newUser.inn" maxlength="12" />
+						</div>
+						<div class="space-y-2">
+							<Label>КПП</Label>
+							<Input v-model="newUser.kpp" maxlength="9" />
+						</div>
+						<div class="col-span-2 space-y-2">
+							<Label>Расчетный счет</Label>
+							<Input v-model="newUser.current_account" maxlength="20" />
+						</div>
+						<div class="col-span-2 space-y-2">
+							<Label>Корреспондентский счет</Label>
+							<Input v-model="newUser.correspondent_account" maxlength="20" />
+						</div>
+						<div class="space-y-2">
+							<Label>БИК</Label>
+							<Input v-model="newUser.bik" maxlength="9" />
+						</div>
+						<div class="space-y-2">
+							<Label>Банк</Label>
+							<Input v-model="newUser.bank" />
+						</div>
+						<div class="col-span-2 space-y-2">
+							<Label>Юридический адрес</Label>
+							<Textarea v-model="newUser.legal_address" rows="2" />
+						</div>
+					</template>
+				</div>
+			</div>
+			<DialogFooter>
+				<Button variant="outline" @click="showCreateUserDialog = false">Отмена</Button>
+				<Button @click="createUser">Создать</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
+
+	<!-- Edit User Dialog -->
+	<Dialog v-model:open="showEditUserDialog">
+		<DialogContent style="max-height: 90vh; overflow: hidden; overflow-y: scroll;" v-if="editingUser">
+			<DialogHeader>
+				<DialogTitle>Редактировать пользователя</DialogTitle>
+				<DialogDescription>Обновите информацию о пользователе</DialogDescription>
+			</DialogHeader>
+			<div class="max-w-4xl">
+				<div class="grid gap-4 py-4">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="space-y-2">
+						<Label>ФИО *</Label>
+						<Input v-model="editingUser.name" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Email *</Label>
+						<Input v-model="editingUser.email" type="email" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Телефон *</Label>
+						<Input v-model="editingUser.phone" type="tel" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Telegram</Label>
+						<Input v-model="editingUser.telegram" placeholder="@username" />
+					</div>
+					<div class="space-y-2">
+						<Label>Страна *</Label>
+						<Select v-model="editingUser.country" required>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectItem value="Армения">Армения</SelectItem>
+									<SelectItem value="Беларусь">Беларусь</SelectItem>
+									<SelectItem value="Казахстан">Казахстан</SelectItem>
+									<SelectItem value="Киргизия">Киргизия</SelectItem>
+									<SelectItem value="Россия">Россия</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</div>
+					<div class="space-y-2">
+						<Label>Регион *</Label>
+						<Select v-model="editingUser.region" :disabled="!editingUser.country" required>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectItem v-for="region in editRegions" :key="region" :value="region">
+										{{ region }}
+									</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</div>
+					<div class="col-span-2 space-y-2">
+						<Label>Адрес *</Label>
+						<Textarea v-model="editingUser.address" required rows="2" />
+					</div>
+					<div class="col-span-2 space-y-2">
+						<Label>Компания *</Label>
+						<Input v-model="editingUser.company" required />
+					</div>
+					<div class="space-y-2">
+						<Label>Комиссия (%) *</Label>
+						<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
+					</div>
+					<div class="col-span-2 flex items-center space-x-2">
+						<Switch v-model:checked="editingUser.can_access_dxf" />
+						<Label>Доступ к DXF</Label>
+					</div>
+				</div>
+			</div>
+			</div>
+			<DialogFooter>
+				<Button variant="outline" @click="showEditUserDialog = false">Отмена</Button>
+				<Button @click="updateUser">Сохранить</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
+</template>
+
+

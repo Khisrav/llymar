@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->globalSearch(false)
-            ->path('admin')
+            ->path('ne-tvoe-delo')
             ->login()
             ->colors([
                 'primary' => Color::Fuchsia,

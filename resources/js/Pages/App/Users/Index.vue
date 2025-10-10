@@ -53,6 +53,7 @@ const props = defineProps<{
 const showCreateUserDialog = ref(false);
 const showEditUserDialog = ref(false);
 const showRequisites = ref(false);
+const showPassword = ref(false);
 const editingUser = ref<any>(null);
 
 const hasUsers = computed(() => props.childUsers.length > 0);
@@ -164,6 +165,8 @@ const resetNewUser = () => {
 		bank: "",
 		legal_address: "",
 	};
+	showPassword.value = false;
+	showRequisites.value = false;
 };
 </script>
 
@@ -404,17 +407,29 @@ const resetNewUser = () => {
 						</SelectContent>
 					</Select>
 				</div>
-			<div class="col-span-2 space-y-2">
-				<Label>Адрес *</Label>
-				<Textarea v-model="newUser.address" required :rows="2" />
-			</div>
+				<div class="col-span-2 space-y-2">
+					<Label>Адрес *</Label>
+					<Textarea v-model="newUser.address" required :rows="2" />
+				</div>
 				<div class="col-span-2 space-y-2">
 					<Label>Компания *</Label>
 					<Input v-model="newUser.company" required />
 				</div>
 				<div class="space-y-2">
-					<Label>Пароль *</Label>
-					<Input v-model="newUser.password" type="password" required />
+					<Label>Пароль (минимум 8 символов) *</Label>
+					<div class="relative">
+						<Input v-model="newUser.password" minlength="8" :type="showPassword ? 'text' : 'password'" required class="pr-10" />
+						<Button 
+							type="button" 
+							variant="ghost" 
+							size="icon" 
+							class="absolute right-0 top-0 h-full hover:bg-transparent" 
+							@click="showPassword = !showPassword"
+						>
+							<EyeIcon v-if="showPassword" class="h-4 w-4" />
+							<EyeClosedIcon v-else class="h-4 w-4" />
+						</Button>
+					</div>
 				</div>
 				<div class="space-y-2">
 					<Label>Комиссия (%) *</Label>
@@ -463,7 +478,7 @@ const resetNewUser = () => {
 				</template>
 			</div>
 			<DialogFooter class="flex gap-2">
-				<Button variant="outline" @click="showCreateUserDialog = false">Отмена</Button>
+				<Button variant="outline" @click="showCreateUserDialog = false; resetNewUser()">Отмена</Button>
 				<Button @click="createUser">Создать</Button>
 			</DialogFooter>
 		</DialogContent>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
 import Button from "../../Components/ui/button/Button.vue";
+import { ArrowLeftIcon } from "lucide-vue-next";
 
 const props = defineProps<{
 	isUsed: boolean;
@@ -38,7 +39,8 @@ const props = defineProps<{
 				</p>
 
 				<div class="pt-4">
-					<Button @click="window.location.href = '/'" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white">
+					<Button @click="window.location.href = '/'" variant="outline" class="w-full">
+						<ArrowLeftIcon />
 						Вернуться на главную
 					</Button>
 				</div>

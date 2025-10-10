@@ -135,18 +135,11 @@ class RegistrationLinkResource extends Resource
                     ->label('Копировать ссылку')
                     ->icon('heroicon-o-clipboard-document')
                     ->color('info')
-                    ->action(function ($record) {
-                        Notification::make()
-                            ->title('Ссылка скопирована')
-                            ->success()
-                            ->body('Ссылка скопирована в буфер обмена')
-                            ->send();
-                    })
-                    ->extraAttributes(fn ($record) => [
-                        'x-data' => '{}',
-                        'x-on:click' => 'navigator.clipboard.writeText("' . $record->url . '")',
-                    ])
-                    ->visible(fn ($record) => $record->isValid()),
+                    ->visible(fn ($record) => $record->isValid())
+                    ->modalContent(fn ($record) => view('filament.modals.copy-link', ['url' => $record->url]))
+                    ->modalHeading('Ссылка для регистрации')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть'),
 
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserCredentialsMail;
 use App\Models\RegistrationLink;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -41,9 +44,9 @@ class RegistrationLinkController extends Controller
         $link = RegistrationLink::where('token', $token)->firstOrFail();
 
         if (!$link->isValid()) {
-            return response()->json([
-                'message' => 'Ссылка регистрации недействительна или уже использована',
-            ], 422);
+            return back()->withErrors([
+                'error' => 'Ссылка регистрации недействительна или уже использована'
+            ]);
         }
 
         $validated = $request->validate([
@@ -55,7 +58,7 @@ class RegistrationLinkController extends Controller
             'region' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:500'],
             'company' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             
             // Requisites (optional)
             'inn' => ['nullable', 'string', 'max:12'],
@@ -69,6 +72,9 @@ class RegistrationLinkController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Store plain password before hashing
+            $plainPassword = $validated['password'];
 
             // Create the user
             $user = User::create([
@@ -109,19 +115,33 @@ class RegistrationLinkController extends Controller
             // Mark link as used
             $link->markAsUsed($user);
 
+            // Send credentials email to the new user
+            try {
+                Mail::to($user->email)->send(
+                    new UserCredentialsMail(
+                        userName: $user->name,
+                        userEmail: $user->email,
+                        userPassword: $plainPassword,
+                        loginUrl: url('/login')
+                    )
+                );
+            } catch (\Exception $mailException) {
+                // Log the error but don't fail the registration
+                Log::warning('Failed to send credentials email to user: ' . $user->email, [
+                    'error' => $mailException->getMessage()
+                ]);
+            }
+
             DB::commit();
 
-            return response()->json([
-                'message' => 'Регистрация успешно завершена!',
-                'redirect' => route('login'),
-            ]);
+            return redirect()->route('login')->with('success', 'Регистрация успешно завершена! Данные для входа отправлены на вашу почту.');
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            return response()->json([
-                'message' => 'Ошибка при регистрации: ' . $e->getMessage(),
-            ], 500);
+            return back()->withErrors([
+                'error' => 'Ошибка при регистрации: ' . $e->getMessage()
+            ])->withInput();
         }
     }
 }

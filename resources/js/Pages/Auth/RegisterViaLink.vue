@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useForm, Head } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
-import Label from "../../Components/ui/label/Label.vue";
-import Input from "../../Components/ui/input/Input.vue";
-import Button from "../../Components/ui/button/Button.vue";
-import Textarea from "../../Components/ui/textarea/Textarea.vue";
+import { vMaska } from "maska/vue";
+import { Label } from "../../Components/ui/label/";
+import { Input } from "../../Components/ui/input/";
+import { Button } from "../../Components/ui/button/";
+import { Textarea } from "../../Components/ui/textarea/";
 import {
 	Select,
 	SelectContent,
@@ -13,14 +14,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../Components/ui/select";
-import { useToast } from "../../Components/ui/toast";
+import { EyeClosedIcon, EyeIcon, EyeOffIcon } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { Toaster } from "../../Components/ui/sonner";
 
 const props = defineProps<{
 	token: string;
 	expiresAt: string;
+	errors?: any;
 }>();
-
-const { toast } = useToast();
 
 const form = useForm({
 	name: "",
@@ -44,6 +46,8 @@ const form = useForm({
 });
 
 const showRequisites = ref(false);
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
 
 const countries = {
 	Армения: ["Арагацотн", "Арарат", "Армавир", "Гегаркуник", "Котайк", "Лори", "Ширак", "Сюник", "Тавуш", "Вайоц Дзор", "Ереван"],
@@ -59,21 +63,8 @@ const regions = computed(() => {
 
 const submit = () => {
 	form.post(`/register/${props.token}`, {
-		onSuccess: (response: any) => {
-			toast({
-				title: "Успешно!",
-				description: "Регистрация завершена. Перенаправление на страницу входа...",
-			});
-			setTimeout(() => {
-				window.location.href = "/login";
-			}, 2000);
-		},
 		onError: (errors) => {
-			toast({
-				title: "Ошибка",
-				description: "Проверьте правильность заполнения формы",
-				variant: "destructive",
-			});
+			toast.error("Проверьте правильность заполнения формы");
 		},
 	});
 };
@@ -83,19 +74,36 @@ const submit = () => {
 	<Head>
 		<title>Регистрация дилера</title>
 	</Head>
-	<div class="min-h-screen bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-4xl mx-auto">
-			<div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden">
-				<!-- Header -->
-				<div class="bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-6">
-					<h1 class="text-3xl font-bold text-white text-center">Регистрация дилера</h1>
-					<p class="text-fuchsia-100 text-center mt-2">Заполните форму для завершения регистрации</p>
-				</div>
 
-				<form @submit.prevent="submit" class="p-8 space-y-8">
-					<!-- Personal Information -->
-					<div class="space-y-4">
-						<h2 class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">Основная информация</h2>
+	<Toaster />
+
+	<div class="min-h-screen bg-gradient-to-br from-[#FBD7A5]/10 to-[#FBD7A5]/40 sm:py-12 px-0 sm:px-6 lg:px-8">
+		<div class="max-w-4xl mx-auto">
+			<!-- Error Alert -->
+			<div v-if="errors?.error" class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+				<div class="flex">
+					<div class="flex-shrink-0">
+						<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+							<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+						</svg>
+					</div>
+					<div class="ml-3">
+						<p class="text-sm text-red-700">{{ errors.error }}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white shadow-2xl sm:rounded-2xl overflow-hidden">
+				<!-- Header -->
+				<div class="bg-[#23322D] px-8 py-6">
+					<h1 class="text-xl  sm:text-3xl font-bold text-[#E7C886] text-center">Регистрация дилера</h1>
+				<p class="text-gray-300 text-center mt-2">Заполните форму для завершения регистрации</p>
+			</div>
+
+			<form @submit.prevent="submit" class="p-8 space-y-8">
+				<!-- Personal Information -->
+				<div class="space-y-4">
+					<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Основная информация</h2>
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div class="md:col-span-2">
 								<Label for="name">ФИО <span class="text-red-500">*</span></Label>
@@ -111,7 +119,7 @@ const submit = () => {
 
 							<div>
 								<Label for="phone">Телефон <span class="text-red-500">*</span></Label>
-								<Input v-model="form.phone" id="phone" type="tel" required placeholder="+7 (XXX) XXX XX-XX" />
+								<Input v-model="form.phone" id="phone" type="tel" v-maska="'+7 (###) ### ##-##'" required placeholder="+7 (__) ___ __-__" />
 								<div v-if="form.errors.phone" class="text-xs text-red-500 mt-1">{{ form.errors.phone }}</div>
 							</div>
 
@@ -125,7 +133,7 @@ const submit = () => {
 
 					<!-- Address Information -->
 					<div class="space-y-4">
-						<h2 class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">Адресная информация</h2>
+						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Адресная информация</h2>
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div>
 								<Label for="country">Страна <span class="text-red-500">*</span></Label>
@@ -165,7 +173,7 @@ const submit = () => {
 
 							<div class="md:col-span-2">
 								<Label for="address">Фактический адрес <span class="text-red-500">*</span></Label>
-								<Textarea v-model="form.address" id="address" required placeholder="Введите полный адрес" rows="2" />
+								<Textarea v-model="form.address" id="address" required placeholder="Введите полный адрес" :rows="2" />
 								<div v-if="form.errors.address" class="text-xs text-red-500 mt-1">{{ form.errors.address }}</div>
 							</div>
 						</div>
@@ -173,7 +181,7 @@ const submit = () => {
 
 					<!-- Company Information -->
 					<div class="space-y-4">
-						<h2 class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">Информация о компании</h2>
+						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Информация о компании</h2>
 						<div>
 							<Label for="company">Контрагент <span class="text-red-500">*</span></Label>
 							<Input v-model="form.company" id="company" type="text" required placeholder="Название компании" />
@@ -183,10 +191,11 @@ const submit = () => {
 
 					<!-- Requisites (Optional) -->
 					<div class="space-y-4">
-						<div class="flex items-center justify-between border-b pb-2">
-							<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Реквизиты (необязательно)</h2>
-							<Button type="button" variant="ghost" size="sm" @click="showRequisites = !showRequisites">
-								{{ showRequisites ? "Скрыть" : "Показать" }}
+						<div class="flex items-center justify-between border-b border-[#E7C886] pb-2">
+							<h2 class="sm:text-xl font-semibold text-[#23322D]">Реквизиты (необязательно)</h2>
+							<Button type="button" variant="outline" size="sm" @click="showRequisites = !showRequisites" class="text-[#23322D] hover:text-[#E7C886]">
+								<EyeClosedIcon v-if="!showRequisites" />
+								<EyeIcon v-else />
 							</Button>
 						</div>
 						<div v-if="showRequisites" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -216,30 +225,74 @@ const submit = () => {
 							</div>
 							<div class="md:col-span-4">
 								<Label for="legal_address">Юридический адрес</Label>
-								<Textarea v-model="form.legal_address" id="legal_address" placeholder="Полный юридический адрес" rows="2" />
+								<Textarea v-model="form.legal_address" id="legal_address" placeholder="Полный юридический адрес" :rows="2" />
 							</div>
 						</div>
 					</div>
 
 					<!-- Password -->
 					<div class="space-y-4">
-						<h2 class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">Безопасность</h2>
+						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Безопасность</h2>
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div>
-								<Label for="password">Пароль <span class="text-red-500">*</span></Label>
-								<Input v-model="form.password" id="password" type="password" required placeholder="Минимум 8 символов" />
+							<div class="space-y-2">
+								<Label for="password">Пароль (минимум 8 символов) <span class="text-red-500">*</span></Label>
+								<div class="relative">
+									<Input 
+										v-model="form.password" 
+										id="password" 
+										:type="showPassword ? 'text' : 'password'" 
+										required 
+										minlength="8"
+										placeholder="Минимум 8 символов"
+										class="pr-10"
+									/>
+									<Button 
+										type="button" 
+										variant="ghost" 
+										size="icon" 
+										class="absolute right-0 top-0 h-full hover:bg-transparent" 
+										@click="showPassword = !showPassword"
+									>
+										<EyeIcon v-if="showPassword" class="h-4 w-4" />
+										<EyeOffIcon v-else class="h-4 w-4" />
+									</Button>
+								</div>
 								<div v-if="form.errors.password" class="text-xs text-red-500 mt-1">{{ form.errors.password }}</div>
 							</div>
-							<div>
+							<div class="space-y-2">
 								<Label for="password_confirmation">Подтверждение пароля <span class="text-red-500">*</span></Label>
-								<Input v-model="form.password_confirmation" id="password_confirmation" type="password" required placeholder="Повторите пароль" />
+								<div class="relative">
+									<Input 
+										v-model="form.password_confirmation" 
+										id="password_confirmation" 
+										:type="showPasswordConfirmation ? 'text' : 'password'" 
+										required 
+										minlength="8"
+										placeholder="Повторите пароль"
+										class="pr-10"
+									/>
+									<Button 
+										type="button" 
+										variant="ghost" 
+										size="icon" 
+										class="absolute right-0 top-0 h-full hover:bg-transparent" 
+										@click="showPasswordConfirmation = !showPasswordConfirmation"
+									>
+										<EyeIcon v-if="showPasswordConfirmation" class="h-4 w-4" />
+										<EyeOffIcon v-else class="h-4 w-4" />
+									</Button>
+								</div>
 							</div>
 						</div>
 					</div>
 
 					<!-- Submit Button -->
-					<div class="pt-6 border-t">
-						<Button type="submit" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white py-6 text-lg" :disabled="form.processing">
+					<div class="pt-6 border-t border-[#E7C886]">
+						<Button 
+							type="submit" 
+							class="w-full"
+							:disabled="form.processing"
+						>
 							<span v-if="form.processing">Регистрация...</span>
 							<span v-else>Зарегистрироваться</span>
 						</Button>
@@ -248,9 +301,9 @@ const submit = () => {
 			</div>
 
 			<!-- Footer -->
-			<p class="text-center text-gray-600 dark:text-gray-400 mt-6 text-sm">
+			<!-- <p class="text-center text-[#E7C886] mt-6 text-sm bg-[#23322D]/50 backdrop-blur-sm py-3 px-6 rounded-lg">
 				Ссылка действительна до {{ new Date(expiresAt).toLocaleString("ru-RU") }}
-			</p>
+			</p> -->
 		</div>
 	</div>
 </template>

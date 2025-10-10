@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserCredentialsMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -72,7 +75,7 @@ class ChildUserController extends Controller
             'region' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:500'],
             'company' => ['required', 'string', 'max:255'],
-            'password' => ['required', Password::defaults()],
+            'password' => ['required', 'string', 'min:8'],
             'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
             'can_access_dxf' => ['boolean'],
             
@@ -88,6 +91,9 @@ class ChildUserController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Store the plain password before hashing
+            $plainPassword = $validated['password'];
 
             $newUser = User::create([
                 'name' => $validated['name'],
@@ -129,6 +135,23 @@ class ChildUserController extends Controller
             // Set DXF access if enabled
             if ($validated['can_access_dxf'] ?? false) {
                 $newUser->givePermissionTo('access dxf');
+            }
+
+            // Send credentials email to the new user
+            try {
+                Mail::to($newUser->email)->send(
+                    new UserCredentialsMail(
+                        userName: $newUser->name,
+                        userEmail: $newUser->email,
+                        userPassword: $plainPassword,
+                        loginUrl: url('/login')
+                    )
+                );
+            } catch (\Exception $mailException) {
+                // Log the error but don't fail the user creation
+                Log::warning('Failed to send credentials email to user: ' . $newUser->email, [
+                    'error' => $mailException->getMessage()
+                ]);
             }
 
             DB::commit();
@@ -223,16 +246,18 @@ class ChildUserController extends Controller
         }
 
         try {
-            // Check if user has children
-            if ($user->children()->count() > 0) {
-                return response()->json([
-                    'message' => 'Невозможно удалить пользователя, так как у него есть дочерние пользователи. Сначала удалите или переназначьте их.'
-                ], 422);
-            }
+            DB::beginTransaction();
+
+            // Set parent_id to null for all child users
+            $user->children()->update(['parent_id' => null]);
 
             $user->delete();
+            
+            DB::commit();
+            
             return response()->json(['message' => 'Пользователь успешно удален'], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Ошибка при удалении пользователя: ' . $e->getMessage()], 500);
         }
     }

@@ -131,6 +131,10 @@ Route::get('/auth', function() {
     ]);
 })->name('auth');
 
+// Registration via link routes
+Route::get('/register/{token}', [App\Http\Controllers\RegistrationLinkController::class, 'show'])->name('register.link');
+Route::post('/register/{token}', [App\Http\Controllers\RegistrationLinkController::class, 'register'])->name('register.link.submit');
+
 /*
  *  PRIVATE ROUTES
  */
@@ -164,6 +168,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/app/order/{order_id}/delete', [OrderController::class, 'destroy'])->name('app.order.delete');
     
     Route::get('/app/contract', [ContractController::class, 'index'])->name('app.contract');
+    
+    // Child Users Management Routes
+    Route::get('/app/users', [App\Http\Controllers\ChildUserController::class, 'index'])->name('app.users');
+    Route::post('/app/users', [App\Http\Controllers\ChildUserController::class, 'store'])->name('app.users.store');
+    Route::put('/app/users/{user}', [App\Http\Controllers\ChildUserController::class, 'update'])->name('app.users.update');
+    Route::delete('/app/users/{user}', [App\Http\Controllers\ChildUserController::class, 'destroy'])->name('app.users.destroy');
 });
 
 /*

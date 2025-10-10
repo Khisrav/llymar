@@ -639,7 +639,7 @@ const structuredData = computed(() => ({
 			:space-between="0"
 			:loop="true"
 			:effect="'fade'"
-			:autoplay="{ delay: 5000, disableOnInteraction: false }"
+			:autoplay="{ delay: 3000, disableOnInteraction: false }"
 			:pagination="{ clickable: true, el: '.hero-pagination' }"
 			:navigation="{ nextEl: '.hero-button-next', prevEl: '.hero-button-prev' }"
 			class="hero-swiper h-screen"
@@ -652,7 +652,7 @@ const structuredData = computed(() => ({
 				></div>
 				
 				<!-- Overlay -->
-				<div class="absolute inset-0 bg-gradient-to-br from-[#23322D]/90 via-[#23322D]/80 to-[#23322D]/70"></div>
+				<div class="absolute inset-0 bg-gradient-to-br from-[#23322D]/70 via-[#23322D]/60 to-[#23322D]/50"></div>
 
 				<!-- Content -->
 				<div class="relative z-20 h-full flex flex-col">
@@ -839,7 +839,7 @@ const structuredData = computed(() => ({
 				:slides-per-view="1"
 				:space-between="16"
 				:loop="true"
-				:autoplay="{ delay: 5000, disableOnInteraction: false }"
+				:autoplay="{ delay: 2000, disableOnInteraction: false }"
 				:pagination="{ clickable: true, el: '.portfolio-pagination' }"
 				:navigation="{ nextEl: '.portfolio-button-next', prevEl: '.portfolio-button-prev' }"
 				:breakpoints="{
@@ -850,7 +850,7 @@ const structuredData = computed(() => ({
 			>
 				<SwiperSlide v-for="item in portfolio" :key="item.id">
 					<Link
-						:href="`/portfolio/${item.id}`"
+						href="/portfolio"
 						class="group cursor-pointer block transition-all duration-300 hover:-translate-y-2"
 					>
 						<div class="relative overflow-hidden rounded-2xl">

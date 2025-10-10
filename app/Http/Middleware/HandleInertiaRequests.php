@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                 'can_access_dxf' => false,
                 'can_access_factors' => false,
                 'can_access_sketcher' => false,
+                'can_access_users' => false,
             ];
         }
         
@@ -66,6 +67,7 @@ class HandleInertiaRequests extends Middleware
             'can_access_factors' => $user->can('access factors'),
             'can_access_sketcher' => $user->can('access app sketcher'),
             'user_default_factor' => $user->default_factor ?? 'kz',
+            'can_access_app_users' => ($user->can('view-any User') && $user->can('create User') && $user->can('update User') && $user->can('delete User')) || $user->hasRole('Super-Admin'),
         ];
     }
 }

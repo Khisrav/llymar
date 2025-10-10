@@ -165,10 +165,10 @@ const updateUser = () => {
 								id="phone"
 								v-model="form.phone" 
 								type="tel" 
-								v-maska="'+7 (###) ###-##-##'" 
+								v-maska="'+7 (###) ### ##-##'" 
 								required 
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="+7 (___) ___-__-__"
+								placeholder="+7 (___) ___ __-__"
 							/>
 							<p class="text-xs text-muted-foreground">Для быстрой связи по срочным вопросам</p>
 						</div>

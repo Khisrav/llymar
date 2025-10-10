@@ -66,7 +66,7 @@ class ChildUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:255', 'unique:users'],
             'telegram' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255'],
             'region' => ['required', 'string', 'max:255'],
@@ -156,7 +156,7 @@ class ChildUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:255', 'unique:users,phone,' . $user->id],
             'telegram' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255'],
             'region' => ['required', 'string', 'max:255'],
@@ -223,10 +223,17 @@ class ChildUserController extends Controller
         }
 
         try {
+            // Check if user has children
+            if ($user->children()->count() > 0) {
+                return response()->json([
+                    'message' => 'Невозможно удалить пользователя, так как у него есть дочерние пользователи. Сначала удалите или переназначьте их.'
+                ], 422);
+            }
+
             $user->delete();
-            return redirect()->back()->with('success', 'Пользователь успешно удален');
+            return response()->json(['message' => 'Пользователь успешно удален'], 200);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Ошибка при удалении пользователя: ' . $e->getMessage()]);
+            return response()->json(['message' => 'Ошибка при удалении пользователя: ' . $e->getMessage()], 500);
         }
     }
 }

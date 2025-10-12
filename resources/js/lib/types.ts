@@ -53,6 +53,7 @@ export interface Item {
     discount: number;
     created_at?: string | null;
     updated_at?: string | null;
+    weight?: number;
 }
 
 export interface ItemProperty {

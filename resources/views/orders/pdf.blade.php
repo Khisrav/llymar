@@ -110,8 +110,8 @@
             /* position: absolute; */
             bottom: 3px;
             left: 3px;
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border: 1px solid #000;
             margin-bottom: 2px;
         }

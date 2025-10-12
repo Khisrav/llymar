@@ -25,10 +25,21 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	const selectedOpeningID = ref<number>(0)
 	const useInputFields = ref(true)
 	
+	// Store initial state to track changes
+	const initialState = ref<{
+		sketch_vars: Record<number, Record<string, number[]>>,
+		selectedDoorHandles: Record<number, number | undefined>,
+		openings: { id: number, width: number, height: number }[]
+	}>({
+		sketch_vars: {},
+		selectedDoorHandles: {},
+		openings: []
+	})
+	
 	// Sketch constraints
 	const sketch_constraints: Record<string, Constraint> = {
 		a: { start: 3, end: 25, default: 12, interval: 1 },
-		b: { start: 14, end: 25, default: 17, interval: 1 },
+		b: { start: 14, end: 25, default: 19, interval: 1 },
 		d: { start: 8, end: 55, default: 6, interval: 1 },
 		e: { start: 20, end: 80, default: 30, interval: 1 },
 		f: { start: 5, end: 20, default: 14, interval: 1 },
@@ -86,6 +97,39 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		);
 	})
 
+	const hasUnsavedChanges = computed(() => {
+		// Check if sketch_vars have changed
+		for (const openingId in sketch_vars.value) {
+			const currentVars = sketch_vars.value[openingId];
+			const initialVars = initialState.value.sketch_vars[openingId];
+			
+			if (!initialVars) continue;
+			
+			for (const key in currentVars) {
+				if (currentVars[key][0] !== initialVars[key][0]) {
+					return true;
+				}
+			}
+		}
+		
+		// Check if door handles have changed
+		for (const openingId in selectedDoorHandles.value) {
+			if (selectedDoorHandles.value[openingId] !== initialState.value.selectedDoorHandles[openingId]) {
+				return true;
+			}
+		}
+		
+		// Check if opening dimensions have changed
+		for (const opening of openings.value) {
+			const initialOpening = initialState.value.openings.find(o => o.id === opening.id);
+			if (initialOpening && (opening.width !== initialOpening.width || opening.height !== initialOpening.height)) {
+				return true;
+			}
+		}
+		
+		return false;
+	})
+
 	// Actions
 	const initializeStore = (initialData: {
 		order: Order,
@@ -140,6 +184,17 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				}
 			}
 		});
+
+		// Store initial state for change tracking
+		initialState.value = {
+			sketch_vars: JSON.parse(JSON.stringify(sketch_vars.value)),
+			selectedDoorHandles: { ...selectedDoorHandles.value },
+			openings: openings.value.map(o => ({
+				id: o.id as number,
+				width: o.width as number,
+				height: o.height as number
+			}))
+		};
 	}
 
 	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {
@@ -315,6 +370,12 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			return;
 		}
 
+		// Check if there are unsaved changes
+		if (hasUnsavedChanges.value) {
+			toast.warning("Сначала сохраните изменения, затем скачайте файл.");
+			return;
+		}
+
 		// Check if all openings have door handles selected
 		const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
 		if (openingsWithoutHandles.length > 0) {
@@ -323,10 +384,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		}
 
 		try {
-			toast.info("Сохранение данных...");
-			await saveAndClose();
-
-			toast.info("Данные сохранены. Начинается загрузка DXF...");
+			toast.info("Начинается загрузка DXF...");
 
 			const response = await axios.post(
 				`/orders/${order.value.id}/dxf`,
@@ -353,16 +411,22 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			URL.revokeObjectURL(fileURL);
 			toast.success("DXF файл успешно загружен.");
 		} catch (error) {
-			console.error("Failed to save or download DXF:", error);
+			console.error("Failed to download DXF:", error);
 			if (axios.isAxiosError(error)) {
 				toast.error("Ошибка при загрузке DXF файла.");
 			} else {
-				toast.error("Ошибка сохранения данных.");
+				toast.error("Ошибка загрузки файла.");
 			}
 		}
 	}
 
 	const downloadPDF = async () => {
+		// Check if there are unsaved changes
+		if (hasUnsavedChanges.value) {
+			toast.warning("Сначала сохраните изменения, затем скачайте файл.");
+			return;
+		}
+
 		// Check if all openings have door handles selected
 		const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
 		if (openingsWithoutHandles.length > 0) {
@@ -421,6 +485,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		isSliderDisabled,
 		combinedOpenings,
 		availableDoorHandles,
+		hasUnsavedChanges,
 		
 		// Actions
 		initializeStore,

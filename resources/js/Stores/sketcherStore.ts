@@ -195,6 +195,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				height: o.height as number
 			}))
 		};
+		console.log(initialState.value);
 	}
 
 	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {

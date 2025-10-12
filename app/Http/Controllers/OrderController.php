@@ -383,8 +383,31 @@ class OrderController extends Controller
             self::saveSketch($request);
         }
 
+        // Get order data from the first opening
+        $order = null;
+        $glassAbbreviation = '—';
+        if (isset($request->openings[0]['id'])) {
+            $orderOpening = OrderOpening::find($request->openings[0]['id']);
+            if ($orderOpening) {
+                $order = Order::with(['orderItems.item'])->find($orderOpening->order_id);
+                if ($order) {
+                    $glassItem = $order->getGlass();
+                    $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+                }
+            }
+        }
+
+        // Calculate total number of glass panels
+        $totalGlassCount = 0;
+        foreach ($request->openings as $opening) {
+            $totalGlassCount += $opening['doors'] ?? 0;
+        }
+
         $pdf = Pdf::loadView('orders.sketch_pdf', [
                 'openings' => $request->openings,
+                'order' => $order,
+                'totalGlassCount' => $totalGlassCount,
+                'glassAbbreviation' => $glassAbbreviation,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);
@@ -696,7 +719,7 @@ class OrderController extends Controller
         $user = auth()->user();
         
         // Check if user owns this order and has sketcher access
-        $order = Order::with(['orderOpenings'])->findOrFail($order_id);
+        $order = Order::with(['orderOpenings', 'orderItems.item'])->findOrFail($order_id);
         
         if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -722,8 +745,21 @@ class OrderController extends Controller
             ];
         })->toArray();
 
+        // Calculate total number of glass panels (each door has 1 glass panel)
+        $totalGlassCount = 0;
+        foreach ($openings as $opening) {
+            $totalGlassCount += $opening['doors'];
+        }
+
+        // Get glass abbreviation
+        $glassItem = $order->getGlass();
+        $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+
         $pdf = Pdf::loadView('orders.sketch_pdf', [
                 'openings' => $openings,
+                'order' => $order,
+                'totalGlassCount' => $totalGlassCount,
+                'glassAbbreviation' => $glassAbbreviation,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);

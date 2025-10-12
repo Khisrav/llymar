@@ -419,7 +419,7 @@ class CommercialOfferResource extends Resource
                 // Tables\Actions\EditAction::make()
                 //     ->label('Редактировать'),
                 Tables\Actions\Action::make('download_pdf')
-                    ->label('Скачать PDF')
+                    ->label('PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
                     ->url(fn (CommercialOffer $record): string => 
@@ -435,7 +435,7 @@ class CommercialOfferResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->striped()
-            ->paginated([10, 25, 50, 100]);
+            ->paginated([25, 50, 100]);
     }
 
     public static function getRelations(): array

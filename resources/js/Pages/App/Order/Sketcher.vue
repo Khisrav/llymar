@@ -97,7 +97,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 </script>
 
 <template>
-	<Head title="Чертеж №{{ order.order_number || order.id }}" />
+	<Head :title="`Чертеж №${order.order_number || order.id}`" />
 	<AuthenticatedHeaderLayout />
 
 	<Toaster />

@@ -90,8 +90,16 @@ class CommercialOfferController extends Controller
      */
     public function downloadPDF(CommercialOffer $commercialOffer)
     {
-        // Check if user owns this commercial offer
-        if ($commercialOffer->user_id !== Auth::id()) {
+        $user = Auth::user();
+        
+        // Allow access if:
+        // 1. User is Super-Admin
+        // 2. User has view-any CommercialOffer permission
+        // 3. User owns this commercial offer
+        if (!$user->hasRole('Super-Admin') && 
+            // !$user->can('viewAny', CommercialOffer::class) && 
+            !$user->can('view-any CommercialOffer') && 
+            $commercialOffer->user_id !== Auth::id()) {
             abort(403);
         }
 
@@ -152,8 +160,16 @@ class CommercialOfferController extends Controller
      */
     public function destroy(CommercialOffer $commercialOffer)
     {
-        // Check if user owns this commercial offer
-        if ($commercialOffer->user_id !== Auth::id()) {
+        $user = Auth::user();
+        
+        // Allow deletion if:
+        // 1. User is Super-Admin
+        // 2. User has delete-any CommercialOffer permission
+        // 3. User owns this commercial offer
+        if (!$user->hasRole('Super-Admin') && 
+            // !$user->can('deleteAny', CommercialOffer::class) && 
+            !$user->can('delete-any CommercialOffer') && 
+            $commercialOffer->user_id !== Auth::id()) {
             abort(403);
         }
 

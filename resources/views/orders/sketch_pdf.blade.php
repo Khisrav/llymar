@@ -399,23 +399,23 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
     <tbody>
         <tr>
             <td class="">№ Заявки</td>
-            <td class="bold center">6-123-TK</td>
+            <td class="bold center">{{ $order ? $order->order_number : '—' }}</td>
             <td class="">ТЕЛЕФОН</td>
-            <td class=" center">79893639325</td>
+            <td class=" center">{{ $order ? $order->customer_phone : '—' }}</td>
             <td class="">ФИО</td>
-            <td class=" center">Филатов В.И.</td>
+            <td class=" center">{{ $order ? $order->customer_name : '—' }}</td>
             <td class="">ГОРОД</td>
-            <td class=" center">Баксан</td>
+            <td class=" center">{{ $order ? $order->city : '—' }}</td>
         </tr>
         <tr>
             <td class="">Кол-во проемов</td>
-            <td class="bold center">3</td>
+            <td class="bold center">{{ count($openings) }}</td>
             <td class="">Стекло</td>
-            <td class="bold center">M1</td>
+            <td class="bold center">{{ $glassAbbreviation }}</td>
             <td class="">RAL</td>
-            <td class="bold center">8024</td>
+            <td class="bold center">{{ $order ? $order->ral_code : '—' }}</td>
             <td class="">Кол-во стекол</td>
-            <td class="bold center">30</td>
+            <td class="bold center">{{ $totalGlassCount }}</td>
         </tr>
     </tbody>
 </table>

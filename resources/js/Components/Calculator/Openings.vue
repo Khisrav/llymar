@@ -167,7 +167,7 @@ const clearSessionStorage = () => {
 
 					<div class="grid grid-cols-1 md:grid-cols-1 gap-2">
 						<div class="flex items-center">
-							<img :src="openingStore.opening_images[group.opening.type]" class="w-full rounded-md mt-2 md:mt-4" />
+							<img :src="openingStore.opening_images[group.opening.type]" class="w-full border rounded-md mt-2 md:mt-4" />
 						</div>
 						<div>
 							<label class="text-center my-1 text-muted-foreground text-xs md:text-sm block">Размеры (ШxВ) в мм:</label>

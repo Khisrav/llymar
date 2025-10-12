@@ -146,14 +146,18 @@ const addSelectedHandle = () => {
 								</SelectContent>
 							</Select>
 						</div>
-						<div v-if="selectedGlass" class="flex flex-col justify-between mt-2">
+						<div v-if="selectedGlass" class="flex flex-col justify-between mt-2 gap-1 md:gap-2">
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Цена:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary"> {{ currencyFormatter(itemsStore.itemPrice(itemsStore.selectedGlassID)) }}/{{ selectedGlass.unit }} </span>
 							</div>
-							<div class="flex justify-between items-center text-muted-foreground my-1 md:my-2">
+							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Кол-во:</span>
 								<span v-if="selectedGlass" class="font-bold text-primary"> {{ quantityFormatter(itemsStore.cartItems[itemsStore.selectedGlassID]?.quantity || 0) }} {{ selectedGlass.unit }} </span>
+							</div>
+							<div class="flex justify-between items-center text-muted-foreground">
+								<span>Вес:</span>
+								<span v-if="selectedGlass" class="font-bold text-primary"> {{ quantityFormatter(itemsStore.cartItems[itemsStore.selectedGlassID]?.weight || 0) }} кг</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Итого:</span>
@@ -173,14 +177,14 @@ const addSelectedHandle = () => {
 					<div v-if="selectedGlass" class="basis-1/3">
 						<img 
 							:src="getImageSource(selectedGlass.img || '')" 
-							class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity" 
+							class="rounded-md border text-xs w-full cursor-pointer hover:opacity-80 transition-opacity" 
 							@click="openImageModal(selectedGlass)"
 							:alt="selectedGlass.name"
 						/>
 					</div>
 				</div>
 					
-				<div class="flex flex-col gap-2 mt-4">
+				<div class="flex flex-col gap-2 mt-6">
 					<div class="flex justify-between items-center">
 						<span class="font-semibold">Фантомные ручки</span>
 						<span class="text-xs text-muted-foreground">(не учитываются в цене)</span>
@@ -328,7 +332,7 @@ const addSelectedHandle = () => {
 						<div class="basis-1/3">
 							<img 
 								:src="getImageSource(item.img || '')" 
-								class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity" 
+								class="rounded-md border text-xs w-full cursor-pointer hover:opacity-80 transition-opacity" 
 								@click="openImageModal(item)"
 								:alt="item.name"
 							/>

@@ -71,7 +71,7 @@ const closeImageModal = () => {
                 <div>
                     <img 
                         :src="getImageSource(item.img || '')" 
-                        class="rounded-md w-full cursor-pointer hover:opacity-80 transition-opacity"
+                        class="rounded-md border text-xs w-full cursor-pointer hover:opacity-80 transition-opacity"
                         @click="openImageModal(item)"
                         :alt="item.name"
                     >
@@ -98,6 +98,10 @@ const closeImageModal = () => {
                         <div class="flex items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Цена:</span>
                             <span class="font-bold text-muted-foreground text-sm">{{ currencyFormatter(itemsStore.itemPrice(item.id || 0)) }}/{{ item.unit }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs sm:text-xs">
+                            <span class="text-muted-foreground">Вес:</span>
+                            <span class="font-bold text-muted-foreground text-sm">{{ quantityFormatter(itemsStore.cartItems[item.id || 0]?.weight || 0) }} кг</span>
                         </div>
                         <!-- <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>

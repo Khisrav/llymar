@@ -50,6 +50,7 @@ onMounted(() => {
 	});
 
 	// Initialize the sketcher store with page data
+	console.log(order);
 	sketcherStore.initializeStore({
 		order,
 		openings,
@@ -241,7 +242,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 								<DoorHandleSVG v-if="sketcherStore.currentOpening?.type == 'left' && i == 1" type="left" class="absolute top-1/2 left-1.5 transform -translate-y-1/2" />
 								<DoorHandleSVG v-else-if="sketcherStore.currentOpening?.type == 'right' && i == sketcherStore.currentOpening?.doors" type="right" class="absolute top-1/2 right-1.5 transform -translate-y-1/2" />
-								<DoorHandleSVG v-else-if="sketcherStore.currentOpening?.type == 'center' && (i == sketcherStore.currentOpening?.doors / 2 || i == sketcherStore.currentOpening?.doors / 2 + 1)" type="right" class="absolute top-1/2 transform -translate-y-1/2" :class="{'right-1.5': i == sketcherStore.currentOpening?.doors / 2, 'left-1.5': i == sketcherStore.currentOpening?.doors / 2 + 1 }" />
+								<!-- <DoorHandleSVG v-else-if="sketcherStore.currentOpening?.type == 'center' && (i == sketcherStore.currentOpening?.doors / 2 || i == sketcherStore.currentOpening?.doors / 2 + 1)" type="right" class="absolute top-1/2 transform -translate-y-1/2" :class="{'right-1.5': i == sketcherStore.currentOpening?.doors / 2, 'left-1.5': i == sketcherStore.currentOpening?.doors / 2 + 1 }" /> -->
 							</div>
 						</div>
 					</div>

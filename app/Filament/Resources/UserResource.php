@@ -314,13 +314,61 @@ class UserResource extends Resource
                             ->preload()
                             ->required()
                             ->native(false)
-                            ->hidden(!static::isSuperAdmin())
-                            ->default(function () {
+                            ->options(function () {
+                                /** @var User|null $user */
                                 $user = Auth::user();
-                                if ($user && $user->hasRole('Dealer')) {
-                                    $managerRole = \Spatie\Permission\Models\Role::where('name', 'Manager')->first();
-                                    return $managerRole ? [$managerRole->id] : [];
+                                if (!$user) {
+                                    return [];
                                 }
+
+                                // Get all roles
+                                $allRoles = \Spatie\Permission\Models\Role::all();
+                                
+                                // Filter roles based on user's permissions
+                                $allowedRoles = $allRoles->filter(function ($role) use ($user) {
+                                    // Check if user has permission to view-any this role
+                                    $permissionName = 'view-any ' . strtolower($role->name);
+                                    return $user->can($permissionName);
+                                });
+
+                                return $allowedRoles->mapWithKeys(function ($role) {
+                                    return [$role->id => $role->display_name ?: $role->name];
+                                });
+                            })
+                            ->hidden(function () {
+                                /** @var User|null $user */
+                                $user = Auth::user();
+                                if (!$user) {
+                                    return true;
+                                }
+                                
+                                // Show if user has any "view-any" permissions for roles
+                                $allRoles = \Spatie\Permission\Models\Role::all();
+                                foreach ($allRoles as $role) {
+                                    $permissionName = 'view-any ' . strtolower($role->name);
+                                    if ($user->can($permissionName)) {
+                                        return false;
+                                    }
+                                }
+                                
+                                return true;
+                            })
+                            ->default(function () {
+                                /** @var User|null $user */
+                                $user = Auth::user();
+                                if (!$user) {
+                                    return [];
+                                }
+
+                                // Get the first role the user can manage
+                                $allRoles = \Spatie\Permission\Models\Role::all();
+                                foreach ($allRoles as $role) {
+                                    $permissionName = 'view-any ' . strtolower($role->name);
+                                    if ($user->can($permissionName)) {
+                                        return [$role->id];
+                                    }
+                                }
+
                                 return [];
                             })
                             ->helperText('Определяет права доступа пользователя')
@@ -370,6 +418,7 @@ class UserResource extends Resource
                                 }
                             })
                             ->default(function () {
+                                /** @var User|null $user */
                                 $user = Auth::user();
                                 if ($user && $user->hasRole('Dealer') && $user->can('access dxf')) {
                                     return true;

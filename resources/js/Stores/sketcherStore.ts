@@ -355,6 +355,20 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		}
 	}
 
+	const updateInitialState = () => {
+		// Update the initial state to match the current state
+		// This should be called after a successful save
+		initialState.value = {
+			sketch_vars: JSON.parse(JSON.stringify(sketch_vars.value)),
+			selectedDoorHandles: { ...selectedDoorHandles.value },
+			openings: openings.value.map(o => ({
+				id: o.id as number,
+				width: o.width as number,
+				height: o.height as number
+			}))
+		};
+	}
+
 	// This will be overridden by the component to use actual form submission
 	let saveAndClose = (): Promise<boolean> => {
 		return new Promise((resolve, reject) => {
@@ -498,6 +512,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		updateSketchVar,
 		updateOpeningDimension,
 		addDoorHandleToOpening,
+		updateInitialState,
 		downloadDXF,
 		downloadPDF,
 		

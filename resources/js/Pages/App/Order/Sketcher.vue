@@ -74,14 +74,9 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 			onSuccess: () => {
 				toast("Сохранено");
 				
-				// Reset initial state after successful save
-				sketcherStore.initializeStore({
-					order,
-					openings: sketcherStore.openings,
-					doorHandles: sketcherStore.doorHandles,
-					allDoorHandles: sketcherStore.allDoorHandles,
-					canAccessDxf: can_access_dxf
-				});
+				// Update initial state to reflect the saved state
+				// This prevents the "unsaved changes" warning after save
+				sketcherStore.updateInitialState();
 				
 				resolve(true);
 			},

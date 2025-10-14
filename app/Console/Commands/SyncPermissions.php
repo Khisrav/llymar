@@ -18,6 +18,17 @@ class SyncPermissions extends Command
         // Clear permission cache
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         
+        /*
+        super-admin - супермен
+        operator - оператор
+        rop - РОП (руководитель отдела продаж)
+        dealer - дилер
+        dealer-ch - дилер Ч
+        dealer-r - дилер Р
+        manager - менеджер
+        workman - цеховщик
+        */
+
         // Define the standard permissions that should exist based on your policies
         $expectedPermissions = [
             // Admin panel access
@@ -26,70 +37,57 @@ class SyncPermissions extends Command
             'access app history',
             'access app cart',
             'access app wholesale-factors',
+            'access app users',
             'access dxf',
-            
-            // Order permissions
-            // 'view-any order',
-            // 'view order',
-            // 'create order',
-            // 'update order',
-            // 'delete order',
-            // 'appoint order manager',
-            
-            // // User permissions
-            // 'view-any user',
-            // 'view user',
-            // 'create user',
-            // 'update user',
-            // 'delete user',
-            
-            // // Category permissions (lowercase to match seeder)
-            // 'view-any category',
-            // 'view category',
-            // 'create category',
-            // 'update category',
-            // 'delete category',
-            
-            // // Item permissions
-            // 'view-any item',
-            // 'view item',
-            // 'create item',
-            // 'update item',
-            // 'delete item',
-            
-            // // Warehouse Record permissions
-            // 'view-any warehouse-record',
-            // 'view warehouse-record',
-            // 'create warehouse-record',
-            // 'update warehouse-record',
-            // 'delete warehouse-record',
-            
-            // // Policy-based permissions (if they're needed)
-            // 'view-any Permission',
-            // 'view Permission',
-            // 'create Permission',
-            // 'update Permission',
-            // 'delete Permission',
-            // 'delete-any Permission',
-            // 'restore Permission',
-            // 'restore-any Permission',
-            // 'replicate Permission',
-            // 'reorder Permission',
-            // 'force-delete Permission',
-            // 'force-delete-any Permission',
-            
-            // 'view-any Role',
-            // 'view Role',
-            // 'create Role',
-            // 'update Role',
-            // 'delete Role',
-            // 'delete-any Role',
-            // 'restore Role',
-            // 'restore-any Role',
-            // 'replicate Role',
-            // 'reorder Role',
-            // 'force-delete Role',
-            // 'force-delete-any Role',
+
+            //roles management access
+            'view super-admin',
+            'view-any super-admin',
+            'create super-admin',
+            'update super-admin',
+            'delete super-admin',
+
+            'view operator',
+            'view-any operator',
+            'create operator',
+            'update operator',
+            'delete operator',
+
+            'view rop',
+            'view-any rop',
+            'create rop',
+            'update rop',
+            'delete rop',
+
+            'view dealer',
+            'view-any dealer',
+            'create dealer',
+            'update dealer',
+            'delete dealer',
+
+            'view dealer-ch',
+            'view-any dealer-ch',
+            'create dealer-ch',
+            'update dealer-ch',
+            'delete dealer-ch',
+
+            'view dealer-r',
+            'view-any dealer-r',
+            'create dealer-r',
+            'update dealer-r',
+            'delete dealer-r',
+
+            'view manager',
+            'view-any manager',
+            'create manager',
+            'update manager',
+            'delete manager',
+
+            'view workman',
+            'view-any workman',
+            'create workman',
+            'update workman',
+            'delete workman',
         ];
         
         $created = 0;

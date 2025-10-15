@@ -10,8 +10,6 @@
         "interpreter" : "php",
         "watch": false,
         "error_file": "storage/logs/ssr-err.log",
-        "out_file": "storage/logs/ssr-out.log",
-        "log_file": "storage/logs/ssr-combined.log",
         "time": true
     }]
 }

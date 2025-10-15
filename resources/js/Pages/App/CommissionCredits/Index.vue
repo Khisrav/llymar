@@ -29,7 +29,7 @@ const formatDate = (dateString: string) => {
 }
 
 const getTypeBadgeVariant = (type: 'accrual' | 'write-off') => {
-	return type === 'accrual' ? 'default' : 'secondary'
+	return type === 'accrual' ? 'outline' : ''
 }
 
 const getTypeLabel = (type: 'accrual' | 'write-off') => {

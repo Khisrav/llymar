@@ -82,8 +82,8 @@ class OrderController extends Controller
             }
 
             // Create commission credit
-            $commissionCredit = new CommissionCreditController();
-            $commissionCredit->store($order->id, $order->total_price);
+            // $commissionCredit = new CommissionCreditController();
+            // $commissionCredit->store($order->id, $order->total_price);
 
             return redirect()->route('app.history');
         } catch (\Exception $e) {
@@ -460,6 +460,8 @@ class OrderController extends Controller
      */
     public static function saveSketch(Request $request)
     {
+        $user = auth()->user();
+        
         $validated = $request->validate([
             'openings' => 'required|array',
             // 'openings.*.id' => 'required|integer|exists:order_openings,id',
@@ -469,6 +471,12 @@ class OrderController extends Controller
     
         foreach ($validated['openings'] as $openingData) {
             $orderOpening = OrderOpening::findOrFail($openingData['id']);
+            
+            // Check if user owns this order and has sketcher access
+            $order = Order::findOrFail($orderOpening->order_id);
+            if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
             foreach ($openingData as $key => $value) {
                 if (in_array($key, $allowedKeys)) {
                     $v = is_array($value) ? $value[0] : $value;

@@ -8,7 +8,7 @@ import { Link } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
 import { usePage } from "@inertiajs/vue3"
 
-const { can_access_app_calculator, can_access_app_history, can_access_admin_panel, can_access_app_users } = usePage().props as any
+const { can_access_app_calculator, can_access_app_history, can_access_admin_panel, can_access_app_users, can_access_commission_credits } = usePage().props as any
 const { user } = usePage().props.auth as any
 
 const navigationMenu = computed(() => {
@@ -27,7 +27,11 @@ const navigationMenu = computed(() => {
     }
 
     if (can_access_app_users) {
-        menu.push({ title: 'Пользователи', to: '/app/users' })
+        menu.push({ title: 'Дилеры', to: '/app/users' })
+    }
+
+    if (can_access_commission_credits) {
+        menu.push({ title: 'Комиссии', to: '/app/commission-credits' })
     }
 
     return menu

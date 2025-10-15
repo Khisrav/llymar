@@ -38,6 +38,7 @@ class SyncPermissions extends Command
             'access app cart',
             'access app wholesale-factors',
             'access app users',
+            'access app commission-credits',
             'access dxf',
 
             //roles management access

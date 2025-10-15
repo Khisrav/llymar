@@ -446,7 +446,12 @@ class OrderResource extends Resource
                         ->label('Чертеж')
                         ->url(fn (Order $record) => route('app.sketcher', $record->id))
                         ->openUrlInNewTab()
-                        ->icon('heroicon-o-pencil-square'),
+                        ->icon('heroicon-o-pencil-square')
+                        ->visible(function () {
+                            $user = Auth::user();
+                            /** @var \App\Models\User|null $user */
+                            return $user && ($user->can('access app sketcher') || $user->hasRole('Super-Admin'));
+                        }),
                         
                     Action::make('list_pdf')
                         ->label('Спецификация')

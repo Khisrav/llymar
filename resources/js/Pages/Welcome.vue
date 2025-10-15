@@ -765,7 +765,7 @@ const structuredData = computed(() => ({
 	</section>
 
 	<!-- Features Section -->
-	<section id="features" class="hidden bg-white py-16 md:py-32">
+	<!-- <section id="features" class="bg-white py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4">
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				<div v-for="(feature, index) in features" :key="feature.title" class="text-center animate-on-scroll opacity-0 translate-y-8 transition-all duration-700" :style="`animation-delay: ${index * 200}ms`">
@@ -777,10 +777,10 @@ const structuredData = computed(() => ({
 				</div>
 			</div>
 		</div>
-	</section>
+	</section> -->
 
 	<!-- Services Section -->
-	<section id="services" class="hidden bg-black py-16 md:py-32">
+	<!-- <section id="services" class="bg-black py-16 md:py-32">
 		<div class="container max-w-screen-2xl px-4">
 			<div class="text-center mb-16 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
 				<LandingBadge variant="gold" size="sm"> Наши услуги </LandingBadge>
@@ -812,7 +812,7 @@ const structuredData = computed(() => ({
 				</div>
 			</div>
 		</div>
-	</section>
+	</section> -->
 
 	<!-- Portfolio Section -->
 	<section id="portfolio" class="bg-dark-green text-white py-16 md:py-24 overflow-hidden">

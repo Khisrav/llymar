@@ -69,6 +69,7 @@ class Order extends Model
         parent::boot();
     
         static::updated(function ($model) {
+            Log::info("Order updated", ['order_id' => $model->id, 'status' => $model->status]);
             if ($model->status == 'expired') {
                 WarehouseRecord::where('order_id', $model->id)->delete();
             } else {
@@ -87,6 +88,7 @@ class Order extends Model
             // Calculate commission when order status changes to 'paid' or 'completed'
             if (($model->status === 'paid' && $model->getOriginal('status') !== 'paid') ||
                 ($model->status === 'completed' && $model->getOriginal('status') !== 'completed')) {
+                Log::info("Calculating commission", ['order_id' => $model->id, 'status' => $model->status]);
                 static::calculateCommission($model);
             }
         });
@@ -98,14 +100,23 @@ class Order extends Model
      */
     protected static function calculateCommission($order)
     {
-        $user = $order->user;
+        Log::info("Calculating commission", ['order_id' => $order->id]);
+        // $user = $order->user;
+        $user = User::find($order->user->id);
         
+        Log::info("User", ['user' => $user]);
+        Log::info("User parent_id", ['parent_id' => $user->parent_id]);
+        Log::info("User reward_fee", ['reward_fee' => $user->reward_fee]);
+        Log::info("User hasRole", ['hasRole' => $user->hasRole('Dealer')]);
+        // Log::info("User", ['user' => $user, 'parent_id' => $user->parent_id, 'reward_fee' => $user->reward_fee, 'hasRole' => $user->hasRole('Dealer')]);
         // Check if user has a parent (for commission hierarchy)
         if ($user && $user->parent_id && $user->reward_fee && $user->hasRole('Dealer')) {
+            Log::info("User has a parent", ['user_id' => $user->id, 'parent_id' => $user->parent_id]);
             $parent = User::find($user->parent_id);
             
             // Only create commission if parent has ROP role
             if ($parent && $parent->hasRole('ROP')) {
+                Log::info("Parent has ROP role", ['parent_id' => $parent->id]);
                 // Check if commission credit already exists for this order
                 $existingCommission = CommissionCredit::where('order_id', $order->id)
                     ->where('user_id', $user->id)
@@ -113,9 +124,11 @@ class Order extends Model
                     ->first();
                 
                 if (!$existingCommission) {
+                    Log::info("Commission credit does not exist", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id]);
                     $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
                     
                     // Create commission credit record
+                    Log::info("Creating commission credit record", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id, 'amount' => $commissionAmount]);
                     CommissionCredit::create([
                         'user_id' => $user->id,
                         'order_id' => $order->id,

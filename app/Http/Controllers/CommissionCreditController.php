@@ -6,10 +6,87 @@ use Illuminate\Http\Request;
 use App\Models\CommissionCredit;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class CommissionCreditController extends Controller
 {
+    /**
+     * Display the commission credits page for authenticated users.
+     */
+    public function index(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        // Check permission
+        if (!$user->can('access app commission-credits')) {
+            return redirect()->route('app.history')->with('error', 'У вас нет доступа к комиссионным операциям');
+        }
+        
+        // Build base query with proper scoping
+        $baseQuery = CommissionCredit::with(['user', 'recipient', 'order']);
+        
+        if (!$user->hasRole('Super-Admin')) {
+            $baseQuery->where(function ($query) use ($user) {
+                $query->where('parent_id', $user->id)
+                      ->orWhere('user_id', $user->id);
+            });
+        }
+        
+        // Get paginated records
+        $commissionCredits = $baseQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+        
+        // Calculate statistics
+        $statsQuery = CommissionCredit::query();
+        
+        if (!$user->hasRole('Super-Admin')) {
+            $statsQuery->where(function ($query) use ($user) {
+                $query->where('parent_id', $user->id)
+                      ->orWhere('user_id', $user->id);
+            });
+        }
+        
+        $totalAccruals = $statsQuery->clone()->where('type', 'accrual')->sum('amount');
+        $totalWriteOffs = $statsQuery->clone()->where('type', 'write-off')->sum('amount');
+        $totalBalance = $totalAccruals - $totalWriteOffs;
+        $accrualCount = $statsQuery->clone()->where('type', 'accrual')->count();
+        $writeOffCount = $statsQuery->clone()->where('type', 'write-off')->count();
+        
+        // Calculate pending balance for Super Admin
+        $pendingBalance = 0;
+        $usersWithBalance = 0;
+        
+        if ($user->hasRole('Super-Admin')) {
+            $balances = DB::table('commission_credits')
+                ->select('parent_id')
+                ->selectRaw('SUM(CASE WHEN type = "accrual" THEN amount ELSE -amount END) as balance')
+                ->groupBy('parent_id')
+                ->havingRaw('balance > 0')
+                ->get();
+            
+            $pendingBalance = $balances->sum('balance');
+            $usersWithBalance = $balances->count();
+        }
+        
+        return Inertia::render('App/CommissionCredits/Index', [
+            'commissionCredits' => $commissionCredits,
+            'statistics' => [
+                'totalAccruals' => $totalAccruals,
+                'totalWriteOffs' => $totalWriteOffs,
+                'totalBalance' => $totalBalance,
+                'accrualCount' => $accrualCount,
+                'writeOffCount' => $writeOffCount,
+                'pendingBalance' => $pendingBalance,
+                'usersWithBalance' => $usersWithBalance,
+            ],
+            'isSuperAdmin' => $user->hasRole('Super-Admin'),
+        ]);
+    }
     /**
      * Create a new commission credit record when an order is paid or completed.
      * This creates commission credits for eligible users based on order status.

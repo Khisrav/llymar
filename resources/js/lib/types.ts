@@ -212,3 +212,28 @@ export interface Contract {
     legal_address?: string;
     ogrn?: string;
 }
+
+export interface CommissionCredit {
+    id: number;
+    user_id: number | null;
+    order_id: number | null;
+    parent_id: number;
+    amount: number;
+    receipt?: string | null;
+    type: 'accrual' | 'write-off';
+    created_at: string;
+    updated_at: string;
+    user?: User;
+    recipient?: User;
+    order?: Order;
+}
+
+export interface CommissionCreditStatistics {
+    totalAccruals: number;
+    totalWriteOffs: number;
+    totalBalance: number;
+    accrualCount: number;
+    writeOffCount: number;
+    pendingBalance: number;
+    usersWithBalance: number;
+}

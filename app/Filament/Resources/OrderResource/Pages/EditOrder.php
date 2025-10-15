@@ -30,7 +30,17 @@ class EditOrder extends EditRecord
                         ->url(fn (Order $record) => route('app.sketcher', $record->id))
                         ->openUrlInNewTab()
                         ->color('gray')
-                        ->icon('heroicon-o-pencil-square'),
+                        ->icon('heroicon-o-pencil-square')
+                        ->visible(
+                            /**
+                             * @return bool
+                             */
+                            function () {
+                                $user = \Illuminate\Support\Facades\Auth::user();
+                                /** @var \App\Models\User|null $user */
+                                return $user && ($user->can('access app sketcher') || $user->hasRole('Super-Admin'));
+                            }
+                        ),
             Actions\Action::make('invoice_pdf')
                 ->label('Счет PDF')
                 ->url(fn (Order $record) => route('orders.download_bill', ['order' => $record->id]))

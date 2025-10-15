@@ -169,6 +169,9 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/app/contract', [ContractController::class, 'index'])->name('app.contract');
     
+    // Commission Credits Routes
+    Route::get('/app/commission-credits', [App\Http\Controllers\CommissionCreditController::class, 'index'])->name('app.commission_credits');
+    
     // Child Users Management Routes
     Route::get('/app/users', [App\Http\Controllers\ChildUserController::class, 'index'])->name('app.users');
     Route::post('/app/users', [App\Http\Controllers\ChildUserController::class, 'store'])->name('app.users.store');

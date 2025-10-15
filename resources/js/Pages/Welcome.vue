@@ -296,7 +296,7 @@ onMounted(() => {
 		url: "https://llymar.ru",
 		logo: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
 		description: getOption('meta_description', "Российский производитель систем безрамного остекления для жилых и коммерческих объектов"),
-		foundingDate: getOption('founding_year', '2019'),
+		// foundingDate: getOption('founding_year', '2019'),
 		numberOfEmployees: getOption('employees_count', '10-50'),
 		sameAs: [
 			getOption('social_facebook', ''),
@@ -324,14 +324,14 @@ onMounted(() => {
 		publisher: {
 			"@id": "https://llymar.ru/#organization"
 		},
-		potentialAction: {
-			"@type": "SearchAction",
-			target: {
-				"@type": "EntryPoint",
-				urlTemplate: "https://llymar.ru/?s={search_term_string}"
-			},
-			"query-input": "required name=search_term_string"
-		},
+		// potentialAction: {
+		// 	"@type": "SearchAction",
+		// 	target: {
+		// 		"@type": "EntryPoint",
+		// 		urlTemplate: "https://llymar.ru/?s={search_term_string}"
+		// 	},
+		// 	"query-input": "required name=search_term_string"
+		// },
 		inLanguage: "ru-RU"
 	};
 
@@ -385,7 +385,7 @@ const structuredData = computed(() => ({
 	description: getOption('meta_description', "Безрамное раздвижное остекление террас, веранд, беседок, кафе и ресторанов. Наша компания специализируется на производстве и установке безрамного раздвижного остекления (система слайдеры), которая сочетает в себе элегантный минимализм и инженерную точность."),
 	url: "https://llymar.ru",
 	image: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
-	logo: `https://llymar.ru${getOption('og_image', '/assets/hero.jpg')}`,
+	logo: `https://llymar.ru${getOption('og_image', '/assets/logo.jpg')}`,
 	
 	// Enhanced contact information for Yandex rich snippets
 	telephone: getOption('phone', '+7 989 804 12-34'),

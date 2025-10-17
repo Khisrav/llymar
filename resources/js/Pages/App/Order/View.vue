@@ -30,7 +30,7 @@ import {
 	TruckIcon,
 	TrashIcon
 } from "lucide-vue-next";
-import { OpeningImages, Order } from "../../../lib/types";
+import { OpeningImages, Order, User } from "../../../lib/types";
 import { currencyFormatter } from "../../../Utils/currencyFormatter";
 import StatusBadge from "../../../Components/StatusBadge.vue";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../../../Components/ui/dropdown-menu";
@@ -44,9 +44,7 @@ import { RAL } from 'ral-colors/index.js';
 
 // Get initial data from page props
 const pageData = usePage().props;
-const order = pageData.order as Order;
-const can_access_sketcher = pageData.can_access_sketcher as boolean;
-
+const { user_role, can_access_sketcher, order, order_user }: { user_role: string; can_access_sketcher: boolean; order: Order; order_user: User } = pageData as any;
 // Edit state
 const isEditing = ref(false);
 
@@ -495,7 +493,7 @@ const handleImageError = (event: Event) => {
 								Детали заказа
 							</CardTitle>
 						</CardHeader>
-						<CardContent class="space-y-4 p-4">
+						<CardContent class="space-y-4">
 							<!-- Total Price -->
 							<div class="p-4 bg-primary/5 rounded-lg border">
 								<div class="text-sm text-muted-foreground">Общая сумма</div>
@@ -504,11 +502,6 @@ const handleImageError = (event: Event) => {
 
 							<!-- Order Details -->
 							<div class="space-y-3">
-								<div class="flex justify-between items-center">
-									<span class="text-sm text-muted-foreground">Статус:</span>
-									<StatusBadge :status="order.status" />
-								</div>
-
 								<div class="flex justify-between items-center">
 									<span class="text-sm text-muted-foreground">Создан:</span>
 									<span class="text-sm">{{ formatDate(order.created_at || '') }}</span>
@@ -558,6 +551,20 @@ const handleImageError = (event: Event) => {
 								<div v-if="order.logistics_company" class="flex justify-between items-center">
 									<span class="text-sm text-muted-foreground">Логистическая компания:</span>
 									<span class="text-sm">{{ order.logistics_company }}</span>
+								</div>
+
+								<div v-if="order.user" class="flex flex-col gap-1.5 justify-between border p-2 rounded-lg">
+									<span class="text-sm text-muted-foreground">Ответственный:</span>
+									<div class="flex items-center gap-2">
+										<UserIcon class="h-4 w-4" />
+										<span class="text-sm">{{ order.user.name }}</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<PhoneIcon class="h-4 w-4" />
+										<a :href="'tel:' + order.user.phone" class="text-sm text-primary hover:underline font-mono">
+											{{ order.user.phone }}
+										</a>
+									</div>
 								</div>
 							</div>
 						</CardContent>

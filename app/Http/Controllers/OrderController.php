@@ -32,10 +32,21 @@ class OrderController extends Controller
         if (!$user->can('access app history')) {
             return redirect()->route('app.home');
         }
-        
-        $orders = Order::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+
+        if ($user->hasRole('Super-Admin')) {
+            $orders = Order::with(['user:id,name,phone'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where(function($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                        ->orWhere('creator_id', $user->id)
+                        ->orWhereIn('user_id', $user->children()->pluck('id'));
+                })
+                ->with(['user:id,name,phone'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
 
         return Inertia::render('App/History', [
             'orders' => $orders,
@@ -144,6 +155,7 @@ class OrderController extends Controller
 
         return Inertia::render('App/Order/View', [
             'order' => $orderWithRelations,
+            'user' => $orderWithRelations->user,
             'can_access_sketcher' => $user->can('access app sketcher'),
         ]);
     }
@@ -509,10 +521,12 @@ class OrderController extends Controller
         if (isset($data['selected_dealer_id']) && $data['selected_dealer_id'] && 
             $currentUser && $currentUser->hasRole(['Super-Admin', 'Operator', 'ROP'])) {
             $userId = $data['selected_dealer_id'];
+            $creatorId = $currentUser->id;
         }
         
         $order = Order::create([
             'user_id'          => $userId,
+            'creator_id'       => $creatorId ? $creatorId : ($userId ? $userId : null),
             'customer_name'    => $data['name'] ?? '',
             'customer_phone'   => $data['phone'] ?? '',
             'customer_address' => $data['address'] ?? '',

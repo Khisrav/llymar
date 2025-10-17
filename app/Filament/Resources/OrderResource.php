@@ -28,6 +28,7 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -172,14 +173,25 @@ class OrderResource extends Resource
                         Grid::make(4)
                             ->schema([
                                 TextInput::make('user_id')
-                                    ->label('Создатель заказа')
+                                    ->label('На чье имя создан заказ')
                                     ->disabled()
                                     ->formatStateUsing(function (string $state) {
                                         $user = User::find($state);
-                                        return $user ? "#{$state} - {$user->name}" : "User #{$state}";
+                                        return $user ? "№{$state} - {$user->name}" : "Пользователь №{$state}";
                                     })
                                     ->columnSpan(1),
                                 
+                                TextInput::make('creator_id')
+                                    ->label('Кто создал заказ')
+                                    ->disabled()
+                                    ->formatStateUsing(function (Model $record) {
+                                        if ($record->creator_id === null) {
+                                            return $record->user->name;
+                                        }
+                                        $user = User::find($record->creator_id);
+                                        return $user ? "#{$record->creator_id} - {$user->name}" : "User #{$record->creator_id}";
+                                    })
+                                    ->columnSpan(1),
                                 Select::make('status')
                                     ->label('Статус заказа')
                                     ->required()

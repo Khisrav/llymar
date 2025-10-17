@@ -94,6 +94,7 @@ export interface User {
 export interface Order {
     id: number;
     user_id: number;
+    creator_id?: number;
     status: string;
     comment?: string | null;
     total_price: number;
@@ -117,6 +118,11 @@ export interface Order {
     order_items?: OrderItem[];
     when_started_working_on_it?: string | null;
     completed_at?: string | null;
+    user?: {
+        id: number;
+        name: string;
+        phone?: string;
+    };
 }
 
 export interface OrderItem {

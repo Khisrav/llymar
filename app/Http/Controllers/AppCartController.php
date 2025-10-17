@@ -20,11 +20,24 @@ class AppCartController extends Controller
         
         // Get dealers if user has permission to select dealers
         $dealers = collect();
-        if ($user->hasRole(['Super-Admin', 'Operator', 'ROP'])) {
+        
+        if ($user->hasRole('Super-Admin')) {
+            // Get all dealers for super admin
             $dealers = User::whereHas('roles', function($query) {
-                $query->whereIn('name', ['Dealer']);
-            })->select('id', 'name', 'email', 'company')->get();
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
+        } else {
+            // Get only child dealers for other roles
+            $dealers = User::where('parent_id', $user->id)
+                ->whereHas('roles', function($query) {
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
         }
+    
         
         return Inertia::render('App/Cart', [
             'items' => AppCalculatorController::getCalculatorItems(),

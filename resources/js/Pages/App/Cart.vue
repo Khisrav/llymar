@@ -33,7 +33,7 @@ const openingsStore = useOpeningStore()
 const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
 const selectedDealerId = ref<string>("")
-const { user_default_factor, dealers, can_select_dealer } = usePage().props as any
+const { user_default_factor, dealers, can_select_dealer, user_role } = usePage().props as any
 
 // Debug logging
 console.log('Cart debug:', { dealers, can_select_dealer, dealersLength: dealers?.length })
@@ -169,10 +169,14 @@ const checkout = () => {
 						<!-- Dealer Selector -->
 						<div v-if="can_select_dealer && dealers && dealers.length > 0">
 							<div class="space-y-4">
-								<Label class="inline-block">Дилер</Label>
-								<Select :model-value="selectedDealerId" @update:model-value="(value: string) => selectedDealerId = value">
+								<Label class="inline-block">Дилер <span v-if="user_role === 'ROP'" class="text-destructive dark:text-red-500">*</span></Label>
+								<Select 
+									:required="user_role === 'ROP'"
+									:model-value="selectedDealerId" 
+									@update:model-value="(value: string) => selectedDealerId = value"
+								>
 									<SelectTrigger>
-										<SelectValue placeholder="Выберите дилера (необязательно)" />
+										<SelectValue :placeholder="user_role === 'ROP' ? 'Выберите дилера (обязательно)' : 'Выберите дилера (необязательно)'" />
 									</SelectTrigger>
 									<SelectContent>
 										<!-- <SelectItem value="" class="text-muted-foreground">

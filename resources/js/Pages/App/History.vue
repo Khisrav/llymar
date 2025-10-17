@@ -19,7 +19,7 @@ import { Toaster } from "../../Components/ui/sonner"
 // @ts-ignore - RAL library doesn't have proper types
 import { RAL } from 'ral-colors/index.js'
 
-const { can_access_sketcher } = usePage().props as any
+const { can_access_sketcher, user_role } = usePage().props as any
 
 const page = usePage() as any
 const orders = ref(page.props.orders.data as Order[])
@@ -354,8 +354,8 @@ const downloadBill = (order_id: number) => {
 						<Table>
 							<TableHeader>
 								<TableRow class="bg-muted/30 hover:bg-muted/30">
-									<TableHead class="font-semibold text-sm">№ заказа</TableHead>
-									<TableHead class="font-semibold text-sm">Дата</TableHead>
+									<TableHead class="font-semibold text-sm">№ заказа <br> Дата</TableHead>
+									<TableHead v-if="!['Manager', 'Workman'].includes(user_role)" class="font-semibold text-sm">Ответственный</TableHead>
 									<TableHead class="font-semibold text-sm">Получатель</TableHead>
 									<TableHead class="font-semibold text-sm">Цвет RAL</TableHead>
 									<TableHead class="font-semibold text-sm">Сумма</TableHead>
@@ -369,12 +369,21 @@ const downloadBill = (order_id: number) => {
 									:key="order.id" 
 									class="group hover:bg-muted/20 transition-colors duration-150"
 								>
-									<TableCell class="font-mono font-medium">
-										<Link :href="`/app/orders/${order.id}`" class="hover:text-primary transition-colors border-b-2 border-primary border-dotted">
+									<TableCell class="">
+										<Link :href="`/app/orders/${order.id}`" class="font-mono font-medium hover:text-primary transition-colors border-b-2 border-primary border-dotted">
 											{{ order.order_number || order.id }}
 										</Link>
+										<br>
+										<span class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</span>
 									</TableCell>
-									<TableCell class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</TableCell>
+									<TableCell v-if="!['Manager', 'Workman'].includes(user_role)" class="text-muted-foreground text-sm">
+										<div class="space-y-1">
+											<p class="">{{ order.user?.name }}</p>
+											<a :href="'tel:' + order.user?.phone" class="text-sm text-primary hover:underline font-mono">
+												{{ order.user?.phone }}
+											</a>
+										</div>
+									</TableCell>
 									<TableCell>
 										<div class="space-y-1">
 											<p class="font-medium">{{ order.customer_name }}</p>

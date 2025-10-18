@@ -10,6 +10,7 @@ use App\Http\Controllers\CommercialOfferController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SketchController;
 use App\Http\Controllers\UserController;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -28,6 +29,8 @@ use Illuminate\Support\Facades\Storage;
 /*
  *  PUBLIC ROUTES
  */
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+
 Route::get('/', function () {
     // Get landing page options
     $options = \App\Models\LandingPageOption::orderBy('group')->orderBy('order')->get();

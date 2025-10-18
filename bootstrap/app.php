@@ -28,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'cors' => \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
+    ->withSchedule(function ($schedule) {
+        // Regenerate sitemap daily at 2am
+        $schedule->command('sitemap:generate')->dailyAt('02:00');
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

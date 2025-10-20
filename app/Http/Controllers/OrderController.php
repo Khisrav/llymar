@@ -521,12 +521,12 @@ class OrderController extends Controller
         if (isset($data['selected_dealer_id']) && $data['selected_dealer_id'] && 
             $currentUser && $currentUser->hasRole(['Super-Admin', 'Operator', 'ROP'])) {
             $userId = $data['selected_dealer_id'];
-            $creatorId = $currentUser->id;
+            $creatorId = $currentUser->id || $userId;
         }
         
         $order = Order::create([
             'user_id'          => $userId,
-            'creator_id'       => $creatorId ? $creatorId : ($userId ? $userId : null),
+            'creator_id'       => $creatorId ?? null,
             'customer_name'    => $data['name'] ?? '',
             'customer_phone'   => $data['phone'] ?? '',
             'customer_address' => $data['address'] ?? '',

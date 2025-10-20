@@ -374,57 +374,57 @@ class UserResource extends Resource
                             ->helperText('Определяет права доступа пользователя')
                             ->searchable(),
                         
-                        Forms\Components\Toggle::make('can_access_dxf')
-                            ->label('Доступ к DXF')
-                            ->helperText(function ($record) {
-                                if ($record && $record->parent_id) {
-                                    $parent = User::find($record->parent_id);
-                                    if ($parent && $parent->hasRole('Dealer')) {
-                                        return 'Доступ наследуется от родителя-дилера автоматически';
-                                    }
-                                }
-                                return 'Определяет права доступа к DXF генерации';
-                            })
-                            // ->hidden(!static::isSuperAdmin())
-                            ->disabled(function ($record) {
-                                if (static::isSuperAdmin()) {
-                                    return false;
-                                }
+                    //     Forms\Components\Toggle::make('can_access_dxf')
+                    //         ->label('Доступ к DXF')
+                    //         ->helperText(function ($record) {
+                    //             if ($record && $record->parent_id) {
+                    //                 $parent = User::find($record->parent_id);
+                    //                 if ($parent && $parent->hasRole('Dealer')) {
+                    //                     return 'Доступ наследуется от родителя-дилера автоматически';
+                    //                 }
+                    //             }
+                    //             return 'Определяет права доступа к DXF генерации';
+                    //         })
+                    //         // ->hidden(!static::isSuperAdmin())
+                    //         ->disabled(function ($record) {
+                    //             if (static::isSuperAdmin()) {
+                    //                 return false;
+                    //             }
                             
-                                return true;
-                            })
-                            ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
-                                if ($record) {
-                                    $set('can_access_dxf', $record->can('access dxf'));
-                                }
+                    //             return true;
+                    //         })
+                    //         ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
+                    //             if ($record) {
+                    //                 $set('can_access_dxf', $record->can('access dxf'));
+                    //             }
                                 
-                                if ($record && $record->parent_id) {
-                                    $parent = User::find($record->parent_id);
-                                    if ($parent && $parent->hasRole('Dealer')) {
-                                        $set('can_access_dxf', $parent->can('access dxf'));
-                                    }
-                                }
-                            })
-                            ->afterStateUpdated(function (Forms\Get $get, bool $state, $record) {
-                                if ($record) {
-                                    $state
-                                        ? $record->givePermissionTo('access dxf')
-                                        : $record->revokePermissionTo('access dxf');
+                    //             if ($record && $record->parent_id) {
+                    //                 $parent = User::find($record->parent_id);
+                    //                 if ($parent && $parent->hasRole('Dealer')) {
+                    //                     $set('can_access_dxf', $parent->can('access dxf'));
+                    //                 }
+                    //             }
+                    //         })
+                    //         ->afterStateUpdated(function (Forms\Get $get, bool $state, $record) {
+                    //             if ($record) {
+                    //                 $state
+                    //                     ? $record->givePermissionTo('access dxf')
+                    //                     : $record->revokePermissionTo('access dxf');
                                     
-                                    // Sync DXF access to children if this user is a Dealer
-                                    if ($record->hasRole('Dealer')) {
-                                        $record->syncChildrenDxfAccess();
-                                    }
-                                }
-                            })
-                            ->default(function () {
-                                /** @var User|null $user */
-                                $user = Auth::user();
-                                if ($user && $user->hasRole('Dealer') && $user->can('access dxf')) {
-                                    return true;
-                                }
-                                return false;
-                            }),
+                    //                 // Sync DXF access to children if this user is a Dealer
+                    //                 if ($record->hasRole('Dealer')) {
+                    //                     $record->syncChildrenDxfAccess();
+                    //                 }
+                    //             }
+                    //         })
+                    //         ->default(function () {
+                    //             /** @var User|null $user */
+                    //             $user = Auth::user();
+                    //             if ($user && $user->hasRole('Dealer') && $user->can('access dxf')) {
+                    //                 return true;
+                    //             }
+                    //             return false;
+                    //         }),
 
                     ]),
 
@@ -571,39 +571,39 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\ToggleColumn::make('can_access_dxf')
-                    ->label('DXF')
-                    ->visible(static::isSuperAdmin())
-                    ->disabled(function (Model $record) {
-                        if ($record->parent_id) {
-                            $parent = User::find($record->parent_id);
-                            return $parent && $parent->hasRole('Dealer');
-                        }
-                        return false;
-                    })
-                    ->state(function (Model $record) {
-                        return User::find($record->id)?->can('access dxf') ?? false;
-                    })
-                    ->afterStateUpdated(function (Model $record, bool $state) {
-                        $user = User::find($record->id);
-                        if ($user) {
-                            $state ? $user->givePermissionTo('access dxf') : $user->revokePermissionTo('access dxf');
+                // Tables\Columns\ToggleColumn::make('can_access_dxf')
+                //     ->label('DXF')
+                //     ->visible(static::isSuperAdmin())
+                //     ->disabled(function (Model $record) {
+                //         if ($record->parent_id) {
+                //             $parent = User::find($record->parent_id);
+                //             return $parent && $parent->hasRole('Dealer');
+                //         }
+                //         return false;
+                //     })
+                //     ->state(function (Model $record) {
+                //         return User::find($record->id)?->can('access dxf') ?? false;
+                //     })
+                //     ->afterStateUpdated(function (Model $record, bool $state) {
+                //         $user = User::find($record->id);
+                //         if ($user) {
+                //             $state ? $user->givePermissionTo('access dxf') : $user->revokePermissionTo('access dxf');
                             
-                            // Sync DXF access to children if this user is a Dealer
-                            if ($user->hasRole('Dealer')) {
-                                $user->syncChildrenDxfAccess();
-                            }
-                        }
-                    })
-                    ->tooltip(function (Model $record) {
-                        if ($record->parent_id) {
-                            $parent = User::find($record->parent_id);
-                            if ($parent && $parent->hasRole('Dealer')) {
-                                return 'Доступ наследуется от родителя-дилера';
-                            }
-                        }
-                        return 'Доступ к DXF файлам';
-                    }),
+                //             // Sync DXF access to children if this user is a Dealer
+                //             if ($user->hasRole('Dealer')) {
+                //                 $user->syncChildrenDxfAccess();
+                //             }
+                //         }
+                //     })
+                //     ->tooltip(function (Model $record) {
+                //         if ($record->parent_id) {
+                //             $parent = User::find($record->parent_id);
+                //             if ($parent && $parent->hasRole('Dealer')) {
+                //                 return 'Доступ наследуется от родителя-дилера';
+                //             }
+                //         }
+                //         return 'Доступ к DXF файлам';
+                //     }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')

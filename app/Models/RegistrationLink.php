@@ -13,7 +13,7 @@ class RegistrationLink extends Model
         'token',
         'created_by',
         'reward_fee',
-        'can_access_dxf',
+        // 'can_access_dxf',
         'is_used',
         'used_at',
         'registered_user_id',
@@ -22,7 +22,7 @@ class RegistrationLink extends Model
 
     protected $casts = [
         'reward_fee' => 'decimal:2',
-        'can_access_dxf' => 'boolean',
+        // 'can_access_dxf' => 'boolean',
         'is_used' => 'boolean',
         'used_at' => 'datetime',
         'expires_at' => 'datetime',

@@ -29,7 +29,7 @@ const navigationMenu = computed(() => {
     }
 
     if (can_access_app_users) {
-        menu.push({ title: 'Дилеры', to: '/app/users', exact: false })
+        menu.push({ title: 'Пользователи', to: '/app/users', exact: false })
     }
 
     if (can_access_commission_credits) {

@@ -1,8 +1,7 @@
 User-agent: *
+
 Disallow: /app
 Disallow: /api
 
-# Update this URL with your production domain
-# Sitemap: https://yourdomain.com/sitemap.xml
 Sitemap: /sitemap.xml
 

@@ -12,7 +12,10 @@ class UserObserver
     public function created(User $user): void
     {
         // Ensure new users inherit DXF access from Dealer parents
-        $user->ensureDxfAccessInheritance();
+        // $user->ensureDxfAccessInheritance();
+        
+        // Ensure new users inherit app sketcher access from parents
+        $user->ensureSketcherAccessInheritance();
     }
 
     /**
@@ -22,7 +25,8 @@ class UserObserver
     {
         // If parent_id was changed, ensure DXF inheritance from new parent
         if ($user->wasChanged('parent_id')) {
-            $user->ensureDxfAccessInheritance();
+            // $user->ensureDxfAccessInheritance();
+            $user->ensureSketcherAccessInheritance();
         }
     }
 
@@ -34,12 +38,18 @@ class UserObserver
     {
         // If this user is a Dealer, sync DXF access to all children
         // This will handle role changes, permission changes, etc.
-        if ($user->hasRole('Dealer')) {
-            $user->syncChildrenDxfAccess();
-        }
+        // if ($user->hasRole('Dealer')) {
+        //     $user->syncChildrenDxfAccess();
+        // }
+        
+        // Sync app sketcher access to all children
+        $user->syncChildrenSketcherAccess();
         
         // Ensure this user inherits DXF access from dealer parent if applicable
-        $user->ensureDxfAccessInheritance();
+        // $user->ensureDxfAccessInheritance();
+        
+        // Ensure this user inherits app sketcher access from parent if applicable
+        $user->ensureSketcherAccessInheritance();
     }
 
     /**

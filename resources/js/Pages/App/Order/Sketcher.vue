@@ -27,7 +27,7 @@ const order = pageData.order as Order;
 const openings = pageData.openings as Opening[];
 const doorHandles = pageData.door_handles as ItemWithProperties[];
 const allDoorHandles = pageData.all_door_handles as ItemWithProperties[];
-const can_access_dxf = pageData.can_access_dxf as boolean;
+// const can_access_dxf = pageData.can_access_dxf as boolean;
 
 const canEditOrderSketch  = order.status == 'paid'
 
@@ -56,7 +56,7 @@ onMounted(() => {
 		openings,
 		doorHandles,
 		allDoorHandles,
-		canAccessDxf: can_access_dxf
+		// canAccessDxf: can_access_dxf
 	});
 });
 
@@ -301,7 +301,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							<div class="flex flex-col gap-2">
 								<div class="flex flex-row gap-2 justify-between items-center">
 									<Button v-if="canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadPDF"> <FileType2Icon class="mr-2 h-4 w-4" /> PDF </Button>
-									<Button v-if="sketcherStore.canAccessDxf && canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
+									<Button v-if="canEditOrderSketch" type="button" class="w-full" variant="outline" @click="sketcherStore.downloadDXF"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button>
 									<!-- доступ к DXF -->
 									<!-- <Button v-else type="button" class="w-full" variant="outline" @click="toast('Нет доступа к DXF')"> <FileAxis3DIcon class="mr-2 h-4 w-4" /> DXF </Button> -->
 								</div>

@@ -42,10 +42,10 @@ class RegistrationLinkResource extends Resource
                             ->required()
                             ->helperText('Комиссионный процент для дилера'),
 
-                        Forms\Components\Toggle::make('can_access_dxf')
-                            ->label('Доступ к DXF')
-                            ->default(false)
-                            ->helperText('Разрешить доступ к экспорту DXF файлов'),
+                        // Forms\Components\Toggle::make('can_access_dxf')
+                        //     ->label('Доступ к DXF')
+                        //     ->default(false)
+                        //     ->helperText('Разрешить доступ к экспорту DXF файлов'),
                     ])
                     ->columns(2),
             ]);
@@ -72,10 +72,10 @@ class RegistrationLinkResource extends Resource
                     ->numeric(decimalPlaces: 2)
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('can_access_dxf')
-                    ->label('DXF')
-                    ->boolean()
-                    ->sortable(),
+                // Tables\Columns\IconColumn::make('can_access_dxf')
+                //     ->label('DXF')
+                //     ->boolean()
+                //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')

@@ -141,23 +141,42 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Sync DXF access for all child users when parent is a Dealer
      */
-    public function syncChildrenDxfAccess(): void
-    {
-        // Only sync if this user is a Dealer
-        if (!$this->hasRole('Dealer')) {
-            return;
-        }
+    // public function syncChildrenDxfAccess(): void
+    // {
+    //     // Only sync if this user is a Dealer
+    //     if (!$this->hasRole('Dealer')) {
+    //         return;
+    //     }
         
-        $hasParentDxfAccess = $this->can('access dxf');
+    //     $hasParentDxfAccess = $this->can('access dxf');
+        
+    //     // Get all child users
+    //     $children = $this->children;
+        
+    //     foreach ($children as $child) {
+    //         if ($hasParentDxfAccess) {
+    //             $child->givePermissionTo('access dxf');
+    //         } else {
+    //             $child->revokePermissionTo('access dxf');
+    //         }
+    //     }
+    // }
+    
+    /**
+     * Sync app sketcher access for all child users
+     */
+    public function syncChildrenSketcherAccess(): void
+    {
+        $hasParentSketcherAccess = $this->can('access app sketcher');
         
         // Get all child users
         $children = $this->children;
         
         foreach ($children as $child) {
-            if ($hasParentDxfAccess) {
-                $child->givePermissionTo('access dxf');
+            if ($hasParentSketcherAccess) {
+                $child->givePermissionTo('access app sketcher');
             } else {
-                $child->revokePermissionTo('access dxf');
+                $child->revokePermissionTo('access app sketcher');
             }
         }
     }
@@ -165,22 +184,49 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Check if user should inherit DXF access from parent
      */
-    public function shouldInheritDxfFromParent(): bool
+    // public function shouldInheritDxfFromParent(): bool
+    // {
+    //     if (!$this->parent_id || !$this->parent) {
+    //         return false;
+    //     }
+        
+    //     return $this->parent->hasRole('Dealer') && $this->parent->can('access dxf');
+    // }
+    
+    /**
+     * Ensure DXF access is inherited from Dealer parent if applicable
+     */
+    // public function ensureDxfAccessInheritance(): void
+    // {
+    //     if ($this->shouldInheritDxfFromParent()) {
+    //         $this->givePermissionTo('access dxf');
+    //     }
+    // }
+    
+    /**
+     * Check if user should inherit app sketcher access from parent
+     */
+    public function shouldInheritSketcherFromParent(): bool
     {
         if (!$this->parent_id || !$this->parent) {
             return false;
         }
         
-        return $this->parent->hasRole('Dealer') && $this->parent->can('access dxf');
+        return $this->parent->can('access app sketcher');
     }
     
     /**
-     * Ensure DXF access is inherited from Dealer parent if applicable
+     * Ensure app sketcher access is inherited from parent if applicable
      */
-    public function ensureDxfAccessInheritance(): void
+    public function ensureSketcherAccessInheritance(): void
     {
-        if ($this->shouldInheritDxfFromParent()) {
-            $this->givePermissionTo('access dxf');
+        if ($this->shouldInheritSketcherFromParent()) {
+            $this->givePermissionTo('access app sketcher');
+        } else {
+            // If parent doesn't have the permission, child shouldn't either
+            if ($this->parent_id && $this->parent) {
+                $this->revokePermissionTo('access app sketcher');
+            }
         }
     }
     
@@ -192,7 +238,7 @@ class User extends Authenticatable implements FilamentUser
         $result = parent::syncRoles($roles);
         
         // After role sync, handle DXF access
-        $this->handleDxfAccessAfterRoleChange();
+        // $this->handleDxfAccessAfterRoleChange();
         
         return $result;
     }
@@ -218,7 +264,7 @@ class User extends Authenticatable implements FilamentUser
         $result = parent::removeRole($role);
         
         // After role removal, handle DXF access
-        $this->handleDxfAccessAfterRoleChange();
+        // $this->handleDxfAccessAfterRoleChange();
         
         return $result;
     }
@@ -226,22 +272,22 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Handle DXF access syncing after role changes
      */
-    protected function handleDxfAccessAfterRoleChange(): void
-    {
-        // If this user is now a Dealer, sync DXF access to children
-        if ($this->hasRole('Dealer')) {
-            $this->syncChildrenDxfAccess();
-        } else {
-            // If this user is no longer a Dealer, revoke DXF access from all children
-            $children = $this->children;
-            foreach ($children as $child) {
-                $child->revokePermissionTo('access dxf');
-            }
-        }
+    // protected function handleDxfAccessAfterRoleChange(): void
+    // {
+    //     // If this user is now a Dealer, sync DXF access to children
+    //     if ($this->hasRole('Dealer')) {
+    //         $this->syncChildrenDxfAccess();
+    //     } else {
+    //         // If this user is no longer a Dealer, revoke DXF access from all children
+    //         $children = $this->children;
+    //         foreach ($children as $child) {
+    //             $child->revokePermissionTo('access dxf');
+    //         }
+    //     }
         
-        // Ensure this user inherits DXF access from dealer parent if applicable
-        $this->ensureDxfAccessInheritance();
-    }
+    //     // Ensure this user inherits DXF access from dealer parent if applicable
+    //     $this->ensureDxfAccessInheritance();
+    // }
 
     /**
      * Get the user's news articles.

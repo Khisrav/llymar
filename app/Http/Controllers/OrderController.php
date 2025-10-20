@@ -462,7 +462,7 @@ class OrderController extends Controller
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
             'all_door_handles' => $allDoorHandles,
-            'can_access_dxf' => $user->can('access app dxf'),
+            // 'can_access_dxf' => $user->can('access app dxf'),
         ]);
     }
 

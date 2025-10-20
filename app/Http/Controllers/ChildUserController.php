@@ -43,7 +43,7 @@ class ChildUserController extends Controller
                     'region' => $user->region,
                     'address' => $user->address,
                     'reward_fee' => $user->reward_fee,
-                    'can_access_dxf' => $user->can('access dxf'),
+                    // 'can_access_dxf' => $user->can('access dxf'),
                     'role' => $user->roles->first()?->display_name ?? $user->roles->first()?->name,
                     'created_at' => $user->created_at,
                 ];
@@ -77,7 +77,7 @@ class ChildUserController extends Controller
             'company' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8'],
             'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
-            'can_access_dxf' => ['boolean'],
+            // 'can_access_dxf' => ['boolean'],
             
             // Requisites (optional)
             'inn' => ['nullable', 'string', 'max:12'],
@@ -133,9 +133,9 @@ class ChildUserController extends Controller
             }
 
             // Set DXF access if enabled
-            if ($validated['can_access_dxf'] ?? false) {
-                $newUser->givePermissionTo('access dxf');
-            }
+            // if ($validated['can_access_dxf'] ?? false) {
+            //     $newUser->givePermissionTo('access dxf');
+            // }
 
             // Send credentials email to the new user
             try {
@@ -186,7 +186,7 @@ class ChildUserController extends Controller
             'address' => ['required', 'string', 'max:500'],
             'company' => ['required', 'string', 'max:255'],
             'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
-            'can_access_dxf' => ['boolean'],
+            // 'can_access_dxf' => ['boolean'],
             
             // Requisites (optional)
             'inn' => ['nullable', 'string', 'max:12'],
@@ -221,11 +221,11 @@ class ChildUserController extends Controller
             ]);
 
             // Update DXF access
-            if ($validated['can_access_dxf'] ?? false) {
-                $user->givePermissionTo('access dxf');
-            } else {
-                $user->revokePermissionTo('access dxf');
-            }
+            // if ($validated['can_access_dxf'] ?? false) {
+            //     $user->givePermissionTo('access dxf');
+            // } else {
+            //     $user->revokePermissionTo('access dxf');
+            // }
 
             return redirect()->back()->with('success', 'Пользователь успешно обновлен');
 

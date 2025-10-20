@@ -69,7 +69,7 @@ const newUser = ref({
 	company: "",
 	password: "",
 	reward_fee: 0,
-	can_access_dxf: false,
+	// can_access_dxf: false,
 	inn: "",
 	kpp: "",
 	current_account: "",
@@ -156,7 +156,7 @@ const resetNewUser = () => {
 		company: "",
 		password: "",
 		reward_fee: 0,
-		can_access_dxf: false,
+		// can_access_dxf: false,
 		inn: "",
 		kpp: "",
 		current_account: "",
@@ -172,7 +172,7 @@ const resetNewUser = () => {
 
 <template>
 	<Head>
-		<title>Управление дилерами</title>
+		<title>Управление пользователями</title>
 	</Head>
 	<AuthenticatedHeaderLayout />
 	
@@ -188,9 +188,9 @@ const resetNewUser = () => {
 							<UserIcon class="h-6 w-6 text-primary" />
 						</div>
 						<div>
-							<h1 class="text-2xl font-bold tracking-tight">Дилеры</h1>
+							<h1 class="text-2xl font-bold tracking-tight">Пользователи</h1>
 							<p class="text-sm text-muted-foreground mt-1">
-								{{ hasUsers ? `${childUsers.length} пользователей` : 'Управляйте дилерами' }}
+								{{ hasUsers ? `${childUsers.length} пользователей` : 'Управляйте пользователями' }}
 							</p>
 						</div>
 					</div>
@@ -199,7 +199,7 @@ const resetNewUser = () => {
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 						</svg>
-						Создать дилера
+						Создать пользователя
 					</Button>
 				</div>
 			</div>
@@ -218,7 +218,7 @@ const resetNewUser = () => {
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 						</svg>
-						Создать дилера
+						Создать пользователя
 					</Button>
 				</div>
 			</div>
@@ -267,12 +267,10 @@ const resetNewUser = () => {
 										<span class="text-muted-foreground">Комиссия:</span>
 										<span class="font-semibold ml-1">{{ user.reward_fee }}%</span>
 									</div>
-									<div>
+									<!-- <div>
 										<span class="text-muted-foreground">DXF:</span>
-										<!-- <Badge variant="outline"> -->
 										<span class="font-semibold ml-1">{{ user.can_access_dxf ? "Да" : "Нет" }}</span>
-										<!-- </Badge> -->
-									</div>
+									</div> -->
 								</div>
 								<div class="flex items-center justify-center gap-1">
 									<div class="flex gap-2">
@@ -300,7 +298,7 @@ const resetNewUser = () => {
 									<TableHead class="font-semibold text-sm">Компания</TableHead>
 									<TableHead class="font-semibold text-sm">Местоположение</TableHead>
 									<TableHead class="font-semibold text-sm">Комиссия</TableHead>
-									<TableHead class="font-semibold text-sm">DXF</TableHead>
+									<!-- <TableHead class="font-semibold text-sm">DXF</TableHead> -->
 									<!-- <TableHead class="font-semibold text-sm">Роль</TableHead> -->
 									<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
 								</TableRow>
@@ -326,11 +324,11 @@ const resetNewUser = () => {
 										<div class="text-xs">{{ user.region }}</div>
 									</TableCell>
 								<TableCell class="font-semibold">{{ user.reward_fee }}%</TableCell>
-								<TableCell>
+								<!-- <TableCell>
 									<Badge :variant="user.can_access_dxf ? 'default' : 'outline'">
 										{{ user.can_access_dxf ? "Да" : "Нет" }}
 									</Badge>
-								</TableCell>
+								</TableCell> -->
 									<!-- <TableCell>{{ user.role }}</TableCell> -->
 									<TableCell class="text-right">
 										<div class="flex justify-end gap-2">
@@ -435,10 +433,10 @@ const resetNewUser = () => {
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="newUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>
-				<div class="col-span-2 flex items-center space-x-2">
+				<!-- <div class="col-span-2 flex items-center space-x-2">
 					<Switch v-model:checked="newUser.can_access_dxf" />
 					<Label>Доступ к DXF</Label>
-				</div>
+				</div> -->
 				<div class="col-span-2">
 					<Button type="button" variant="outline" @click="showRequisites = !showRequisites" class="rounded-full">
 						<EyeClosedIcon v-if="showRequisites" />
@@ -552,10 +550,10 @@ const resetNewUser = () => {
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>
-				<div class="col-span-2 flex items-center space-x-2">
+				<!-- <div class="col-span-2 flex items-center space-x-2">
 					<Switch v-model:checked="editingUser.can_access_dxf" />
 					<Label>Доступ к DXF</Label>
-				</div>
+				</div> -->
 			</div>
 			<DialogFooter class="flex gap-2">
 				<Button variant="outline" @click="showEditUserDialog = false">Отмена</Button>

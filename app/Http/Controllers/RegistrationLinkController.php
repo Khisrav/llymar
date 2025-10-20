@@ -108,9 +108,9 @@ class RegistrationLinkController extends Controller
             }
 
             // Set DXF access if enabled
-            if ($link->can_access_dxf) {
-                $user->givePermissionTo('access dxf');
-            }
+            // if ($link->can_access_dxf) {
+            //     $user->givePermissionTo('access dxf');
+            // }
 
             // Mark link as used
             $link->markAsUsed($user);

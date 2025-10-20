@@ -13,6 +13,11 @@ class ListPermissions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('matrix')
+                ->label('Матрица разрешений')
+                ->icon('heroicon-o-table-cells')
+                ->color('info')
+                ->url(fn () => \App\Filament\Resources\RoleResource::getUrl('matrix')),
             // Actions\CreateAction::make(),
         ];
     }

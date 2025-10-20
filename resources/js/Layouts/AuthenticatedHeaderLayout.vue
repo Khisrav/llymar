@@ -15,7 +15,7 @@ const mobileMenuOpen = ref(false)
 
 const navigationMenu = computed(() => {
     const menu = [
-        { title: 'Главная', to: '/', exact: true },
+        // { title: 'Главная', to: '/', exact: true },
     ]
 
     if (can_access_app_history) {

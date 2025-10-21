@@ -374,6 +374,47 @@ class UserResource extends Resource
                             ->helperText('Определяет права доступа пользователя')
                             ->searchable(),
                         
+                        Forms\Components\Toggle::make('can_access_sketcher')
+                            ->label('Доступ к чертежу')
+                            ->helperText(function ($record) {
+                                if (!$record) {
+                                    return 'Определяет доступ к функционалу Sketcher';
+                                }
+                                
+                                // Check if user's role has this permission by default
+                                $role = $record->roles()->first();
+                                if ($role && $role->hasPermissionTo('access app sketcher')) {
+                                    return 'Доступ предоставлен ролью по умолчанию';
+                                }
+                                
+                                return 'Определяет доступ к функционалу Sketcher';
+                            })
+                            ->disabled(function ($record) {
+                                if (!$record) {
+                                    return false;
+                                }
+                                
+                                // Disable if user's role has this permission by default
+                                $role = $record->roles()->first();
+                                return $role && $role->hasPermissionTo('access app sketcher');
+                            })
+                            ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
+                                if ($record) {
+                                    $set('can_access_sketcher', $record->can('access app sketcher'));
+                                }
+                            })
+                            ->afterStateUpdated(function (Forms\Get $get, bool $state, $record) {
+                                if ($record) {
+                                    $state
+                                        ? $record->givePermissionTo('access app sketcher')
+                                        : $record->revokePermissionTo('access app sketcher');
+                                    
+                                    // Sync sketcher access to children
+                                    $record->syncChildrenSketcherAccess();
+                                }
+                            })
+                            ->default(false),
+                        
                     //     Forms\Components\Toggle::make('can_access_dxf')
                     //         ->label('Доступ к DXF')
                     //         ->helperText(function ($record) {
@@ -571,6 +612,33 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
+                Tables\Columns\ToggleColumn::make('can_access_sketcher')
+                    ->label('Чертеж')
+                    ->disabled(function (Model $record) {
+                        // Disable if user's role has this permission by default
+                        $role = $record->roles()->first();
+                        return $role && $role->hasPermissionTo('access app sketcher');
+                    })
+                    ->state(function (Model $record) {
+                        return User::find($record->id)?->can('access app sketcher') ?? false;
+                    })
+                    ->afterStateUpdated(function (Model $record, bool $state) {
+                        $user = User::find($record->id);
+                        if ($user) {
+                            $state ? $user->givePermissionTo('access app sketcher') : $user->revokePermissionTo('access app sketcher');
+                            
+                            // Sync sketcher access to children
+                            $user->syncChildrenSketcherAccess();
+                        }
+                    })
+                    ->tooltip(function (Model $record) {
+                        $role = $record->roles()->first();
+                        if ($role && $role->hasPermissionTo('access app sketcher')) {
+                            return 'Доступ предоставлен ролью по умолчанию';
+                        }
+                        return 'Доступ к чертежу';
+                    }),
+
                 // Tables\Columns\ToggleColumn::make('can_access_dxf')
                 //     ->label('DXF')
                 //     ->visible(static::isSuperAdmin())
@@ -644,6 +712,13 @@ class UserResource extends Resource
                         'k4' => 'K4',
                     ]),
 
+                Tables\Filters\Filter::make('has_sketcher_access')
+                    ->label('Доступ к Sketcher')
+                    ->query(fn (Builder $query): Builder => 
+                        $query->whereHas('permissions', fn ($q) => $q->where('name', 'access app sketcher'))
+                    )
+                    ->toggle(),
+
                 Tables\Filters\Filter::make('has_dxf_access')
                     ->label('Доступ к DXF')
                     ->visible(static::isSuperAdmin())
@@ -653,9 +728,15 @@ class UserResource extends Resource
                     ->toggle(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->slideOver(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->slideOver(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                        //cant delete own account
+                        ->visible(fn (Model $record) => $record->id !== Auth::user()->id && $record->id !== 1)
+                        ->requiresConfirmation(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

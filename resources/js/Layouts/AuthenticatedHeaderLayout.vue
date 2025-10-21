@@ -8,7 +8,14 @@ import { Link, usePage } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
 
 const page = usePage()
-const { can_access_app_calculator, can_access_app_history, can_access_admin_panel, can_access_app_users, can_access_commission_credits } = page.props as any
+const { 
+    can_access_app_calculator, 
+    can_access_app_history, 
+    can_access_admin_panel, 
+    can_access_app_users, 
+    can_access_commission_credits,
+    can_access_registration_links,
+} = page.props as any
 const { user } = page.props.auth as any
 
 const mobileMenuOpen = ref(false)
@@ -34,6 +41,10 @@ const navigationMenu = computed(() => {
 
     if (can_access_commission_credits) {
         menu.push({ title: 'Комиссии', to: '/app/commission-credits', exact: false })
+    }
+
+    if (can_access_registration_links) {
+        menu.push({ title: 'Ссылки', to: '/app/registration-links', exact: false })
     }
 
     return menu

@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderOpening;
+use App\Models\User;
 use App\Services\TochkaBankService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -143,7 +144,8 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $user = Auth::user();
-        
+        $creator = User::select('id', 'name', 'phone')->find($order->creator_id);
+            
         // Check if user owns this order or is admin
         if ($order->user_id !== $user->id && !$user->hasRole('Super-Admin')) {
             return redirect()->route('app.history')->with('error', 'Unauthorized access to order');
@@ -156,6 +158,7 @@ class OrderController extends Controller
         return Inertia::render('App/Order/View', [
             'order' => $orderWithRelations,
             'user' => $orderWithRelations->user,
+            'creator' => $creator,
             'can_access_sketcher' => $user->can('access app sketcher'),
         ]);
     }

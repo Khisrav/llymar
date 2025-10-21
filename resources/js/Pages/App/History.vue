@@ -355,7 +355,7 @@ const downloadBill = (order_id: number) => {
 							<TableHeader>
 								<TableRow class="bg-muted/30 hover:bg-muted/30">
 									<TableHead class="font-semibold text-sm">№ заказа <br> Дата</TableHead>
-									<TableHead v-if="!['Manager', 'Workman'].includes(user_role)" class="font-semibold text-sm">Ответственный</TableHead>
+									<TableHead v-if="!['Manager', 'Workman'].includes(user_role)" class="font-semibold text-sm">Закреплен за</TableHead>
 									<TableHead class="font-semibold text-sm">Получатель</TableHead>
 									<TableHead class="font-semibold text-sm">Цвет RAL</TableHead>
 									<TableHead class="font-semibold text-sm">Сумма</TableHead>

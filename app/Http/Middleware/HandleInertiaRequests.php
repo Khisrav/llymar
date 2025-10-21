@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'can_access_sketcher' => false,
                 'can_access_users' => false,
                 'can_access_commission_credits' => false,
+                'can_access_registration_links' => false,
                 'user_role' => null,
             ];
         }
@@ -71,6 +72,7 @@ class HandleInertiaRequests extends Middleware
             'user_default_factor' => $user->default_factor ?? 'kz',
             'can_access_app_users' => ($user->can('view-any User') && $user->can('create User') && $user->can('update User') && $user->can('delete User')) || $user->hasRole('Super-Admin'),
             'can_access_commission_credits' => $user->can('access app commission-credits'),
+            'can_access_registration_links' => $user->can('view-any RegistrationLink') && $user->can('create RegistrationLink') && $user->can('update RegistrationLink') && $user->can('delete RegistrationLink'),
             'user_role' => $user->roles->pluck('name')->first(),
         ];
     }

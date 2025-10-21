@@ -44,7 +44,7 @@ import { RAL } from 'ral-colors/index.js';
 
 // Get initial data from page props
 const pageData = usePage().props;
-const { user_role, can_access_sketcher, order, order_user }: { user_role: string; can_access_sketcher: boolean; order: Order; order_user: User } = pageData as any;
+const { user_role, can_access_sketcher, order, user, creator }: { user_role: string; can_access_sketcher: boolean; order: Order; user: User; creator: User } = pageData as any;
 // Edit state
 const isEditing = ref(false);
 
@@ -554,7 +554,7 @@ const handleImageError = (event: Event) => {
 								</div>
 
 								<div v-if="order.user" class="flex flex-col gap-1.5 justify-between border p-2 rounded-lg">
-									<span class="text-sm text-muted-foreground">Ответственный:</span>
+									<span class="text-sm text-muted-foreground">На чье имя создан:</span>
 									<div class="flex items-center gap-2">
 										<UserIcon class="h-4 w-4" />
 										<span class="text-sm">{{ order.user.name }}</span>
@@ -563,6 +563,20 @@ const handleImageError = (event: Event) => {
 										<PhoneIcon class="h-4 w-4" />
 										<a :href="'tel:' + order.user.phone" class="text-sm text-primary hover:underline font-mono">
 											{{ order.user.phone }}
+										</a>
+									</div>
+								</div>
+
+								<div v-if="creator" class="flex flex-col gap-1.5 justify-between border p-2 rounded-lg">
+									<span class="text-sm text-muted-foreground">Кем создан:</span>
+									<div class="flex items-center gap-2">
+										<UserIcon class="h-4 w-4" />
+										<span class="text-sm">{{ creator.name }}</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<PhoneIcon class="h-4 w-4" />
+										<a :href="'tel:' + creator.phone" class="text-sm text-primary hover:underline font-mono">
+											{{ creator.phone }}
 										</a>
 									</div>
 								</div>

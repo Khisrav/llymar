@@ -337,20 +337,24 @@ class UserResource extends Resource
                             })
                             ->hidden(function () {
                                 /** @var User|null $user */
-                                $user = Auth::user();
-                                if (!$user) {
-                                    return true;
-                                }
+                                // $user = Auth::user();
+                                // if (!$user) {
+                                //     return true;
+                                // }
                                 
-                                // Show if user has any "view-any" permissions for roles
-                                $allRoles = \Spatie\Permission\Models\Role::all();
-                                foreach ($allRoles as $role) {
-                                    $permissionName = 'view-any ' . strtolower($role->name);
-                                    if ($user->can($permissionName)) {
-                                        return false;
-                                    }
-                                }
+                                // // Show if user has any "view-any" permissions for roles
+                                // $allRoles = \Spatie\Permission\Models\Role::all();
+                                // foreach ($allRoles as $role) {
+                                //     $permissionName = 'view-any ' . strtolower($role->name);
+                                //     if ($user->can($permissionName)) {
+                                //         return false;
+                                //     }
+                                // }
                                 
+                                // return true;
+                                if (static::isSuperAdmin() || $user->hasRole('Operator')) {
+                                    return false;
+                                }
                                 return true;
                             })
                             ->default(function () {

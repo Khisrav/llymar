@@ -107,7 +107,7 @@ class ChildUserController extends Controller
                 'password' => Hash::make($validated['password']),
                 'parent_id' => $user->id,
                 'reward_fee' => $validated['reward_fee'],
-                'default_factor' => 'kz',
+                'default_factor' => 'pz',
                 
                 // Requisites
                 'inn' => $validated['inn'] ?? null,

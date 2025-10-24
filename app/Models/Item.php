@@ -22,15 +22,10 @@ class Item extends Model
         'quantity_in_warehouse',
         'vendor_code',
         'is_for_llymar',
-        'kz',
         'pz',
-        'k1',
         'p1',
-        'k2',
         'p2',
-        'k3',
         'p3',
-        'k4',
         'pr',
         'weight',
         'abbreviation',
@@ -68,27 +63,28 @@ class Item extends Model
      * Get the item price based on the selected factor.
      *
      * @param  int  $itemId
-     * @param  string  $factor  The factor to use (kz, k1, k2, k3, k4)
+     * @param  string  $factor  The factor to use (pz, p1, p2, p3, p4)
      * @return float
      */
-    public static function itemPrice(int $itemId, string $factor = 'kz'): float
+    public static function itemPrice(int $itemId, string $factor = 'pz'): float
     {
         // Retrieve the item or throw a 404 error if not found
         $item = self::findOrFail($itemId);
     
-        // Get the appropriate factor value and price
+        // Get the appropriate price directly (no multiplication needed)
         switch (strtolower($factor)) {
-            case 'k1':
-                return $item->purchase_price * ($item->k1 ?? 1.0);
-            case 'k2':
-                return $item->purchase_price * ($item->k2 ?? 1.0);
-            case 'k3':
-                return $item->purchase_price * ($item->k3 ?? 1.0);
-            case 'k4':
-                return $item->purchase_price * ($item->k4 ?? 1.0);
-            case 'kz':
+            case 'p1':
+                return $item->p1 ?? 0.0;
+            case 'p2':
+                return $item->p2 ?? 0.0;
+            case 'p3':
+                return $item->p3 ?? 0.0;
+            case 'p4':
+            case 'pr':
+                return $item->pr ?? 0.0;
+            case 'pz':
             default:
-                return $item->purchase_price * ($item->kz ?? 1.0);
+                return $item->pz ?? 0.0;
         }
     }
 

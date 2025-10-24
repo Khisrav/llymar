@@ -28,13 +28,13 @@ const commercialOfferStore = useCommercialOfferStore()
 const { can_access_app_cart, can_access_factors, user_default_factor } = usePage().props as any
 
 // Factor management
-const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'kz')
+const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'pz')
 const factors = [
-    { key: 'kz', label: 'KZ' },
-    { key: 'k1', label: 'K1' },
-    { key: 'k2', label: 'K2' },
-    { key: 'k3', label: 'K3' },
-    { key: 'k4', label: 'K4' },
+    { key: 'pz', label: 'ЗЦ' },
+    { key: 'p1', label: 'Р1' },
+    { key: 'p2', label: 'Р2' },
+    { key: 'p3', label: 'Р3' },
+    { key: 'pr', label: 'РЦ' },
 ]
 
 // Watch for factor changes and update session storage
@@ -47,7 +47,7 @@ watch(selectedFactor, (newValue) => {
 
 
 // Initialize factor in items store with user's default factor
-itemsStore.initializeUserFactor(user_default_factor || 'kz')
+itemsStore.initializeUserFactor(user_default_factor || 'pz')
 itemsStore.selectedFactor = selectedFactor.value
 
 // SNP for Surname Name Patronymic
@@ -186,11 +186,11 @@ const downloadListPDF = async () => {
                 <DropdownMenu v-if="can_access_factors">
                     <DropdownMenuTrigger>
                         <Button variant="outline" size="sm" class="min-w-12">
-                            <span class="text-sm font-medium">{{ selectedFactor.toUpperCase() }}</span>
+                            <span class="text-sm font-medium">{{ factors.find(factor => factor.key === selectedFactor)?.label || 'ЗЦ' }}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent class="w-32">
-                        <DropdownMenuLabel>Коэффициенты</DropdownMenuLabel>
+                        <DropdownMenuLabel>Цены</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                             v-for="factor in factors" 

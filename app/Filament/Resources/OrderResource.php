@@ -155,10 +155,10 @@ class OrderResource extends Resource
                                     ->columnSpan(1),
                                     
                                 TextInput::make('selected_factor')
-                                    ->label('Коэффициент')
+                                    ->label('Цена')
                                     ->disabled()
                                     // ->numeric()
-                                    ->default('kz')
+                                    ->default('pz')
                                     ->columnSpan(1),
             
                                 TextInput::make('total_price')

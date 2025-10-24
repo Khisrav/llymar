@@ -17,8 +17,8 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
     const markupPercentage = ref(0)
-    const selectedFactor = ref('kz')
-    const userDefaultFactor = ref('kz')
+    const selectedFactor = ref('pz')
+    const userDefaultFactor = ref('pz')
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -466,30 +466,31 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         if (!item) return 0;
 
-        // Apply the selected factor to the purchase price
+        // Get the price directly from the selected factor (no multiplication needed)
         const factor = selectedFactor.value.toLowerCase()
-        let multiplier = 1.0
+        let price = 0.0
 
         switch (factor) {
-            case 'k1':
-                multiplier = (item as any).k1 ?? 1.0
+            case 'p1':
+                price = (item as any).p1 ?? 1.0
                 break
-            case 'k2':
-                multiplier = (item as any).k2 ?? 1.0
+            case 'p2':
+                price = (item as any).p2 ?? 1.0
                 break
-            case 'k3':
-                multiplier = (item as any).k3 ?? 1.0
+            case 'p3':
+                price = (item as any).p3 ?? 1.0
                 break
-            case 'k4':
-                multiplier = (item as any).k4 ?? 1.0
+            case 'p4':
+            case 'pr':
+                price = (item as any).pr ?? 1.0
                 break
-            case 'kz':
+            case 'pz':
             default:
-                multiplier = (item as any).kz ?? 1.0
+                price = (item as any).pz ?? 1.0
                 break
         }
 
-        return item.purchase_price * multiplier;
+        return price;
     }
 
     const total_price = computed(() => {

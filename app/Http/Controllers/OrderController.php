@@ -235,7 +235,7 @@ class OrderController extends Controller
             'selected_factor' => 'sometimes|string',
         ]);
 
-        $selectedFactor = $fields['selected_factor'] ?? 'kz';
+        $selectedFactor = $fields['selected_factor'] ?? 'pz';
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
@@ -317,7 +317,7 @@ class OrderController extends Controller
             'selected_factor' => 'sometimes|string',
         ]);
 
-        $selectedFactor = $fields['selected_factor'] ?? 'kz';
+        $selectedFactor = $fields['selected_factor'] ?? 'pz';
 
         // Create a temporary Order instance (not persisted)
         $order = new Order([
@@ -536,7 +536,7 @@ class OrderController extends Controller
             'customer_email'   => $data['email'] ?? '',
             'total_price'      => $data['total_price'],
             'ral_code'         => $data['ral_code'] ?? null,
-            'selected_factor'  => $data['selected_factor'] ?? 'kz',
+            'selected_factor'  => $data['selected_factor'] ?? 'pz',
         ]);
 
         $hasServiceItems = false;
@@ -660,7 +660,7 @@ class OrderController extends Controller
                     'item'           => $orderItem->item,
                     'quantity'       => $orderItem->quantity,
                     'checked'        => $orderItem->checked ?? true, // Use stored checked status
-                    'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id, $order->selected_factor ?? 'kz'),
+                    'itemTotalPrice' => $orderItem->quantity * Item::itemPrice($orderItem->item_id, $order->selected_factor ?? 'pz'),
                 ];
             })->toArray();
         } else {
@@ -670,7 +670,7 @@ class OrderController extends Controller
                     'item'           => $item->item,
                     'quantity'       => $item->quantity,
                     'checked'        => $item->checked ?? true,
-                    'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id, $order->selected_factor ?? 'kz'),
+                    'itemTotalPrice' => $item->quantity * Item::itemPrice($item->item_id, $order->selected_factor ?? 'pz'),
                 ];
             }, $orderItems);
         }
@@ -700,7 +700,7 @@ class OrderController extends Controller
             'order'         => $order,
             'orderItems'    => $orderItems,
             'orderOpenings' => $orderOpenings,
-            'selected_factor' => $order->selected_factor ?? 'kz',
+            'selected_factor' => $order->selected_factor ?? 'pz',
         ];
     }
 

@@ -61,8 +61,8 @@ class CommercialOfferResource extends Resource
                                     ->columnSpan(1),
                                     
                                 Forms\Components\TextInput::make('selected_factor')
-                                    ->label('Выбранный коэффициент')
-                                    // ->default('kz')
+                                    ->label('Выбранная цена')
+                                    // ->default('pz')
                                     ->columnSpan(1),
                             ]),
                         
@@ -355,14 +355,14 @@ class CommercialOfferResource extends Resource
                     ->toggleable(),
                     
                 Tables\Columns\TextColumn::make('selected_factor')
-                    ->label('Коэф.')
+                    ->label('Цена')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'kz' => 'success',
-                        'pz' => 'warning',
-                        'k1', 'k2', 'k3', 'k4' => 'info',
-                        'p1', 'p2', 'p3' => 'danger',
-                        'pr' => 'gray',
+                        'pz' => 'success',
+                        'p1' => 'info',
+                        'p2' => 'danger',
+                        'p3' => 'warning',
+                        'pr', 'p4' => 'gray',
                         default => 'secondary',
                     })
                     ->toggleable(),
@@ -395,17 +395,13 @@ class CommercialOfferResource extends Resource
                     ->preload(),
                     
                 SelectFilter::make('selected_factor')
-                    ->label('Коэффициент')
+                    ->label('Цена')
                     ->options([
-                        'kz' => 'KZ',
                         'pz' => 'PZ',
-                        'k1' => 'K1',
-                        'k2' => 'K2',
-                        'k3' => 'K3',
-                        'k4' => 'K4',
                         'p1' => 'P1',
                         'p2' => 'P2',
                         'p3' => 'P3',
+                        'p4' => 'P4',
                         'pr' => 'PR',
                     ]),
                     

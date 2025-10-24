@@ -89,7 +89,7 @@ class RegistrationLinkController extends Controller
                 'password' => Hash::make($validated['password']),
                 'parent_id' => $link->created_by,
                 'reward_fee' => $link->reward_fee,
-                'default_factor' => 'kz',
+                'default_factor' => 'pz',
                 
                 // Requisites
                 'inn' => $validated['inn'] ?? null,

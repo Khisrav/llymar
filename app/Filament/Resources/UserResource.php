@@ -275,18 +275,18 @@ class UserResource extends Resource
                             ->helperText('Комиссионный процент от 0 до 100'),
 
                         Forms\Components\Select::make('default_factor')
-                            ->label('Коэффициент по умолчанию')
+                            ->label('Цена по умолчанию')
                             ->native(false)
                             ->required()
-                            ->default('kz')
+                            ->default('pz')
                             ->visible(static::isSuperAdmin())
                             ->helperText('Применяется для расчетов')
                             ->options([
-                                'kz' => 'KZ',
-                                'k1' => 'K1',
-                                'k2' => 'K2',
-                                'k3' => 'K3',
-                                'k4' => 'K4',
+                                'pz' => 'PZ',
+                                'p1' => 'P1',
+                                'p2' => 'P2',
+                                'p3' => 'P3',
+                                'p4' => 'P4',
                             ])
                             ->columnSpan(static::isSuperAdmin() ? 1 : 0),
                     ]),
@@ -571,15 +571,15 @@ class UserResource extends Resource
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('default_factor')
-                    ->label('Коэфф-т')
-                    ->formatStateUsing(fn ($state) => strtoupper($state ?? 'kz'))
+                    ->label('Цена')
+                    ->formatStateUsing(fn ($state) => strtoupper($state ?? 'pz'))
                     ->badge()
                     ->color(fn ($state) => match ($state) {
-                        'kz' => 'gray',
-                        'k1' => 'blue',
-                        'k2' => 'green',
-                        'k3' => 'yellow',
-                        'k4' => 'red',
+                        'pz' => 'gray',
+                        'p1' => 'blue',
+                        'p2' => 'green',
+                        'p3' => 'yellow',
+                        'p4' => 'red',
                         default => 'gray',
                     })
                     ->visible(static::isSuperAdmin())
@@ -701,15 +701,15 @@ class UserResource extends Resource
                     ]),
 
                 SelectFilter::make('default_factor')
-                    ->label('Коэффициент')
+                    ->label('Цена')
                     ->native(false)
                     ->visible(static::isSuperAdmin())
                     ->options([
-                        'kz' => 'KZ',
-                        'k1' => 'K1',
-                        'k2' => 'K2',
-                        'k3' => 'K3',
-                        'k4' => 'K4',
+                        'pz' => 'PZ',
+                        'p1' => 'P1',
+                        'p2' => 'P2',
+                        'p3' => 'P3',
+                        'p4' => 'P4',
                     ]),
 
                 Tables\Filters\Filter::make('has_sketcher_access')

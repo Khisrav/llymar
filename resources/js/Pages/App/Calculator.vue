@@ -23,7 +23,7 @@ itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
 
 // Initialize user's default factor before calculating
-itemsStore.initializeUserFactor(user_default_factor || 'kz')
+itemsStore.initializeUserFactor(user_default_factor || 'pz')
 itemsStore.initiateCartItems()
 itemsStore.calculate()
 </script>

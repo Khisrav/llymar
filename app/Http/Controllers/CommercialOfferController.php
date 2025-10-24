@@ -44,7 +44,7 @@ class CommercialOfferController extends Controller
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
         $markup_percentage = $request->get('markup_percentage', 1.0);
-        $selected_factor = $request->get('selected_factor', 'kz');
+        $selected_factor = $request->get('selected_factor', 'pz');
 
         // Save to database
         $commercialOffer = CommercialOffer::create([
@@ -193,7 +193,7 @@ class CommercialOfferController extends Controller
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
         $markup_percentage = $request->get('markup_percentage');
-        $selected_factor = $request->get('selected_factor', 'kz');
+        $selected_factor = $request->get('selected_factor', 'pz');
 
         $offer = [
             'customer' => $customer,
@@ -221,7 +221,7 @@ class CommercialOfferController extends Controller
     private static function calculateOfferAdditionalsPrice(array $offer): float
     {
         $offerAdditionalsPrice = 0;
-        $selectedFactor = $offer['selected_factor'] ?? 'kz';
+        $selectedFactor = $offer['selected_factor'] ?? 'pz';
 
         foreach ($offer['additional_items'] as $item) {
             if (isset($offer['cart_items'][$item['id']])) {

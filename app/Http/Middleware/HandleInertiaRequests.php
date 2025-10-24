@@ -69,7 +69,7 @@ class HandleInertiaRequests extends Middleware
             // 'can_access_dxf' => ($user->can('access dxf') && $user->can_access_dxf) || $user->hasRole('Super-Admin'),
             'can_access_factors' => $user->can('access factors'),
             'can_access_sketcher' => $user->can('access app sketcher'),
-            'user_default_factor' => $user->default_factor ?? 'kz',
+            'user_default_factor' => $user->default_factor ?? 'pz',
             'can_access_app_users' => ($user->can('view-any User') && $user->can('create User') && $user->can('update User') && $user->can('delete User')) || $user->hasRole('Super-Admin'),
             'can_access_commission_credits' => $user->can('access app commission-credits'),
             'can_access_registration_links' => $user->can('view-any RegistrationLink') && $user->can('create RegistrationLink') && $user->can('update RegistrationLink') && $user->can('delete RegistrationLink'),

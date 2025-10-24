@@ -59,10 +59,10 @@ class OrderItem extends Model
     /**
      * Calculate the total price of this OrderItem using a specific factor.
      *
-     * @param string $factor The factor to use (kz, k1, k2, k3, k4)
+     * @param string $factor The factor to use (pz, p1, p2, p3, p4)
      * @return float
      */
-    public function itemTotalPrice(string $factor = 'kz'): float
+    public function itemTotalPrice(string $factor = 'pz'): float
     {
         $item = $this->item;
         if (! $item) {

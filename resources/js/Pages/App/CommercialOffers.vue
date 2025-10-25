@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue";
 import { Head, usePage, Link, router } from "@inertiajs/vue3";
-import { EllipsisVerticalIcon, FileTextIcon, FolderClockIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-vue-next";
+import { EllipsisVerticalIcon, FileTextIcon, FolderClockIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, PenIcon } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { toast, Toaster } from "vue-sonner";
 import { CommercialOfferRecord, CartItem } from "../../lib/types";
@@ -108,6 +108,45 @@ const countCartItems = (cartItems: CartItem[] | Record<string, CartItem>): numbe
     }
     return (Object as any).values(cartItems).reduce((sum: number, item: CartItem) => sum + 1, 0);
 }
+
+const openCommercialOfferInCalculator = (id: number) => {
+	const offer = offers.value.find((offer) => offer.id === id);
+	if (offer) {
+		// Clear existing data
+		sessionStorage.removeItem('openings');
+		sessionStorage.removeItem('cartItems');
+		
+		// Store commercial offer ID for updating
+		sessionStorage.setItem('commercialOfferId', id.toString());
+		
+		// Store openings and cart items
+		sessionStorage.setItem('openings', JSON.stringify(offer.openings));
+		sessionStorage.setItem('cartItems', JSON.stringify(offer.cart_items));
+		sessionStorage.setItem('selectedGlassID', offer.glass?.id?.toString() || '');
+		sessionStorage.setItem('selectedServicesID', JSON.stringify(offer.services?.map((service) => service.id) || []));
+		
+		// Store commercial offer customer and manufacturer data
+		const customerData = {
+			name: offer.customer_name || '',
+			phone: offer.customer_phone || '',
+			address: offer.customer_address || '',
+			comment: offer.customer_comment || '',
+		};
+		const manufacturerData = {
+			title: 'Информация о производителе',
+			manufacturer: offer.manufacturer_name || '',
+			company: '',
+			phone: offer.manufacturer_phone || ''
+		};
+		sessionStorage.setItem('commercialOfferCustomer', JSON.stringify(customerData));
+		sessionStorage.setItem('commercialOfferManufacturer', JSON.stringify(manufacturerData));
+		
+		// Navigate to calculator
+		window.location.href = '/app/calculator';
+	} else {
+		toast.error("Коммерческое предложение не найдено")
+	}
+}
 </script>
 
 <template>
@@ -172,6 +211,10 @@ const countCartItems = (cartItems: CartItem[] | Record<string, CartItem>): numbe
 									<DropdownMenuContent align="end">
 										<DropdownMenuLabel>Действия</DropdownMenuLabel>
 										<DropdownMenuSeparator />
+										<DropdownMenuItem @click="openCommercialOfferInCalculator(offer.id)">
+											<PenIcon class="h-4 w-4" />
+											<span>Редактировать</span>
+										</DropdownMenuItem>
 										<DropdownMenuItem @click="downloadPDF(offer.id)">
 											<FileTextIcon class="h-4 w-4" />
 											<span>Скачать PDF</span>
@@ -292,6 +335,10 @@ const countCartItems = (cartItems: CartItem[] | Record<string, CartItem>): numbe
     											<DropdownMenuContent align="end">
     												<DropdownMenuLabel>Действия</DropdownMenuLabel>
     												<DropdownMenuSeparator />
+													<DropdownMenuItem @click="openCommercialOfferInCalculator(offer.id)">
+														<PenIcon class="h-4 w-4" />
+														<span>Редактировать</span>
+													</DropdownMenuItem>
     												<DropdownMenuItem @click="downloadPDF(offer.id)">
     													<FileTextIcon class="h-4 w-4" />
     													<span>Скачать PDF</span>

@@ -156,6 +156,72 @@ class CommercialOfferController extends Controller
     }
 
     /**
+     * Update an existing commercial offer and download the updated PDF.
+     */
+    public function update(Request $request, CommercialOffer $commercialOffer)
+    {
+        $user = Auth::user();
+        
+        // Allow update if:
+        // 1. User is Super-Admin
+        // 2. User has update-any CommercialOffer permission
+        // 3. User owns this commercial offer
+        if (!$user->hasRole('Super-Admin') && 
+            !$user->can('update-any CommercialOffer') && 
+            $commercialOffer->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $customer = $request->get('customer');
+        $manufacturer = $request->get('manufacturer');
+        $openings = $request->get('openings');
+        $additional_items = $request->get('additional_items');
+        $glass = $request->get('glass');
+        $services = $request->get('services');
+        $cart_items = $request->get('cart_items');
+        $total_price = $request->get('total_price');
+        $markup_percentage = $request->get('markup_percentage', 1.0);
+        $selected_factor = $request->get('selected_factor', 'pz');
+
+        // Update the commercial offer
+        $commercialOffer->update([
+            'customer_name' => $customer['name'] ?? null,
+            'customer_phone' => $customer['phone'] ?? null,
+            'customer_address' => $customer['address'] ?? null,
+            'customer_comment' => $customer['comment'] ?? null,
+            'manufacturer_name' => $manufacturer['manufacturer'] ?? null,
+            'manufacturer_phone' => $manufacturer['phone'] ?? null,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+            'selected_factor' => $selected_factor,
+        ]);
+
+        $offer = [
+            'customer' => $customer,
+            'manufacturer' => $manufacturer,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+        ];
+
+        $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
+            'offer',
+            'selected_factor'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
+    }
+
+    /**
      * Remove the specified commercial offer from storage.
      */
     public function destroy(CommercialOffer $commercialOffer)

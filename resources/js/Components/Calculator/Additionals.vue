@@ -157,7 +157,7 @@ const addSelectedHandle = () => {
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Вес:</span>
-								<span v-if="selectedGlass" class="font-bold text-primary"> {{ quantityFormatter(itemsStore.cartItems[itemsStore.selectedGlassID]?.weight || 0) }} кг</span>
+								<span v-if="selectedGlass" class="font-bold text-primary"> {{ quantityFormatter(selectedGlass.weight || 0) }} кг</span>
 							</div>
 							<div class="flex justify-between items-center text-muted-foreground">
 								<span>Итого:</span>

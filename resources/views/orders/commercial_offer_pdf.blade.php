@@ -193,6 +193,26 @@ function groupArraysByProperties($arrays, $properties) {
                             </tr>
                         @endif
                         
+                        @if (isset($offer['ghost_glasses']) && is_array($offer['ghost_glasses']))
+                            @foreach ($offer['ghost_glasses'] as $ghost_glass)
+                                @if (isset($offer['cart_items'][$ghost_glass['id']]))
+                                    @php
+                                        $price = App\Models\Item::itemPrice($ghost_glass['id'], $selected_factor ?? 'pz') * $markupPercentage;
+                                        $quantity = $offer['cart_items'][$ghost_glass['id']]['quantity'];
+                                        $total = $price * $quantity;
+                                    @endphp
+                                    <tr style="color: #6f6f6f">
+                                        <td>{{ ++$count }}</td>
+                                        <td style="text-align: left !important">@if ($ghost_glass['vendor_code']) {{ $ghost_glass['vendor_code'] . ' - ' }} @endif {{ $ghost_glass['name'] }}</td>
+                                        <td>
+                                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($ghost_glass['img'][0] != '/' ? '/' : '') . $ghost_glass['img']))) }}" alt="" width="40">
+                                        </td>
+                                        <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $ghost_glass['unit'] }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        @endif
+                        
                         @foreach ($offer['additional_items'] as $item)
                             @if (isset($offer['cart_items'][$item['id']]))
                                 @php
@@ -230,7 +250,55 @@ function groupArraysByProperties($arrays, $properties) {
                         @endforeach
                     </tbody>
                 </table>
-                <p style="text-align: right;font-size:14px;">Итого ({{ strtoupper($selected_factor ?? 'pz') }}): {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
+                
+                @php
+                    // Calculate base price (total without any glass)
+                    $basePrice = $offer['total_price'] * $markupPercentage;
+                    $regularGlassPrice = 0;
+                    
+                    if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']])) {
+                        $glassItem = $offer['glass'];
+                        $glassPrice = App\Models\Item::itemPrice($glassItem['id'], $selected_factor ?? 'pz') * $markupPercentage;
+                        $glassQuantity = $offer['cart_items'][$glassItem['id']]['quantity'];
+                        $regularGlassPrice = $glassPrice * $glassQuantity;
+                        $basePrice = $basePrice - $regularGlassPrice;
+                    }
+                    
+                    // Prepare array of totals
+                    $totals = [];
+                    
+                    // Total with regular glass
+                    if ($offer['glass'] && isset($offer['cart_items'][$offer['glass']['id']])) {
+                        $totals[] = [
+                            'label' => 'Итого с ' . $offer['glass']['vendor_code'],
+                            'price' => $basePrice + $regularGlassPrice
+                        ];
+                    }
+                    
+                    // Totals with ghost glasses
+                    if (isset($offer['ghost_glasses']) && is_array($offer['ghost_glasses']) && count($offer['ghost_glasses']) > 0) {
+                        foreach ($offer['ghost_glasses'] as $ghost_glass) {
+                            if (isset($offer['cart_items'][$ghost_glass['id']])) {
+                                $ghostGlassPrice = App\Models\Item::itemPrice($ghost_glass['id'], $selected_factor ?? 'pz') * $markupPercentage;
+                                $ghostGlassQuantity = $offer['cart_items'][$ghost_glass['id']]['quantity'];
+                                $totalWithGhostGlass = $basePrice + ($ghostGlassPrice * $ghostGlassQuantity);
+                                
+                                $totals[] = [
+                                    'label' => 'Итого с ' . $ghost_glass['vendor_code'],
+                                    'price' => $totalWithGhostGlass
+                                ];
+                            }
+                        }
+                    }
+                @endphp
+                
+                @if (count($totals) > 1)
+                    @foreach ($totals as $index => $totalInfo)
+                        <p style="text-align: right;font-size:13px;margin:2px 0;">{{ $totalInfo['label'] }}: {{ number_format($totalInfo['price'], 0, '.', ' ') }} ₽</p>
+                    @endforeach
+                @else
+                    <p style="text-align: right;font-size:13px;">Итого: {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
+                @endif
             </td>
             <td style="vertical-align: top;border:none">
                 <table>

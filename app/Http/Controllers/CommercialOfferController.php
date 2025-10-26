@@ -40,6 +40,7 @@ class CommercialOfferController extends Controller
         $openings = $request->get('openings');
         $additional_items = $request->get('additional_items');
         $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
         $services = $request->get('services');
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
@@ -58,6 +59,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -71,6 +73,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -122,6 +125,7 @@ class CommercialOfferController extends Controller
 
         // Ensure additional_items and services are arrays
         $additional_items = $commercialOffer->additional_items ?? [];
+        $ghost_glasses = $commercialOffer->ghost_glasses ?? [];
         $services = $commercialOffer->services ?? [];
         $cart_items = $commercialOffer->cart_items ?? [];
 
@@ -139,6 +143,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $commercialOffer->total_price,
@@ -177,6 +182,7 @@ class CommercialOfferController extends Controller
         $openings = $request->get('openings');
         $additional_items = $request->get('additional_items');
         $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
         $services = $request->get('services');
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
@@ -194,6 +200,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -207,6 +214,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -255,6 +263,7 @@ class CommercialOfferController extends Controller
         $openings = $request->get('openings');
         $additional_items = $request->get('additional_items');
         $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
         $services = $request->get('services');
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
@@ -267,6 +276,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,

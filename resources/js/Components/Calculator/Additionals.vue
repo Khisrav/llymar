@@ -29,8 +29,10 @@ import QuantitySelector from "../QuantitySelector.vue";
 
 const itemsStore = useItemsStore();
 const selectedGlass = ref<any>(itemsStore.glasses.find((glass) => glass.id === itemsStore.selectedGlassID) || null);
+const selectedGhostGlass = ref<any>(null)
 const selectedItem = ref<Item | null>(null);
 const isModalOpen = ref(false);
+const selectedGlassToAdd = ref<string>('')
 
 const servicesByCategory = computed(() => {
 	const llymarServices = itemsStore.services.filter((service) => service.category_id === 26);
@@ -109,6 +111,27 @@ const addSelectedHandle = () => {
 		selectedHandleToAdd.value = '' // Reset selection
 	}
 }
+
+const availableGhostGlasses = computed(() => {
+	return itemsStore.glasses.filter(glass => 
+		glass.id !== itemsStore.selectedGlassID && 
+		!itemsStore.selectedGhostGlassesID.includes(glass.id || 0)
+	)
+})
+
+const selectedGhostGlasses = computed(() => {
+	return itemsStore.glasses.filter(glass => 
+		itemsStore.selectedGhostGlassesID.includes(glass.id || 0)
+	)
+})
+
+const addSelectedGlass = () => {
+	if (selectedGlassToAdd.value) {
+		const glassId = parseInt(selectedGlassToAdd.value)
+		itemsStore.addGhostGlass(glassId)
+		selectedGlassToAdd.value = '' // Reset selection
+	}
+}
 </script>
 
 <template>
@@ -181,6 +204,71 @@ const addSelectedHandle = () => {
 							@click="openImageModal(selectedGlass)"
 							:alt="selectedGlass.name"
 						/>
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-2 mt-6">
+					<div class="flex justify-between items-center">
+						<span class="font-semibold">Фантомные стекла</span>
+						<span class="text-xs text-muted-foreground">(Для КП, не учитываются в цене)</span>
+					</div>
+
+					<!-- Add glass selector -->
+					<div v-if="availableGhostGlasses.length > 0" class="flex justify-between items-center gap-2">
+						<div class="flex-1 overflow-hidden">
+							<Select :model-value="selectedGlassToAdd" @update:modelValue="(value) => selectedGlassToAdd = value || ''">
+								<SelectTrigger class="h-9 text-sm shadow-sm">
+									<SelectValue placeholder="Выберите стекло для добавления" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem v-for="glass in availableGhostGlasses" :key="glass.id" :value="(glass.id || 0).toString()">
+										{{ glass.name }}
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<Button
+							@click="addSelectedGlass"
+							:disabled="!selectedGlassToAdd"
+							size="icon"
+							variant="outline"
+							class="shrink-0"
+						>
+							<PlusIcon class="size-4" />
+						</Button>
+					</div>
+					
+					<!-- Selected ghost glasses with quantity controls -->
+					<div v-if="selectedGhostGlasses.length > 0" class="space-y-2">
+						<div class="space-y-2">
+							<div v-for="glass in selectedGhostGlasses" :key="glass.id" class="flex flex-col md:flex-row items-center justify-between gap-2 p-2 border rounded-lg bg-muted/30">
+								<div class="flex-1 w-full">
+									<div class="font-medium text-muted-foreground text-sm">{{ glass.name }}</div>
+									<div class="text-xs text-muted-foreground">{{ quantityFormatter(itemsStore.cartItems[glass.id || 0]?.quantity || 0) }} {{ glass.unit }}</div>
+								</div>
+								<div class="flex items-center justify-between gap-2 w-full md:w-auto">
+									<div class="text-xs text-muted-foreground">
+										{{ currencyFormatter(itemsStore.itemPrice(glass.id || 0)) }}/{{ glass.unit }}
+									</div>
+									<Button 
+										variant="outline" 
+										size="icon" 
+										@click="itemsStore.removeGhostGlass(glass.id || 0)"
+										class="shrink-0"
+									>
+										<X class="size-4" />
+									</Button>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div v-if="itemsStore.glasses.length === 0" class="text-center text-muted-foreground text-sm py-4">
+						Нет доступных стекол
+					</div>
+					
+					<div v-else-if="availableGhostGlasses.length === 0 && selectedGhostGlasses.length === 0" class="text-center text-muted-foreground text-sm py-2">
+						Все стекла добавлены
 					</div>
 				</div>
 					

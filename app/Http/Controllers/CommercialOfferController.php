@@ -40,6 +40,7 @@ class CommercialOfferController extends Controller
         $openings = $request->get('openings');
         $additional_items = $request->get('additional_items');
         $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
         $services = $request->get('services');
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
@@ -58,6 +59,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -71,6 +73,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,
@@ -122,6 +125,7 @@ class CommercialOfferController extends Controller
 
         // Ensure additional_items and services are arrays
         $additional_items = $commercialOffer->additional_items ?? [];
+        $ghost_glasses = $commercialOffer->ghost_glasses ?? [];
         $services = $commercialOffer->services ?? [];
         $cart_items = $commercialOffer->cart_items ?? [];
 
@@ -139,6 +143,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $commercialOffer->total_price,
@@ -146,6 +151,75 @@ class CommercialOfferController extends Controller
         ];
 
         $selected_factor = $commercialOffer->selected_factor;
+
+        $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
+            'offer',
+            'selected_factor'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
+    }
+
+    /**
+     * Update an existing commercial offer and download the updated PDF.
+     */
+    public function update(Request $request, CommercialOffer $commercialOffer)
+    {
+        $user = Auth::user();
+        
+        // Allow update if:
+        // 1. User is Super-Admin
+        // 2. User has update-any CommercialOffer permission
+        // 3. User owns this commercial offer
+        if (!$user->hasRole('Super-Admin') && 
+            !$user->can('update-any CommercialOffer') && 
+            $commercialOffer->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $customer = $request->get('customer');
+        $manufacturer = $request->get('manufacturer');
+        $openings = $request->get('openings');
+        $additional_items = $request->get('additional_items');
+        $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
+        $services = $request->get('services');
+        $cart_items = $request->get('cart_items');
+        $total_price = $request->get('total_price');
+        $markup_percentage = $request->get('markup_percentage', 1.0);
+        $selected_factor = $request->get('selected_factor', 'pz');
+
+        // Update the commercial offer
+        $commercialOffer->update([
+            'customer_name' => $customer['name'] ?? null,
+            'customer_phone' => $customer['phone'] ?? null,
+            'customer_address' => $customer['address'] ?? null,
+            'customer_comment' => $customer['comment'] ?? null,
+            'manufacturer_name' => $manufacturer['manufacturer'] ?? null,
+            'manufacturer_phone' => $manufacturer['phone'] ?? null,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+            'selected_factor' => $selected_factor,
+        ]);
+
+        $offer = [
+            'customer' => $customer,
+            'manufacturer' => $manufacturer,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+        ];
 
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
             'offer',
@@ -189,6 +263,7 @@ class CommercialOfferController extends Controller
         $openings = $request->get('openings');
         $additional_items = $request->get('additional_items');
         $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
         $services = $request->get('services');
         $cart_items = $request->get('cart_items');
         $total_price = $request->get('total_price');
@@ -201,6 +276,7 @@ class CommercialOfferController extends Controller
             'openings' => $openings,
             'additional_items' => $additional_items,
             'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
             'services' => $services,
             'cart_items' => $cart_items,
             'total_price' => $total_price,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import Button from '../ui/button/Button.vue'
-import { Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff, XCircle, FileEdit } from 'lucide-vue-next'
 import Input from '../ui/input/Input.vue'
 import Label from '../ui/label/Label.vue'
 import { useCommercialOfferStore } from '../../Stores/commercialOfferStore'
@@ -13,17 +13,45 @@ import SelectValue from '../ui/select/SelectValue.vue'
 import SelectContent from '../ui/select/SelectContent.vue'
 import SelectItem from '../ui/select/SelectItem.vue'
 import { usePage } from '@inertiajs/vue3'
+import { Badge } from '../ui/badge'
 
 const isCommercialOfferHidden = ref(true)
 const itemsStore = useItemsStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-// Initialize manufacturer info
-commercialOfferStore.commercialOffer.manufacturer = {
-    title: 'Информация о производителе',
-    manufacturer: itemsStore.user.company || '',
-    company: itemsStore.user.company || '',
-    phone: itemsStore.user.phone || '',
+// Check if we're editing an existing commercial offer
+const storedCustomer = sessionStorage.getItem('commercialOfferCustomer')
+const storedManufacturer = sessionStorage.getItem('commercialOfferManufacturer')
+
+if (storedCustomer && storedManufacturer) {
+    // Load saved commercial offer data when editing
+    commercialOfferStore.commercialOffer.customer = JSON.parse(storedCustomer)
+    commercialOfferStore.commercialOffer.manufacturer = JSON.parse(storedManufacturer)
+    
+    // Clear the session storage data after loading
+    sessionStorage.removeItem('commercialOfferCustomer')
+    sessionStorage.removeItem('commercialOfferManufacturer')
+} else {
+    // Initialize with default manufacturer info from user
+    commercialOfferStore.commercialOffer.manufacturer = {
+        title: 'Информация о производителе',
+        manufacturer: itemsStore.user.company || '',
+        company: itemsStore.user.company || '',
+        phone: itemsStore.user.phone || '',
+    }
+}
+
+const isEditing = computed(() => commercialOfferStore.commercialOfferId !== null)
+
+const clearEditingState = () => {
+    commercialOfferStore.clearCommercialOffer()
+    // Reset to default manufacturer info
+    commercialOfferStore.commercialOffer.manufacturer = {
+        title: 'Информация о производителе',
+        manufacturer: itemsStore.user.company || '',
+        company: itemsStore.user.company || '',
+        phone: itemsStore.user.phone || '',
+    }
 }
 
 
@@ -31,12 +59,22 @@ commercialOfferStore.commercialOffer.manufacturer = {
 
 <template>
     <div class="border p-2 md:p-4 rounded-2xl bg-background">
-        <div class="flex items-center">
+        <div class="flex items-center gap-2">
             <h2 class="text-xl font-bold text-muted-foreground">Коммерческое предложение</h2>
-            <Button variant="outline" size="icon" class="ml-auto rounded-lg" @click="isCommercialOfferHidden = !isCommercialOfferHidden">
-                <Eye v-if="!isCommercialOfferHidden" class="size-6" />
-                <EyeOff v-else class="size-6" />
-            </Button>
+            <Badge v-if="isEditing" variant="secondary" class="flex items-center gap-1">
+                <FileEdit class="size-3" />
+                Редактирование
+            </Badge>
+            <div class="ml-auto flex gap-2">
+                <Button v-if="isEditing" variant="ghost" size="sm" @click="clearEditingState" class="gap-1">
+                    <XCircle class="size-4" />
+                    <span class="hidden sm:inline">Новое КП</span>
+                </Button>
+                <Button variant="outline" size="icon" class="rounded-lg" @click="isCommercialOfferHidden = !isCommercialOfferHidden">
+                    <Eye v-if="!isCommercialOfferHidden" class="size-6" />
+                    <EyeOff v-else class="size-6" />
+                </Button>
+            </div>
         </div>
 
         <div v-show="!isCommercialOfferHidden" class="grid md:grid-cols-2 gap-2 md:gap-4 mt-4">

@@ -23,6 +23,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
     const selectedGhostHandlesID = ref<number[]>([])
+    const selectedGhostGlassesID = ref<number[]>([])
     
     watch(markupPercentage, (newMarkupPercentage) => {
         if (newMarkupPercentage === undefined) markupPercentage.value = 0
@@ -44,6 +45,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
     watch(selectedGhostHandlesID, (newSelectedGhostHandlesID) => {
         sessionStorage.setItem('selectedGhostHandlesID', JSON.stringify(newSelectedGhostHandlesID))
         updateGhostHandlesQuantity(newSelectedGhostHandlesID)
+        calculate()
+    }, { deep: true })
+
+    watch(selectedGhostGlassesID, (newSelectedGhostGlassesID) => {
+        sessionStorage.setItem('selectedGhostGlassesID', JSON.stringify(newSelectedGhostGlassesID))
+        updateGhostGlassesQuantity(newSelectedGhostGlassesID)
         calculate()
     }, { deep: true })
 
@@ -144,6 +151,10 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (sessionStorage.getItem('selectedGhostHandlesID')) {
             selectedGhostHandlesID.value = JSON.parse(sessionStorage.getItem('selectedGhostHandlesID') as string)
         } else { selectedGhostHandlesID.value = [] }
+
+        if (sessionStorage.getItem('selectedGhostGlassesID')) {
+            selectedGhostGlassesID.value = JSON.parse(sessionStorage.getItem('selectedGhostGlassesID') as string)
+        } else { selectedGhostGlassesID.value = [] }
 
         if (!sessionStorage.getItem('cartItems')) {
             const allItems = [...items.value]
@@ -448,6 +459,39 @@ export const useItemsStore = defineStore('itemsStore', () => {
         })
     }
 
+    const updateGhostGlassesQuantity = (ghostGlassesID: number[]) => {
+        // Store existing quantities before deletion
+        const existingQuantities: { [key: number]: number } = {}
+        
+        // Track which glasses are currently ghost glasses
+        const currentGhostGlasses = new Set(selectedGhostGlassesID.value)
+        
+        // Remove only items that were ghost glasses but are no longer selected
+        glasses.value.forEach(glass => {
+            if (glass.id && currentGhostGlasses.has(glass.id) && !ghostGlassesID.includes(glass.id)) {
+                // Store existing quantity before deletion
+                if (cartItems.value[glass.id as number]) {
+                    existingQuantities[glass.id as number] = cartItems.value[glass.id as number].quantity
+                }
+                delete cartItems.value[glass.id as number]
+            }
+        })
+
+        // Calculate glass quantity based on openings (same as regular glass)
+        const glassQuantity = parseQuantity((openingsStore.openings.reduce((acc, { width, height }) => {
+            return acc + width * height
+        }, 0) / 1000000))
+
+        ghostGlassesID.forEach(glassID => {
+            // Skip invalid glass IDs or if it's the selected regular glass
+            if (!glassID || glassID <= 0 || glassID === selectedGlassID.value) return
+
+            // Ghost glasses use calculated quantity, and are never checked (don't count towards price)
+            const quantity = glassQuantity > 0 ? glassQuantity : (existingQuantities[glassID] || 1)
+            cartItems.value[glassID] = { quantity, checked: false }
+        })
+    }
+
     const calculate = () => {
         items.value.forEach(item => {
             const quantity = parseQuantity(calculateQuantity(item))
@@ -459,6 +503,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         updateGlassQuantity(selectedGlassID.value)
         updateServicesQuantity(selectedServicesID.value)
         updateGhostHandlesQuantity(selectedGhostHandlesID.value)
+        updateGhostGlassesQuantity(selectedGhostGlassesID.value)
     }
 
     const itemPrice = (item_id: number): number => {
@@ -538,9 +583,11 @@ export const useItemsStore = defineStore('itemsStore', () => {
     // }
 
     const toggleItemChecked = (itemId: number) => {
-        // Check if this is a ghost handle - ghost handles should never be checked
+        // Check if this is a ghost handle or ghost glass - they should never be checked
         const isGhostHandle = ghost_handles.value.some(handle => handle.id === itemId)
-        if (isGhostHandle) {
+        const isGhostGlass = selectedGhostGlassesID.value.includes(itemId)
+        
+        if (isGhostHandle || isGhostGlass) {
             if (cartItems.value[itemId]) {
                 cartItems.value[itemId].checked = false
             }
@@ -573,6 +620,17 @@ export const useItemsStore = defineStore('itemsStore', () => {
         selectedGhostHandlesID.value = selectedGhostHandlesID.value.filter(id => id !== handleId)
     }
 
+    const addGhostGlass = (glassId: number) => {
+        // Don't add if it's the selected regular glass
+        if (glassId !== selectedGlassID.value && !selectedGhostGlassesID.value.includes(glassId)) {
+            selectedGhostGlassesID.value.push(glassId)
+        }
+    }
+
+    const removeGhostGlass = (glassId: number) => {
+        selectedGhostGlassesID.value = selectedGhostGlassesID.value.filter(id => id !== glassId)
+    }
+
     return {
         items,
         glasses,
@@ -600,5 +658,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
         addGhostHandle,
         removeGhostHandle,
         updateGhostHandlesQuantity,
+        selectedGhostGlassesID,
+        addGhostGlass,
+        removeGhostGlass,
+        updateGhostGlassesQuantity,
     }
 })

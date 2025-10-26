@@ -73,17 +73,26 @@ const downloadCommercialOffer = async () => {
             openings: openingsStore.openings,
             additional_items: Object.values(itemsStore.additional_items).flat(),
             glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || [],
-            services: itemsStore.services.filter(service => itemsStore.selectedServicesID.includes(service.id)),
+            ghost_glasses: itemsStore.glasses.filter(glass => glass.id && itemsStore.selectedGhostGlassesID.includes(glass.id)),
+            services: itemsStore.services.filter(service => service.id && itemsStore.selectedServicesID.includes(service.id)),
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage,
             selected_factor: selectedFactor.value,
         }
 
-        const response = await axios.post('/orders/commercial-offer', formData, {
-            responseType: 'blob',
-            headers: { 'Content-Type': 'application/json' }
-        })
+        const commercialOfferId = commercialOfferStore.commercialOfferId
+        const isEditing = commercialOfferId !== null
+
+        const response = isEditing 
+            ? await axios.put(`/app/commercial-offers/${commercialOfferId}`, formData, {
+                responseType: 'blob',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            : await axios.post('/orders/commercial-offer', formData, {
+                responseType: 'blob',
+                headers: { 'Content-Type': 'application/json' }
+            })
 
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
@@ -94,7 +103,11 @@ const downloadCommercialOffer = async () => {
         link.click()
 
         link.parentNode?.removeChild(link)
-        toast.success("Коммерческое предложение успешно загружено")
+        
+        const successMessage = isEditing 
+            ? "Коммерческое предложение успешно обновлено и загружено"
+            : "Коммерческое предложение успешно загружено"
+        toast.success(successMessage)
     } catch (error) {
         console.error('Error downloading the PDF:', error)
         toast.error("Ошибка при загрузке коммерческого предложения")

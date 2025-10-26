@@ -1085,7 +1085,7 @@ const structuredData = computed(() => ({
 		</div>
 	</section>
 
-	<GuestFooter />
+	<GuestFooter :landingOptions="landingOptions" />
 
 	<!-- Consultation Dialog -->
 	<ConsultationDialog v-model:isOpen="isConsultationDialogOpen" />

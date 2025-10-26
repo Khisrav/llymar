@@ -101,7 +101,7 @@ const closeImageModal = () => {
                         </div>
                         <div class="flex items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Вес:</span>
-                            <span class="font-bold text-muted-foreground text-sm">{{ quantityFormatter(itemsStore.cartItems[item.id || 0]?.weight || 0) }} кг</span>
+                            <span class="font-bold text-muted-foreground text-sm">{{ quantityFormatter(item.weight || 0) }} кг</span>
                         </div>
                         <!-- <div class="flex flex-col items-center justify-between text-xs sm:text-xs">
                             <span class="text-muted-foreground">Кол-во:</span>

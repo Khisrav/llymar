@@ -1,6 +1,19 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
+// Define props
+const props = defineProps({
+	landingOptions: {
+		type: Object,
+		default: () => ({}),
+	},
+});
+
+// Helper function to get option value with fallback
+const getOption = (key: string, fallback = "") => {
+	return props.landingOptions[key] || fallback;
+};
+
 const socialLinks = ref([
 	{
 		title: "Rutube",
@@ -58,9 +71,13 @@ const socialLinks = ref([
 				<div>
 					<h3 class="text-lg font-semibold mb-4 text-light-gold">Контакты</h3>
 					<div class="space-y-2 text-gray-300">
-						<p>г. Краснодар</p>
-						<a href="tel:+79898041234" class="block hover:text-light-gold transition-colors"> +7 (989) 804 12-34 </a>
-						<a href="mailto:info@llymar.ru" class="block hover:text-light-gold transition-colors"> info@llymar.ru </a>
+						<p>{{ getOption('address_city', 'г. Краснодар') }}</p>
+						<a :href="`tel:${getOption('phone', '+7 989 804 12-34')}`" class="block hover:text-light-gold transition-colors"> 
+							{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}
+						</a>
+						<a :href="`mailto:${getOption('email', 'info@llymar.ru')}`" class="block hover:text-light-gold transition-colors"> 
+							{{ getOption('email', 'info@llymar.ru') }}
+						</a>
 					</div>
 				</div>
 

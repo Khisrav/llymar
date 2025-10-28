@@ -48,6 +48,7 @@ class User extends Authenticatable implements FilamentUser
         'reward_fee',
         'country',
         'region',
+        'logo',
     ];
 
     /**

@@ -24,6 +24,27 @@ function groupArraysByProperties($arrays, $properties) {
 
     return $indexedGrouped;
 }
+
+function getLogoPath($user) {
+    // If user has a logo, use it
+    if ($user && $user->logo) {
+        $logoPath = storage_path('app/public/' . $user->logo);
+        if (file_exists($logoPath)) {
+            return $logoPath;
+        }
+    }
+    
+    // Fall back to default LLYMAR logo
+    return base_path('public/assets/logo.jpg');
+}
+
+function getLogoBase64($user) {
+    $logoPath = getLogoPath($user);
+    if (file_exists($logoPath)) {
+        return base64_encode(file_get_contents($logoPath));
+    }
+    return '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,12 +101,12 @@ function groupArraysByProperties($arrays, $properties) {
                         <tr>
                             <td style="border:none">
                                 <div>
-                                    <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления</h1>
-                                    {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления</p> --}}
+                                    <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления LLYMAR</h1>
+                                    {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления LLYMAR</p> --}}
                                 </div>
                             </td>
                             <td style="text-align: right;border:none">
-                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
+                                <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
                             </td>
                         </tr>
                     </tbody>
@@ -311,7 +332,7 @@ function groupArraysByProperties($arrays, $properties) {
                                 </div> --}}
                             </td>
                             <td style="text-align: right;border:none;padding-bottom:12px;">
-                                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/assets/logo.jpg'))) }}" alt="" style="height:30px;width:auto">
+                                <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
                             </td>
                         </tr>
                     </tbody>

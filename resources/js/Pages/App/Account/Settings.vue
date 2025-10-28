@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, router } from '@inertiajs/vue3';
 import AuthenticatedHeaderLayout from '../../../Layouts/AuthenticatedHeaderLayout.vue';
 import { Label } from '../../../Components/ui/label';
 import { Input } from '../../../Components/ui/input';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { User } from '../../../lib/types';
 import { vMaska } from 'maska/vue';
 import { Button } from '../../../Components/ui/button';
@@ -22,10 +22,27 @@ import {
 	CreditCardIcon,
 	BanknoteIcon,
 	ReceiptRussianRubleIcon,
-	SaveIcon
+	SaveIcon,
+	UploadIcon,
+	TrashIcon,
+	AlertCircleIcon,
+	CheckCircleIcon
 } from 'lucide-vue-next';
 
 const user = ref(usePage().props.user as User);
+
+// Logo upload state
+const logoInput = ref<HTMLInputElement | null>(null);
+const selectedFile = ref<File | null>(null);
+const logoPreview = ref<string | null>(null);
+const logoUploading = ref(false);
+const logoError = ref<string | null>(null);
+const logoSuccess = ref(false);
+
+// Logo validation constants
+const LOGO_MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const LOGO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const LOGO_ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
 const form = useForm({
 	name: user.value.name,
@@ -79,6 +96,161 @@ const updateUser = () => {
 		},
 	});
 }
+
+// Logo upload handlers
+const handleLogoChange = (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	const file = input.files?.[0];
+	
+	if (!file) {
+		logoError.value = null;
+		logoPreview.value = null;
+		selectedFile.value = null;
+		return;
+	}
+
+	// Reset previous states
+	logoError.value = null;
+	logoSuccess.value = false;
+
+	// Validate file size
+	if (file.size > LOGO_MAX_SIZE) {
+		logoError.value = `Размер логотипа не должен превышать 2 МБ. Текущий размер: ${(file.size / 1024 / 1024).toFixed(2)} МБ`;
+		input.value = '';
+		selectedFile.value = null;
+		return;
+	}
+
+	// Validate file type
+	if (!LOGO_ALLOWED_TYPES.includes(file.type)) {
+		logoError.value = 'Логотип должен быть в формате JPG, PNG или WebP.';
+		input.value = '';
+		selectedFile.value = null;
+		return;
+	}
+
+	// Store the selected file
+	selectedFile.value = file;
+
+	// Create preview
+	const reader = new FileReader();
+	reader.onload = (e) => {
+		logoPreview.value = e.target?.result as string;
+	};
+	reader.onerror = () => {
+		logoError.value = 'Невозможно обработать изображение. Убедитесь, что файл является корректным изображением.';
+		input.value = '';
+		logoPreview.value = null;
+		selectedFile.value = null;
+	};
+	reader.readAsDataURL(file);
+};
+
+const uploadLogo = () => {
+	const file = selectedFile.value;
+
+	if (!file) {
+		toast('Пожалуйста, выберите логотип', {
+			description: 'Никакой файл не был выбран',
+		});
+		return;
+	}
+
+	logoUploading.value = true;
+	logoError.value = null;
+
+	router.post('/app/account/logo/upload', {
+		logo: file,
+	}, {
+		forceFormData: true,
+		preserveScroll: true,
+		onSuccess: (page) => {
+			// Update user data with the new logo path
+			if (page.props.user) {
+				user.value = page.props.user as User;
+			}
+			
+			// Clear selection state
+			logoSuccess.value = true;
+			logoPreview.value = null;
+			selectedFile.value = null;
+			
+			// Clear the file input
+			if (logoInput.value) {
+				const inputElement = logoInput.value as any;
+				if (inputElement.$el && inputElement.$el.value) {
+					inputElement.$el.value = '';
+				} else if (inputElement.value !== undefined) {
+					inputElement.value = '';
+				}
+			}
+
+			toast('Логотип успешно загружен', {
+				description: 'Ваш логотип будет использован в коммерческих предложениях',
+			});
+			
+			logoUploading.value = false;
+		},
+		onError: (errors) => {
+			console.error('Logo upload errors:', errors);
+			logoError.value = errors.logo || Object.values(errors)[0] || 'Ошибка при загрузке логотипа';
+			toast('Ошибка при загрузке логотипа', {
+				description: logoError.value as string,
+			});
+			logoUploading.value = false;
+		},
+	});
+
+	logoUploading.value = false;
+};
+
+const deleteLogo = () => {
+	if (!confirm('Вы уверены, что хотите удалить логотип? Будет использоваться логотип по умолчанию.')) {
+		return;
+	}
+
+	logoUploading.value = true;
+	logoError.value = null;
+
+	router.delete('/app/account/logo/delete', {
+		preserveScroll: true,
+		onSuccess: (page) => {
+			// Update user data
+			if (page.props.user) {
+				user.value = page.props.user as User;
+			}
+			
+			toast('Логотип успешно удален', {
+				description: 'Будет использоваться логотип LLYMAR по умолчанию',
+			});
+			
+			logoUploading.value = false;
+		},
+		onError: (errors) => {
+			logoError.value = 'Ошибка при удалении логотипа';
+			toast('Ошибка при удалении логотипа', {
+				description: logoError.value,
+			});
+			logoUploading.value = false;
+		},
+	});
+};
+
+const currentLogoUrl = computed(() => {
+	if (user.value.logo) {
+		return `/storage/${user.value.logo}`;
+	}
+	return null;
+});
+
+const hasLogo = computed(() => {
+	return !!user.value.logo || logoSuccess.value;
+});
+
+const hasFileSelected = computed(() => {
+	return !!selectedFile.value;
+});
+
 </script>
 
 <template>
@@ -332,6 +504,103 @@ const updateUser = () => {
 							placeholder="Юридический адрес организации"
 						/>
 						<p class="text-xs text-muted-foreground">Официальный адрес регистрации для документов и счетов</p>
+					</div>
+				</CardContent>
+			</Card>
+
+			<!-- Logo Card -->
+			<Card>
+				<CardHeader>
+					<CardTitle class="flex items-center gap-3">
+						<UploadIcon class="h-5 w-5 text-primary" />
+						Логотип компании
+					</CardTitle>
+					<CardDescription>
+						Загрузите свой логотип для использования в коммерческих предложениях
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-6">
+					<!-- Current Logo Display -->
+					<div v-if="currentLogoUrl" class="flex flex-col gap-2">
+						<Label class="text-sm font-medium">Текущий логотип</Label>
+						<div>
+							<div class="relative inline-block border border-blue-300 rounded-lg p-3 bg-blue-50">
+								<img :src="currentLogoUrl" alt="Current logo" class="max-h-32 max-w-xs object-contain">
+							</div>
+						</div>
+					</div>
+
+					<!-- Logo Preview -->
+					<div v-if="logoPreview" class="flex flex-col gap-2">
+						<Label class="text-sm font-medium">Предпросмотр логотипа</Label>
+						<div>
+							<div class="relative inline-block border border-blue-300 rounded-lg p-3 bg-blue-50">
+								<img :src="logoPreview" alt="Logo preview" class="max-h-32 max-w-xs object-contain">
+							</div>
+						</div>
+					</div>
+
+					<!-- Error Message -->
+					<div v-if="logoError" class="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+						<AlertCircleIcon class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+						<p class="text-sm text-red-700">{{ logoError }}</p>
+					</div>
+
+
+					<!-- File Input and Upload Section -->
+					<div class="space-y-4">
+						<div class="space-y-2">
+							<Input
+								ref="logoInput"
+								type="file"
+								accept="image/jpeg,image/png,image/webp"
+								@change="handleLogoChange"
+								class="cursor-pointer"
+								:disabled="logoUploading"
+							/>
+						<p class="text-xs text-muted-foreground">
+							Поддерживаемые форматы: JPG, PNG, WebP (максимум 2 МБ)
+						</p>
+						</div>
+
+					<!-- Upload Buttons -->
+					<div class="flex flex-col sm:flex-row gap-2 sm:justify-start">
+						<Button
+							type="button"
+							@click="uploadLogo"
+							:disabled="!hasFileSelected || logoUploading"
+							class="sm:w-auto"
+						>
+							<UploadIcon v-if="!logoUploading" class="h-4 w-4 mr-2" />
+							<div v-else class="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+							{{ logoUploading ? 'Загрузка...' : 'Загрузить логотип' }}
+						</Button>
+
+							<Button
+								v-if="currentLogoUrl"
+								type="button"
+								variant="outline"
+								@click="deleteLogo"
+								:disabled="logoUploading"
+								class="sm:w-auto"
+							>
+								<TrashIcon class="h-4 w-4 mr-2" />
+								Удалить логотип
+							</Button>
+						</div>
+					</div>
+
+					<div class="space-y-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+						<p class="text-xs font-medium text-blue-900 flex items-center gap-2">
+							<CheckCircleIcon class="h-4 w-4" />
+							Информация
+						</p>
+						<ul class="text-xs text-blue-800 space-y-1 ml-6 list-disc">
+							<li>Логотип не является обязательным полем</li>
+							<li>Если логотип не загружен, будет использоваться логотип LLYMAR по умолчанию</li>
+							<li>Логотип будет отображаться в коммерческих предложениях (PDF)</li>
+							<li>Новый логотип не будет применен для уже созданных коммерческих предложений</li>
+						</ul>
 					</div>
 				</CardContent>
 			</Card>

@@ -86,7 +86,6 @@ export interface User {
     current_account?: string;
     correspondent_account?: string;
     telegram?: string;
-    logo?: string | null;
     roles?: Array<{ name: string; [key: string]: any }>;
     created_at?: string | null;
     updated_at?: string | null;

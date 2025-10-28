@@ -80,12 +80,9 @@ class CommercialOfferController extends Controller
             'markup_percentage' => $markup_percentage,
         ];
 
-        $user = Auth::user();
-
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
             'offer',
-            'selected_factor',
-            'user'
+            'selected_factor'
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
@@ -157,8 +154,7 @@ class CommercialOfferController extends Controller
 
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
             'offer',
-            'selected_factor',
-            'user'
+            'selected_factor'
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
@@ -227,8 +223,7 @@ class CommercialOfferController extends Controller
 
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
             'offer',
-            'selected_factor',
-            'user'
+            'selected_factor'
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
@@ -288,12 +283,9 @@ class CommercialOfferController extends Controller
             'markup_percentage' => $markup_percentage,
         ];
 
-        $user = Auth::user();
-
         $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
             'offer',
-            'selected_factor',
-            'user'
+            'selected_factor'
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('commercial_offer.pdf');

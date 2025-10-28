@@ -282,31 +282,13 @@ class UserResource extends Resource
                             ->visible(static::isSuperAdmin())
                             ->helperText('Применяется для расчетов')
                             ->options([
-                                'pz' => 'ЗЦ',
-                                'p1' => 'Р1',
-                                'p2' => 'Р2',
-                                'p3' => 'Р3',
-                                'pr' => 'РЦ',
+                                'pz' => 'PZ',
+                                'p1' => 'P1',
+                                'p2' => 'P2',
+                                'p3' => 'P3',
+                                'p4' => 'P4',
                             ])
                             ->columnSpan(static::isSuperAdmin() ? 1 : 0),
-
-                        Forms\Components\FileUpload::make('logo')
-                            ->label('Логотип компании')
-                            ->image()
-                            ->disk('public')
-                            ->directory('logos')
-                            ->visibility('public')
-                            ->maxSize(2048) // 2MB
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                null,
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
-                            ->helperText('Используется в коммерческих предложениях. Форматы: JPG, PNG, WebP. Максимум 2 МБ.')
-                            ->columnSpan(3),
                     ]),
 
                 Section::make('Безопасность и доступ')
@@ -400,7 +382,7 @@ class UserResource extends Resource
                             ->label('Доступ к чертежу')
                             ->helperText(function ($record) {
                                 if (!$record) {
-                                    return 'Определяет доступ к функционалу чертежа';
+                                    return 'Определяет доступ к функционалу Sketcher';
                                 }
                                 
                                 // Check if user's role has this permission by default
@@ -584,13 +566,6 @@ class UserResource extends Resource
                     ->wrap()
                     ->limit(30)
                     ->tooltip(fn ($record) => $record->company)
-                    ->toggleable(),
-
-                Tables\Columns\ImageColumn::make('logo')
-                    ->label('Логотип')
-                    ->disk('public')
-                    ->defaultImageUrl(url('/assets/logo.jpg'))
-                    ->size(40)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('country')

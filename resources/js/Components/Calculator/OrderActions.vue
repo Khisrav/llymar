@@ -11,6 +11,16 @@ import DropdownMenuSub from "../ui/dropdown-menu/DropdownMenuSub.vue"
 import DropdownMenuSubTrigger from "../ui/dropdown-menu/DropdownMenuSubTrigger.vue"
 import DropdownMenuSubContent from "../ui/dropdown-menu/DropdownMenuSubContent.vue"
 import { DropdownMenuPortal } from "radix-vue"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "../ui/dialog"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { Link, router, usePage } from "@inertiajs/vue3"
@@ -64,6 +74,22 @@ const order_info = computed(() => ({
     email: itemsStore.user.email,
 }))
 
+// File name dialog state
+const showFileNameDialog = ref(false);
+const fileName = ref("");
+
+const openFileNameDialog = () => {
+	// Load existing file name if editing
+	const commercialOfferId = commercialOfferStore.commercialOfferId;
+	if (commercialOfferId) {
+		// Try to get stored file name if available
+		fileName.value = ''; // We don't have access to it here, user can enter new one
+	} else {
+		fileName.value = '';
+	}
+	showFileNameDialog.value = true;
+}
+
 const downloadCommercialOffer = async () => {
     try {
         toast.info("Подготовка коммерческого предложения...")
@@ -79,6 +105,7 @@ const downloadCommercialOffer = async () => {
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage,
             selected_factor: selectedFactor.value,
+            file_name: fileName.value || null,
         }
 
         const commercialOfferId = commercialOfferStore.commercialOfferId
@@ -97,12 +124,21 @@ const downloadCommercialOffer = async () => {
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
 
+        // Use user-entered filename or default
+        const downloadFileName = fileName.value 
+            ? `${fileName.value}.pdf`
+            : `offer_${new Date().toISOString().split('T')[0]}.pdf`;
+
         link.href = url
-        link.setAttribute('download', `offer_${new Date().toISOString().split('T')[0]}.pdf`)
+        link.setAttribute('download', downloadFileName)
         document.body.appendChild(link)
         link.click()
 
         link.parentNode?.removeChild(link)
+        
+        // Close dialog and reset file name
+        showFileNameDialog.value = false;
+        fileName.value = "";
         
         const successMessage = isEditing 
             ? "Коммерческое предложение успешно обновлено и загружено"
@@ -228,7 +264,7 @@ const downloadListPDF = async () => {
                         
                         <DropdownMenuSeparator />
                         
-                        <DropdownMenuItem @click="downloadCommercialOffer" class="cursor-pointer">
+                        <DropdownMenuItem @click="openFileNameDialog" class="cursor-pointer">
                             <Printer class="size-4 mr-2" />
                             <span>Печать КП</span>
                         </DropdownMenuItem>
@@ -252,4 +288,41 @@ const downloadListPDF = async () => {
             </div>
         </div>
     </div>
+    
+    <!-- File Name Dialog -->
+    <Dialog v-model:open="showFileNameDialog">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Скачать коммерческое предложение</DialogTitle>
+                <DialogDescription>
+                    Введите имя файла (необязательно). Если оставите пустым, будет использовано имя по умолчанию.
+                </DialogDescription>
+            </DialogHeader>
+            <div class="grid gap-4 py-4">
+                <div class="grid gap-2">
+                    <Label for="fileName">
+                        Имя файла
+                    </Label>
+                    <div class="flex gap-2 items-center">
+                        <Input
+                            id="fileName"
+                            v-model="fileName"
+                            placeholder="commercial_offer_1"
+                            class="flex-1"
+                            @keyup.enter="downloadCommercialOffer"
+                        />
+                        <span class="text-sm text-muted-foreground">.pdf</span>
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" @click="showFileNameDialog = false">
+                    Отмена
+                </Button>
+                <Button @click="downloadCommercialOffer">
+                    Скачать
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>

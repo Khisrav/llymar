@@ -23,6 +23,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuItem 
 } from "../../Components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "../../Components/ui/dialog";
+import { Input } from "../../Components/ui/input";
+import { Label } from "../../Components/ui/label";
 import { Button } from "../../Components/ui/button";
 import axios from "axios";
 
@@ -76,6 +86,48 @@ const deleteOffer = (id: number) => {
 			console.error(error)
 			toast("Произошла ошибка при удалении коммерческого предложения")
 		})
+}
+
+// File name dialog state
+const showFileNameDialog = ref(false);
+const selectedOfferId = ref<number | null>(null);
+const fileName = ref("");
+
+const openFileNameDialog = (id: number) => {
+	const offer = offers.value.find((o) => o.id === id);
+	selectedOfferId.value = id;
+	fileName.value = offer?.file_name || '';
+	showFileNameDialog.value = true;
+}
+
+const saveFileNameAndDownload = async () => {
+	if (!selectedOfferId.value) return;
+	
+	try {
+		// Save file name to database
+		await axios.patch(`/app/commercial-offers/${selectedOfferId.value}/file-name`, {
+			file_name: fileName.value || null,
+		});
+		
+		// Update local state
+		const offer = offers.value.find((o) => o.id === selectedOfferId.value);
+		if (offer) {
+			offer.file_name = fileName.value || undefined;
+		}
+		
+		// Download PDF
+		window.open(`/app/commercial-offers/${selectedOfferId.value}/pdf`, '_blank');
+		
+		// Close dialog
+		showFileNameDialog.value = false;
+		fileName.value = "";
+		selectedOfferId.value = null;
+		
+		toast.success("Файл успешно скачан");
+	} catch (error) {
+		console.error(error);
+		toast.error("Произошла ошибка при сохранении имени файла");
+	}
 }
 
 const downloadPDF = (id: number) => {
@@ -215,7 +267,7 @@ const openCommercialOfferInCalculator = (id: number) => {
 											<PenIcon class="h-4 w-4" />
 											<span>Редактировать</span>
 										</DropdownMenuItem>
-										<DropdownMenuItem @click="downloadPDF(offer.id)">
+										<DropdownMenuItem @click="openFileNameDialog(offer.id)">
 											<FileTextIcon class="h-4 w-4" />
 											<span>Скачать PDF</span>
 										</DropdownMenuItem>
@@ -267,6 +319,11 @@ const openCommercialOfferInCalculator = (id: number) => {
 									<div class="text-xs text-muted-foreground mb-1">Дата создания</div>
 									<div class="text-sm">{{ formatDate(offer.created_at) }}</div>
 								</div>
+								
+								<div v-if="offer.file_name">
+									<div class="text-xs text-muted-foreground mb-1">Имя файла</div>
+									<div class="text-xs font-mono bg-muted/50 px-2 py-1 rounded break-all">{{ offer.file_name }}.pdf</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -278,13 +335,13 @@ const openCommercialOfferInCalculator = (id: number) => {
 								<TableHeader>
 									<TableRow class="bg-muted/30 hover:bg-muted/30">
 										<TableHead class="font-semibold text-sm">ID</TableHead>
+										<TableHead class="font-semibold text-sm">Дата</TableHead>
 										<TableHead class="font-semibold text-sm">Заказчик</TableHead>
 										<TableHead class="font-semibold text-sm">Производитель</TableHead>
 										<TableHead class="font-semibold text-sm">Цена</TableHead>
 										<TableHead class="font-semibold text-sm">Наценка</TableHead>
 										<TableHead class="font-semibold text-sm">Проемов</TableHead>
 										<TableHead class="font-semibold text-sm">Товаров</TableHead>
-										<TableHead class="font-semibold text-sm">Дата создания</TableHead>
 										<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -293,6 +350,12 @@ const openCommercialOfferInCalculator = (id: number) => {
 								    <TableRow v-for="offer in offers" :key="offer.id">
 								        <TableCell>
 								            {{ offer.id }}
+								        </TableCell>
+								        <TableCell class="text-muted-foreground text-sm">
+								            <div>{{ formatDate(offer.created_at) }}</div>
+								            <div v-if="offer.file_name" class="text-xs font-mono text-muted-foreground mt-1 bg-muted/50 px-1.5 py-0.5 rounded inline-block">
+								                {{ offer.file_name }}.pdf
+								            </div>
 								        </TableCell>
 								        <TableCell>
 								            {{ offer.customer_name ?? '--' }}
@@ -322,9 +385,6 @@ const openCommercialOfferInCalculator = (id: number) => {
 								                {{ countCartItems(offer.cart_items) }}
 								            </Badge>
 								        </TableCell>
-								        <TableCell class="text-muted-foreground text-sm">
-								            {{ formatDate(offer.created_at) }}
-								        </TableCell>
 								        <TableCell class="text-right">
     										<DropdownMenu>
     											<DropdownMenuTrigger>
@@ -339,7 +399,7 @@ const openCommercialOfferInCalculator = (id: number) => {
 														<PenIcon class="h-4 w-4" />
 														<span>Редактировать</span>
 													</DropdownMenuItem>
-    												<DropdownMenuItem @click="downloadPDF(offer.id)">
+    												<DropdownMenuItem @click="openFileNameDialog(offer.id)">
     													<FileTextIcon class="h-4 w-4" />
     													<span>Скачать PDF</span>
     												</DropdownMenuItem>
@@ -414,4 +474,41 @@ const openCommercialOfferInCalculator = (id: number) => {
 			</div>
 		</div>
 	</div>
+	
+	<!-- File Name Dialog -->
+	<Dialog v-model:open="showFileNameDialog">
+		<DialogContent class="sm:max-w-[425px]">
+			<DialogHeader>
+				<DialogTitle>Скачать коммерческое предложение</DialogTitle>
+				<DialogDescription>
+					Введите имя файла (необязательно). Если оставите пустым, будет использовано имя по умолчанию.
+				</DialogDescription>
+			</DialogHeader>
+			<div class="grid gap-4 py-4">
+				<div class="grid gap-2">
+					<Label for="fileName">
+						Имя файла
+					</Label>
+					<div class="flex gap-2 items-center">
+						<Input
+							id="fileName"
+							v-model="fileName"
+							placeholder="commercial_offer_1"
+							class="flex-1"
+							@keyup.enter="saveFileNameAndDownload"
+						/>
+						<span class="text-sm text-muted-foreground">.pdf</span>
+					</div>
+				</div>
+			</div>
+			<DialogFooter>
+				<Button variant="outline" @click="showFileNameDialog = false">
+					Отмена
+				</Button>
+				<Button @click="saveFileNameAndDownload">
+					Скачать
+				</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
 </template>

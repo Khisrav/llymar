@@ -136,14 +136,14 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		openings: Opening[],
 		doorHandles: ItemWithProperties[],
 		allDoorHandles: ItemWithProperties[],
-		canAccessDxf: boolean
+		// canAccessDxf: boolean
 	}) => {
 		order.value = initialData.order
 		// Make sure openings are reactive
 		openings.value = [...initialData.openings]
 		doorHandles.value = initialData.doorHandles
 		allDoorHandles.value = initialData.allDoorHandles
-		canAccessDxf.value = initialData.canAccessDxf
+		// canAccessDxf.value = initialData.canAccessDxf
 
 		// Initialize sketch variables and selected door handles
 		openings.value.forEach((opening: Opening) => {
@@ -380,10 +380,10 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	}
 
 	const downloadDXF = async () => {
-		if (!canAccessDxf.value) {
-			toast.warning("У вас нет доступа для скачивания DXF.");
-			return;
-		}
+		// if (!canAccessDxf.value) {
+		// 	toast.warning("У вас нет доступа для скачивания DXF.");
+		// 	return;
+		// }
 
 		// Check if there are unsaved changes
 		if (hasUnsavedChanges.value) {
@@ -487,7 +487,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		openings,
 		doorHandles,
 		allDoorHandles,
-		canAccessDxf,
+		// canAccessDxf,
 		selectedOpeningID,
 		useInputFields,
 		sketch_constraints,

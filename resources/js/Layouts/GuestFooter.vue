@@ -71,7 +71,7 @@ const socialLinks = ref([
 				<div>
 					<h3 class="text-lg font-semibold mb-4 text-light-gold">Контакты</h3>
 					<div class="space-y-2 text-gray-300">
-						<p>{{ getOption('address_city', 'г. Краснодар') }}</p>
+						<p>{{ getOption('ui_address', 'г. Краснодар') }}</p>
 						<a :href="`tel:${getOption('phone', '+7 989 804 12-34')}`" class="block hover:text-light-gold transition-colors"> 
 							{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}
 						</a>

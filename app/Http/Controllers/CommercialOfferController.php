@@ -46,6 +46,15 @@ class CommercialOfferController extends Controller
         $total_price = $request->get('total_price');
         $markup_percentage = $request->get('markup_percentage', 1.0);
         $selected_factor = $request->get('selected_factor', 'pz');
+        $file_name = $request->get('file_name');
+
+        // Sanitize file name if provided
+        if ($file_name) {
+            $file_name = trim($file_name);
+            $file_name = preg_replace('/\s+/', '_', $file_name);
+            $file_name = preg_replace('/[^a-zA-Z0-9_\-\(\)]/', '', $file_name);
+            $file_name = substr($file_name, 0, 200);
+        }
 
         // Save to database
         $commercialOffer = CommercialOffer::create([
@@ -65,6 +74,7 @@ class CommercialOfferController extends Controller
             'total_price' => $total_price,
             'markup_percentage' => $markup_percentage,
             'selected_factor' => $selected_factor,
+            'file_name' => $file_name,
         ]);
 
         $offer = [
@@ -88,7 +98,12 @@ class CommercialOfferController extends Controller
             'user'
         ))->setPaper('a4', 'landscape');
 
-        return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
+        // Use custom file name if set, otherwise use default
+        $downloadFileName = $commercialOffer->file_name 
+            ? $commercialOffer->file_name . '.pdf' 
+            : 'commercial_offer_' . $commercialOffer->id . '.pdf';
+
+        return $pdf->download($downloadFileName);
     }
 
     /**
@@ -161,7 +176,52 @@ class CommercialOfferController extends Controller
             'user'
         ))->setPaper('a4', 'landscape');
 
-        return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
+        // Use custom file name if set, otherwise use default
+        $fileName = $commercialOffer->file_name 
+            ? $commercialOffer->file_name . '.pdf' 
+            : 'commercial_offer_' . $commercialOffer->id . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Update the file name for a commercial offer.
+     */
+    public function updateFileName(Request $request, CommercialOffer $commercialOffer)
+    {
+        $user = Auth::user();
+        
+        // Allow update if:
+        // 1. User is Super-Admin
+        // 2. User has update-any CommercialOffer permission
+        // 3. User owns this commercial offer
+        if (!$user->hasRole('Super-Admin') && 
+            !$user->can('update-any CommercialOffer') && 
+            $commercialOffer->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'file_name' => 'nullable|string|max:200|regex:/^[a-zA-Z0-9_\-\s\(\)]+$/',
+        ]);
+
+        // Sanitize file name: trim, remove multiple spaces, sanitize special chars
+        $fileName = $request->file_name;
+        if ($fileName) {
+            $fileName = trim($fileName);
+            $fileName = preg_replace('/\s+/', '_', $fileName); // Replace spaces with underscores
+            $fileName = preg_replace('/[^a-zA-Z0-9_\-\(\)]/', '', $fileName); // Remove any chars not in whitelist
+            $fileName = substr($fileName, 0, 200); // Ensure max length
+        }
+
+        $commercialOffer->update([
+            'file_name' => $fileName,
+        ]);
+
+        return response()->json([
+            'message' => 'File name updated successfully',
+            'file_name' => $commercialOffer->file_name,
+        ]);
     }
 
     /**
@@ -192,6 +252,15 @@ class CommercialOfferController extends Controller
         $total_price = $request->get('total_price');
         $markup_percentage = $request->get('markup_percentage', 1.0);
         $selected_factor = $request->get('selected_factor', 'pz');
+        $file_name = $request->get('file_name');
+
+        // Sanitize file name if provided
+        if ($file_name) {
+            $file_name = trim($file_name);
+            $file_name = preg_replace('/\s+/', '_', $file_name);
+            $file_name = preg_replace('/[^a-zA-Z0-9_\-\(\)]/', '', $file_name);
+            $file_name = substr($file_name, 0, 200);
+        }
 
         // Update the commercial offer
         $commercialOffer->update([
@@ -210,6 +279,7 @@ class CommercialOfferController extends Controller
             'total_price' => $total_price,
             'markup_percentage' => $markup_percentage,
             'selected_factor' => $selected_factor,
+            'file_name' => $file_name,
         ]);
 
         $offer = [
@@ -231,7 +301,12 @@ class CommercialOfferController extends Controller
             'user'
         ))->setPaper('a4', 'landscape');
 
-        return $pdf->download('commercial_offer_' . $commercialOffer->id . '.pdf');
+        // Use custom file name if set, otherwise use default
+        $downloadFileName = $commercialOffer->file_name 
+            ? $commercialOffer->file_name . '.pdf' 
+            : 'commercial_offer_' . $commercialOffer->id . '.pdf';
+
+        return $pdf->download($downloadFileName);
     }
 
     /**

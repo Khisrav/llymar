@@ -190,6 +190,7 @@ export interface CommercialOfferRecord {
     total_price: number;
     markup_percentage: number;
     selected_factor?: string;
+    file_name?: string;
     openings: Opening[];
     additional_items: Item[];
     glass: Item;

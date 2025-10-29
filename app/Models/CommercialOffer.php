@@ -24,6 +24,7 @@ class CommercialOffer extends Model
         'total_price',
         'markup_percentage',
         'selected_factor',
+        'file_name',
     ];
 
     protected $casts = [

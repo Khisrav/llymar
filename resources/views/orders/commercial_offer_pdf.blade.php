@@ -105,9 +105,9 @@ function getLogoBase64($user) {
                                     {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления LLYMAR</p> --}}
                                 </div>
                             </td>
-                            <td style="text-align: right;border:none">
+                            <!-- <td style="text-align: right;border:none">
                                 <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
-                            </td>
+                            </td> -->
                         </tr>
                     </tbody>
                 </table>
@@ -321,7 +321,7 @@ function getLogoBase64($user) {
                                     <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
                                 </div> --}}
                             </td>
-                            <td style="text-align: right;border:none;padding-bottom:12px;">
+                            <td style="text-align: center;border:none;padding-bottom:12px;">
                                 <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
                             </td>
                         </tr>

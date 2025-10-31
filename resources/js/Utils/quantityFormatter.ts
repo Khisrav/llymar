@@ -4,7 +4,7 @@
  * @param quantity - The quantity number to format
  * @returns Formatted quantity string
  */
-export function quantityFormatter(quantity: number): string {
+export function quantityFormatter(quantity: number, decimalPlaces?: number): string {
     if (quantity === null || quantity === undefined || isNaN(quantity)) {
         return '0';
     }
@@ -15,7 +15,7 @@ export function quantityFormatter(quantity: number): string {
     // Convert to string and remove trailing zeros
     return rounded.toLocaleString('en-US', {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
+        maximumFractionDigits: decimalPlaces ?? 2,
         useGrouping: false
     });
 }

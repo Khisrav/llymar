@@ -428,6 +428,8 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
         //central opening
         $opening = $openings[$oindex];
         $stvorki = $opening['doors'];
+        $totalOpeningWeight = 0;
+        $totalOpeningArea = 0;
         
         $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 2 * $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'];
         $doorsGap = [
@@ -449,6 +451,44 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
         $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
 
         $shirinaStvorok = [];
+
+        if ($opening['type'] == 'center') {
+            for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++) {
+                $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
+                
+                if ($openingDoorsIndex == $stvorki / 2) {
+                    $temp += $doorsGap['start'];
+                } else if ($openingDoorsIndex == 1) {
+                    $temp += $doorsGap['end'];
+                }
+                $temp2 = 0;
+                // $temp2 = ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2) ? -1 : 0);
+                // if ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2)) {
+                //     $temp2 = -0.5;
+                // }
+                                    
+                $shirinaStvorok[$openingDoorsIndex] = intval($temp + $temp2);
+                $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp + $temp2);
+            }
+        } else if ($opening['type'] == 'left' || $opening['type'] == 'right') {
+            for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--) {
+                $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
+                    
+                if ($openingDoorsIndex == $stvorki) {
+                    $temp += $doorsGap['start'];
+                } else if ($openingDoorsIndex == 1) {
+                    $temp += $doorsGap['end'];
+                }
+                
+                $shirinaStvorok[$openingDoorsIndex] = intval($temp);
+            }
+        }
+    
+        $height = $opening['height'] - 103;
+        foreach ($shirinaStvorok as $doorWidth) {
+            $totalOpeningWeight += ($doorWidth / 1000) * ($height / 1000) * $glassWeight;
+            $totalOpeningArea += ($doorWidth / 1000) * ($height / 1000);
+        }
     @endphp
     <div class="no-break">
         <table>
@@ -463,6 +503,13 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
                     <td class="bold center">{{ $opening['width'] }}</td>
                     <td>* По наименьшему размеру без учета завалов в проеме!</td>
                 </tr>
+                <tr>
+                    <td class="">Вес</td>
+                    <td class="bold center">{{ number_format($totalOpeningWeight, 2, '.', '') }} кг</td>
+                    <td>Площадь</td>
+                    <td class="bold center">{{ number_format($totalOpeningArea, 2, '.', '') }} м<sup>2</sup></td>
+                    <td colspan="4"></td>
+                </tr>
         </table>
         
         <br>
@@ -471,23 +518,6 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
             <div style="color:#ec4949">УЛИЦА</div>
             @if ($opening['type'] == 'center')
                 @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++)
-                @php
-                    $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
-                    
-                    if ($openingDoorsIndex == $stvorki / 2) {
-                        $temp += $doorsGap['start'];
-                    } else if ($openingDoorsIndex == 1) {
-                        $temp += $doorsGap['end'];
-                    }
-                    $temp2 = 0;
-                    // $temp2 = ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2) ? -1 : 0);
-                    // if ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2)) {
-                    //     $temp2 = -0.5;
-                    // }
-                                        
-                    $shirinaStvorok[$openingDoorsIndex] = intval($temp + $temp2);
-                    $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp + $temp2);
-                @endphp
                 <div style="display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
                     <div class="inline-block">
                         <div>СТ{{ $glass_counter + $openingDoorsIndex }}</div>
@@ -559,15 +589,7 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
             @elseif ($opening['type'] == 'left' || $opening['type'] == 'right')
                 @for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--)
                 @php
-                    $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
                     
-                    if ($openingDoorsIndex == $stvorki) {
-                        $temp += $doorsGap['start'];
-                    } else if ($openingDoorsIndex == 1) {
-                        $temp += $doorsGap['end'];
-                    }
-                    
-                    $shirinaStvorok[$openingDoorsIndex] = intval($temp);
                 @endphp
                 <div style="margin-left: {{ $opening['type'] == 'left' ? (($stvorki % 2) ? 0 : 55) : -55 }};display: flex; justify-content: center;align-items:center;justify-content: center;margin-top:-16px;">
                     @if ($stvorki / 2 > $openingDoorsIndex - 1)

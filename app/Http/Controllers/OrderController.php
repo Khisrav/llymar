@@ -403,6 +403,7 @@ class OrderController extends Controller
         // Get order data from the first opening
         $order = null;
         $glassAbbreviation = '—';
+        $glassWeight = 0;
         if (isset($request->openings[0]['id'])) {
             $orderOpening = OrderOpening::find($request->openings[0]['id']);
             if ($orderOpening) {
@@ -410,6 +411,7 @@ class OrderController extends Controller
                 if ($order) {
                     $glassItem = $order->getGlass();
                     $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+                    $glassWeight = $glassItem ? $glassItem->weight : 0;
                 }
             }
         }
@@ -425,6 +427,7 @@ class OrderController extends Controller
                 'order' => $order,
                 'totalGlassCount' => $totalGlassCount,
                 'glassAbbreviation' => $glassAbbreviation,
+                'glassWeight' => $glassWeight,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);
@@ -443,6 +446,10 @@ class OrderController extends Controller
         //does user own this order
         $order = Order::with(['orderOpenings', 'orderItems.item.itemProperties'])
         ->findOrFail($order_id);
+        
+        $glassItem = $order->getGlass();
+        
+        $glassWeight = $glassItem ? $glassItem->weight : 0;
         
         if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) return redirect()->route('app.history');
 
@@ -467,6 +474,7 @@ class OrderController extends Controller
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
             'all_door_handles' => $allDoorHandles,
+            'glass_weight' => $glassWeight,
             // 'can_access_dxf' => $user->can('access app dxf'),
         ]);
     }
@@ -778,15 +786,17 @@ class OrderController extends Controller
             $totalGlassCount += $opening['doors'];
         }
 
-        // Get glass abbreviation
+        // Get glass abbreviation and weight
         $glassItem = $order->getGlass();
         $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+        $glassWeight = $glassItem ? $glassItem->weight : 0;
 
         $pdf = Pdf::loadView('orders.sketch_pdf', [
                 'openings' => $openings,
                 'order' => $order,
                 'totalGlassCount' => $totalGlassCount,
                 'glassAbbreviation' => $glassAbbreviation,
+                'glassWeight' => $glassWeight,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);

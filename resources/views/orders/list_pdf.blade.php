@@ -122,6 +122,7 @@
                 <th class="nowrap">№</th>
                 <th class="nowrap">Картинка</th>
                 <th class="nowrap">Деталь</th>
+                <th class="nowrap">Вес</th>
                 <th class="nowrap">Кол-во</th>
                 <th class="nowrap">Цена</th>
                 <th class="nowrap">Сумма</th>
@@ -130,8 +131,12 @@
         <tbody>
             @php
                 $count = 0;
+                $totalWeight = 0;
             @endphp
             @foreach($orderItems as $item)
+                @php
+                    $totalWeight += $item->item->weight ? $item->item->weight * $item->quantity : 0;
+                @endphp
                 <tr>
                     <td class="nowrap">{{ ++$count }}</td>
                     <td class="nowrap">
@@ -140,16 +145,24 @@
                         @endif
                     </td>
                     <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
-                                            <td class="nowrap">{{ rtrim(rtrim(number_format((float)$item->quantity, 2, '.', ''), '0'), '.') }} {{ $item->item->unit }}</td>
+                    <td class="nowrap">{{ $item->item->weight ? $item->item->weight * $item->quantity . ' кг' : '' }}</td>
+                    <td class="nowrap">{{ rtrim(rtrim(number_format((float)$item->quantity, 2, '.', ''), '0'), '.') }} {{ $item->item->unit }}</td>
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor), 0, '.', '') }} ₽</td>
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor) * $item->quantity, 0, '.', '') }} ₽</td>
                 </tr>
             @endforeach
+            <tr style="font-weight:bold;">
+                <td colspan="2"></td>
+                <td style="text-align: right !important;">Вес</td>
+                <td class="nowrap">{{ $totalWeight ? $totalWeight . ' кг' : '' }}</td>
+                <td style="text-align: right !important;">Итого</td>
+                <td class="nowrap" colspan="2">{{ number_format((float)$order->total_price, 0, '.', '') }} ₽</td>
+            </tr>
         </tbody>
     </table>
     {{-- total price --}}
-    <div style="text-align: right; margin-top: 20px;font-weight:bold">
+    <!-- <div style="text-align: right; margin-top: 20px;font-weight:bold">
         <p>Итого: {{ number_format((float)$order->total_price, 0, '.', '') }} руб.</p>
-    </div>
+    </div> -->
 </body>
 </html>

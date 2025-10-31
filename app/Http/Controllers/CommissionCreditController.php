@@ -119,11 +119,10 @@ class CommissionCreditController extends Controller
             }
 
             // Check if user has a parent (for commission hierarchy) and reward fee
-            if ($user->parent_id && $user->reward_fee && $user->hasRole('Dealer')) {
+            if ($user->parent_id && $user->reward_fee && ($user->hasRole('Dealer') || $user->hasRole('Dealer-R') || $user->hasRole('Dealer-Ch'))) {
                 $parent = User::find($user->parent_id);
                 
-                // Only create commission if parent has ROP role
-                if ($parent && $parent->hasRole('ROP')) {
+                if ($parent && ($parent->hasRole('ROP') || $parent->hasRole('Operator') || $parent->hasRole('Dealer-R'))) {
                     // Check if commission credit already exists for this order
                     $existingCommission = CommissionCredit::where('order_id', $order->id)
                         ->where('user_id', $user->id)

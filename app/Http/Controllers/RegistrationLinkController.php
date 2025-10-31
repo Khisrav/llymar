@@ -57,7 +57,7 @@ class RegistrationLinkController extends Controller
             'country' => ['required', 'string', 'max:255'],
             'region' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:500'],
-            'company' => ['required', 'string', 'max:255'],
+            // 'company' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             
             // Requisites (optional)
@@ -85,20 +85,20 @@ class RegistrationLinkController extends Controller
                 'country' => $validated['country'],
                 'region' => $validated['region'],
                 'address' => $validated['address'],
-                'company' => $validated['company'],
+                // 'company' => $validated['company'],
                 'password' => Hash::make($validated['password']),
                 'parent_id' => $link->created_by,
                 'reward_fee' => $link->reward_fee,
                 'default_factor' => 'pz',
                 
                 // Requisites
-                'inn' => $validated['inn'] ?? null,
-                'kpp' => $validated['kpp'] ?? null,
-                'current_account' => $validated['current_account'] ?? null,
-                'correspondent_account' => $validated['correspondent_account'] ?? null,
-                'bik' => $validated['bik'] ?? null,
-                'bank' => $validated['bank'] ?? null,
-                'legal_address' => $validated['legal_address'] ?? null,
+                // 'inn' => $validated['inn'] ?? null,
+                // 'kpp' => $validated['kpp'] ?? null,
+                // 'current_account' => $validated['current_account'] ?? null,
+                // 'correspondent_account' => $validated['correspondent_account'] ?? null,
+                // 'bik' => $validated['bik'] ?? null,
+                // 'bank' => $validated['bank'] ?? null,
+                // 'legal_address' => $validated['legal_address'] ?? null,
             ]);
 
             // Assign Dealer role

@@ -93,10 +93,6 @@ class OrderController extends Controller
                 // Optionally: continue, or return with error
             }
 
-            // Create commission credit
-            // $commissionCredit = new CommissionCreditController();
-            // $commissionCredit->store($order->id, $order->total_price);
-
             return redirect()->route('app.history');
         } catch (\Exception $e) {
             Log::error("Order creation failed", [
@@ -178,6 +174,12 @@ class OrderController extends Controller
         // Only allow updates if order status is 'created'
         if ($order->status !== 'created') {
             return response()->json(['error' => 'Order cannot be modified'], 422);
+        }
+
+        if ($order->status === 'paid' || $order->status === 'completed') {
+            // Create commission credit
+            $commissionCredit = new CommissionCreditController();
+            $commissionCredit->store($order->id, $order->total_price);
         }
 
         $validated = $request->validate([
@@ -401,6 +403,7 @@ class OrderController extends Controller
         // Get order data from the first opening
         $order = null;
         $glassAbbreviation = '—';
+        $glassWeight = 0;
         if (isset($request->openings[0]['id'])) {
             $orderOpening = OrderOpening::find($request->openings[0]['id']);
             if ($orderOpening) {
@@ -408,6 +411,7 @@ class OrderController extends Controller
                 if ($order) {
                     $glassItem = $order->getGlass();
                     $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+                    $glassWeight = $glassItem ? $glassItem->weight : 0;
                 }
             }
         }
@@ -423,6 +427,7 @@ class OrderController extends Controller
                 'order' => $order,
                 'totalGlassCount' => $totalGlassCount,
                 'glassAbbreviation' => $glassAbbreviation,
+                'glassWeight' => $glassWeight,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);
@@ -441,6 +446,10 @@ class OrderController extends Controller
         //does user own this order
         $order = Order::with(['orderOpenings', 'orderItems.item.itemProperties'])
         ->findOrFail($order_id);
+        
+        $glassItem = $order->getGlass();
+        
+        $glassWeight = $glassItem ? $glassItem->weight : 0;
         
         if ((!$user->can('access app sketcher') || $order->user_id !== $user->id) && !$user->hasRole('Super-Admin')) return redirect()->route('app.history');
 
@@ -465,6 +474,7 @@ class OrderController extends Controller
             'openings' => $openings,
             'door_handles' => $orderDoorHandles,
             'all_door_handles' => $allDoorHandles,
+            'glass_weight' => $glassWeight,
             // 'can_access_dxf' => $user->can('access app dxf'),
         ]);
     }
@@ -776,15 +786,17 @@ class OrderController extends Controller
             $totalGlassCount += $opening['doors'];
         }
 
-        // Get glass abbreviation
+        // Get glass abbreviation and weight
         $glassItem = $order->getGlass();
         $glassAbbreviation = $glassItem ? $glassItem->abbreviation : '—';
+        $glassWeight = $glassItem ? $glassItem->weight : 0;
 
         $pdf = Pdf::loadView('orders.sketch_pdf', [
                 'openings' => $openings,
                 'order' => $order,
                 'totalGlassCount' => $totalGlassCount,
                 'glassAbbreviation' => $glassAbbreviation,
+                'glassWeight' => $glassWeight,
             ])
             ->setPaper('a4', 'portrait')
             ->setOptions(['isRemoteEnabled' => true]);

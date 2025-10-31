@@ -32,20 +32,20 @@ const form = useForm({
 	country: "",
 	region: "",
 	address: "",
-	company: "",
+	// company: "",
 	password: "",
 	password_confirmation: "",
 	// Requisites
-	inn: "",
-	kpp: "",
-	current_account: "",
-	correspondent_account: "",
-	bik: "",
-	bank: "",
-	legal_address: "",
+	// inn: "",
+	// kpp: "",
+	// current_account: "",
+	// correspondent_account: "",
+	// bik: "",
+	// bank: "",
+	// legal_address: "",
 });
 
-const showRequisites = ref(false);
+// const showRequisites = ref(false);
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 
@@ -96,14 +96,14 @@ const submit = () => {
 			<div class="bg-white shadow-2xl sm:rounded-2xl overflow-hidden">
 				<!-- Header -->
 				<div class="bg-[#23322D] px-8 py-6">
-					<h1 class="text-xl  sm:text-3xl font-bold text-[#E7C886] text-center">Регистрация дилера</h1>
-				<p class="text-gray-300 text-center mt-2">Заполните форму для завершения регистрации</p>
+					<h1 class="text-xl  sm:text-3xl font-bold text-[#E7C886] text-center">Регистрация</h1>
+				<!-- <p class="text-gray-300 text-center mt-2">Заполните форму для завершения регистрации</p> -->
 			</div>
 
 			<form @submit.prevent="submit" class="p-8 space-y-8">
 				<!-- Personal Information -->
 				<div class="space-y-4">
-					<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Основная информация</h2>
+					<!-- <h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Основная информация</h2> -->
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div class="md:col-span-2">
 								<Label for="name">ФИО <span class="text-red-500">*</span></Label>
@@ -133,7 +133,7 @@ const submit = () => {
 
 					<!-- Address Information -->
 					<div class="space-y-4">
-						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Адресная информация</h2>
+						<!-- <h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Адресная информация</h2> -->
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div>
 								<Label for="country">Страна <span class="text-red-500">*</span></Label>
@@ -172,25 +172,26 @@ const submit = () => {
 							</div>
 
 							<div class="md:col-span-2">
-								<Label for="address">Фактический адрес <span class="text-red-500">*</span></Label>
-								<Textarea v-model="form.address" id="address" required placeholder="Введите полный адрес" :rows="2" />
+								<Label for="address">Адрес <span class="text-red-500">*</span></Label>
+								<Input v-model="form.address" id="address" type="text" required placeholder="Введите полный адрес..." /> 
+								<!-- <Textarea v-model="form.address" id="address" required placeholder="Введите полный адрес" :rows="2" /> -->
 								<div v-if="form.errors.address" class="text-xs text-red-500 mt-1">{{ form.errors.address }}</div>
 							</div>
 						</div>
 					</div>
 
 					<!-- Company Information -->
-					<div class="space-y-4">
+					<!-- <div class="space-y-4">
 						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Информация о компании</h2>
 						<div>
 							<Label for="company">Контрагент <span class="text-red-500">*</span></Label>
 							<Input v-model="form.company" id="company" type="text" required placeholder="Название компании" />
 							<div v-if="form.errors.company" class="text-xs text-red-500 mt-1">{{ form.errors.company }}</div>
 						</div>
-					</div>
+					</div> -->
 
 					<!-- Requisites (Optional) -->
-					<div class="space-y-4">
+					<!-- <div class="space-y-4">
 						<div class="flex items-center justify-between border-b border-[#E7C886] pb-2">
 							<h2 class="sm:text-xl font-semibold text-[#23322D]">Реквизиты (необязательно)</h2>
 							<Button type="button" variant="outline" size="sm" @click="showRequisites = !showRequisites" class="text-[#23322D] hover:text-[#E7C886]">
@@ -228,11 +229,11 @@ const submit = () => {
 								<Textarea v-model="form.legal_address" id="legal_address" placeholder="Полный юридический адрес" :rows="2" />
 							</div>
 						</div>
-					</div>
+					</div> -->
 
 					<!-- Password -->
 					<div class="space-y-4">
-						<h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Безопасность</h2>
+						<!-- <h2 class="sm:text-xl font-semibold text-[#23322D] border-b border-[#E7C886] pb-2">Безопасность</h2> -->
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div class="space-y-2">
 								<Label for="password">Пароль (минимум 8 символов) <span class="text-red-500">*</span></Label>

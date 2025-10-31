@@ -206,32 +206,12 @@ function getLogoBase64($user) {
                             @endphp
                             <tr>
                                 <td>{{ ++$count }}</td>
-                                <td style="text-align: left !important">@if ($offer['glass']['vendor_code']) {{ $offer['glass']['vendor_code'] . ' - ' }} @endif {{ $offer['glass']['name'] }}</td>
+                                <td style="text-align: left !important">{{ $offer['glass']['name'] }}</td>
                                 <td>
                                     <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($offer['glass']['img'][0] != '/' ? '/' : '') . $offer['glass']['img']))) }}" alt="" width="40">
                                 </td>
                                 <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $offer['glass']['unit'] }}</td>
                             </tr>
-                        @endif
-                        
-                        @if (isset($offer['ghost_glasses']) && is_array($offer['ghost_glasses']))
-                            @foreach ($offer['ghost_glasses'] as $ghost_glass)
-                                @if (isset($offer['cart_items'][$ghost_glass['id']]))
-                                    @php
-                                        $price = App\Models\Item::itemPrice($ghost_glass['id'], $selected_factor ?? 'pz') * $markupPercentage;
-                                        $quantity = $offer['cart_items'][$ghost_glass['id']]['quantity'];
-                                        $total = $price * $quantity;
-                                    @endphp
-                                    <tr style="color: #6f6f6f">
-                                        <td>{{ ++$count }}</td>
-                                        <td style="text-align: left !important">@if ($ghost_glass['vendor_code']) {{ $ghost_glass['vendor_code'] . ' - ' }} @endif {{ $ghost_glass['name'] }}</td>
-                                        <td>
-                                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($ghost_glass['img'][0] != '/' ? '/' : '') . $ghost_glass['img']))) }}" alt="" width="40">
-                                        </td>
-                                        <td class="nowrap">{{ rtrim(rtrim(number_format($quantity, 2, '.', ' '), '0'), '.') }} {{ $ghost_glass['unit'] }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
                         @endif
                         
                         @foreach ($offer['additional_items'] as $item)
@@ -295,22 +275,6 @@ function getLogoBase64($user) {
                             'price' => $basePrice + $regularGlassPrice
                         ];
                     }
-                    
-                    // Totals with ghost glasses
-                    if (isset($offer['ghost_glasses']) && is_array($offer['ghost_glasses']) && count($offer['ghost_glasses']) > 0) {
-                        foreach ($offer['ghost_glasses'] as $ghost_glass) {
-                            if (isset($offer['cart_items'][$ghost_glass['id']])) {
-                                $ghostGlassPrice = App\Models\Item::itemPrice($ghost_glass['id'], $selected_factor ?? 'pz') * $markupPercentage;
-                                $ghostGlassQuantity = $offer['cart_items'][$ghost_glass['id']]['quantity'];
-                                $totalWithGhostGlass = $basePrice + ($ghostGlassPrice * $ghostGlassQuantity);
-                                
-                                $totals[] = [
-                                    'label' => 'Итого с ' . $ghost_glass['vendor_code'],
-                                    'price' => $totalWithGhostGlass
-                                ];
-                            }
-                        }
-                    }
                 @endphp
                 
                 @if (count($totals) > 1)
@@ -319,6 +283,32 @@ function getLogoBase64($user) {
                     @endforeach
                 @else
                     <p style="text-align: right;font-size:13px;">Итого: {{ number_format($offer['total_price'] * $markupPercentage, 0, '.', ' ') }} ₽</p>
+                @endif
+                
+                @if (isset($offer['ghost_glasses']) && is_array($offer['ghost_glasses']) && count($offer['ghost_glasses']) > 0)
+                    <table class="table" style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left !important">Альтернативный вариант стекла</th>
+                                <th>Итого</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($offer['ghost_glasses'] as $ghost_glass)
+                                @if (isset($offer['cart_items'][$ghost_glass['id']]))
+                                    @php
+                                        $ghostGlassPrice = App\Models\Item::itemPrice($ghost_glass['id'], $selected_factor ?? 'pz') * $markupPercentage;
+                                        $ghostGlassQuantity = $offer['cart_items'][$ghost_glass['id']]['quantity'];
+                                        $totalWithGhostGlass = $basePrice + ($ghostGlassPrice * $ghostGlassQuantity);
+                                    @endphp
+                                    <tr>
+                                        <td style="text-align: left !important">Если {{ $ghost_glass['name'] }}</td>
+                                        <td>{{ number_format($totalWithGhostGlass, 0, '.', ' ') }} ₽</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
                 @endif
             </td>
             <td style="vertical-align: top;border:none">

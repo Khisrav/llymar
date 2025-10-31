@@ -93,10 +93,6 @@ class OrderController extends Controller
                 // Optionally: continue, or return with error
             }
 
-            // Create commission credit
-            // $commissionCredit = new CommissionCreditController();
-            // $commissionCredit->store($order->id, $order->total_price);
-
             return redirect()->route('app.history');
         } catch (\Exception $e) {
             Log::error("Order creation failed", [
@@ -178,6 +174,12 @@ class OrderController extends Controller
         // Only allow updates if order status is 'created'
         if ($order->status !== 'created') {
             return response()->json(['error' => 'Order cannot be modified'], 422);
+        }
+
+        if ($order->status === 'paid' || $order->status === 'completed') {
+            // Create commission credit
+            $commissionCredit = new CommissionCreditController();
+            $commissionCredit->store($order->id, $order->total_price);
         }
 
         $validated = $request->validate([

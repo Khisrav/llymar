@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\CommissionCreditController;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -101,57 +102,62 @@ class Order extends Model
      */
     protected static function calculateCommission($order)
     {
-        Log::info("Calculating commission", ['order_id' => $order->id]);
-        // $user = $order->user;
-        $user = User::find($order->user->id);
-        
-        Log::info("User", ['user' => $user]);
-        Log::info("User parent_id", ['parent_id' => $user->parent_id]);
-        Log::info("User reward_fee", ['reward_fee' => $user->reward_fee]);
-        Log::info("User hasRole", ['hasRole' => $user->hasRole('Dealer')]);
-        // Log::info("User", ['user' => $user, 'parent_id' => $user->parent_id, 'reward_fee' => $user->reward_fee, 'hasRole' => $user->hasRole('Dealer')]);
-        // Check if user has a parent (for commission hierarchy)
-        if ($user && $user->parent_id && $user->reward_fee && $user->hasRole('Dealer')) {
-            Log::info("User has a parent", ['user_id' => $user->id, 'parent_id' => $user->parent_id]);
-            $parent = User::find($user->parent_id);
-            
-            // Only create commission if parent has ROP role
-            if ($parent && $parent->hasRole('ROP')) {
-                Log::info("Parent has ROP role", ['parent_id' => $parent->id]);
-                // Check if commission credit already exists for this order
-                $existingCommission = CommissionCredit::where('order_id', $order->id)
-                    ->where('user_id', $user->id)
-                    ->where('parent_id', $parent->id)
-                    ->first();
-                
-                if (!$existingCommission) {
-                    Log::info("Commission credit does not exist", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id]);
-                    $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
-                    
-                    // Create commission credit record
-                    Log::info("Creating commission credit record", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id, 'amount' => $commissionAmount]);
-                    CommissionCredit::create([
-                        'user_id' => $user->id,
-                        'order_id' => $order->id,
-                        'parent_id' => $parent->id,
-                        'amount' => $commissionAmount,
-                        'type' => 'accrual',
-                    ]);
-                    
-                    Log::info("Commission credit created on order payment", [
-                        'order_id' => $order->id,
-                        'user_id' => $user->id,
-                        'parent_id' => $parent->id,
-                        'amount' => $commissionAmount
-                    ]);
-                } else {
-                    Log::info("Commission credit already exists for order", [
-                        'order_id' => $order->id,
-                        'existing_commission_id' => $existingCommission->id
-                    ]);
-                }
-            }
+        if ($order->status === 'paid' || $order->status === 'completed') {
+            // Create commission credit
+            $commissionCredit = new CommissionCreditController();
+            $commissionCredit->store($order->id, $order->total_price);
         }
+        // Log::info("Calculating commission", ['order_id' => $order->id]);
+        // // $user = $order->user;
+        // $user = User::find($order->user->id);
+        
+        // Log::info("User", ['user' => $user]);
+        // Log::info("User parent_id", ['parent_id' => $user->parent_id]);
+        // Log::info("User reward_fee", ['reward_fee' => $user->reward_fee]);
+        // Log::info("User hasRole", ['hasRole' => $user->hasRole('Dealer')]);
+        // // Log::info("User", ['user' => $user, 'parent_id' => $user->parent_id, 'reward_fee' => $user->reward_fee, 'hasRole' => $user->hasRole('Dealer')]);
+        // // Check if user has a parent (for commission hierarchy)
+        // if ($user && $user->parent_id && $user->reward_fee && $user->hasRole('Dealer')) {
+        //     Log::info("User has a parent", ['user_id' => $user->id, 'parent_id' => $user->parent_id]);
+        //     $parent = User::find($user->parent_id);
+            
+        //     // Only create commission if parent has ROP role
+        //     if ($parent && $parent->hasRole('ROP')) {
+        //         Log::info("Parent has ROP role", ['parent_id' => $parent->id]);
+        //         // Check if commission credit already exists for this order
+        //         $existingCommission = CommissionCredit::where('order_id', $order->id)
+        //             ->where('user_id', $user->id)
+        //             ->where('parent_id', $parent->id)
+        //             ->first();
+                
+        //         if (!$existingCommission) {
+        //             Log::info("Commission credit does not exist", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id]);
+        //             $commissionAmount = ($order->total_price * $user->reward_fee) / 100;
+                    
+        //             // Create commission credit record
+        //             Log::info("Creating commission credit record", ['order_id' => $order->id, 'user_id' => $user->id, 'parent_id' => $parent->id, 'amount' => $commissionAmount]);
+        //             CommissionCredit::create([
+        //                 'user_id' => $user->id,
+        //                 'order_id' => $order->id,
+        //                 'parent_id' => $parent->id,
+        //                 'amount' => $commissionAmount,
+        //                 'type' => 'accrual',
+        //             ]);
+                    
+        //             Log::info("Commission credit created on order payment", [
+        //                 'order_id' => $order->id,
+        //                 'user_id' => $user->id,
+        //                 'parent_id' => $parent->id,
+        //                 'amount' => $commissionAmount
+        //             ]);
+        //         } else {
+        //             Log::info("Commission credit already exists for order", [
+        //                 'order_id' => $order->id,
+        //                 'existing_commission_id' => $existingCommission->id
+        //             ]);
+        //         }
+        //     }
+        // }
     }
 
 

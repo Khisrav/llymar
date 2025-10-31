@@ -145,7 +145,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											<div class="flex flex-col">
 												<label class="text-xs text-muted-foreground mb-1">Ширина (мм)</label>
 												<Input
-													:disabled="!canEditOrderSketch"
+													:disabled="!canEditOrderSketch || sketcherStore.selectedOpeningID != opening.id"
 													type="number"
 													:min="(initialDimensions[opening.id || 0]?.width || opening.width || 0) - 100"
 													:max="(initialDimensions[opening.id || 0]?.width || opening.width || 0) + 100"
@@ -157,7 +157,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											<div class="flex flex-col">
 												<label class="text-xs text-muted-foreground mb-1">Высота (мм)</label>
 												<Input
-													:disabled="!canEditOrderSketch"
+													:disabled="!canEditOrderSketch || sketcherStore.selectedOpeningID != opening.id"
 													type="number"
 													:min="(initialDimensions[opening.id || 0]?.height || opening.height || 0) - 100"
 													:max="(initialDimensions[opening.id || 0]?.height || opening.height || 0) + 100"
@@ -176,7 +176,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 								<div class="mt-2 flex items-center justify-between gap-2">
 									<div class="flex-1 overflow-hidden">
 										<Select
-											:disabled="!canEditOrderSketch"
+											:disabled="!canEditOrderSketch || sketcherStore.selectedOpeningID != opening.id"
 											:model-value="sketcherStore.selectedDoorHandles[opening.id || 0] ? String(sketcherStore.selectedDoorHandles[opening.id || 0]) : ''"
 											@update:model-value="(value) => opening.id && sketcherStore.selectDoorHandle(opening.id, Number(value))"
 										>
@@ -208,7 +208,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											</SelectContent>
 										</Select>
 									</div>
-									<Button v-if="canEditOrderSketch" variant="outline" size="icon" @click="sketcherStore.clearSelectedDoorHandles(opening.id)">
+									<Button v-if="canEditOrderSketch" :disabled="sketcherStore.selectedOpeningID != opening.id" variant="outline" size="icon" @click="sketcherStore.clearSelectedDoorHandles(opening.id)">
 										<EraserIcon class="h-4 w-4" />
 									</Button>
 								</div>

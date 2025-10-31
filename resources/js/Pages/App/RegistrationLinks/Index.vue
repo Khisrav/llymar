@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { Head, router } from "@inertiajs/vue3";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
 import {
 	Table,
@@ -45,6 +45,7 @@ const showEditLinkDialog = ref(false);
 const showLinkUrlDialog = ref(false);
 const editingLink = ref<RegistrationLink | null>(null);
 const selectedLinkUrl = ref("");
+const { user_role } = usePage().props as any;
 
 const hasLinks = computed(() => props.registrationLinks.length > 0);
 
@@ -362,7 +363,7 @@ const getStatusLabel = (status: string) => {
 			<div class="space-y-4">
 				<div class="space-y-2">
 					<Label>Комиссия (%) *</Label>
-					<Input v-model.number="newLink.reward_fee" type="number" min="0" max="100" step="0.01" required />
+					<Input v-if="user_role === 'Super-Admin'" v-model.number="newLink.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>
 			</div>
 			<DialogFooter class="flex gap-2">

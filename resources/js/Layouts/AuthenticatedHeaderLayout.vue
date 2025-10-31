@@ -26,7 +26,7 @@ const navigationMenu = computed(() => {
     ]
 
     if (can_access_app_history) {
-        menu.push({ title: 'История', to: '/app/history', exact: false })
+        menu.push({ title: 'Заказы', to: '/app/history', exact: false })
     }
 
     menu.push({ title: 'КП', to: '/app/commercial-offers', exact: false })

@@ -153,6 +153,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/app/orders/{order}', [OrderController::class, 'update'])->name('app.orders.update');
     
     Route::get('/app/commercial-offers', [CommercialOfferController::class, 'index'])->name('app.commercial_offers');
+    Route::post('/app/commercial-offers', [CommercialOfferController::class, 'store'])->name('app.commercial_offers.store');
     Route::put('/app/commercial-offers/{commercialOffer}', [CommercialOfferController::class, 'update'])->name('app.commercial_offers.update');
     Route::patch('/app/commercial-offers/{commercialOffer}/file-name', [CommercialOfferController::class, 'updateFileName'])->name('app.commercial_offers.update_file_name');
     Route::delete('/app/commercial-offers/{commercialOffer}', [CommercialOfferController::class, 'destroy'])->name('app.commercial_offers.delete');

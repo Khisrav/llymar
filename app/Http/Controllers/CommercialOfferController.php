@@ -31,6 +31,60 @@ class CommercialOfferController extends Controller
     }
 
     /**
+     * Store a new commercial offer in the database without generating PDF.
+     */
+    public function store(Request $request)
+    {
+        $customer = $request->get('customer');
+        $manufacturer = $request->get('manufacturer');
+        $openings = $request->get('openings');
+        $additional_items = $request->get('additional_items');
+        $glass = $request->get('glass');
+        $ghost_glasses = $request->get('ghost_glasses', []);
+        $services = $request->get('services');
+        $cart_items = $request->get('cart_items');
+        $total_price = $request->get('total_price');
+        $markup_percentage = $request->get('markup_percentage', 1.0);
+        $selected_factor = $request->get('selected_factor', 'pz');
+        $file_name = $request->get('file_name');
+
+        // Sanitize file name if provided
+        if ($file_name) {
+            $file_name = trim($file_name);
+            $file_name = preg_replace('/\s+/', '_', $file_name);
+            $file_name = preg_replace('/[^a-zA-Z0-9_\-\(\)]/', '', $file_name);
+            $file_name = substr($file_name, 0, 200);
+        }
+
+        // Save to database
+        $commercialOffer = CommercialOffer::create([
+            'user_id' => Auth::id(),
+            'customer_name' => $customer['name'] ?? null,
+            'customer_phone' => $customer['phone'] ?? null,
+            'customer_address' => $customer['address'] ?? null,
+            'customer_comment' => $customer['comment'] ?? null,
+            'manufacturer_name' => $manufacturer['manufacturer'] ?? null,
+            'manufacturer_phone' => $manufacturer['phone'] ?? null,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+            'selected_factor' => $selected_factor,
+            'file_name' => $file_name,
+        ]);
+
+        return response()->json([
+            'message' => 'Commercial offer saved successfully',
+            'id' => $commercialOffer->id,
+            'commercial_offer' => $commercialOffer,
+        ]);
+    }
+
+    /**
      * Generate and download a commercial offer PDF while saving data to database.
      */
     public function generatePDF(Request $request)
@@ -225,7 +279,9 @@ class CommercialOfferController extends Controller
     }
 
     /**
-     * Update an existing commercial offer and download the updated PDF.
+     * Update an existing commercial offer.
+     * If 'generate_pdf' is true in the request, also download the updated PDF.
+     * Otherwise, just return JSON response.
      */
     public function update(Request $request, CommercialOffer $commercialOffer)
     {
@@ -253,6 +309,7 @@ class CommercialOfferController extends Controller
         $markup_percentage = $request->get('markup_percentage', 1.0);
         $selected_factor = $request->get('selected_factor', 'pz');
         $file_name = $request->get('file_name');
+        $generate_pdf = $request->get('generate_pdf', true); // Default to true for backward compatibility
 
         // Sanitize file name if provided
         if ($file_name) {
@@ -282,6 +339,16 @@ class CommercialOfferController extends Controller
             'file_name' => $file_name,
         ]);
 
+        // If not generating PDF, return JSON response
+        if (!$generate_pdf) {
+            return response()->json([
+                'message' => 'Commercial offer updated successfully',
+                'id' => $commercialOffer->id,
+                'commercial_offer' => $commercialOffer,
+            ]);
+        }
+
+        // Otherwise, generate and download PDF
         $offer = [
             'customer' => $customer,
             'manufacturer' => $manufacturer,

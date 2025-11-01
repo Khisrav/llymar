@@ -90,6 +90,55 @@ const openFileNameDialog = () => {
 	showFileNameDialog.value = true;
 }
 
+const saveCommercialOffer = async () => {
+    try {
+        toast.info("Сохранение коммерческого предложения...")
+        const formData = {
+            customer: commercialOfferStore.commercialOffer.customer,
+            manufacturer: commercialOfferStore.commercialOffer.manufacturer,
+            openings: openingsStore.openings,
+            additional_items: Object.values(itemsStore.additional_items).flat(),
+            glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || [],
+            ghost_glasses: itemsStore.glasses.filter(glass => glass.id && itemsStore.selectedGhostGlassesID.includes(glass.id)),
+            services: itemsStore.services.filter(service => service.id && itemsStore.selectedServicesID.includes(service.id)),
+            cart_items: itemsStore.cartItems,
+            total_price: itemsStore.total_price.with_discount,
+            markup_percentage: itemsStore.markupPercentage,
+            selected_factor: selectedFactor.value,
+            file_name: fileName.value || null,
+            generate_pdf: false, // Don't generate PDF for save-only
+        }
+
+        const commercialOfferId = commercialOfferStore.commercialOfferId
+        const isEditing = commercialOfferId !== null
+
+        const response = isEditing 
+            ? await axios.put(`/app/commercial-offers/${commercialOfferId}`, formData, {
+                headers: { 'Content-Type': 'application/json' }
+            })
+            : await axios.post('/app/commercial-offers', formData, {
+                headers: { 'Content-Type': 'application/json' }
+            })
+
+        // Update the commercial offer ID if it was a new one
+        if (!isEditing && response.data.id) {
+            commercialOfferStore.commercialOfferId = response.data.id
+        }
+        
+        // Close dialog and reset file name
+        showFileNameDialog.value = false;
+        fileName.value = "";
+        
+        const successMessage = isEditing 
+            ? "Коммерческое предложение успешно обновлено"
+            : "Коммерческое предложение успешно сохранено"
+        toast.success(successMessage)
+    } catch (error) {
+        console.error('Error saving commercial offer:', error)
+        toast.error("Ошибка при сохранении коммерческого предложения")
+    }
+}
+
 const downloadCommercialOffer = async () => {
     try {
         toast.info("Подготовка коммерческого предложения...")
@@ -106,6 +155,7 @@ const downloadCommercialOffer = async () => {
             markup_percentage: itemsStore.markupPercentage,
             selected_factor: selectedFactor.value,
             file_name: fileName.value || null,
+            generate_pdf: true, // Generate PDF for download
         }
 
         const commercialOfferId = commercialOfferStore.commercialOfferId
@@ -298,7 +348,7 @@ const downloadListPDF = async () => {
                     Введите имя файла (необязательно). Если оставите пустым, будет использовано имя по умолчанию.
                 </DialogDescription>
             </DialogHeader>
-            <div class="grid gap-4 py-4">
+            <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="fileName">
                         Имя файла
@@ -315,12 +365,15 @@ const downloadListPDF = async () => {
                     </div>
                 </div>
             </div>
-            <DialogFooter>
+            <DialogFooter class="grid grid-cols-2 gap-2">
                 <Button variant="outline" @click="showFileNameDialog = false">
                     Отмена
                 </Button>
-                <Button @click="downloadCommercialOffer">
-                    Скачать
+                <Button variant="secondary" @click="saveCommercialOffer">
+                    Сохранить
+                </Button>
+                <Button @click="downloadCommercialOffer" class="col-span-2">
+                    Сохранить и скачать
                 </Button>
             </DialogFooter>
         </DialogContent>

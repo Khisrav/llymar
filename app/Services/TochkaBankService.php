@@ -18,7 +18,8 @@ use Firebase\JWT\Key;
 class TochkaBankService
 {
     private string $baseUrl;
-    private ?string $clientSecret;
+    // private ?string $clientSecret;
+    private ?string $accessToken; //basically JWT token
     private ?string $customerCode;
     private ?string $accountId;
     private string $apiVersion;
@@ -26,21 +27,21 @@ class TochkaBankService
     public function __construct()
     {
         $this->baseUrl = config('services.tochka.base_url');
-        $this->clientSecret = config('services.tochka.client_secret');
-        // $this->accessToken = 'working_token';
+        // $this->clientSecret = config('services.tochka.client_secret');
+        $this->accessToken = 'working_token';
         $this->customerCode = config('services.tochka.customer_code');
         $this->accountId = config('services.tochka.account_id');
         $this->apiVersion = config('services.tochka.api_version');
         
-        Log::info('Tochka Bank credentials', [
-            'baseUrl' => $this->baseUrl,
-            'clientSecret' => $this->clientSecret,
-            'customerCode' => $this->customerCode,
-            'accountId' => $this->accountId,
-            'apiVersion' => $this->apiVersion
-        ]);
+        // Log::info('Tochka Bank credentials', [
+        //     'baseUrl' => $this->baseUrl,
+        //     'clientSecret' => $this->clientSecret,
+        //     'customerCode' => $this->customerCode,
+        //     'accountId' => $this->accountId,
+        //     'apiVersion' => $this->apiVersion
+        // ]);
         
-        if (!$this->clientSecret || !$this->customerCode || !$this->accountId) {
+        if (!$this->accessToken || !$this->customerCode || !$this->accountId) {
             throw new Exception('Tochka Bank credentials not configured. Please set TOCHKA_CLIENT_SECRET, TOCHKA_CUSTOMER_CODE, and TOCHKA_ACCOUNT_ID in your .env file.');
         }
     }
@@ -59,7 +60,7 @@ class TochkaBankService
             $payload = $this->prepareBillPayload($order, $secondSide);
             
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->clientSecret}",
+                'Authorization' => "Bearer {$this->accessToken}",
                 'Content-Type' => 'application/json',
             ])->post("{$this->baseUrl}/invoice/{$this->apiVersion}/bills", $payload);
 
@@ -110,7 +111,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->clientSecret}",
+                'Authorization' => "Bearer {$this->accessToken}",
             ])->get("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/payment-status");
 
             if (!$response->successful()) {
@@ -152,7 +153,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->clientSecret}",
+                'Authorization' => "Bearer {$this->accessToken}",
             ])->get("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/file");
 
             if (!$response->successful()) {
@@ -194,7 +195,7 @@ class TochkaBankService
             ];
 
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->clientSecret}",
+                'Authorization' => "Bearer {$this->accessToken}",
                 'Content-Type' => 'application/json',
             ])->post("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}/email", $payload);
 
@@ -231,7 +232,7 @@ class TochkaBankService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->clientSecret}",
+                'Authorization' => "Bearer {$this->accessToken}",
             ])->delete("{$this->baseUrl}/invoice/{$this->apiVersion}/bills/{$this->customerCode}/{$order->invoice_id}");
 
             if (!$response->successful()) {

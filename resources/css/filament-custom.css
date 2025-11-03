@@ -39,3 +39,10 @@
         z-index: 90 !important;
     }
 } */
+
+td div.px-3.py-4 {
+    padding: 6px 12px;
+}
+.fi-ta-header-cell, thead  tr th.fi-ta-cell div.px-3.py-4 {
+    padding: 8px 12px !important;
+}

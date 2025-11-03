@@ -119,7 +119,8 @@ const checkout = () => {
 				<Link href="/app/calculator"
 					><Button size="icon" variant="outline"><ArrowLeft /></Button
 				></Link>
-				<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Ваша корзина</h2>
+				<!-- <h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Корзина</h2> -->
+				<h2 v-if="cartItemIDs.length > 0" class="text-3xl font-semibold">Заказ</h2>
 			</div>
 			<div v-if="cartItemIDs.length === 0" class="text-center py-8">
 				<ShoppingCartIcon class="h-16 w-16 mx-auto mb-4" />
@@ -266,7 +267,7 @@ const checkout = () => {
 						</div>
 
 						<div>
-							<Button type="submit">Оформить заказ</Button>
+							<Button type="submit">Заказать</Button>
 							<p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p>
 						</div>
 					</form>

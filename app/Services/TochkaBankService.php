@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Company;
 use App\Models\Item;
+use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -28,21 +29,21 @@ class TochkaBankService
     {
         $this->baseUrl = config('services.tochka.base_url');
         // $this->clientSecret = config('services.tochka.client_secret');
-        $this->accessToken = 'working_token';
+        $this->accessToken = config('services.tochka.access_token');
         $this->customerCode = config('services.tochka.customer_code');
         $this->accountId = config('services.tochka.account_id');
         $this->apiVersion = config('services.tochka.api_version');
         
-        // Log::info('Tochka Bank credentials', [
-        //     'baseUrl' => $this->baseUrl,
-        //     'clientSecret' => $this->clientSecret,
-        //     'customerCode' => $this->customerCode,
-        //     'accountId' => $this->accountId,
-        //     'apiVersion' => $this->apiVersion
-        // ]);
+        Log::info('Tochka Bank credentials', [
+            'baseUrl' => $this->baseUrl,
+            'accessToken' => $this->accessToken,
+            'customerCode' => $this->customerCode,
+            'accountId' => $this->accountId,
+            'apiVersion' => $this->apiVersion
+        ]);
         
         if (!$this->accessToken || !$this->customerCode || !$this->accountId) {
-            throw new Exception('Tochka Bank credentials not configured. Please set TOCHKA_CLIENT_SECRET, TOCHKA_CUSTOMER_CODE, and TOCHKA_ACCOUNT_ID in your .env file.');
+            throw new Exception('Tochka Bank credentials not configured. Please set TOCHKA_ACCESS_TOKEN, TOCHKA_CUSTOMER_CODE, and TOCHKA_ACCOUNT_ID in your .env file.');
         }
     }
 
@@ -56,6 +57,17 @@ class TochkaBankService
      */
     public function createBill(Order $order, array $secondSide = []): array
     {
+        $user = User::find($order->user_id);
+        // Validate that tax code (INN) exists
+        // $taxCode = $secondSide['taxCode'] ?? $user->inn ?? null;
+        $taxCode = $user->inn;
+        $secondSide['taxCode'] = $taxCode;
+
+        Log::info('User info', ['user' => $user]);
+        if (empty($taxCode)) {
+            throw new Exception('Не указан ИНН для создания счета');
+        }
+        
         try {
             $payload = $this->prepareBillPayload($order, $secondSide);
             

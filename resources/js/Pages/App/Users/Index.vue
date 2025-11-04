@@ -48,6 +48,7 @@ import { PencilIcon, TrashIcon, UserIcon, PhoneIcon, BuildingIcon, MapPinIcon, E
 const props = defineProps<{
 	childUsers: Array<any>;
 	canManageUsers: boolean;
+	user_role: string;
 }>();
 
 const showCreateUserDialog = ref(false);
@@ -429,7 +430,7 @@ const resetNewUser = () => {
 						</Button>
 					</div>
 				</div>
-				<div class="space-y-2">
+				<div v-if="user_role === 'Super-Admin'" class="space-y-2">
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="newUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>
@@ -546,7 +547,7 @@ const resetNewUser = () => {
 					<Label>Компания *</Label>
 					<Input v-model="editingUser.company" required />
 				</div>
-				<div class="space-y-2">
+				<div v-if="user_role === 'Super-Admin'" class="space-y-2">
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>

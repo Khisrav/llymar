@@ -23,6 +23,10 @@ class RolePermissionMatrix extends Page
     public array $roles = [];
     public array $permissions = [];
     public array $groupedPermissions = [];
+    public int $perPage = 20;
+    public int $currentPage = 1;
+    public int $totalPages = 1;
+    public int $totalPermissions = 0;
 
     public function mount(): void
     {
@@ -32,14 +36,57 @@ class RolePermissionMatrix extends Page
             ->get()
             ->toArray();
         
-        // Load permissions and convert to array
-        $this->permissions = Permission::where('guard_name', 'web')
-            ->orderBy('name')
-            ->get()
-            ->toArray();
+        // Load all permissions and apply custom sorting
+        $allPermissions = Permission::where('guard_name', 'web')->get();
+        
+        // Sort permissions with custom logic
+        $sortedPermissions = $allPermissions->sort(function ($a, $b) {
+            // Define special prefixes that should be at the very bottom
+            $specialPrefixes = ['reorder', 'force-delete', 'replicate', 'restore'];
+            
+            $aIsTranslated = $a->display_name !== $a->name;
+            $bIsTranslated = $b->display_name !== $b->name;
+            
+            $aHasSpecialPrefix = false;
+            $bHasSpecialPrefix = false;
+            
+            // Check if permissions have special prefixes
+            foreach ($specialPrefixes as $prefix) {
+                if (str_starts_with($a->name, $prefix)) {
+                    $aHasSpecialPrefix = true;
+                }
+                if (str_starts_with($b->name, $prefix)) {
+                    $bHasSpecialPrefix = true;
+                }
+            }
+            
+            // Priority 1: Translated permissions (display_name != name) at the top
+            if ($aIsTranslated && !$bIsTranslated) return -1;
+            if (!$aIsTranslated && $bIsTranslated) return 1;
+            
+            // Priority 2: Among non-translated permissions, special prefixes at the bottom
+            if (!$aIsTranslated && !$bIsTranslated) {
+                if (!$aHasSpecialPrefix && $bHasSpecialPrefix) return -1;
+                if ($aHasSpecialPrefix && !$bHasSpecialPrefix) return 1;
+            }
+            
+            // Priority 3: Sort by name alphabetically
+            return strcmp($a->name, $b->name);
+        });
+        
+        $this->permissions = $sortedPermissions->values()->toArray();
+        $this->totalPermissions = count($this->permissions);
+        $this->totalPages = (int) ceil($this->totalPermissions / $this->perPage);
 
-        // Group permissions by prefix (e.g., "user.view", "user.edit" -> "user")
-        $grouped = collect($this->permissions)->groupBy(function ($permission) {
+        // Get paginated permissions
+        $paginatedPermissions = array_slice(
+            $this->permissions, 
+            ($this->currentPage - 1) * $this->perPage, 
+            $this->perPage
+        );
+
+        // Group paginated permissions by prefix
+        $grouped = collect($paginatedPermissions)->groupBy(function ($permission) {
             $parts = explode('.', $permission['name']);
             return count($parts) > 1 ? $parts[0] : 'other';
         });
@@ -49,14 +96,36 @@ class RolePermissionMatrix extends Page
             return $group->toArray();
         })->toArray();
 
-        // Load existing role-permission relationships
+        // Load existing role-permission relationships for all permissions
         $rolesCollection = Role::where('guard_name', 'web')->orderBy('id')->get();
-        $permissionsCollection = Permission::where('guard_name', 'web')->orderBy('name')->get();
+        $permissionsCollection = Permission::where('guard_name', 'web')->get();
         
         foreach ($rolesCollection as $role) {
             foreach ($permissionsCollection as $permission) {
                 $this->rolePermissions[$role->id][$permission->id] = $role->hasPermissionTo($permission->name);
             }
+        }
+    }
+
+    public function goToPage($page): void
+    {
+        $this->currentPage = max(1, min($page, $this->totalPages));
+        $this->mount();
+    }
+
+    public function previousPage(): void
+    {
+        if ($this->currentPage > 1) {
+            $this->currentPage--;
+            $this->mount();
+        }
+    }
+
+    public function nextPage(): void
+    {
+        if ($this->currentPage < $this->totalPages) {
+            $this->currentPage++;
+            $this->mount();
         }
     }
 

@@ -311,7 +311,7 @@ class TochkaBankService
                     'Invoice' => [
                         'number' => $order->order_number ?? (string) $order->id,
                         'basedOn' => 'Заказ №' . ($order->order_number ?? $order->id),
-                        'comment' => $order->comment ?? 'Оплата заказа',
+                        // 'comment' => $order->comment ?? 'Оплата заказа',
                         'paymentExpiryDate' => now()->addDays(3)->format('Y-m-d'),
                         'date' => $order->created_at->format('Y-m-d'),
                         'totalAmount' => number_format($totalAmount, 2, '.', ''),

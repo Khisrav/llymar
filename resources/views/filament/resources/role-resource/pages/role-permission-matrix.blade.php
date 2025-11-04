@@ -110,6 +110,102 @@
             </div>
         @endif
 
+        <!-- Pagination -->
+        @if($totalPages > 1)
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <!-- Pagination Info -->
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        Показаны разрешения 
+                        <span class="font-semibold">{{ (($currentPage - 1) * $perPage) + 1 }}</span>
+                        -
+                        <span class="font-semibold">{{ min($currentPage * $perPage, $totalPermissions) }}</span>
+                        из
+                        <span class="font-semibold">{{ $totalPermissions }}</span>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center gap-2">
+                        <!-- Previous Button -->
+                        <button 
+                            wire:click="previousPage"
+                            {{ $currentPage <= 1 ? 'disabled' : '' }}
+                            class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors {{ $currentPage <= 1 ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500' }}"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Page Numbers -->
+                        <div class="flex items-center gap-1">
+                            @php
+                                $startPage = max(1, $currentPage - 2);
+                                $endPage = min($totalPages, $currentPage + 2);
+                                
+                                // Adjust if we're near the start or end
+                                if ($endPage - $startPage < 4) {
+                                    if ($currentPage < 3) {
+                                        $endPage = min($totalPages, 5);
+                                    } else {
+                                        $startPage = max(1, $totalPages - 4);
+                                    }
+                                }
+                            @endphp
+
+                            @if($startPage > 1)
+                                <button 
+                                    wire:click="goToPage(1)"
+                                    class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 
+                                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 
+                                           hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                                >
+                                    1
+                                </button>
+                                @if($startPage > 2)
+                                    <span class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                                @endif
+                            @endif
+
+                            @for($i = $startPage; $i <= $endPage; $i++)
+                                <button 
+                                    wire:click="goToPage({{ $i }})"
+                                    class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors {{ $i == $currentPage ? 'border-primary-500 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500' }}"
+                                >
+                                    {{ $i }}
+                                </button>
+                            @endfor
+
+                            @if($endPage < $totalPages)
+                                @if($endPage < $totalPages - 1)
+                                    <span class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                                @endif
+                                <button 
+                                    wire:click="goToPage({{ $totalPages }})"
+                                    class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 
+                                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 
+                                           hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                                >
+                                    {{ $totalPages }}
+                                </button>
+                            @endif
+                        </div>
+
+                        <!-- Next Button -->
+                        <button 
+                            wire:click="nextPage"
+                            {{ $currentPage >= $totalPages ? 'disabled' : '' }}
+                            class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors {{ $currentPage >= $totalPages ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500' }}"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Legend -->
         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Подсказки:</h4>

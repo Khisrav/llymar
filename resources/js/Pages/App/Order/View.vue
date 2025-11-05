@@ -37,6 +37,14 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { toast } from "vue-sonner";
 import { Toaster } from "../../../Components/ui/sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../Components/ui/card";
+import Popover from "../../../Components/ui/popover/Popover.vue";
+import PopoverContent from "../../../Components/ui/popover/PopoverContent.vue";
+import PopoverTrigger from "../../../Components/ui/popover/PopoverTrigger.vue";
+import Command from "../../../Components/ui/command/Command.vue";
+import CommandInput from "../../../Components/ui/command/CommandInput.vue";
+import CommandList from "../../../Components/ui/command/CommandList.vue";
+import CommandItem from "../../../Components/ui/command/CommandItem.vue";
+import CommandGroup from "../../../Components/ui/command/CommandGroup.vue";
 
 // Import RAL colors
 // @ts-ignore - RAL library doesn't have proper types
@@ -47,6 +55,11 @@ const pageData = usePage().props;
 const { user_role, can_access_sketcher, order, user, creator }: { user_role: string; can_access_sketcher: boolean; order: Order; user: User; creator: User } = pageData as any;
 // Edit state
 const isEditing = ref(false);
+const ralPopoverOpen = ref(false);
+const selectedRALColor = ref({ 
+	name: order.ral_code || "Выберите цвет", 
+	HEX: order.ral_code && RAL.classic[order.ral_code] ? RAL.classic[order.ral_code].HEX : "none" 
+});
 
 const opening_images: OpeningImages = {
     left: '/assets/openings/openings-left.jpg',
@@ -76,6 +89,7 @@ const form = useForm({
 	customer_address: order.customer_address || '',
 	city: order.city || '',
 	comment: order.comment || '',
+	ral_code: order.ral_code || '',
 });
 
 // Collapsible sections state
@@ -85,6 +99,7 @@ const showItems = ref(false);
 // Computed properties
 const canEdit = computed(() => order.status === 'created');
 const canAccess = computed(() => order.user_id === pageData.auth?.user?.id || pageData.auth?.user?.roles?.some((role: any) => role.name === 'Super-Admin'));
+const hasRalItem = computed(() => order.order_items?.some((item: any) => item.item_id === 386) || false);
 
 const canDeleteOrder = ref(order.status == 'created')
 const canDownloadSketchPDF_DXF = ref(order.status != 'created')
@@ -121,15 +136,28 @@ const cancelEditing = () => {
 	isEditing.value = false;
 	form.reset();
 	form.clearErrors();
+	// Reset RAL color selection
+	selectedRALColor.value = { 
+		name: order.ral_code || "Выберите цвет", 
+		HEX: order.ral_code && RAL.classic[order.ral_code] ? RAL.classic[order.ral_code].HEX : "none" 
+	};
 };
 
 const saveChanges = () => {
+	// Update form with selected RAL color
+	form.ral_code = selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name;
+	
 	form.put(`/app/orders/${order.id}`, {
 		preserveScroll: true,
 		onSuccess: (page) => {
 			isEditing.value = false;
 			// Update the local order object with the new data
 			Object.assign(order, page.props.order);
+			// Update selectedRALColor with the saved value
+			selectedRALColor.value = { 
+				name: order.ral_code || "Выберите цвет", 
+				HEX: order.ral_code && RAL.classic[order.ral_code] ? RAL.classic[order.ral_code].HEX : "none" 
+			};
 			toast.success("Заказ успешно обновлен");
 		},
 		onError: () => {
@@ -531,17 +559,55 @@ const handleImageError = (event: Event) => {
 									</span>
 								</div>
 
-								<div v-if="order.ral_code" class="flex justify-between items-center">
-									<span class="text-sm text-muted-foreground">Цвет RAL:</span>
-									<div class="flex items-center gap-2">
-										<div 
-											v-if="getRalColor(order.ral_code)"
-											class="w-4 h-4 rounded border border-border shadow-sm" 
-											:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
-										></div>
-										<span class="text-sm font-mono">{{ order.ral_code }}</span>
-									</div>
+							<div v-if="hasRalItem" class="flex justify-between items-center">
+								<span class="text-sm text-muted-foreground">Цвет RAL:</span>
+								<div v-if="!isEditing" class="flex items-center gap-2">
+									<div 
+										v-if="order.ral_code && getRalColor(order.ral_code)"
+										class="w-4 h-4 rounded border border-border shadow-sm" 
+										:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
+									></div>
+									<span class="text-sm font-mono">{{ order.ral_code || '—' }}</span>
 								</div>
+								<div v-else>
+									<Popover v-model:open="ralPopoverOpen">
+										<PopoverTrigger as-child>
+											<Button variant="outline" size="sm" type="button" :aria-expanded="ralPopoverOpen">
+												<svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+													<circle :style="{ fill: selectedRALColor?.HEX }" cx="50" cy="50" r="45" />
+												</svg>
+												<span class="text-xs">{{ selectedRALColor?.name || "Выбрать цвет" }}</span>
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent class="w-[300px] p-0">
+											<Command>
+												<CommandInput placeholder="Найти цвет" />
+												<CommandList>
+													<CommandGroup>
+														<CommandItem
+															v-for="colorName in Object.keys(RAL.classic)"
+															:key="colorName"
+															:value="colorName"
+															@select="
+																() => {
+																	selectedRALColor = { name: colorName, HEX: RAL.classic[colorName].HEX };
+																	ralPopoverOpen = false;
+																}
+															"
+															class="gap-2"
+														>
+															<svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+																<circle :style="{ fill: RAL.classic[colorName].HEX }" cx="50" cy="50" r="45" />
+															</svg>
+															<span>{{ colorName }}</span>
+														</CommandItem>
+													</CommandGroup>
+												</CommandList>
+											</Command>
+										</PopoverContent>
+									</Popover>
+								</div>
+							</div>
 
 								<div v-if="order.order_type" class="flex justify-between items-center">
 									<span class="text-sm text-muted-foreground">Тип заказа:</span>

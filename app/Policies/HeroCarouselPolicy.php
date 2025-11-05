@@ -13,7 +13,7 @@ class HeroCarouselPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('view-any HeroCarousel');
     }
 
     /**
@@ -21,7 +21,7 @@ class HeroCarouselPolicy
      */
     public function view(User $user, HeroCarousel $heroCarousel): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('view HeroCarousel');
     }
 
     /**
@@ -29,7 +29,7 @@ class HeroCarouselPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('create HeroCarousel');
     }
 
     /**
@@ -37,7 +37,7 @@ class HeroCarouselPolicy
      */
     public function update(User $user, HeroCarousel $heroCarousel): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('update HeroCarousel');
     }
 
     /**
@@ -45,7 +45,7 @@ class HeroCarouselPolicy
      */
     public function delete(User $user, HeroCarousel $heroCarousel): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('delete HeroCarousel');
     }
 
     /**
@@ -53,7 +53,7 @@ class HeroCarouselPolicy
      */
     public function restore(User $user, HeroCarousel $heroCarousel): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('restore HeroCarousel');
     }
 
     /**
@@ -61,6 +61,6 @@ class HeroCarouselPolicy
      */
     public function forceDelete(User $user, HeroCarousel $heroCarousel): bool
     {
-        return $user->hasRole('Super-Admin');
+        return $user->checkPermissionTo('force-delete HeroCarousel');
     }
 }

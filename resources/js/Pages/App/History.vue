@@ -198,7 +198,7 @@ const downloadBill = (order_id: number) => {
 							<FolderClockIcon class="h-6 w-6 text-primary" />
 						</div>
 						<div>
-							<h1 class="text-2xl font-bold tracking-tight">История заказов</h1>
+							<h1 class="text-2xl font-bold tracking-tight">Заказы</h1>
 							<p class="text-sm text-muted-foreground mt-1">
 								{{ hasOrders ? `${orders.length} заказов` : 'Управляйте своими заказами' }}
 							</p>
@@ -354,13 +354,13 @@ const downloadBill = (order_id: number) => {
 						<Table>
 							<TableHeader>
 								<TableRow class="bg-muted/30 hover:bg-muted/30">
+									<TableHead class="font-semibold text-sm"></TableHead>
 									<TableHead class="font-semibold text-sm">№ заказа <br> Дата</TableHead>
 									<TableHead v-if="!['Manager', 'Workman'].includes(user_role)" class="font-semibold text-sm">Закреплен за</TableHead>
 									<TableHead class="font-semibold text-sm">Получатель</TableHead>
 									<TableHead class="font-semibold text-sm">Цвет RAL</TableHead>
 									<TableHead class="font-semibold text-sm">Сумма</TableHead>
 									<TableHead class="font-semibold text-sm">Статус</TableHead>
-									<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -370,43 +370,6 @@ const downloadBill = (order_id: number) => {
 									class="group hover:bg-muted/20 transition-colors duration-150"
 								>
 									<TableCell class="">
-										<Link :href="`/app/orders/${order.id}`" class="font-mono font-medium hover:text-primary transition-colors border-b-2 border-primary border-dotted">
-											{{ order.order_number || order.id }}
-										</Link>
-										<br>
-										<span class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</span>
-									</TableCell>
-									<TableCell v-if="!['Manager', 'Workman'].includes(user_role)" class="text-muted-foreground text-sm">
-										<div class="space-y-1">
-											<p class="">{{ order.user?.name }}</p>
-											<a :href="'tel:' + order.user?.phone" class="text-sm text-primary hover:underline font-mono">
-												{{ order.user?.phone }}
-											</a>
-										</div>
-									</TableCell>
-									<TableCell>
-										<div class="space-y-1">
-											<p class="font-medium">{{ order.customer_name }}</p>
-											<a :href="'tel:' + order.customer_phone" class="text-sm text-primary hover:underline font-mono">
-												{{ order.customer_phone }}
-											</a>
-										</div>
-									</TableCell>
-									<TableCell>
-										<div v-if="order.ral_code && getRalColor(order.ral_code)" class="flex items-center gap-2">
-											<div 
-												class="w-5 h-5 rounded border border-border shadow-sm" 
-												:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
-											></div>
-											<span class="text-sm font-mono">{{ order.ral_code }}</span>
-										</div>
-										<span v-else class="text-muted-foreground text-sm">—</span>
-									</TableCell>
-									<TableCell class="font-bold text-primary">{{ currencyFormatter(order.total_price) }}</TableCell>
-									<TableCell>
-										<StatusBadge :status="order.status" />
-									</TableCell>
-									<TableCell class="text-right">
 										<DropdownMenu>
 											<DropdownMenuTrigger>
 												<Button variant="outline" size="icon" class="h-8 w-8">
@@ -444,6 +407,43 @@ const downloadBill = (order_id: number) => {
 												</DropdownMenuItem>
 											</DropdownMenuContent>
 										</DropdownMenu>
+									</TableCell>
+									<TableCell class="">
+										<Link :href="`/app/orders/${order.id}`" class="font-mono font-medium hover:text-primary transition-colors border-b-2 border-primary border-dotted">
+											{{ order.order_number || order.id }}
+										</Link>
+										<br>
+										<span class="text-muted-foreground text-sm">{{ formatDate(order.created_at || '') }}</span>
+									</TableCell>
+									<TableCell v-if="!['Manager', 'Workman'].includes(user_role)" class="text-muted-foreground text-sm">
+										<div class="space-y-1">
+											<p class="">{{ order.user?.name }}</p>
+											<a :href="'tel:' + order.user?.phone" class="text-sm text-primary hover:underline font-mono">
+												{{ order.user?.phone }}
+											</a>
+										</div>
+									</TableCell>
+									<TableCell>
+										<div class="space-y-1">
+											<p class="font-medium">{{ order.customer_name }}</p>
+											<a :href="'tel:' + order.customer_phone" class="text-sm text-primary hover:underline font-mono">
+												{{ order.customer_phone }}
+											</a>
+										</div>
+									</TableCell>
+									<TableCell>
+										<div v-if="order.ral_code && getRalColor(order.ral_code)" class="flex items-center gap-2">
+											<div 
+												class="w-5 h-5 rounded border border-border shadow-sm" 
+												:style="{ backgroundColor: getRalColor(order.ral_code)?.hex }"
+											></div>
+											<span class="text-sm font-mono">{{ order.ral_code }}</span>
+										</div>
+										<span v-else class="text-muted-foreground text-sm">—</span>
+									</TableCell>
+									<TableCell class="font-bold text-primary">{{ currencyFormatter(order.total_price) }}</TableCell>
+									<TableCell>
+										<StatusBadge :status="order.status" />
 									</TableCell>
 								</TableRow>
 							</TableBody>

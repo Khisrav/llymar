@@ -571,6 +571,32 @@ class UserResource extends Resource
                     ->description(fn ($record) => $record->email)
                     ->weight('medium'),
 
+                Tables\Columns\SelectColumn::make('role_id')
+                    ->label('Роль')
+                    ->options(function () {
+                        return \Spatie\Permission\Models\Role::all()
+                            ->mapWithKeys(function ($role) {
+                                return [$role->id => $role->display_name ?: $role->name];
+                            });
+                    })
+                    ->selectablePlaceholder(false)
+                    ->state(function (Model $record) {
+                        $role = $record->roles()->first();
+                        return $role ? $role->id : null;
+                    })
+                    ->afterStateUpdated(function (Model $record, $state) {
+                        if ($state) {
+                            // Sync the role (replace all roles with the selected one)
+                            $record->syncRoles([$state]);
+                            
+                            // Clear cache
+                            Cache::forget('user_parent_options');
+                            Cache::forget("user_count_badge_{$record->id}");
+                        }
+                    })
+                    ->hidden(!static::isSuperAdmin())
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
@@ -614,24 +640,6 @@ class UserResource extends Resource
                     ->visible(static::isSuperAdmin())
                     ->sortable()
                     ->toggleable(),
-
-                Tables\Columns\TextColumn::make('role')
-                    ->label('Роль')
-                    ->searchable()
-                    ->formatStateUsing(function (Model $record) {
-                        $role = $record->roles()->first();
-                        return $role ? ($role->display_name ?: $role->name) : 'Нет роли';
-                    })
-                    ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'Super-Admin' => 'danger',
-                        'Operator' => 'warning',
-                        'Manager' => 'success',
-                        'ROP' => 'info',
-                        default => 'gray',
-                    })
-                    ->hidden(!static::isSuperAdmin())
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('reward_fee')
                     ->label('Комиссия')

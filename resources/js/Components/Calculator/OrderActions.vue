@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, EllipsisVertical, FilePenIcon, FileText, Printer, Ruler, ScrollText, Calculator } from "lucide-vue-next"
+import {EllipsisVertical, FileText, Printer, ScrollText, ShoppingCartIcon } from "lucide-vue-next"
 import Button from "../ui/button/Button.vue"
 import DropdownMenu from "../ui/dropdown-menu/DropdownMenu.vue"
 import DropdownMenuTrigger from "../ui/dropdown-menu/DropdownMenuTrigger.vue"
@@ -332,7 +332,7 @@ const downloadListPDF = async () => {
                 <Link href="/app/cart" v-if="can_access_app_cart">
                     <Button class="hover:bg-primary/90 px-3" size="sm">
                         <span class="text-base">Заказать</span>
-                        <ArrowRightIcon class="size-4 ml-0" />
+                        <ShoppingCartIcon class="size-4 ml-0" />
                     </Button>
                 </Link>
             </div>

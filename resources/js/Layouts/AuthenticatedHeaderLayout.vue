@@ -2,7 +2,7 @@
 import { computed, ref } from "vue"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../Components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "../Components/ui/sheet"
-import { CircleUser, Menu, LogOut, Settings, Shield, X } from "lucide-vue-next"
+import { CircleUser, Menu, LogOut, Settings, Shield, X, Calculator } from "lucide-vue-next"
 import { Button } from "../Components/ui/button/"
 import { Link, usePage } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
@@ -21,32 +21,38 @@ const { user } = page.props.auth as any
 const mobileMenuOpen = ref(false)
 
 const navigationMenu = computed(() => {
-    const menu = [
-        // { title: 'Главная', to: '/', exact: true },
-    ]
+    const leftMenu = []
+    const rightMenu = []
 
     if (can_access_app_history) {
-        menu.push({ title: 'Заказы', to: '/app/history', exact: false })
+        leftMenu.push({ title: 'Заказы', to: '/app/history', exact: false })
     }
 
-    menu.push({ title: 'КП', to: '/app/commercial-offers', exact: false })
-
-    if (can_access_app_calculator) {
-        menu.push({ title: 'Калькулятор', to: '/app/calculator', exact: false })
-    }
+    rightMenu.push({ title: 'КП', to: '/app/commercial-offers', exact: false })
 
     if (can_access_app_users) {
-        menu.push({ title: 'Пользователи', to: '/app/users', exact: false })
+        rightMenu.push({ title: 'Пользователи', to: '/app/users', exact: false })
     }
 
     if (can_access_commission_credits) {
-        menu.push({ title: 'Комиссии', to: '/app/commission-credits', exact: false })
+        leftMenu.push({ title: 'Комиссии', to: '/app/commission-credits', exact: false })
     }
 
     if (can_access_registration_links) {
-        menu.push({ title: 'Ссылки', to: '/app/registration-links', exact: false })
+        leftMenu.push({ title: 'Ссылки', to: '/app/registration-links', exact: false })
     }
 
+    return { leftMenu, rightMenu }
+})
+
+const allMenuItems = computed(() => {
+    const menu = [...navigationMenu.value.leftMenu]
+    
+    if (can_access_app_calculator) {
+        menu.push({ title: 'Калькулятор', to: '/app/calculator', exact: false })
+    }
+    
+    menu.push(...navigationMenu.value.rightMenu)
     return menu
 })
 
@@ -105,11 +111,52 @@ export default {
         
         <!-- Desktop Navigation -->
         <nav 
-            class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-1 md:text-sm lg:gap-2"
+            class="hidden md:flex flex-1 items-center justify-center gap-1 lg:gap-2"
             aria-label="Основная навигация"
         >
+            <!-- Left Menu Items -->
             <Link 
-                v-for="item in navigationMenu" 
+                v-for="item in navigationMenu.leftMenu" 
+                :key="item.title" 
+                :href="item.to" 
+                :class="[
+                    'relative px-3 py-2 rounded-md font-medium transition-all duration-200',
+                    isActive(item) 
+                        ? 'text-foreground' 
+                        : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                ]"
+            >
+                {{ item.title }}
+                <!-- Active indicator -->
+                <span 
+                    v-if="isActive(item)"
+                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
+                ></span>
+            </Link>
+            
+            <!-- Calculator Icon (Middle) -->
+            <Link 
+                v-if="can_access_app_calculator"
+                href="/app/calculator" 
+                :class="[
+                    'relative p-2.5 rounded-md transition-all duration-200 mx-2',
+                    isActive({ to: '/app/calculator', exact: false })
+                        ? 'text-foreground bg-primary/15' 
+                        : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                ]"
+                aria-label="Калькулятор"
+            >
+                <Calculator class="h-5 w-5" />
+                <!-- Active indicator -->
+                <span 
+                    v-if="isActive({ to: '/app/calculator', exact: false })"
+                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
+                ></span>
+            </Link>
+            
+            <!-- Right Menu Items -->
+            <Link 
+                v-for="item in navigationMenu.rightMenu" 
                 :key="item.title" 
                 :href="item.to" 
                 :class="[
@@ -163,7 +210,7 @@ export default {
                 <!-- Mobile Navigation -->
                 <nav class="flex flex-col gap-2" aria-label="Мобильная навигация">
                     <Link 
-                        v-for="item in navigationMenu" 
+                        v-for="item in allMenuItems" 
                         :key="item.title" 
                         :href="item.to"
                         @click="closeMobileMenu"
@@ -189,8 +236,7 @@ export default {
         </Sheet>
         
         <!-- Right Section -->
-        <div class="flex w-full items-center gap-2 md:ml-auto md:gap-3">
-            <div class="ml-auto flex-1 sm:flex-initial"></div>
+        <div class="flex items-center gap-2 ml-auto md:gap-3">
             
             <!-- Theme Switcher -->
             <ThemeSwitcher />

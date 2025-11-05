@@ -132,6 +132,14 @@ const addSelectedGlass = () => {
 		selectedGlassToAdd.value = '' // Reset selection
 	}
 }
+
+const totalPriceWithGhostGlass = (glassId: number) => {
+	// const regularGlassTotalprice = itemsStore.itemPrice(selectedGlass.value?.id || 0) * (itemsStore.cartItems[selectedGlass.value?.id || 0]?.quantity || 0)
+	const ghostGlassTotalprice = itemsStore.itemPrice(glassId) * (itemsStore.cartItems[glassId]?.quantity || 0)
+	
+	// return itemsStore.total_price.with_discount - regularGlassTotalprice + ghostGlassTotalprice
+	return ghostGlassTotalprice
+}
 </script>
 
 <template>
@@ -244,11 +252,14 @@ const addSelectedGlass = () => {
 							<div v-for="glass in selectedGhostGlasses" :key="glass.id" class="flex flex-col md:flex-row items-center justify-between gap-2 p-2 border rounded-lg bg-muted/30">
 								<div class="flex-1 w-full">
 									<div class="font-medium text-muted-foreground text-sm">{{ glass.name }}</div>
-									<div class="text-xs text-muted-foreground">{{ quantityFormatter(itemsStore.cartItems[glass.id || 0]?.quantity || 0) }} {{ glass.unit }}</div>
+									<div class="text-xs text-muted-foreground">
+										{{ quantityFormatter(itemsStore.cartItems[glass.id || 0]?.quantity || 0) }} {{ glass.unit }}
+									</div>
 								</div>
 								<div class="flex items-center justify-between gap-2 w-full md:w-auto">
-									<div class="text-xs text-muted-foreground">
-										{{ currencyFormatter(itemsStore.itemPrice(glass.id || 0)) }}/{{ glass.unit }}
+									<div class="text-xs text-muted-foreground text-right">
+										<div>{{ currencyFormatter(itemsStore.itemPrice(glass.id || 0)) }}/{{ glass.unit }}</div>
+										<div class="font-medium">{{ currencyFormatter(totalPriceWithGhostGlass(glass.id || 0)) }}</div>
 									</div>
 									<Button 
 										variant="outline" 

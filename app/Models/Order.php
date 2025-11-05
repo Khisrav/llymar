@@ -72,20 +72,27 @@ class Order extends Model
     
         static::updated(function ($model) {
             Log::info("Order updated", ['order_id' => $model->id, 'status' => $model->status]);
-            if ($model->status == 'expired') {
-                WarehouseRecord::where('order_id', $model->id)->delete();
-            } else {
-                $orderItems = $model->orderItems;
-                $warehouseRecords = WarehouseRecord::where('order_id', $model->id)->get()->keyBy('item_id');
-    
-                foreach ($orderItems as $orderItem) {
-                    if (isset($warehouseRecords[$orderItem->item_id])) {
-                        $warehouseRecord = $warehouseRecords[$orderItem->item_id];
-                        $warehouseRecord->quantity = $orderItem->quantity;
-                        $warehouseRecord->save();
-                    }
-                }
-            }
+            // if ($model->status == 'expired') {
+            //     WarehouseRecord::where('order_id', $model->id)->delete();
+            // } else if ($model->status == 'paid') {
+            //     $orderItems = $model->orderItems;
+            //     $warehouseRecords = WarehouseRecord::where('order_id', $model->id)->get()->keyBy('item_id');
+            //     Log::info('warehouse record updated for that order');
+            //     foreach ($orderItems as $orderItem) {
+            //         if (isset($warehouseRecords[$orderItem->item_id])) {
+            //             $warehouseRecord = $warehouseRecords[$orderItem->item_id];
+
+            //             if ($warehouseRecord->quantity >= 0) { $warehouseRecord->quantity = $orderItem->quantity * (-1); } 
+            //             else { $warehouseRecord->quantity = $orderItem->quantity; }
+            //             Log::info($warehouseRecord);
+
+            //             $warehouseRecord->save();
+            //         }
+            //     }
+            // }
+            // if ($model->status === 'paid') {
+
+            // }
             
             // Calculate commission when order status changes to 'paid' or 'completed'
             if (($model->status === 'paid' && $model->getOriginal('status') !== 'paid') ||

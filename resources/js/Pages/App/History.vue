@@ -334,7 +334,7 @@ const downloadBill = (order_id: number) => {
 										</DropdownMenuItem>
 										<DropdownMenuItem @click="downloadBill(order.id)">
 											<ReceiptRussianRubleIcon class="h-4 w-4" />
-											<span>Счет PDF</span>
+											<span>Оплатить</span>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator v-if="canDeleteOrder(order)" />
 										<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
@@ -398,7 +398,7 @@ const downloadBill = (order_id: number) => {
 												</DropdownMenuItem>
 												<DropdownMenuItem v-if="canDownloadBill(order)" @click="downloadBill(order.id)">
 													<ReceiptRussianRubleIcon class="h-4 w-4" />
-													<span>Счет PDF</span>
+													<span>Оплатить</span>
 												</DropdownMenuItem>
 												<DropdownMenuSeparator v-if="canDeleteOrder(order)" />
 												<DropdownMenuItem v-if="canDeleteOrder(order)" @click="openDeleteDialog(order.id)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
@@ -441,7 +441,8 @@ const downloadBill = (order_id: number) => {
 										</div>
 										<span v-else class="text-muted-foreground text-sm">—</span>
 									</TableCell>
-									<TableCell class="font-bold text-primary">{{ currencyFormatter(order.total_price) }}</TableCell>
+									<TableCell class="font-bold text-primary">
+										{{ currencyFormatter(order.total_price) }}</TableCell>
 									<TableCell>
 										<StatusBadge :status="order.status" />
 									</TableCell>

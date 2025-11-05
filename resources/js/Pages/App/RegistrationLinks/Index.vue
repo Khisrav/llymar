@@ -248,7 +248,7 @@ const getStatusLabel = (status: string) => {
 								</div>
 							</div>
 
-							<div class="flex items-center gap-2 text-sm">
+							<div v-if="user_role === 'Super-Admin'" class="flex items-center gap-2 text-sm">
 								<span class="text-muted-foreground">Комиссия:</span>
 								<span class="font-semibold">{{ link.reward_fee }}%</span>
 							</div>
@@ -295,7 +295,7 @@ const getStatusLabel = (status: string) => {
 								<TableRow class="bg-muted/30 hover:bg-muted/30">
 									<TableHead class="font-semibold text-sm">ID</TableHead>
 									<TableHead class="font-semibold text-sm">Создатель</TableHead>
-									<TableHead class="font-semibold text-sm">Комиссия</TableHead>
+									<TableHead v-if="user_role === 'Super-Admin'" class="font-semibold text-sm">Комиссия</TableHead>
 									<TableHead class="font-semibold text-sm">Статус</TableHead>
 									<TableHead class="font-semibold text-sm">Истекает</TableHead>
 									<TableHead class="font-semibold text-sm">Зарегистрирован</TableHead>
@@ -315,7 +315,7 @@ const getStatusLabel = (status: string) => {
 											<p class="text-xs text-muted-foreground">{{ link.creator.email }}</p>
 										</div>
 									</TableCell>
-									<TableCell class="font-semibold">{{ link.reward_fee }}%</TableCell>
+									<TableCell v-if="user_role === 'Super-Admin'" class="font-semibold">{{ link.reward_fee }}%</TableCell>
 									<TableCell>
 										<Badge :variant="getStatusBadgeVariant(link.status)">
 											{{ getStatusLabel(link.status) }}
@@ -381,7 +381,7 @@ const getStatusLabel = (status: string) => {
 				<DialogDescription>Обновите информацию о ссылке регистрации</DialogDescription>
 			</DialogHeader>
 			<div class="space-y-4">
-				<div class="space-y-2">
+				<div v-if="user_role === 'Super-Admin'" class="space-y-2">
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="editingLink.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>

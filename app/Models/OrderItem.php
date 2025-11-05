@@ -25,12 +25,13 @@ class OrderItem extends Model
         parent::boot();
     
         static::created(function ($model) {
-            WarehouseRecord::create([
-                'item_id'  => $model->item_id,
-                'order_id' => $model->order_id,
-                'warehouse_id' => 0, //should retrieve (user->company_id)->warehouse_id 
-                'quantity' => -1 * $model->quantity,
-            ]);
+            // Log::info(['OrderItem.php: warehouse record code executed: ', -1 * $model->quantity]);
+            // WarehouseRecord::create([
+            //     'item_id'  => $model->item_id,
+            //     'order_id' => $model->order_id,
+            //     'warehouse_id' => 0, //should retrieve (user->company_id)->warehouse_id 
+            //     'quantity' => -1 * $model->quantity,
+            // ]);
         });
         
         static::deleted(function ($model) {

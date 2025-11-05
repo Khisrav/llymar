@@ -98,6 +98,9 @@ class WarehouseRecordResource extends Resource
                     ->optionsLimit(10)
                     ->options(Warehouse::all()->pluck('name', 'id')->toArray()),
             ])
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->defaultPaginationPageOption(25)
             ->defaultSort('created_at', 'desc')
             ->actions([
                 // Tables\Actions\EditAction::make(),

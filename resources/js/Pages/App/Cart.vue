@@ -236,7 +236,7 @@ const checkout = () => {
 											<span>{{ selectedRALColor?.name || "Выбрать цвет" }}</span>
 										</Button>
 									</PopoverTrigger>
-									<PopoverContent>
+									<PopoverContent class="w-[300px] p-0">
 										<Command>
 											<CommandInput placeholder="Найти цвет" />
 											<CommandList>
@@ -244,7 +244,7 @@ const checkout = () => {
 													<CommandItem
 														v-for="colorName in Object.keys(RAL.classic)"
 														:key="colorName"
-														:value="RAL.classic[colorName]"
+														:value="colorName"
 														@select="
 															() => {
 																selectedRALColor = { name: colorName, HEX: RAL.classic[colorName].HEX };

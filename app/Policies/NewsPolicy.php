@@ -12,7 +12,7 @@ class NewsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_news');
+        return $user->checkPermissionTo('view-any News');
     }
 
     /**
@@ -20,7 +20,7 @@ class NewsPolicy
      */
     public function view(User $user, News $news): bool
     {
-        return $user->can('view_news');
+        return $user->checkPermissionTo('view News');
     }
 
     /**
@@ -28,7 +28,7 @@ class NewsPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_news');
+        return $user->checkPermissionTo('create News');
     }
 
     /**
@@ -36,8 +36,7 @@ class NewsPolicy
      */
     public function update(User $user, News $news): bool
     {
-        return $user->can('update_news') || 
-               ($user->can('update_own_news') && $news->author_id === $user->id);
+        return $user->checkPermissionTo('update News');
     }
 
     /**
@@ -45,8 +44,7 @@ class NewsPolicy
      */
     public function delete(User $user, News $news): bool
     {
-        return $user->can('delete_news') || 
-               ($user->can('delete_own_news') && $news->author_id === $user->id);
+        return $user->checkPermissionTo('delete News');
     }
 
     /**
@@ -54,7 +52,7 @@ class NewsPolicy
      */
     public function restore(User $user, News $news): bool
     {
-        return $user->can('restore_news');
+        return $user->checkPermissionTo('restore News');
     }
 
     /**
@@ -62,6 +60,6 @@ class NewsPolicy
      */
     public function forceDelete(User $user, News $news): bool
     {
-        return $user->can('force_delete_news');
+        return $user->checkPermissionTo('force-delete News');
     }
 } 

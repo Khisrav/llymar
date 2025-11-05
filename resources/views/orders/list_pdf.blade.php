@@ -67,7 +67,7 @@
         </tbody>
     </table>
 
-    <h2>Проемы</h2>
+    {{-- <h2>Проемы</h2> --}}
     @if($orderOpenings)
         <table class="table">
             <thead>
@@ -115,13 +115,13 @@
         </table>
     @endif
 
-    <h2>Детали</h2>
+    {{-- <h2>Детали</h2> --}}
     <table class="table">
         <thead>
             <tr>
-                <th class="nowrap">№</th>
-                <th class="nowrap">Картинка</th>
-                <th class="nowrap">Деталь</th>
+                <th class="nowrap" colspan="3"></th>
+                {{-- <th class="nowrap">Картинка</th>
+                <th class="nowrap">Деталь</th> --}}
                 <th class="nowrap">Вес</th>
                 <th class="nowrap">Кол-во</th>
                 <th class="nowrap">Цена</th>

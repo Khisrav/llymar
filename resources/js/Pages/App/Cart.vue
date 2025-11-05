@@ -132,13 +132,13 @@ const checkout = () => {
 			<div v-else class="flex flex-col md:flex-row md:space-x-8">
 				<div class="md:w-2/3">
 					<ul class="divide-y divide-gray-200 dark:divide-gray-700">
-						<li v-for="itemID in cartItemIDs" :key="itemID" class="py-6 flex items-center">
-							<CartItem v-if="itemID != -1" :item="item(itemID)" />
+						<li v-for="itemID in cartItemIDs" :key="itemID" class="py-2.5 flex items-center">
+							<CartItem v-if="itemID != -1 && item(itemID)" :item="item(itemID)!" :disabled="itemsStore.glasses.some((glass) => glass.id === itemID)" />
 						</li>
 					</ul>
 				</div>
 
-				<div class="md:w-1/3 mt-8 md:mt-0">
+				<div class="md:w-1/3 mt-8 md:mt-0 md:sticky md:top-20 md:self-start md:max-h-[calc(100vh-4rem)] md:overflow-y-auto">
 					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 space-y-4">
 						<h3 class="text-lg font-semibold">Проемы</h3>
 						<div v-for="opening in openingsStore.openings" :key="opening.type" class="">

@@ -250,30 +250,34 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 				<div class="col-span-9 md:col-span-3 space-y-4">
 					<div class="p-4 rounded-lg border">
 						<div class="flex items-center justify-between mb-4 gap-4">
-							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема</h3>
+							<h3 class="text-xl text-muted-foreground font-semibold">Параметры проема <span class="text-base font-normal">(мм)</span></h3>
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
-							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
-								<div :class="{'opacity-50': !canEditOrderSketch}">
-									<span class="font-medium">{{ key }}: </span>
-									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
+							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+								<div :class="{'opacity-50': !canEditOrderSketch}" class="text-xs flex flex-row gap-1 items-center">
+									<span class="font-medium text-muted-foreground">{{ key }}: </span>
+									<span 
+										v-if="!sketcherStore.useInputFields"
+										class="font-normal"
+									>{{ parseInt(String(value[0])) }}мм</span>
 								</div>
 								
 								<!-- Slider Mode -->
-								<Slider
-									v-if="!sketcherStore.useInputFields"
-									:disabled="!canEditOrderSketch"
-									v-model="sketcherStore.currentSketch[key]"
-									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
-									:min="sketcherStore.sketch_constraints[key]?.start || 0"
-									:max="sketcherStore.sketch_constraints[key]?.end || 100"
-									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
-									class="my-1"
-								/>
+								<div v-if="!sketcherStore.useInputFields" class="w-full">
+									<Slider
+										:disabled="!canEditOrderSketch"
+										v-model="sketcherStore.currentSketch[key]"
+										:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
+										:min="sketcherStore.sketch_constraints[key]?.start || 0"
+										:max="sketcherStore.sketch_constraints[key]?.end || 100"
+										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
+										class="my-1"
+									/>
+								</div>
 								
 								<!-- Input Mode -->
-								<div v-else class="flex items-center gap-2">
+								<div v-else class="w-full">
 									<Input
 										:disabled="!canEditOrderSketch"
 										type="number"
@@ -284,10 +288,14 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, Number(val))"
 										class="h-8 text-sm"
 									/>
-									<span class="text-xs text-muted-foreground whitespace-nowrap">
-										{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
-									</span>
 								</div>
+
+								<span 
+									v-if="sketcherStore.useInputFields"
+									class="text-xs text-muted-foreground whitespace-nowrap"
+								>
+									{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
+								</span>
 							</div>
 						</template>
 
@@ -309,34 +317,40 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 
 						<div class="flex items-center justify-between mb-4 gap-4">
-							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки</h3>
+							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки <span class="text-base font-normal">(мм)</span></h3>
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
-							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-col gap-1.5 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div
 									:class="{
 										'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,
 									}"
+									class="text-xs flex flex-row gap-1.5 items-center"
 								>
-									<span class="font-medium">{{ key }}: </span>
-									<span class="font-medium">{{ parseInt(String(value[0])) }}мм</span>
+									<span class="font-medium text-muted-foreground">{{ key }}: </span>
+									<span 
+										v-if="!sketcherStore.useInputFields"
+										class="font-normal"
+									>{{ parseInt(String(value[0])) }}мм</span>
 								</div>
 								
 								<!-- Slider Mode -->
-								<Slider
-									v-if="!sketcherStore.useInputFields"
-									v-model="sketcherStore.currentSketch[key]"
-									:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
-									:min="sketcherStore.sketch_constraints[key]?.start || 0"
-									:max="sketcherStore.sketch_constraints[key]?.end || 100"
-									:step="sketcherStore.sketch_constraints[key]?.interval || 1"
-									:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch"
-									class="my-1"
-								/>
+								<div v-if="!sketcherStore.useInputFields" class="w-full">
+									<Slider
+										v-model="sketcherStore.currentSketch[key]"
+										:default-value="[sketcherStore.sketch_constraints[key]?.default || 0]"
+										:min="sketcherStore.sketch_constraints[key]?.start || 0"
+										:max="sketcherStore.sketch_constraints[key]?.end || 100"
+										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
+										:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch"
+										class="my-1"
+									/>
+								</div>
+								
 								
 								<!-- Input Mode -->
-								<div v-else class="flex items-center gap-2">
+								<div v-else class="w-full">
 									<Input
 										type="number"
 										:min="sketcherStore.sketch_constraints[key]?.start || 0"
@@ -350,10 +364,14 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 											'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,
 										}"
 									/>
-									<span class="text-xs text-muted-foreground whitespace-nowrap">
-										{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
-									</span>
 								</div>
+
+								<span
+									v-if="sketcherStore.useInputFields"
+									class="text-xs text-muted-foreground whitespace-nowrap"
+								>
+									{{ sketcherStore.sketch_constraints[key]?.start }}-{{ sketcherStore.sketch_constraints[key]?.end }}
+								</span>
 							</div>
 						</template>
 					</div>

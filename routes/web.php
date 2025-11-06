@@ -106,7 +106,7 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/simple-list-from-calc', [OrderController::class, 'simpleListFromCalcPDF'])
     ->name('orders.simple_list_from_calc');
-Route::post('/orders/commercial-offer', [CommercialOfferController::class, 'generatePDF'])
+Route::post('/orders/commercial-offer', [CommercialOfferController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
 Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])
     ->name('orders.sketch_pdf');

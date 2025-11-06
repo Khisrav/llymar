@@ -90,6 +90,56 @@ const openFileNameDialog = () => {
 	showFileNameDialog.value = true;
 }
 
+const downloadOnlyCommercialOffer = async () => {
+    try {
+        toast.info("Подготовка коммерческого предложения...")
+        const formData = {
+            customer: commercialOfferStore.commercialOffer.customer,
+            manufacturer: commercialOfferStore.commercialOffer.manufacturer,
+            openings: openingsStore.openings,
+            additional_items: Object.values(itemsStore.additional_items).flat(),
+            glass: itemsStore.glasses.find(glass => glass.id === itemsStore.selectedGlassID) || [],
+            ghost_glasses: itemsStore.glasses.filter(glass => glass.id && itemsStore.selectedGhostGlassesID.includes(glass.id)),
+            services: itemsStore.services.filter(service => service.id && itemsStore.selectedServicesID.includes(service.id)),
+            cart_items: itemsStore.cartItems,
+            total_price: itemsStore.total_price.with_discount,
+            markup_percentage: itemsStore.markupPercentage,
+            selected_factor: selectedFactor.value,
+            file_name: fileName.value || null,
+            generate_pdf: true,
+        }
+
+        const response = await axios.post('/orders/commercial-offer', formData, {
+            responseType: 'blob',
+            headers: { 'Content-Type': 'application/json' }
+        })
+
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+
+        // Use user-entered filename or default
+        const downloadFileName = fileName.value 
+            ? `${fileName.value}.pdf`
+            : `offer_${new Date().toISOString().split('T')[0]}.pdf`;
+
+        link.href = url
+        link.setAttribute('download', downloadFileName)
+        document.body.appendChild(link)
+        link.click()
+
+        link.parentNode?.removeChild(link)
+        
+        // Close dialog and reset file name
+        showFileNameDialog.value = false;
+        fileName.value = "";
+        
+        toast.success("Коммерческое предложение успешно загружено")
+    } catch (error) {
+        console.error('Error downloading the PDF:', error)
+        toast.error("Ошибка при загрузке коммерческого предложения")
+    }
+}
+
 const saveCommercialOffer = async () => {
     try {
         toast.info("Сохранение коммерческого предложения...")
@@ -139,9 +189,9 @@ const saveCommercialOffer = async () => {
     }
 }
 
-const downloadCommercialOffer = async () => {
+const downloadAndSaveCommercialOffer = async () => {
     try {
-        toast.info("Подготовка коммерческого предложения...")
+        toast.info("Сохранение и подготовка коммерческого предложения...")
         const formData = {
             customer: commercialOfferStore.commercialOffer.customer,
             manufacturer: commercialOfferStore.commercialOffer.manufacturer,
@@ -161,15 +211,22 @@ const downloadCommercialOffer = async () => {
         const commercialOfferId = commercialOfferStore.commercialOfferId
         const isEditing = commercialOfferId !== null
 
+        // Both create and update use /app/commercial-offers endpoint
+        // The backend will save to DB and return PDF when generate_pdf is true
         const response = isEditing 
             ? await axios.put(`/app/commercial-offers/${commercialOfferId}`, formData, {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json' }
             })
-            : await axios.post('/orders/commercial-offer', formData, {
+            : await axios.post('/app/commercial-offers', formData, {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json' }
             })
+
+        // Update the commercial offer ID if it was a new one
+        if (!isEditing && response.headers['x-commercial-offer-id']) {
+            commercialOfferStore.commercialOfferId = parseInt(response.headers['x-commercial-offer-id'])
+        }
 
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
@@ -192,7 +249,7 @@ const downloadCommercialOffer = async () => {
         
         const successMessage = isEditing 
             ? "Коммерческое предложение успешно обновлено и загружено"
-            : "Коммерческое предложение успешно загружено"
+            : "Коммерческое предложение успешно сохранено и загружено"
         toast.success(successMessage)
     } catch (error) {
         console.error('Error downloading the PDF:', error)
@@ -359,20 +416,20 @@ const downloadListPDF = async () => {
                             v-model="fileName"
                             placeholder="commercial_offer_1"
                             class="flex-1"
-                            @keyup.enter="downloadCommercialOffer"
+                            @keyup.enter="downloadAndSaveCommercialOffer"
                         />
                         <span class="text-sm text-muted-foreground">.pdf</span>
                     </div>
                 </div>
             </div>
-            <DialogFooter class="grid grid-cols-2 gap-2">
-                <Button variant="outline" @click="showFileNameDialog = false">
-                    Отмена
+            <DialogFooter class="grid grid-cols-3 gap-2">
+                <Button variant="outline" @click="downloadOnlyCommercialOffer">
+                    Скачать
                 </Button>
                 <Button variant="secondary" @click="saveCommercialOffer">
                     Сохранить
                 </Button>
-                <Button @click="downloadCommercialOffer" class="col-span-2">
+                <Button @click="downloadAndSaveCommercialOffer" class="col-span-3">
                     Сохранить и скачать
                 </Button>
             </DialogFooter>

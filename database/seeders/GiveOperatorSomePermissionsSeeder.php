@@ -13,9 +13,7 @@ class GiveOperatorSomePermissionsSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        // Give operator view, view-any, create, update, delete permissions for companies, logistics companies, portfolio, news, landing page options, hero carousel
-        
+    {        
         // Define the resources and their permissions
         $resources = [
             'Company',

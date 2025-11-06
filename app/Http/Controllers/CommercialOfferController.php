@@ -31,7 +31,9 @@ class CommercialOfferController extends Controller
     }
 
     /**
-     * Store a new commercial offer in the database without generating PDF.
+     * Store a new commercial offer in the database.
+     * If 'generate_pdf' is true in the request, also download the PDF.
+     * Otherwise, just return JSON response.
      */
     public function store(Request $request)
     {
@@ -47,6 +49,7 @@ class CommercialOfferController extends Controller
         $markup_percentage = $request->get('markup_percentage', 1.0);
         $selected_factor = $request->get('selected_factor', 'pz');
         $file_name = $request->get('file_name');
+        $generate_pdf = $request->get('generate_pdf', false);
 
         // Sanitize file name if provided
         if ($file_name) {
@@ -77,11 +80,48 @@ class CommercialOfferController extends Controller
             'file_name' => $file_name,
         ]);
 
-        return response()->json([
-            'message' => 'Commercial offer saved successfully',
-            'id' => $commercialOffer->id,
-            'commercial_offer' => $commercialOffer,
-        ]);
+        // If not generating PDF, return JSON response
+        if (!$generate_pdf) {
+            return response()->json([
+                'message' => 'Commercial offer saved successfully',
+                'id' => $commercialOffer->id,
+                'commercial_offer' => $commercialOffer,
+            ]);
+        }
+
+        // Otherwise, generate and download PDF
+        $offer = [
+            'customer' => $customer,
+            'manufacturer' => $manufacturer,
+            'openings' => $openings,
+            'additional_items' => $additional_items,
+            'glass' => $glass,
+            'ghost_glasses' => $ghost_glasses,
+            'services' => $services,
+            'cart_items' => $cart_items,
+            'total_price' => $total_price,
+            'markup_percentage' => $markup_percentage,
+        ];
+
+        $user = Auth::user();
+
+        $pdf = Pdf::loadView('orders.commercial_offer_pdf', compact(
+            'offer',
+            'selected_factor',
+            'user'
+        ))->setPaper('a4', 'landscape');
+
+        // Use custom file name if set, otherwise use default
+        $downloadFileName = $commercialOffer->file_name 
+            ? $commercialOffer->file_name . '.pdf' 
+            : 'commercial_offer_' . $commercialOffer->id . '.pdf';
+
+        $response = $pdf->download($downloadFileName);
+        
+        // Add commercial offer ID to response headers so frontend can access it
+        $response->headers->set('X-Commercial-Offer-Id', $commercialOffer->id);
+        
+        return $response;
     }
 
     /**

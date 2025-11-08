@@ -28,12 +28,20 @@ class RolePermissionMatrix extends Page
     public int $currentPage = 1;
     public int $totalPages = 1;
     public int $totalPermissions = 0;
+    public string $search = '';
+    public string $filterModel = '';
+    public string $filterAction = '';
+    public array $availableModels = [];
+    public array $availableActions = [];
 
     public function mount(): void
     {
         Log::info('RolePermissionMatrix: mount() called', [
             'current_page' => $this->currentPage,
-            'per_page' => $this->perPage
+            'per_page' => $this->perPage,
+            'search' => $this->search,
+            'filter_model' => $this->filterModel,
+            'filter_action' => $this->filterAction
         ]);
 
         // Load roles and convert to array
@@ -47,8 +55,35 @@ class RolePermissionMatrix extends Page
             'role_ids' => array_column($this->roles, 'id')
         ]);
         
-        // Load all permissions and apply custom sorting
-        $allPermissions = Permission::where('guard_name', 'web')->get();
+        // Extract available models and actions from all permissions (for filter dropdowns)
+        $this->extractFiltersFromPermissions();
+        
+        // Load all permissions and apply search and filters
+        $query = Permission::where('guard_name', 'web');
+        
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('display_name', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        // Apply model filter
+        if (!empty($this->filterModel)) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '% ' . $this->filterModel)
+                  ->orWhere('name', 'like', '%-' . $this->filterModel)
+                  ->orWhere('name', 'like', '%.' . $this->filterModel)
+                  ->orWhere('name', 'like', '%::' . $this->filterModel);
+            });
+        }
+        
+        // Apply action filter
+        if (!empty($this->filterAction)) {
+            $query->where('name', 'like', $this->filterAction . '%');
+        }
+        
+        $allPermissions = $query->get();
         
         // Sort permissions with custom logic
         $sortedPermissions = $allPermissions->sort(function ($a, $b) {
@@ -140,6 +175,107 @@ class RolePermissionMatrix extends Page
 
         Log::info('RolePermissionMatrix: mount() completed', [
             'rolePermissions_loaded' => count($this->rolePermissions)
+        ]);
+    }
+
+    public function updatedSearch(): void
+    {
+        Log::info('RolePermissionMatrix: search updated', [
+            'search_term' => $this->search
+        ]);
+        
+        // Reset to first page when search changes
+        $this->currentPage = 1;
+        $this->mount();
+    }
+
+    public function updatedFilterModel(): void
+    {
+        Log::info('RolePermissionMatrix: filter model updated', [
+            'filter_model' => $this->filterModel
+        ]);
+        
+        // Reset to first page when filter changes
+        $this->currentPage = 1;
+        $this->mount();
+    }
+
+    public function updatedFilterAction(): void
+    {
+        Log::info('RolePermissionMatrix: filter action updated', [
+            'filter_action' => $this->filterAction
+        ]);
+        
+        // Reset to first page when filter changes
+        $this->currentPage = 1;
+        $this->mount();
+    }
+
+    public function clearFilters(): void
+    {
+        Log::info('RolePermissionMatrix: clearing all filters');
+        
+        $this->search = '';
+        $this->filterModel = '';
+        $this->filterAction = '';
+        $this->currentPage = 1;
+        $this->mount();
+    }
+
+    protected function extractFiltersFromPermissions(): void
+    {
+        // Get all permissions to extract unique models and actions
+        $allPermissions = Permission::where('guard_name', 'web')->get();
+        
+        $models = [];
+        $actions = [];
+        
+        foreach ($allPermissions as $permission) {
+            $name = $permission->name;
+            
+            // Extract model name (usually after the action and a space/dash/dot)
+            // Examples: "view User", "create Order", "manage-users", "access.dashboard"
+            if (preg_match('/^([a-z\-]+)[\s\.\-](.+)$/i', $name, $matches)) {
+                $action = $matches[1];
+                $model = $matches[2];
+                
+                if (!in_array($action, $actions)) {
+                    $actions[] = $action;
+                }
+                
+                if (!in_array($model, $models)) {
+                    $models[] = $model;
+                }
+            } elseif (preg_match('/^([a-z\-]+)::(.+)$/i', $name, $matches)) {
+                // Handle format like "filament::access"
+                $action = $matches[1];
+                $model = $matches[2];
+                
+                if (!in_array($action, $actions)) {
+                    $actions[] = $action;
+                }
+                
+                if (!in_array($model, $models)) {
+                    $models[] = $model;
+                }
+            } else {
+                // Single word permissions (like "access app sketcher")
+                $parts = explode(' ', $name);
+                if (count($parts) > 0 && !in_array($parts[0], $actions)) {
+                    $actions[] = $parts[0];
+                }
+            }
+        }
+        
+        sort($models);
+        sort($actions);
+        
+        $this->availableModels = $models;
+        $this->availableActions = $actions;
+        
+        Log::info('RolePermissionMatrix: Extracted filters', [
+            'models_count' => count($models),
+            'actions_count' => count($actions)
         ]);
     }
 

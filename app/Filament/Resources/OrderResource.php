@@ -10,7 +10,6 @@ use App\Models\LogisticsCompany;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\TochkaBankService;
-use Bostos\ReorderableColumns\Concerns\HasReorderableColumns;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -35,8 +34,6 @@ use Illuminate\Support\Facades\Cache;
 
 class OrderResource extends Resource
 {
-    use HasReorderableColumns;
- 
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
@@ -521,7 +518,8 @@ class OrderResource extends Resource
             ])
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25);
+            ->defaultPaginationPageOption(25)
+            ->reorderableColumns('orders');
     }
 
     protected static function getStatusColumn(bool $hasEditAccess): TextColumn|SelectColumn
@@ -684,6 +682,7 @@ class OrderResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $user = Auth::user();
+        /** @var \App\Models\User|null $user */
         if ($user && $user->hasRole(self::ROLES['SUPER_ADMIN'])) {
             return Cache::remember(
                 'orders_badge_count', 

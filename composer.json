@@ -12,6 +12,7 @@
         "amidesfahani/filament-tinyeditor": "^3.0",
         "awcodes/filament-tiptap-editor": "^3.5",
         "barryvdh/laravel-dompdf": "^3.0",
+        "bostos/reorderable-columns": "^1.1",
         "enjoping/dxfighter": "^1.1",
         "filament/filament": "^3.2",
         "firebase/php-jwt": "^6.11",

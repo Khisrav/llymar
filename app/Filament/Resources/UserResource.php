@@ -785,7 +785,8 @@ class UserResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->extremePaginationLinks();
+            ->extremePaginationLinks()
+            ->reorderableColumns('users');
     }
 
     public static function getRelations(): array

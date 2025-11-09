@@ -254,7 +254,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
-							<div v-if="!['g', 'd', 'i', 'mp'].includes(key) && !(key === 'f' && sketcherStore.currentOpening?.type !== 'center')" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+							<div v-if="!['e', 'g', 'd', 'i', 'mp'].includes(key) && !(key === 'f' && sketcherStore.currentOpening?.type !== 'center')" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div :class="{'opacity-50': !canEditOrderSketch}" class="text-xs flex flex-row gap-1 items-center">
 									<span class="font-medium text-muted-foreground">{{ key }}: </span>
 									<span 
@@ -321,7 +321,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
-							<div v-if="['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+							<div v-if="['e', 'g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div
 									:class="{
 										'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,

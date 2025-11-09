@@ -23,6 +23,11 @@ class ItemPropertiesSeeder extends Seeder
                 ],
                 [
                     'item_id' => $item->id,
+                    'name' => 'e',
+                    'value' => 35
+                ],
+                [
+                    'item_id' => $item->id,
                     'name' => 'g',
                     'value' => 0
                 ],

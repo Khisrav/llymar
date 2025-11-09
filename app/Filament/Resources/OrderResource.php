@@ -10,6 +10,7 @@ use App\Models\LogisticsCompany;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\TochkaBankService;
+use Bostos\ReorderableColumns\Concerns\HasReorderableColumns;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -34,6 +35,8 @@ use Illuminate\Support\Facades\Cache;
 
 class OrderResource extends Resource
 {
+    use HasReorderableColumns;
+ 
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
@@ -329,8 +332,8 @@ class OrderResource extends Resource
                     ->html()
                     ->wrap()
                     ->lineClamp(2)
-                    ->sortable(['user.name'])
-                    ->searchable(['user.name', 'user.phone'])
+                    ->sortable()
+                    ->searchable()
                     ->icon('heroicon-o-user')
                     // ->copyable()
                     // ->copyMessage('Контакты менеджера скопированы!')

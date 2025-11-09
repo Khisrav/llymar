@@ -19,6 +19,7 @@ import { Toaster } from "../../Components/ui/sonner"
 // @ts-ignore - RAL library doesn't have proper types
 import { RAL } from 'ral-colors/index.js'
 
+//can_access_sketcher check if it actually exists and is boolean
 const { can_access_sketcher, user_role } = usePage().props as any
 
 const page = usePage() as any

@@ -23,7 +23,7 @@ class ChildUserController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user || !$user->hasAnyRole(['Super-Admin', 'Operator', 'ROP', 'Dealer'])) {
+        if (!$user || !$user->can('access app users')) {
             abort(403, 'Unauthorized');
         }
 

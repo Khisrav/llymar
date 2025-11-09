@@ -124,7 +124,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							</div>
 						</div>
 
-						<RadioGroup :model-value="String(sketcherStore.selectedOpeningID)" @update:model-value="(value) => sketcherStore.selectedOpeningID = Number(value)" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
+						<RadioGroup :disabled="order.status === 'created'" :model-value="String(sketcherStore.selectedOpeningID)" @update:model-value="(value) => sketcherStore.selectedOpeningID = Number(value)" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
 							<div
 								v-for="opening in sketcherStore.openings"
 								:key="opening.id"
@@ -218,7 +218,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 					<Separator class="my-4" />
 
-					<div class="text-center">
+					<div v-if="order.status !== 'created'" class="text-center" id="sketch-container">
 						<div class="text-red-400">
 							<span>Вид изнутри</span>
 						</div>
@@ -242,7 +242,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 					</div>
 					
-					<div class="flex items-center justify-center mt-4">
+					<div v-if="order.status !== 'created'" class="flex items-center justify-center mt-4">
 						<img :src="`/assets/sketch-reference/${sketcherStore.currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
 					</div>
 				</div>
@@ -254,7 +254,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 
 						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
-							<div v-if="!['g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
+							<div v-if="!['g', 'd', 'i', 'mp'].includes(key) && !(key === 'f' && sketcherStore.currentOpening?.type !== 'center')" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div :class="{'opacity-50': !canEditOrderSketch}" class="text-xs flex flex-row gap-1 items-center">
 									<span class="font-medium text-muted-foreground">{{ key }}: </span>
 									<span 

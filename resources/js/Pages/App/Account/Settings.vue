@@ -292,7 +292,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
 								placeholder="Введите ваше полное имя"
 							/>
-							<p class="text-xs text-muted-foreground">Используется для персонализации уведомлений и документов</p>
 						</div>
 
 						<div class="space-y-2">
@@ -307,7 +306,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
 								placeholder="Введите ваш адрес"
 							/>
-							<p class="text-xs text-muted-foreground">Необходим для доставки товаров и документов</p>
 						</div>
 					</div>
 
@@ -325,7 +323,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="example@domain.com"
 							/>
-							<p class="text-xs text-muted-foreground">Для важных уведомлений и подтверждений</p>
 						</div>
 
 						<div class="space-y-2">
@@ -342,7 +339,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="+7 (___) ___ __-__"
 							/>
-							<p class="text-xs text-muted-foreground">Для быстрой связи по срочным вопросам</p>
 						</div>
 
 						<div class="space-y-2">
@@ -357,7 +353,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="@username"
 							/>
-							<p class="text-xs text-muted-foreground">Для быстрой связи в мессенджере</p>
 						</div>
 					</div>
 
@@ -373,7 +368,6 @@ const hasFileSelected = computed(() => {
 							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 							placeholder="Название вашей организации"
 						/>
-						<p class="text-xs text-muted-foreground">Используется для правильного оформления документов и счетов</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -404,7 +398,6 @@ const hasFileSelected = computed(() => {
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="Введите ИНН"
 							/>
-							<p class="text-xs text-muted-foreground">Необходим для налоговых документов</p>
 						</div>
 
 						<!-- Hidden fields for now -->
@@ -503,7 +496,6 @@ const hasFileSelected = computed(() => {
 							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 							placeholder="Юридический адрес организации"
 						/>
-						<p class="text-xs text-muted-foreground">Официальный адрес регистрации для документов и счетов</p>
 					</div>
 				</CardContent>
 			</Card>

@@ -25,6 +25,7 @@ use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Vite;
 use App\Filament\Widgets\OrdersStatisticsWidget;
 use App\Filament\Widgets\UsersByRolesWidget;
+use Bostos\ReorderableColumns\ReorderableColumnsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -95,6 +96,8 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->plugins([
+                ReorderableColumnsPlugin::make()
+                    ->persistToDatabase()
             ])
             ->spa();
     }

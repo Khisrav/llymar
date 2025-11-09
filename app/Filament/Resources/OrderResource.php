@@ -329,8 +329,8 @@ class OrderResource extends Resource
                     ->html()
                     ->wrap()
                     ->lineClamp(2)
-                    ->sortable(['user.name'])
-                    ->searchable(['user.name', 'user.phone'])
+                    ->sortable()
+                    ->searchable()
                     ->icon('heroicon-o-user')
                     // ->copyable()
                     // ->copyMessage('Контакты менеджера скопированы!')
@@ -518,7 +518,8 @@ class OrderResource extends Resource
             ])
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25);
+            ->defaultPaginationPageOption(25)
+            ->reorderableColumns('orders');
     }
 
     protected static function getStatusColumn(bool $hasEditAccess): TextColumn|SelectColumn
@@ -681,6 +682,7 @@ class OrderResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $user = Auth::user();
+        /** @var \App\Models\User|null $user */
         if ($user && $user->hasRole(self::ROLES['SUPER_ADMIN'])) {
             return Cache::remember(
                 'orders_badge_count', 

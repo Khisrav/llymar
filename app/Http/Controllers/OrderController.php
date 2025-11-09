@@ -189,6 +189,7 @@ class OrderController extends Controller
             'customer_address' => 'nullable|string|max:1000',
             'city' => 'nullable|string|max:255',
             'comment' => 'nullable|string|max:1000',
+            'ral_code' => 'nullable|string|max:255',
         ]);
 
         $order->update($validated);

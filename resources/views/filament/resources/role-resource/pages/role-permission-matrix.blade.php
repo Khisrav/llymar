@@ -1,23 +1,108 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        <!-- Info Card -->
-        {{-- <div class="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
-            <div class="flex items-start gap-3">
-                <x-filament::icon
-                    icon="heroicon-o-information-circle"
-                    class="h-5 w-5 text-primary-600 dark:text-primary-400 mt-0.5"
-                />
-                <div class="flex-1">
-                    <h3 class="font-semibold text-sm text-primary-900 dark:text-primary-100">
-                        Матрица управления разрешениями
-                    </h3>
-                    <p class="text-sm text-primary-700 dark:text-primary-300 mt-1">
-                        Используйте таблицу ниже для быстрого управления разрешениями ролей. 
-                        Нажмите на чекбокс, чтобы предоставить или отозвать разрешение для роли.
-                    </p>
+        <!-- Search and Filters Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Search Input -->
+                <div class="md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Поиск
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            wire:model.live.debounce.300ms="search"
+                            placeholder="Поиск разрешений..."
+                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                   bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 
+                                   placeholder-gray-500 dark:placeholder-gray-400
+                                   focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                                   dark:focus:ring-primary-600 dark:focus:border-primary-600
+                                   transition-colors"
+                        />
+                    </div>
+                </div>
+
+                <!-- Model Filter -->
+                <div class="md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Модель
+                    </label>
+                    <select 
+                        wire:model.live="filterModel"
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 
+                               focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                               dark:focus:ring-primary-600 dark:focus:border-primary-600
+                               transition-colors"
+                    >
+                        <option value="">Все модели</option>
+                        @foreach($availableModels as $model)
+                            <option value="{{ $model }}">{{ ucfirst($model) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Action Filter -->
+                <div class="md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Действие
+                    </label>
+                    <select 
+                        wire:model.live="filterAction"
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 
+                               focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                               dark:focus:ring-primary-600 dark:focus:border-primary-600
+                               transition-colors"
+                    >
+                        <option value="">Все действия</option>
+                        @foreach($availableActions as $action)
+                            <option value="{{ $action }}">{{ ucfirst($action) }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
-        </div> --}}
+
+            <!-- Active Filters Summary and Clear Button -->
+            @if($search || $filterModel || $filterAction)
+                <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Активные фильтры:</span>
+                        @if($search)
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                                Поиск: "{{ $search }}"
+                            </span>
+                        @endif
+                        @if($filterModel)
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                                Модель: {{ ucfirst($filterModel) }}
+                            </span>
+                        @endif
+                        @if($filterAction)
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                                Действие: {{ ucfirst($filterAction) }}
+                            </span>
+                        @endif
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            (Найдено: <span class="font-semibold">{{ $totalPermissions }}</span>)
+                        </span>
+                    </div>
+                    <button 
+                        wire:click="clearFilters"
+                        type="button"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg 
+                               text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 
+                               hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Сбросить фильтры
+                    </button>
+                </div>
+            @endif
+        </div>
 
         <!-- Matrix Table -->
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -29,17 +114,7 @@
                         </th>
                         @foreach($roles as $role)
                             <th class="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700 last:border-r-0 min-w-[150px]">
-                                <div class="flex flex-col items-center gap-2">
-                                    <span class="block">{{ $role['display_name'] }}</span>
-                                    <button 
-                                        wire:click="toggleAllPermissionsForRole({{ $role['id'] }})"
-                                        type="button"
-                                        class="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-                                        title="Включить/выключить все разрешения для этой роли"
-                                    >
-                                        Все вкл/выкл
-                                    </button>
-                                </div>
+                                <span class="block">{{ $role['display_name'] }}</span>
                             </th>
                         @endforeach
                     </tr>
@@ -57,19 +132,9 @@
                         @foreach($permissions as $permission)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="sticky left-0 z-10 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 px-4 py-3 text-gray-900 dark:text-gray-100 font-medium border-r border-gray-200 dark:border-gray-700">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="flex flex-col">
-                                            <span class="text-sm">{{ $permission['display_name'] }}</span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $permission['name'] }}</span>
-                                        </div>
-                                        <button 
-                                            wire:click="toggleAllRolesForPermission({{ $permission['id'] }})"
-                                            type="button"
-                                            class="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium whitespace-nowrap"
-                                            title="Предоставить/отозвать это разрешение для всех ролей"
-                                        >
-                                            Все
-                                        </button>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm">{{ $permission['display_name'] }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $permission['name'] }}</span>
                                     </div>
                                 </td>
                                 @foreach($roles as $role)
@@ -216,11 +281,15 @@
                 </li>
                 <li class="flex items-start gap-2">
                     <span class="text-primary-600 dark:text-primary-400">•</span>
-                    <span>Используйте кнопку "Все вкл/выкл" в заголовке столбца, чтобы включить/выключить все разрешения для роли</span>
+                    <span>Используйте поиск и фильтры, чтобы быстро найти нужные разрешения</span>
                 </li>
                 <li class="flex items-start gap-2">
                     <span class="text-primary-600 dark:text-primary-400">•</span>
-                    <span>Используйте кнопку "Все" рядом с разрешением, чтобы предоставить/отозвать его для всех ролей</span>
+                    <span>Фильтр "Модель" показывает разрешения для конкретной сущности (User, Order, Item и т.д.)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-primary-600 dark:text-primary-400">•</span>
+                    <span>Фильтр "Действие" показывает разрешения с конкретным действием (view, create, update, delete и т.д.)</span>
                 </li>
             </ul>
         </div>

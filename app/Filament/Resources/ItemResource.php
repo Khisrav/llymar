@@ -234,7 +234,8 @@ class ItemResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->reorderableColumns('items');
     }
 
     public static function getRelations(): array

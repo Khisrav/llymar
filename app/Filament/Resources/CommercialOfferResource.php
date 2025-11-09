@@ -431,7 +431,8 @@ class CommercialOfferResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->striped()
-            ->paginated([25, 50, 100]);
+            ->paginated([25, 50, 100])
+            ->reorderableColumns('commercial-offers');
     }
 
     public static function getRelations(): array

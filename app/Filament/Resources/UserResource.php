@@ -270,6 +270,7 @@ class UserResource extends Resource
                             ->numeric()
                             ->minValue(0)
                             ->maxValue(100)
+                            ->default(0)
                             ->step(0.01)
                             ->required()
                             ->helperText('Комиссионный процент от 0 до 100'),
@@ -278,7 +279,7 @@ class UserResource extends Resource
                             ->label('Цена по умолчанию')
                             ->native(false)
                             ->required()
-                            ->default('pz')
+                            ->default('p3')
                             ->visible(static::isSuperAdmin())
                             ->helperText('Применяется для расчетов')
                             ->options([
@@ -286,7 +287,7 @@ class UserResource extends Resource
                                 'p1' => 'Р1',
                                 'p2' => 'Р2',
                                 'p3' => 'Р3',
-                                'pr' => 'РЦ',
+                                'p4' => 'РЦ',
                             ])
                             ->columnSpan(static::isSuperAdmin() ? 1 : 0),
 
@@ -784,7 +785,8 @@ class UserResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->extremePaginationLinks();
+            ->extremePaginationLinks()
+            ->reorderableColumns('users');
     }
 
     public static function getRelations(): array

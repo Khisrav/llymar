@@ -388,7 +388,7 @@ const downloadListPDF = async () => {
                 
                 <Link href="/app/cart" v-if="can_access_app_cart">
                     <Button class="hover:bg-primary/90 px-3" size="sm">
-                        <span class="text-base">Заказать</span>
+                        <!-- <span class="text-base">Заказать</span> -->
                         <ShoppingCartIcon class="size-4 ml-0" />
                     </Button>
                 </Link>

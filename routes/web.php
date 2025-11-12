@@ -141,7 +141,7 @@ Route::post('/register/{token}', [App\Http\Controllers\RegistrationLinkControlle
 /*
  *  PRIVATE ROUTES
  */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::get('/app', function () {
         return Inertia::render('App/Index');
     })->name('app.home');

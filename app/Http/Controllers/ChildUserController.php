@@ -103,8 +103,12 @@ class ChildUserController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate a random password
-            $plainPassword = bin2hex(random_bytes(8));
+            // Generate an 8-character random password with letters and numbers
+            $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            $plainPassword = '';
+            for ($i = 0; $i < 8; $i++) {
+                $plainPassword .= $characters[random_int(0, strlen($characters) - 1)];
+            }
 
             $newUser = User::create([
                 'name' => $validated['name'],
@@ -113,6 +117,7 @@ class ChildUserController extends Controller
                 'address' => $validated['address'] ?? null,
                 'password' => Hash::make($plainPassword),
                 'parent_id' => $user->id,
+                'profile_completed' => false,
             ]);
 
             // Assign the determined role
@@ -171,15 +176,6 @@ class ChildUserController extends Controller
             'company' => ['required', 'string', 'max:255'],
             'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
             // 'can_access_dxf' => ['boolean'],
-            
-            // Requisites (optional)
-            'inn' => ['nullable', 'string', 'max:12'],
-            'kpp' => ['nullable', 'string', 'max:9'],
-            'current_account' => ['nullable', 'string', 'max:20'],
-            'correspondent_account' => ['nullable', 'string', 'max:20'],
-            'bik' => ['nullable', 'string', 'max:9'],
-            'bank' => ['nullable', 'string', 'max:255'],
-            'legal_address' => ['nullable', 'string', 'max:500'],
         ]);
 
         try {
@@ -193,15 +189,6 @@ class ChildUserController extends Controller
                 'address' => $validated['address'],
                 'company' => $validated['company'],
                 'reward_fee' => $validated['reward_fee'],
-                
-                // Requisites
-                'inn' => $validated['inn'] ?? null,
-                'kpp' => $validated['kpp'] ?? null,
-                'current_account' => $validated['current_account'] ?? null,
-                'correspondent_account' => $validated['correspondent_account'] ?? null,
-                'bik' => $validated['bik'] ?? null,
-                'bank' => $validated['bank'] ?? null,
-                'legal_address' => $validated['legal_address'] ?? null,
             ]);
 
             // Update DXF access

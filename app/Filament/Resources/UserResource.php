@@ -253,15 +253,15 @@ class UserResource extends Resource
                 Section::make('Бизнес информация')
                     ->description('Данные о компании и комиссиях')
                     ->icon('heroicon-o-building-office')
-                    ->columns(3)
+                    ->columns(12)
                     ->collapsible()
                     ->schema([
                         Forms\Components\TextInput::make('company')
                             ->label('Контрагент')
                             ->placeholder('Название компании')
                             ->required()
-                            ->maxLength(255)
-                            ->columnSpan(2),
+                            ->columnSpan(4)
+                            ->maxLength(255),
 
                         Forms\Components\TextInput::make('reward_fee')
                             ->label('Комиссия')
@@ -271,9 +271,10 @@ class UserResource extends Resource
                             ->minValue(0)
                             ->maxValue(100)
                             ->default(0)
+                            ->columnSpan(2)
                             ->step(0.01)
-                            ->required()
-                            ->helperText('Комиссионный процент от 0 до 100'),
+                            ->required(),
+                            // ->helperText(''),
 
                         Forms\Components\Select::make('default_factor')
                             ->label('Цена по умолчанию')
@@ -281,7 +282,7 @@ class UserResource extends Resource
                             ->required()
                             ->default('p3')
                             ->visible(static::isSuperAdmin())
-                            ->helperText('Применяется для расчетов')
+                            // ->helperText('Применяется для расчетов')
                             ->options([
                                 'pz' => 'ЗЦ',
                                 'p1' => 'Р1',
@@ -289,7 +290,7 @@ class UserResource extends Resource
                                 'p3' => 'Р3',
                                 'p4' => 'РЦ',
                             ])
-                            ->columnSpan(static::isSuperAdmin() ? 1 : 0),
+                            ->columnSpan(static::isSuperAdmin() ? 2 : 0),
 
                         Forms\Components\FileUpload::make('logo')
                             ->label('Логотип компании')
@@ -298,16 +299,16 @@ class UserResource extends Resource
                             ->directory('logos')
                             ->visibility('public')
                             ->maxSize(2048) // 2MB
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
                             ->imageEditor()
+                            ->columnSpan(4)
                             ->imageEditorAspectRatios([
                                 null,
                                 '16:9',
                                 '4:3',
                                 '1:1',
                             ])
-                            ->helperText('Используется в коммерческих предложениях. Форматы: JPG, PNG, WebP. Максимум 2 МБ.')
-                            ->columnSpan(3),
+                            ->helperText('Форматы: JPG, PNG, WebP, SVG. Максимум 2 МБ.'),
                     ]),
 
                 Section::make('Безопасность и доступ')
@@ -394,7 +395,7 @@ class UserResource extends Resource
 
                                 return [];
                             })
-                            ->helperText('Определяет права доступа пользователя')
+                            // ->helperText('Определяет права доступа пользователя')
                             ->searchable(),
                         
                         Forms\Components\Toggle::make('can_access_sketcher')
@@ -491,60 +492,6 @@ class UserResource extends Resource
                     //         }),
 
                     ]),
-
-                Section::make('Реквизиты')
-                    ->description('Банковские и юридические данные')
-                    ->icon('heroicon-o-banknotes')
-                    ->columns(2)
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        Grid::make(4)
-                            ->schema([
-                                Forms\Components\TextInput::make('inn')
-                                    ->label('ИНН')
-                                    ->placeholder('0000000000')
-                                    ->maxLength(12)
-                                    ->columnSpan(1),
-
-                                Forms\Components\TextInput::make('kpp')
-                                    ->label('КПП')
-                                    ->placeholder('000000000')
-                                    ->maxLength(9)
-                                    ->columnSpan(1),
-
-                                Forms\Components\TextInput::make('current_account')
-                                    ->label('Расчетный счет')
-                                    ->placeholder('00000000000000000000')
-                                    ->maxLength(20)
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('correspondent_account')
-                                    ->label('Корреспондентский счет')
-                                    ->placeholder('00000000000000000000')
-                                    ->maxLength(20)
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('bik')
-                                    ->label('БИК')
-                                    ->placeholder('000000000')
-                                    ->maxLength(9)
-                                    ->columnSpan(1),
-
-                                Forms\Components\TextInput::make('bank')
-                                    ->label('Банк')
-                                    ->placeholder('Название банка')
-                                    ->maxLength(255)
-                                    ->columnSpan(3),
-
-                                Forms\Components\Textarea::make('legal_address')
-                                    ->label('Юридический адрес')
-                                    ->placeholder('Полный юридический адрес')
-                                    ->maxLength(500)
-                                    ->rows(2)
-                                    ->columnSpan(4),
-                            ])
-                    ])
             ]);
     }
 

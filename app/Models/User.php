@@ -36,19 +36,13 @@ class User extends Authenticatable implements FilamentUser
         'phone',
         'address',
         'role',
-        'inn',
-        'kpp',
-        'current_account',
-        'correspondent_account',
-        'bik',
-        'bank',
-        'legal_address',
         'telegram',
         'parent_id',
         'reward_fee',
         'country',
         'region',
         'logo',
+        'profile_completed',
     ];
 
     /**
@@ -71,6 +65,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'profile_completed' => 'boolean',
         ];
     }
     
@@ -301,4 +296,14 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Get commission records received by this user.
      */
+    
+    /**
+     * Relationship: User has many Companies (of type customer).
+     *
+     * @return HasMany
+     */
+    public function companies(): HasMany
+    {
+        return $this->hasMany(Company::class);
+    }
 }

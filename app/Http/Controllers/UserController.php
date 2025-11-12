@@ -32,19 +32,20 @@ class UserController extends Controller
             'phone' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
             'telegram' => ['nullable', 'string', 'max:255'],
-            'inn' => ['nullable', 'string', 'max:255'],
-            'kpp' => ['nullable', 'string', 'max:255'],
-            'bank' => ['nullable', 'string', 'max:255'],
-            'legal_address' => ['nullable', 'string', 'max:255'],
-            'current_account' => ['nullable', 'string', 'max:255'],
-            'correspondent_account' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = Auth::user();
+        $wasProfileIncomplete = !$user->profile_completed;
 
-        $user->update($validated);
+        // Update user data and mark profile as completed
+        $user->update(array_merge($validated, ['profile_completed' => true]));
 
-        return redirect()->back()->with('success', 'Profile updated successfully.');
+        // If this was first time completing profile, redirect to app home
+        if ($wasProfileIncomplete) {
+            return redirect('/app')->with('success', 'Профиль успешно заполнен! Добро пожаловать.');
+        }
+
+        return redirect()->back()->with('success', 'Настройки успешно сохранены.');
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Filament\Resources\CompanyResource\RelationManagers\CompanyBillsRelationManager;
 use App\Models\Company;
+use App\Models\User;
 use App\Models\Warehouse;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -48,7 +49,16 @@ class CompanyResource extends Resource
                             ->default('performer')
                             ->native(false)
                             ->selectablePlaceholder(false)
-                            ->required(),
+                            ->required()
+                            ->live(),
+                        Select::make('user_id')
+                            ->label('Пользователь')
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->helperText('Необязательное поле. Привязка компании к пользователю')
+                            ->visible(fn (Forms\Get $get) => $get('type') === 'customer'),
                         TextInput::make('short_name')
                             ->label('Короткое название')
                             ->required(),
@@ -104,8 +114,8 @@ class CompanyResource extends Resource
                             ->url(),
                         
                         TextInput::make('inn')
-                            ->label('ИНН'),
-                            // ->required(),
+                            ->label('ИНН')
+                            ->required(),
                         TextInput::make('kpp')
                             ->label('КПП'),
                         TextInput::make('ogrn')
@@ -159,6 +169,12 @@ class CompanyResource extends Resource
                     // ->sortable()
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('user.name')
+                    ->label('Пользователь')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder('Не привязан'),
                 TextColumn::make('full_name')
                     ->label('Полное название')
                     ->searchable()

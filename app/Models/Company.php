@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
@@ -25,15 +26,26 @@ class Company extends Model
         'type',
         'warehouse_id',
         'contact_person',
+        'user_id',
     ];
     
     /**
-     * Relationship: Order has many Order Items.
+     * Relationship: Company has many Company Bills.
      *
      * @return HasMany
      */
     public function companyBills(): HasMany
     {
         return $this->hasMany(CompanyBill::class);
+    }
+    
+    /**
+     * Relationship: Company belongs to a User.
+     *
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

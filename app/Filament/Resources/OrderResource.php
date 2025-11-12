@@ -173,7 +173,7 @@ class OrderResource extends Resource
                         Grid::make(4)
                             ->schema([
                                 TextInput::make('user_id')
-                                    ->label('На чье имя создан заказ')
+                                    ->label('На кого оформлен')
                                     ->disabled()
                                     ->formatStateUsing(function (string $state) {
                                         $user = User::find($state);
@@ -182,7 +182,7 @@ class OrderResource extends Resource
                                     ->columnSpan(1),
                                 
                                 TextInput::make('creator_id')
-                                    ->label('Кто создал заказ')
+                                    ->label('Оформил')
                                     ->disabled()
                                     ->formatStateUsing(function (Model $record) {
                                         if ($record->creator_id === null) {
@@ -316,7 +316,7 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false),
                     
                 TextColumn::make('user.name')
-                    ->label('Менеджер')
+                    ->label('Оформил')
                     ->formatStateUsing(function ($record) {
                         $name = $record->user?->name ?? 'Не указан';
                         $phone = $record->user?->phone ?? '';
@@ -503,7 +503,8 @@ class OrderResource extends Resource
                 ->icon('heroicon-o-ellipsis-vertical')
                 ->size('sm')
                 ->color('gray')
-                ->button()
+                // ->label('')
+                // ->button()
             ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

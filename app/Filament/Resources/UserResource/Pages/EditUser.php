@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Widgets\ChildUsersByRolesWidget;
 use App\Filament\Resources\UserResource\Widgets\CommissionCreditsOverviewByUser;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -38,6 +39,7 @@ class EditUser extends EditRecord
     protected function getHeaderWidgets(): array
     {
         return [
+            ChildUsersByRolesWidget::make(['record' => $this->record]),
             CommissionCreditsOverviewByUser::make(['record' => $this->record]),
         ];
     }

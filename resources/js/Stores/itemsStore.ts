@@ -526,7 +526,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 price = (item as any).p3 ?? 1.0
                 break
             case 'p4':
-            case 'pr':
                 price = (item as any).pr ?? 1.0
                 break
             case 'pz':

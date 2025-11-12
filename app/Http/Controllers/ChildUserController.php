@@ -52,6 +52,7 @@ class ChildUserController extends Controller
         return Inertia::render('App/Users/Index', [
             'childUsers' => $childUsers,
             'canManageUsers' => true,
+            'userRole' => $user->roles->first()?->name ?? '',
         ]);
     }
 
@@ -62,80 +63,63 @@ class ChildUserController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user || !$user->hasAnyRole(['Super-Admin', 'Operator', 'ROP', 'Dealer'])) {
+        if (!$user || !$user->hasAnyRole(['Super-Admin', 'Operator', 'ROP', 'Dealer', 'Dealer Ch', 'Dealer R'])) {
             abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
+        // Determine which role to assign based on parent's role
+        $parentRole = $user->roles->first()?->name;
+        $targetRole = null;
+        
+        // Role assignment logic
+        if ($parentRole === 'Dealer' || $parentRole === 'Dealer Ch') {
+            $targetRole = 'Manager';
+        } elseif ($parentRole === 'ROP' || $parentRole === 'Operator') {
+            $targetRole = 'Dealer';
+        } elseif ($parentRole === 'Dealer R' || $parentRole === 'Super-Admin') {
+            // These roles can choose, so get from request
+            $targetRole = $request->input('role');
+            if (!in_array($targetRole, ['Dealer', 'Manager'])) {
+                return redirect()->back()->withErrors(['error' => 'Недопустимая роль']);
+            }
+        } else {
+            abort(403, 'Unauthorized to create users');
+        }
+
+        // Base validation rules
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['required', 'string', 'max:255', 'unique:users'],
-            'telegram' => ['nullable', 'string', 'max:255'],
-            'country' => ['required', 'string', 'max:255'],
-            'region' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:500'],
-            'company' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-            'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
-            // 'can_access_dxf' => ['boolean'],
-            
-            // Requisites (optional)
-            'inn' => ['nullable', 'string', 'max:12'],
-            'kpp' => ['nullable', 'string', 'max:9'],
-            'current_account' => ['nullable', 'string', 'max:20'],
-            'correspondent_account' => ['nullable', 'string', 'max:20'],
-            'bik' => ['nullable', 'string', 'max:9'],
-            'bank' => ['nullable', 'string', 'max:255'],
-            'legal_address' => ['nullable', 'string', 'max:500'],
-        ]);
+        ];
+
+        // Add address validation for Dealers
+        if ($targetRole === 'Dealer') {
+            $rules['address'] = ['required', 'string', 'max:500'];
+        }
+
+        $validated = $request->validate($rules);
 
         try {
             DB::beginTransaction();
 
-            // Store the plain password before hashing
-            $plainPassword = $validated['password'];
+            // Generate a random password
+            $plainPassword = bin2hex(random_bytes(8));
 
             $newUser = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
-                'telegram' => $validated['telegram'] ?? null,
-                'country' => $validated['country'],
-                'region' => $validated['region'],
-                'address' => $validated['address'],
-                'company' => $validated['company'],
-                'password' => Hash::make($validated['password']),
+                'address' => $validated['address'] ?? null,
+                'password' => Hash::make($plainPassword),
                 'parent_id' => $user->id,
-                'reward_fee' => $validated['reward_fee'],
-                'default_factor' => 'pz',
-                
-                // Requisites
-                'inn' => $validated['inn'] ?? null,
-                'kpp' => $validated['kpp'] ?? null,
-                'current_account' => $validated['current_account'] ?? null,
-                'correspondent_account' => $validated['correspondent_account'] ?? null,
-                'bik' => $validated['bik'] ?? null,
-                'bank' => $validated['bank'] ?? null,
-                'legal_address' => $validated['legal_address'] ?? null,
             ]);
 
-            // Assign Manager or Dealer role based on parent's role
-            if ($user->hasRole('Dealer')) {
-                $managerRole = Role::where('name', 'Manager')->first();
-                if ($managerRole) {
-                    $newUser->assignRole($managerRole);
-                }
-            } else {
-                $dealerRole = Role::where('name', 'Dealer')->first();
-                if ($dealerRole) {
-                    $newUser->assignRole($dealerRole);
-                }
+            // Assign the determined role
+            $role = Role::where('name', $targetRole)->first();
+            if ($role) {
+                $newUser->assignRole($role);
             }
-
-            // Set DXF access if enabled
-            // if ($validated['can_access_dxf'] ?? false) {
-            //     $newUser->givePermissionTo('access dxf');
-            // }
 
             // Send credentials email to the new user
             try {

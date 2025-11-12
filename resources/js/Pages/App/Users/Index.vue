@@ -48,7 +48,7 @@ import { PencilIcon, TrashIcon, UserIcon, PhoneIcon, BuildingIcon, MapPinIcon, E
 const props = defineProps<{
 	childUsers: Array<any>;
 	canManageUsers: boolean;
-	user_role: string;
+	userRole: string;
 }>();
 
 const showCreateUserDialog = ref(false);
@@ -63,21 +63,26 @@ const newUser = ref({
 	name: "",
 	email: "",
 	phone: "",
-	telegram: "",
-	country: "",
-	region: "",
 	address: "",
-	company: "",
-	password: "",
-	reward_fee: 0,
-	// can_access_dxf: false,
-	inn: "",
-	kpp: "",
-	current_account: "",
-	correspondent_account: "",
-	bik: "",
-	bank: "",
-	legal_address: "",
+	role: "", // 'Dealer' or 'Manager'
+});
+
+// Determine what roles the current user can create
+const canCreateRole = computed(() => {
+	const role = props.userRole;
+	if (role === 'Dealer' || role === 'Dealer Ch') {
+		return { canCreate: ['Manager'], showSelect: false, defaultRole: 'Manager' };
+	} else if (role === 'ROP' || role === 'Operator') {
+		return { canCreate: ['Dealer'], showSelect: false, defaultRole: 'Dealer' };
+	} else if (role === 'Dealer R' || role === 'Super-Admin') {
+		return { canCreate: ['Dealer', 'Manager'], showSelect: true, defaultRole: '' };
+	}
+	return { canCreate: [], showSelect: false, defaultRole: '' };
+});
+
+// Check if address field should be shown
+const shouldShowAddress = computed(() => {
+	return newUser.value.role === 'Dealer';
 });
 
 const countries = {
@@ -88,13 +93,15 @@ const countries = {
 	Россия: ["Республика Адыгея", "Республика Башкортостан", "Республика Бурятия", "Республика Алтай", "Республика Дагестан", "Республика Ингушетия", "Кабардино-Балкарская Республика", "Республика Калмыкия", "Карачаево-Черкесская Республика", "Республика Карелия", "Республика Крым", "Республика Коми", "Республика Марий Эл", "Республика Мордовия", "Республика Саха (Якутия)", "Республика Северная Осетия-Алания", "Республика Татарстан", "Республика Тыва", "Удмуртская Республика", "Республика Хакасия", "Чеченская Республика", "Чувашская Республика", "Алтайский край", "Забайкальский край", "Камчатский край", "Краснодарский край", "Красноярский край", "Пермский край", "Приморский край", "Ставропольский край", "Хабаровский край", "Амурская область", "Архангельская область", "Астраханская область", "Белгородская область", "Брянская область", "Владимирская область", "Волгоградская область", "Вологодская область", "Воронежская область", "Ивановская область", "Иркутская область", "Калининградская область", "Калужская область", "Кемеровская область", "Кировская область", "Костромская область", "Курганская область", "Курская область", "Ленинградская область", "Липецкая область", "Магаданская область", "Московская область", "Мурманская область", "Нижегородская область", "Новгородская область", "Новосибирская область", "Омская область", "Оренбургская область", "Орловская область", "Пензенская область", "Псковская область", "Ростовская область", "Рязанская область", "Самарская область", "Саратовская область", "Сахалинская область", "Свердловская область", "Смоленская область", "Тамбовская область", "Тверская область", "Томская область", "Тульская область", "Тюменская область", "Ульяновская область", "Челябинская область", "Ярославская область", "Москва", "Санкт-Петербург", "Севастополь", "Еврейская автономная область", "Ненецкий автономный округ", "Ханты-Мансийский автономный округ", "Чукотский автономный округ", "Ямало-Ненецкий автономный округ"],
 };
 
-const regions = computed(() => {
-	return newUser.value.country ? countries[newUser.value.country as keyof typeof countries] || [] : [];
-});
-
 const editRegions = computed(() => {
 	return editingUser.value?.country ? countries[editingUser.value.country as keyof typeof countries] || [] : [];
 });
+
+const openCreateDialog = () => {
+	// Set default role based on user permissions
+	newUser.value.role = canCreateRole.value.defaultRole;
+	showCreateUserDialog.value = true;
+};
 
 const createUser = () => {
 	router.post("/app/users", newUser.value, {
@@ -150,21 +157,8 @@ const resetNewUser = () => {
 		name: "",
 		email: "",
 		phone: "",
-		telegram: "",
-		country: "",
-		region: "",
 		address: "",
-		company: "",
-		password: "",
-		reward_fee: 0,
-		// can_access_dxf: false,
-		inn: "",
-		kpp: "",
-		current_account: "",
-		correspondent_account: "",
-		bik: "",
-		bank: "",
-		legal_address: "",
+		role: canCreateRole.value.defaultRole,
 	};
 	showPassword.value = false;
 	showRequisites.value = false;
@@ -196,7 +190,7 @@ const resetNewUser = () => {
 						</div>
 					</div>
 
-					<Button @click="showCreateUserDialog = true" variant="outline">
+					<Button @click="openCreateDialog" variant="outline">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 						</svg>
@@ -215,7 +209,7 @@ const resetNewUser = () => {
 					</div>
 					<h3 class="text-xl font-semibold mb-2">Пользователей пока нет</h3>
 					<p class="text-muted-foreground mb-6">Создайте первого пользователя</p>
-					<Button @click="showCreateUserDialog = true" size="lg" class="gap-2">
+					<Button @click="openCreateDialog" size="lg" class="gap-2">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 						</svg>
@@ -245,7 +239,7 @@ const resetNewUser = () => {
 						</div>
 
 						<div class="space-y-3">
-							<div class="flex items-center gap-2 text-sm">
+							<div class="flex items-center gap-2 text-sm" v-if="user.company">
 								<BuildingIcon class="h-4 w-4 text-muted-foreground" />
 								<span>{{ user.company }}</span>
 							</div>
@@ -262,8 +256,8 @@ const resetNewUser = () => {
 								<span>{{ user.country }}, {{ user.region }}</span>
 							</div>
 
-							<div class="flex justify-between gap-2 pt-3 border-t border-t-gray-200 dark:border-t-gray-800 text-sm">
-								<div class="">
+							<div class="flex justify-between items-center gap-2 pt-3 border-t border-t-gray-200 dark:border-t-gray-800 text-sm">
+								<div v-if="userRole == 'Super-Admin'">
 									<div>
 										<span class="text-muted-foreground">Комиссия:</span>
 										<span class="font-semibold ml-1">{{ user.reward_fee }}%</span>
@@ -298,9 +292,9 @@ const resetNewUser = () => {
 									<TableHead class="font-semibold text-sm">Пользователь</TableHead>
 									<TableHead class="font-semibold text-sm">Компания</TableHead>
 									<TableHead class="font-semibold text-sm">Местоположение</TableHead>
-									<TableHead class="font-semibold text-sm">Комиссия</TableHead>
+									<TableHead v-if="userRole == 'Super-Admin'" class="font-semibold text-sm">Комиссия</TableHead>
 									<!-- <TableHead class="font-semibold text-sm">DXF</TableHead> -->
-									<!-- <TableHead class="font-semibold text-sm">Роль</TableHead> -->
+									<TableHead v-if="['Super-Admin', 'Dealer R'].includes(userRole)" class="font-semibold text-sm">Роль</TableHead>
 									<TableHead class="font-semibold text-sm text-right">Действия</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -324,13 +318,17 @@ const resetNewUser = () => {
 										<div>{{ user.country }}</div>
 										<div class="text-xs">{{ user.region }}</div>
 									</TableCell>
-								<TableCell class="font-semibold">{{ user.reward_fee }}%</TableCell>
+								<TableCell v-if="userRole == 'Super-Admin'" class="font-semibold">{{ user.reward_fee }}%</TableCell>
 								<!-- <TableCell>
 									<Badge :variant="user.can_access_dxf ? 'default' : 'outline'">
 										{{ user.can_access_dxf ? "Да" : "Нет" }}
 									</Badge>
 								</TableCell> -->
-									<!-- <TableCell>{{ user.role }}</TableCell> -->
+									<TableCell v-if="['Super-Admin', 'Dealer R'].includes(userRole)">
+										<Badge variant="outline" class="font-normal">
+											{{ user.role }}
+										</Badge>
+									</TableCell>
 									<TableCell class="text-right">
 										<div class="flex justify-end gap-2">
 											<Button @click="editUser(user)" size="icon" variant="outline">
@@ -352,129 +350,56 @@ const resetNewUser = () => {
 
 	<!-- Create User Dialog -->
 	<Dialog v-model:open="showCreateUserDialog">
-		<DialogContent class="max-w-4xl max-h-[100vh] overflow-y-auto">
+		<DialogContent class="max-w-md max-h-[100vh] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>Создать пользователя</DialogTitle>
 				<DialogDescription>Заполните форму для создания нового пользователя</DialogDescription>
 			</DialogHeader>
-			<div class="space-y-2 md:space-y-0 md:grid md:grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>ФИО *</Label>
-					<Input v-model="newUser.name" required />
-				</div>
-				<div class="space-y-2">
-					<Label>Email *</Label>
-					<Input v-model="newUser.email" type="email" required />
-				</div>
-				<div class="space-y-2">
-					<Label>Телефон *</Label>
-					<Input v-model="newUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" required />
-				</div>
-				<div class="space-y-2">
-					<Label>Telegram</Label>
-					<Input v-model="newUser.telegram" placeholder="@username" />
-				</div>
-				<div class="space-y-2">
-					<Label>Страна *</Label>
-					<Select v-model="newUser.country" required>
+			<div class="space-y-4">
+				<!-- Role Selection (if applicable) -->
+				<div v-if="canCreateRole.showSelect" class="space-y-2">
+					<Label>Роль *</Label>
+					<Select v-model="newUser.role" required>
 						<SelectTrigger>
-							<SelectValue placeholder="Выберите страну" />
+							<SelectValue placeholder="Выберите роль" />
 						</SelectTrigger>
 						<SelectContent>
 							<SelectGroup>
-								<SelectItem value="Армения">Армения</SelectItem>
-								<SelectItem value="Беларусь">Беларусь</SelectItem>
-								<SelectItem value="Казахстан">Казахстан</SelectItem>
-								<SelectItem value="Киргизия">Киргизия</SelectItem>
-								<SelectItem value="Россия">Россия</SelectItem>
-							</SelectGroup>
-						</SelectContent>
-					</Select>
-				</div>
-				<div class="space-y-2">
-					<Label>Регион *</Label>
-					<Select v-model="newUser.region" :disabled="!newUser.country" required>
-						<SelectTrigger>
-							<SelectValue placeholder="Выберите регион" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectGroup>
-								<SelectItem v-for="region in regions" :key="region" :value="region">
-									{{ region }}
+								<SelectItem 
+									v-for="role in canCreateRole.canCreate" 
+									:key="role" 
+									:value="role"
+								>
+									{{ role === 'Dealer' ? 'Дилер' : 'Менеджер' }}
 								</SelectItem>
 							</SelectGroup>
 						</SelectContent>
 					</Select>
 				</div>
-				<div class="col-span-2 space-y-2">
+
+				<!-- Name Field -->
+				<div class="space-y-2">
+					<Label>ФИО *</Label>
+					<Input v-model="newUser.name" required />
+				</div>
+
+				<!-- Email Field -->
+				<div class="space-y-2">
+					<Label>Email *</Label>
+					<Input v-model="newUser.email" type="email" required />
+				</div>
+
+				<!-- Phone Field -->
+				<div class="space-y-2">
+					<Label>Телефон *</Label>
+					<Input v-model="newUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" required />
+				</div>
+
+				<!-- Address Field (only for Dealers) -->
+				<div v-if="shouldShowAddress" class="space-y-2">
 					<Label>Адрес *</Label>
 					<Textarea v-model="newUser.address" required :rows="2" />
 				</div>
-				<div class="col-span-2 space-y-2">
-					<Label>Компания *</Label>
-					<Input v-model="newUser.company" required />
-				</div>
-				<div class="space-y-2">
-					<Label>Пароль (минимум 8 символов) *</Label>
-					<div class="relative">
-						<Input v-model="newUser.password" minlength="8" :type="showPassword ? 'text' : 'password'" required class="pr-10" />
-						<Button 
-							type="button" 
-							variant="ghost" 
-							size="icon" 
-							class="absolute right-0 top-0 h-full hover:bg-transparent" 
-							@click="showPassword = !showPassword"
-						>
-							<EyeIcon v-if="showPassword" class="h-4 w-4" />
-							<EyeClosedIcon v-else class="h-4 w-4" />
-						</Button>
-					</div>
-				</div>
-				<div v-if="user_role === 'Super-Admin'" class="space-y-2">
-					<Label>Комиссия (%) *</Label>
-					<Input v-model.number="newUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
-				</div>
-				<!-- <div class="col-span-2 flex items-center space-x-2">
-					<Switch v-model:checked="newUser.can_access_dxf" />
-					<Label>Доступ к DXF</Label>
-				</div> -->
-				<div class="col-span-2">
-					<Button type="button" variant="outline" @click="showRequisites = !showRequisites" class="rounded-full">
-						<EyeClosedIcon v-if="showRequisites" />
-						<EyeIcon v-else />
-						{{ showRequisites ? "Скрыть реквизиты" : "Показать реквизиты" }}
-					</Button>
-				</div>
-				<template v-if="showRequisites">
-					<div class="space-y-2">
-						<Label>ИНН</Label>
-						<Input v-model="newUser.inn" maxlength="12" />
-					</div>
-					<div class="space-y-2">
-						<Label>КПП</Label>
-						<Input v-model="newUser.kpp" maxlength="9" />
-					</div>
-					<div class="col-span-2 space-y-2">
-						<Label>Расчетный счет</Label>
-						<Input v-model="newUser.current_account" maxlength="20" />
-					</div>
-					<div class="col-span-2 space-y-2">
-						<Label>Корреспондентский счет</Label>
-						<Input v-model="newUser.correspondent_account" maxlength="20" />
-					</div>
-					<div class="space-y-2">
-						<Label>БИК</Label>
-						<Input v-model="newUser.bik" maxlength="9" />
-					</div>
-					<div class="space-y-2">
-						<Label>Банк</Label>
-						<Input v-model="newUser.bank" />
-					</div>
-				<div class="col-span-2 space-y-2">
-					<Label>Юридический адрес</Label>
-					<Textarea v-model="newUser.legal_address" :rows="2" />
-				</div>
-				</template>
 			</div>
 			<DialogFooter class="flex gap-2">
 				<Button variant="outline" @click="showCreateUserDialog = false; resetNewUser()">Отмена</Button>
@@ -547,7 +472,7 @@ const resetNewUser = () => {
 					<Label>Компания *</Label>
 					<Input v-model="editingUser.company" required />
 				</div>
-				<div v-if="user_role === 'Super-Admin'" class="space-y-2">
+				<div v-if="userRole === 'Super-Admin'" class="space-y-2">
 					<Label>Комиссия (%) *</Label>
 					<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
 				</div>

@@ -35,17 +35,27 @@ const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const { can_access_app_cart, can_access_factors, user_default_factor } = usePage().props as any
+const { can_access_app_cart, can_access_factors, user_default_factor, user_role } = usePage().props as any
 
 // Factor management
 const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'pz')
-const factors = [
-    { key: 'pz', label: 'ЗЦ' },
-    { key: 'p1', label: 'Р1' },
-    { key: 'p2', label: 'Р2' },
-    { key: 'p3', label: 'Р3' },
-    { key: 'pr', label: 'РЦ' },
-]
+const factors = computed(() => {
+    // 'user_role' can be a string or an array. Normalize to array for checking.
+    const userRoles = Array.isArray(user_role) ? user_role : (typeof user_role === 'string' ? [user_role] : []);
+    if (userRoles.includes('ROP') || userRoles.includes('Operator')) {
+        return [
+            { key: 'p3', label: 'Р3' },
+            { key: 'p4', label: 'РЦ' },
+        ];
+    }
+    return [
+        { key: 'pz', label: 'ЗЦ' },
+        { key: 'p1', label: 'Р1' },
+        { key: 'p2', label: 'Р2' },
+        { key: 'p3', label: 'Р3' },
+        { key: 'p4', label: 'РЦ' },
+    ];
+});
 
 // Watch for factor changes and update session storage
 watch(selectedFactor, (newValue) => {

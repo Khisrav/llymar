@@ -59,7 +59,7 @@ class SketchController extends Controller
         
         $glassItemIDs = Item::where('category_id', 1)->pluck('id');
         $glassOrderItem = $order->orderItems->whereIn('item_id', $glassItemIDs)->first();
-        $glass = Item::where('id', $glassOrderItem->item_id)->first();
+        $glass = $glassOrderItem ? Item::where('id', $glassOrderItem->item_id)->first() : null;
 
         return $this->DXFighterGenerator($order->orderOpenings, $glass, $order->order_number);
     }
@@ -540,7 +540,7 @@ class SketchController extends Controller
         $starting_pointX = 0;
         $totalDoors = 0;
         $totalArea = 0;
-        $glassName = $glass->name ?? '';
+        $glassName = $glass?->name ?? '';
         
         foreach ($openings as $opening) {
             $starting_pointY += $opening['doorsHeight'] + 250; 

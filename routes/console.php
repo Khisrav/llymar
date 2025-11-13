@@ -10,6 +10,3 @@ Artisan::command('inspire', function () {
 
 // Schedule the command to expire old orders daily at midnight
 Schedule::command('orders:expire-old')->daily();
-
-// Schedule the command to delete expired registration links daily
-Schedule::command('registration-links:cleanup')->daily();

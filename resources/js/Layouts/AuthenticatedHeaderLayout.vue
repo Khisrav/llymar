@@ -14,7 +14,6 @@ const {
     can_access_admin_panel, 
     can_access_app_users, 
     can_access_commission_credits,
-    can_access_registration_links,
 } = page.props as any
 const { user } = page.props.auth as any
 
@@ -36,10 +35,6 @@ const navigationMenu = computed(() => {
 
     if (can_access_commission_credits) {
         leftMenu.push({ title: 'Комиссии', to: '/app/commission-credits', exact: false })
-    }
-
-    if (can_access_registration_links) {
-        leftMenu.push({ title: 'Ссылки', to: '/app/registration-links', exact: false })
     }
 
     return { leftMenu, rightMenu }

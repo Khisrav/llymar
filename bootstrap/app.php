@@ -23,9 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RestrictApiAccess::class,
         ]);
 
-        // Add CORS handling
+        // Add CORS handling and profile completion check
         $middleware->alias([
             'cors' => \Illuminate\Http\Middleware\HandleCors::class,
+            'profile.completed' => \App\Http\Middleware\EnsureProfileCompleted::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

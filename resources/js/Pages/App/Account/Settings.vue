@@ -19,9 +19,6 @@ import {
 	PhoneIcon, 
 	MapPinIcon, 
 	MessageSquareIcon,
-	CreditCardIcon,
-	BanknoteIcon,
-	ReceiptRussianRubleIcon,
 	SaveIcon,
 	UploadIcon,
 	TrashIcon,
@@ -51,13 +48,6 @@ const form = useForm({
 	phone: user.value.phone,
 	address: user.value.address,
 	telegram: user.value.telegram,
-	inn: user.value.inn,
-	// kpp: user.value.kpp,
-	// bik: user.value.bik,
-	// bank: user.value.bank,
-	legal_address: user.value.legal_address,
-	// current_account: user.value.current_account,
-	// correspondent_account: user.value.correspondent_account,
 })
 
 const resetForm = () => {
@@ -68,13 +58,6 @@ const resetForm = () => {
 	form.phone = user.value.phone;
 	form.address = user.value.address;
 	form.telegram = user.value.telegram;
-	form.inn = user.value.inn;
-	// form.kpp = user.value.kpp;
-	// form.bik = user.value.bik;
-	// form.bank = user.value.bank;
-	form.legal_address = user.value.legal_address;
-	// form.current_account = user.value.current_account;
-	// form.correspondent_account = user.value.correspondent_account;
 }
 
 const updateUser = () => {
@@ -367,134 +350,6 @@ const hasFileSelected = computed(() => {
 							type="text" 
 							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 							placeholder="Название вашей организации"
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			<!-- Financial Information Card -->
-			<Card>
-				<CardHeader>
-					<CardTitle class="flex items-center gap-3">
-						<CreditCardIcon class="h-5 w-5 text-primary" />
-						Финансовые реквизиты
-					</CardTitle>
-					<CardDescription>
-						Банковские данные для ведения финансовых операций
-					</CardDescription>
-				</CardHeader>
-				<CardContent class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div class="grid grid-cols-1 gap-6">
-						<div class="space-y-2">
-							<Label for="inn" class="text-sm font-medium flex items-center gap-2">
-								<ReceiptRussianRubleIcon class="h-4 w-4" />
-								ИНН <span class="text-destructive">*</span>
-							</Label>
-							<Input 
-								id="inn"
-								v-model="form.inn" 
-								type="text" 
-								required 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="Введите ИНН"
-							/>
-						</div>
-
-						<!-- Hidden fields for now -->
-						<!-- <div class="space-y-2">
-							<Label for="kpp" class="text-sm font-medium flex items-center gap-2">
-								<ReceiptRussianRubleIcon class="h-4 w-4" />
-								КПП <span class="text-destructive">*</span>
-							</Label>
-							<Input 
-								id="kpp"
-								v-model="form.kpp" 
-								type="text" 
-								required 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="Введите КПП"
-							/>
-							<p class="text-xs text-muted-foreground">Код причины постановки на учет</p>
-						</div> -->
-					</div>
-
-					<!-- Hidden financial fields for now -->
-					<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div class="space-y-2">
-							<Label for="current_account" class="text-sm font-medium flex items-center gap-2">
-								<BanknoteIcon class="h-4 w-4" />
-								Расчетный счет <span class="text-destructive">*</span>
-							</Label>
-							<Input 
-								id="current_account"
-								v-model="form.current_account" 
-								type="text" 
-								required 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="20-значный номер счета"
-							/>
-							<p class="text-xs text-muted-foreground">Основной счет для переводов и платежей</p>
-						</div>
-
-						<div class="space-y-2">
-							<Label for="correspondent_account" class="text-sm font-medium flex items-center gap-2">
-								<BanknoteIcon class="h-4 w-4" />
-								Корреспондентский счет
-							</Label>
-							<Input 
-								id="correspondent_account"
-								v-model="form.correspondent_account" 
-								type="text" 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="20-значный корр. счет"
-							/>
-							<p class="text-xs text-muted-foreground">Счет банка в Центральном банке</p>
-						</div>
-					</div>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div class="space-y-2">
-							<Label for="bik" class="text-sm font-medium flex items-center gap-2">
-								<CreditCardIcon class="h-4 w-4" />
-								БИК
-							</Label>
-							<Input 
-								id="bik"
-								v-model="form.bik" 
-								type="text" 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="9-значный БИК"
-							/>
-							<p class="text-xs text-muted-foreground">Банковский идентификационный код</p>
-						</div>
-
-						<div class="space-y-2">
-							<Label for="bank" class="text-sm font-medium flex items-center gap-2">
-								<BuildingIcon class="h-4 w-4" />
-								Банк
-							</Label>
-							<Input 
-								id="bank"
-								v-model="form.bank" 
-								type="text" 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-								placeholder="Название банка"
-							/>
-							<p class="text-xs text-muted-foreground">Полное наименование банковского учреждения</p>
-						</div>
-					</div> -->
-
-					<div class="space-y-2">
-						<Label for="legal_address" class="text-sm font-medium flex items-center gap-2">
-							<MapPinIcon class="h-4 w-4" />
-							Юридический адрес
-						</Label>
-						<Input 
-							id="legal_address"
-							v-model="form.legal_address" 
-							type="text" 
-							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-							placeholder="Юридический адрес организации"
 						/>
 					</div>
 				</CardContent>

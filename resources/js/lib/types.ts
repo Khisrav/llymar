@@ -250,26 +250,3 @@ export interface CommissionCreditStatistics {
     pendingBalance: number;
     usersWithBalance: number;
 }
-
-export interface RegistrationLink {
-	id: number;
-	token: string;
-	url: string;
-	creator: {
-		id: number;
-		name: string;
-		email: string;
-	};
-	reward_fee: number;
-	is_used: boolean;
-	used_at: string | null;
-	registered_user: {
-		id: number;
-		name: string;
-		email: string;
-	} | null;
-	created_at: string;
-	expires_at: string;
-	is_valid: boolean;
-	status: 'active' | 'used' | 'expired';
-}

@@ -134,10 +134,6 @@ Route::get('/auth', function() {
     ]);
 })->name('auth');
 
-// Registration via link routes
-Route::get('/register/{token}', [App\Http\Controllers\RegistrationLinkController::class, 'show'])->name('register.link');
-Route::post('/register/{token}', [App\Http\Controllers\RegistrationLinkController::class, 'register'])->name('register.link.submit');
-
 /*
  *  PRIVATE ROUTES
  */
@@ -185,12 +181,6 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::post('/app/users', [App\Http\Controllers\ChildUserController::class, 'store'])->name('app.users.store');
     Route::put('/app/users/{user}', [App\Http\Controllers\ChildUserController::class, 'update'])->name('app.users.update');
     Route::delete('/app/users/{user}', [App\Http\Controllers\ChildUserController::class, 'destroy'])->name('app.users.destroy');
-    
-    // Registration Links Management Routes
-    Route::get('/app/registration-links', [App\Http\Controllers\RegistrationLinkAppController::class, 'index'])->name('app.registration_links');
-    Route::post('/app/registration-links', [App\Http\Controllers\RegistrationLinkAppController::class, 'store'])->name('app.registration_links.store');
-    Route::put('/app/registration-links/{registrationLink}', [App\Http\Controllers\RegistrationLinkAppController::class, 'update'])->name('app.registration_links.update');
-    Route::delete('/app/registration-links/{registrationLink}', [App\Http\Controllers\RegistrationLinkAppController::class, 'destroy'])->name('app.registration_links.destroy');
 });
 
 /*

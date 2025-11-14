@@ -38,6 +38,12 @@ class CompanyResource extends Resource
                 // Section: Company Information
                 Section::make('')
                     ->schema([
+                        Select::make('user_id')
+                            ->label('Привязан к пользователю')
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->native(false),
                         Select::make('type')
                             ->label('Тип контрагента')
                             ->options([
@@ -51,14 +57,6 @@ class CompanyResource extends Resource
                             ->selectablePlaceholder(false)
                             ->required()
                             ->live(),
-                        Select::make('user_id')
-                            ->label('Пользователь')
-                            ->relationship('user', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            ->helperText('Необязательное поле. Привязка компании к пользователю')
-                            ->visible(fn (Forms\Get $get) => $get('type') === 'customer'),
                         TextInput::make('short_name')
                             ->label('Короткое название')
                             ->required(),

@@ -2,7 +2,7 @@
 import { computed, ref } from "vue"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../Components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "../Components/ui/sheet"
-import { CircleUser, Menu, LogOut, Settings, Shield, X, Calculator } from "lucide-vue-next"
+import { CircleUser, Menu, LogOut, Settings, Shield, X, Calculator, Building2Icon } from "lucide-vue-next"
 import { Button } from "../Components/ui/button/"
 import { Link, usePage } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
@@ -14,6 +14,7 @@ const {
     can_access_admin_panel, 
     can_access_app_users, 
     can_access_commission_credits,
+    can_access_companies,
 } = page.props as any
 const { user } = page.props.auth as any
 
@@ -263,6 +264,12 @@ export default {
                         <Link href="/app/account/settings" class="flex items-center gap-2 hover:bg-primary/10">
                             <Settings class="h-4 w-4" />
                             <span>Настройки</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem v-if="can_access_companies" as-child class="cursor-pointer">
+                        <Link href="/app/companies" class="flex items-center gap-2 hover:bg-primary/10">
+                            <Building2Icon class="h-4 w-4" />
+                            <span>Компании</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

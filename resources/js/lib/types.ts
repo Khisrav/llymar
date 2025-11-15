@@ -250,3 +250,28 @@ export interface CommissionCreditStatistics {
     pendingBalance: number;
     usersWithBalance: number;
 }
+
+export interface Company {
+    id: number;
+    type: 'performer' | 'factory' | 'supplier' | 'customer';
+    user_id?: number;
+    short_name: string;
+    full_name: string;
+    boss_name?: string;
+    boss_title?: 'director' | 'ceo' | 'chief' | 'supervisor';
+    legal_address?: string;
+    email?: string;
+    phone: string;
+    phone_2?: string;
+    phone_3?: string;
+    website?: string;
+    inn: number;
+    kpp?: number;
+    ogrn?: number;
+    vat: number;
+    contact_person?: string;
+    warehouse_id: number;
+    created_at?: string;
+    updated_at?: string;
+    user?: User;
+}

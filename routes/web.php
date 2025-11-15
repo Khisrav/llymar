@@ -164,6 +164,12 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::post('/app/account/logo/upload', [UserController::class, 'uploadLogo'])->name('app.account.logo.upload');
     Route::delete('/app/account/logo/delete', [UserController::class, 'deleteLogo'])->name('app.account.logo.delete');
     
+    // Company Management Routes
+    Route::get('/app/companies', [App\Http\Controllers\CompanyController::class, 'index'])->name('app.companies');
+    Route::post('/app/companies', [App\Http\Controllers\CompanyController::class, 'store'])->name('app.companies.store');
+    Route::put('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])->name('app.companies.update');
+    Route::delete('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])->name('app.companies.destroy');
+    
     Route::get('/app/orders/sketcher/{order_id}', [OrderController::class, 'sketcherPage'])->name('app.sketcher');
     Route::post('/app/order/sketch/download', [OrderController::class, 'sketchPDF'])->name('app.sketch');
     Route::post('/app/order/sketch/save', [OrderController::class, 'saveSketch'])->name('app.save.sketch');

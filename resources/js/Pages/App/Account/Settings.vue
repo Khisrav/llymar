@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, usePage, router } from '@inertiajs/vue3';
 import AuthenticatedHeaderLayout from '../../../Layouts/AuthenticatedHeaderLayout.vue';
+import SettingsLayout from '../../../Layouts/SettingsLayout.vue';
 import { Label } from '../../../Components/ui/label';
 import { Input } from '../../../Components/ui/input';
 import { ref, computed } from 'vue';
@@ -176,7 +177,8 @@ const uploadLogo = () => {
 		},
 		onError: (errors) => {
 			console.error('Logo upload errors:', errors);
-			logoError.value = errors.logo || Object.values(errors)[0] || 'Ошибка при загрузке логотипа';
+			const firstError = errors.logo || (errors && typeof errors === 'object' ? (errors as any)[Object.keys(errors)[0]] : null);
+			logoError.value = firstError || 'Ошибка при загрузке логотипа';
 			toast('Ошибка при загрузке логотипа', {
 				description: logoError.value as string,
 			});
@@ -242,13 +244,14 @@ const hasFileSelected = computed(() => {
 	
 	<Toaster />
 
-	<div class="container p-4 md:p-6 max-w-6xl mx-auto">
-		<div class="mb-6">
+	<div class="container p-4 md:p-6 max-w-7xl mx-auto">
+		<!-- <div class="mb-6">
 			<h1 class="text-3xl font-bold tracking-tight">Настройки</h1>
-			<!-- <p class="text-muted-foreground mt-2">Управляйте своими личными данными и реквизитами для ведения бизнеса</p> -->
-		</div>
+			<p class="text-muted-foreground mt-2">Управляйте своими личными данными и компаниями</p>
+		</div> -->
 
-		<form @submit.prevent="updateUser" class="space-y-8">
+		<SettingsLayout>
+			<form @submit.prevent="updateUser" class="space-y-8">
 			<!-- Personal Information Card -->
 			<Card>
 				<CardHeader>
@@ -473,5 +476,6 @@ const hasFileSelected = computed(() => {
 				</Button>
 			</div>
 		</form>
+		</SettingsLayout>
 	</div>
 </template>

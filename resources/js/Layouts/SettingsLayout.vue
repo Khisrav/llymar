@@ -25,7 +25,7 @@ const allMenuItems: MenuItem[] = [
 		visible: true
 	},
 	{
-		title: 'Контрагенты',
+		title: 'Компании',
 		href: '/app/companies',
 		icon: BuildingIcon,
 		description: 'Управление компаниями',

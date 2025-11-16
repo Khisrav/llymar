@@ -259,6 +259,7 @@ export interface CompanyBill {
     bank_name: string;
     bank_address: string;
     bik: string;
+    is_main: boolean;
     created_at?: string;
     updated_at?: string;
 }

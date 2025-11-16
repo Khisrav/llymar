@@ -22,7 +22,8 @@ import {
 	TrashIcon,
 	ReceiptTextIcon,
 	WalletIcon,
-	LandmarkIcon
+	LandmarkIcon,
+	PlusIcon
 } from "lucide-vue-next";
 import { Company } from "../../../lib/types";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../../../Components/ui/dropdown-menu";
@@ -32,6 +33,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../Components/ui
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../../Components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../Components/ui/table";
 import { vMaska } from 'maska/vue';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../Components/ui/dialog";
+import { Switch } from "../../../Components/ui/switch";
 
 // Get initial data from page props
 const pageData = usePage().props;
@@ -39,6 +42,10 @@ const { company }: { company: Company } = pageData as any;
 
 // Edit state
 const isEditing = ref(false);
+
+// Bill management state
+const isAddingBill = ref(false);
+const editingBill = ref<number | null>(null);
 
 const bossTitle = {
 	'director': 'Директор',
@@ -107,6 +114,103 @@ const deleteCompany = () => {
 		},
 		onError: () => {
 			toast.error("Ошибка при удалении компании");
+		},
+	});
+};
+
+// Bill form for creating/editing
+const billForm = useForm({
+	current_account: '',
+	correspondent_account: '',
+	bank_name: '',
+	bank_address: '',
+	bik: '',
+});
+
+const startAddingBill = () => {
+	isAddingBill.value = true;
+	editingBill.value = null;
+	billForm.reset();
+	billForm.clearErrors();
+};
+
+const startEditingBill = (bill: any) => {
+	editingBill.value = bill.id;
+	billForm.current_account = bill.current_account;
+	billForm.correspondent_account = bill.correspondent_account;
+	billForm.bank_name = bill.bank_name;
+	billForm.bank_address = bill.bank_address;
+	billForm.bik = bill.bik;
+	billForm.clearErrors();
+};
+
+const cancelBillForm = () => {
+	isAddingBill.value = false;
+	editingBill.value = null;
+	billForm.reset();
+	billForm.clearErrors();
+};
+
+const saveBill = () => {
+	if (editingBill.value) {
+		// Update existing bill
+		billForm.put(`/app/companies/${company.id}/bills/${editingBill.value}`, {
+			preserveScroll: true,
+			onSuccess: (page) => {
+				// Update local company bills
+				Object.assign(company, page.props.company);
+				cancelBillForm();
+				toast.success("Банковский счет успешно обновлен");
+			},
+			onError: () => {
+				toast.error("Ошибка при обновлении счета");
+			},
+		});
+	} else {
+		// Create new bill
+		billForm.post(`/app/companies/${company.id}/bills`, {
+			preserveScroll: true,
+			onSuccess: (page) => {
+				// Update local company bills
+				Object.assign(company, page.props.company);
+				cancelBillForm();
+				toast.success("Банковский счет успешно добавлен");
+			},
+			onError: () => {
+				toast.error("Ошибка при добавлении счета");
+			},
+		});
+	}
+};
+
+const deleteBill = (billId: number) => {
+	if (!confirm('Вы уверены, что хотите удалить этот счет?')) {
+		return;
+	}
+
+	billForm.delete(`/app/companies/${company.id}/bills/${billId}`, {
+		preserveScroll: true,
+		onSuccess: (page) => {
+			// Update local company bills
+			Object.assign(company, page.props.company);
+			toast.success("Банковский счет успешно удален");
+		},
+		onError: () => {
+			toast.error("Ошибка при удалении счета");
+		},
+	});
+};
+
+const toggleMainBill = (billId: number) => {
+	billForm.post(`/app/companies/${company.id}/bills/${billId}/toggle-main`, {
+		preserveScroll: true,
+		onSuccess: (page: any) => {
+			// Update local company bills
+			Object.assign(company, page.props.company);
+			toast.success("Основной счет успешно установлен");
+		},
+		onError: () => {
+			toast.error("Ошибка при установке основного счета");
 		},
 	});
 };
@@ -502,6 +606,10 @@ const deleteCompany = () => {
 							Банковские счета
 							<span v-if="hasBills" class="text-sm text-muted-foreground">({{ company.company_bills?.length }})</span>
 						</h2>
+						<Button @click="startAddingBill" size="sm">
+							<PlusIcon class="h-4 w-4" />
+							Добавить счет
+						</Button>
 					</div>
 
 					<!-- Empty State -->
@@ -524,7 +632,7 @@ const deleteCompany = () => {
 							<Card
 								v-for="bill in company.company_bills"
 								:key="bill.id"
-								class="transition-all duration-200 hover:border-border/60 shadow-sm"
+								:class="bill.is_main ? 'border-primary shadow-sm' : 'transition-all duration-200 hover:border-border/60 shadow-sm'"
 							>
 								<CardHeader class="pb-3">
 									<div class="flex items-start justify-between gap-2">
@@ -532,9 +640,38 @@ const deleteCompany = () => {
 											<CardTitle class="text-lg mb-1 flex items-center gap-2">
 												<LandmarkIcon class="h-5 w-5" />
 												{{ bill.bank_name }}
+												<span v-if="bill.is_main" class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Основной</span>
 											</CardTitle>
 											<p class="text-sm text-muted-foreground">{{ bill.bank_address }}</p>
 										</div>
+										<DropdownMenu>
+											<DropdownMenuTrigger as-child>
+												<Button variant="ghost" size="icon">
+													<EllipsisVerticalIcon class="h-4 w-4" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem @click="startEditingBill(bill)">
+													<EditIcon class="h-4 w-4" />
+													<span>Редактировать</span>
+												</DropdownMenuItem>
+												<DropdownMenuItem 
+													v-if="!bill.is_main"
+													@click="toggleMainBill(bill.id)"
+												>
+													<WalletIcon class="h-4 w-4" />
+													<span>Сделать основным</span>
+												</DropdownMenuItem>
+												<DropdownMenuSeparator />
+												<DropdownMenuItem 
+													@click="deleteBill(bill.id)"
+													class="text-destructive focus:text-destructive hover:bg-destructive/10"
+												>
+													<TrashIcon class="h-4 w-4" />
+													<span>Удалить</span>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
 									</div>
 								</CardHeader>
 								<CardContent class="space-y-3">
@@ -568,13 +705,22 @@ const deleteCompany = () => {
 											<TableHead class="font-semibold">Расчетный счет</TableHead>
 											<TableHead class="font-semibold">Корр. счет</TableHead>
 											<TableHead class="font-semibold">БИК</TableHead>
+											<TableHead class="font-semibold w-[100px]">Основной</TableHead>
+											<TableHead class="font-semibold w-[100px]">Действия</TableHead>
 										</TableRow>
 									</TableHeader>
 									
 									<TableBody>
-										<TableRow v-for="bill in company.company_bills" :key="bill.id" class="hover:bg-muted/30">
+										<TableRow 
+											v-for="bill in company.company_bills" 
+											:key="bill.id" 
+											:class="bill.is_main ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'"
+										>
 											<TableCell class="max-w-xs">
-												<div class="font-medium">{{ bill.bank_name }}</div>
+												<div class="flex items-center gap-2">
+													<div class="font-medium">{{ bill.bank_name }}</div>
+													<span v-if="bill.is_main" class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Основной</span>
+												</div>
 												<div class="text-sm text-muted-foreground line-clamp-1">{{ bill.bank_address }}</div>
 											</TableCell>
 											<TableCell>
@@ -586,6 +732,32 @@ const deleteCompany = () => {
 											<TableCell>
 												<div class="font-mono text-sm">{{ bill.bik }}</div>
 											</TableCell>
+											<TableCell>
+												<Switch 
+													:checked="bill.is_main" 
+													@update:checked="() => toggleMainBill(bill.id)"
+													:disabled="billForm.processing"
+												/>
+											</TableCell>
+											<TableCell>
+												<div class="flex items-center gap-1">
+													<Button 
+														variant="ghost" 
+														size="icon"
+														@click="startEditingBill(bill)"
+													>
+														<EditIcon class="h-4 w-4" />
+													</Button>
+													<Button 
+														variant="ghost" 
+														size="icon"
+														@click="deleteBill(bill.id)"
+														class="text-destructive hover:text-destructive hover:bg-destructive/10"
+													>
+														<TrashIcon class="h-4 w-4" />
+													</Button>
+												</div>
+											</TableCell>
 										</TableRow>
 									</TableBody>
 								</Table>
@@ -596,5 +768,111 @@ const deleteCompany = () => {
 			</div>
 		</div>
 	</div>
+
+	<!-- Add/Edit Bill Dialog -->
+	<Dialog :open="isAddingBill || editingBill !== null" @update:open="(open) => !open && cancelBillForm()">
+		<DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
+			<DialogHeader>
+				<DialogTitle>
+					{{ editingBill ? 'Редактировать банковский счет' : 'Добавить банковский счет' }}
+				</DialogTitle>
+				<DialogDescription>
+					{{ editingBill ? 'Обновите информацию о банковском счете' : 'Введите информацию о новом банковском счете' }}
+				</DialogDescription>
+			</DialogHeader>
+
+			<div class="grid gap-4 py-4">
+				<!-- Bank Name -->
+				<div class="space-y-2">
+					<Label for="bank_name" class="flex items-center gap-2">
+						<LandmarkIcon class="h-4 w-4" />
+						Название банка
+					</Label>
+					<Input 
+						id="bank_name"
+						v-model="billForm.bank_name" 
+						placeholder="ПАО «Сбербанк»"
+						:class="{ 'border-red-500': billForm.errors.bank_name }"
+					/>
+					<div v-if="billForm.errors.bank_name" class="text-red-500 text-sm">
+						{{ billForm.errors.bank_name }}
+					</div>
+				</div>
+
+				<!-- Bank Address -->
+				<div class="space-y-2">
+					<Label for="bank_address" class="flex items-center gap-2">
+						<MapPinIcon class="h-4 w-4" />
+						Адрес банка
+					</Label>
+					<Textarea 
+						id="bank_address"
+						v-model="billForm.bank_address" 
+						placeholder="г. Москва, ул. Вавилова, д. 19"
+						:rows="2"
+						:class="{ 'border-red-500': billForm.errors.bank_address }"
+					/>
+					<div v-if="billForm.errors.bank_address" class="text-red-500 text-sm">
+						{{ billForm.errors.bank_address }}
+					</div>
+				</div>
+
+				<!-- Current Account -->
+				<div class="space-y-2">
+					<Label for="current_account">Расчетный счет</Label>
+					<Input 
+						id="current_account"
+						v-model="billForm.current_account" 
+						placeholder="40702810123456789012"
+						class="font-mono"
+						:class="{ 'border-red-500': billForm.errors.current_account }"
+					/>
+					<div v-if="billForm.errors.current_account" class="text-red-500 text-sm">
+						{{ billForm.errors.current_account }}
+					</div>
+				</div>
+
+				<!-- Correspondent Account -->
+				<div class="space-y-2">
+					<Label for="correspondent_account">Корреспондентский счет</Label>
+					<Input 
+						id="correspondent_account"
+						v-model="billForm.correspondent_account" 
+						placeholder="30101810400000000225"
+						class="font-mono"
+						:class="{ 'border-red-500': billForm.errors.correspondent_account }"
+					/>
+					<div v-if="billForm.errors.correspondent_account" class="text-red-500 text-sm">
+						{{ billForm.errors.correspondent_account }}
+					</div>
+				</div>
+
+				<!-- BIK -->
+				<div class="space-y-2">
+					<Label for="bik">БИК</Label>
+					<Input 
+						id="bik"
+						v-model="billForm.bik" 
+						placeholder="044525225"
+						class="font-mono"
+						:class="{ 'border-red-500': billForm.errors.bik }"
+					/>
+					<div v-if="billForm.errors.bik" class="text-red-500 text-sm">
+						{{ billForm.errors.bik }}
+					</div>
+				</div>
+			</div>
+
+			<DialogFooter>
+				<Button variant="outline" @click="cancelBillForm" :disabled="billForm.processing">
+					Отмена
+				</Button>
+				<Button @click="saveBill" :disabled="billForm.processing">
+					<SaveIcon class="h-4 w-4" />
+					{{ editingBill ? 'Сохранить изменения' : 'Добавить счет' }}
+				</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
 </template>
 

@@ -68,7 +68,7 @@ const form = useForm({
 			</div>
 		</div>
 		<div class="hidden bg-muted lg:block">
-			<img src="/assets/login-page.jpg" alt="Image" width="1920" height="1080" class="h-screen w-full object-cover dark:brightness-[0.2] dark:grayscale" />
+			<img src="/assets/hero.jpg" alt="Image" class="h-screen w-full object-cover dark:brightness-[0.5] dark:grayscale" />
 		</div>
 	</div>
 </template>

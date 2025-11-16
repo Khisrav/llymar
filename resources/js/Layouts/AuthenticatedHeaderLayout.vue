@@ -276,7 +276,7 @@ export default {
         @mouseenter="handleSidebarMouseEnter"
         @mouseleave="handleSidebarMouseLeave"
         :class="[
-            'hidden md:flex fixed left-0 top-0 h-full flex-col border-r bg-background/95 backdrop-blur-xl z-50 transition-all duration-300 ease-in-out',
+            'hidden md:flex fixed left-0 top-0 h-full flex-col border-r bg-background/70 shadow-2xl shadow-muted-foreground/20 backdrop-blur z-50 transition-all duration-300 ease-in-out',
             sidebarExpanded ? 'w-64' : 'w-16'
         ]"
         aria-label="Главная навигация"

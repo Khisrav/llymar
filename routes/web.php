@@ -166,6 +166,7 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // Company Management Routes
     Route::get('/app/companies', [App\Http\Controllers\CompanyController::class, 'index'])->name('app.companies');
+    Route::get('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'show'])->name('app.companies.show');
     Route::post('/app/companies', [App\Http\Controllers\CompanyController::class, 'store'])->name('app.companies.store');
     Route::put('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])->name('app.companies.update');
     Route::delete('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])->name('app.companies.destroy');

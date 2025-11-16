@@ -38,6 +38,36 @@ class CompanyController extends Controller
     }
 
     /**
+     * Display the specified company
+     */
+    public function show(Company $company)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Check if user is a manager - they cannot access companies
+        $userRole = $user->roles->first()?->name;
+        if ($userRole === 'Manager') {
+            abort(403, 'Managers cannot access companies');
+        }
+
+        // Ensure the company belongs to the authenticated user
+        if ($company->user_id !== $user->id) {
+            abort(403, 'Unauthorized to view this company');
+        }
+
+        // Load company bills
+        $company->load('companyBills');
+
+        return Inertia::render('App/Companies/View', [
+            'company' => $company,
+        ]);
+    }
+
+    /**
      * Store a newly created company
      */
     public function store(Request $request)

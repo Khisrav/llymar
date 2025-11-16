@@ -251,6 +251,18 @@ export interface CommissionCreditStatistics {
     usersWithBalance: number;
 }
 
+export interface CompanyBill {
+    id: number;
+    company_id: number;
+    current_account: string;
+    correspondent_account: string;
+    bank_name: string;
+    bank_address: string;
+    bik: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Company {
     id: number;
     type: 'performer' | 'factory' | 'supplier' | 'customer';
@@ -274,4 +286,5 @@ export interface Company {
     created_at?: string;
     updated_at?: string;
     user?: User;
+    company_bills?: CompanyBill[];
 }

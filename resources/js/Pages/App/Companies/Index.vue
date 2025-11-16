@@ -43,7 +43,6 @@ import {
 } from '../../../Components/ui/select';
 import {
 	PlusIcon,
-	PencilIcon,
 	TrashIcon,
 	BuildingIcon,
 	PhoneIcon,
@@ -53,7 +52,8 @@ import {
 	PercentIcon,
 	GlobeIcon,
 	EllipsisVerticalIcon,
-	ReceiptTextIcon
+	ReceiptTextIcon,
+	EyeIcon
 } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '../../../Components/ui/dropdown-menu';
 import { Company } from '../../../lib/types';
@@ -63,8 +63,6 @@ const props = defineProps<{
 }>();
 
 const showCreateDialog = ref(false);
-const showEditDialog = ref(false);
-const editingCompany = ref<Company | null>(null);
 
 const hasCompanies = computed(() => props.companies.length > 0);
 
@@ -76,24 +74,6 @@ const bossTitle = {
 };
 
 const newCompany = ref({
-	short_name: '',
-	full_name: '',
-	boss_name: '',
-	boss_title: 'director' as 'director' | 'ceo' | 'chief' | 'supervisor',
-	legal_address: '',
-	email: '',
-	phone: '',
-	phone_2: '',
-	phone_3: '',
-	website: '',
-	inn: 0,
-	kpp: 0,
-	ogrn: 0,
-	vat: 0,
-	contact_person: '',
-});
-
-const editForm = ref({
 	short_name: '',
 	full_name: '',
 	boss_name: '',
@@ -138,26 +118,8 @@ const openCreateDialog = () => {
 	showCreateDialog.value = true;
 };
 
-const openEditDialog = (company: Company) => {
-	editingCompany.value = company;
-	editForm.value = {
-		short_name: company.short_name,
-		full_name: company.full_name,
-		boss_name: company.boss_name || '',
-		boss_title: company.boss_title || 'director',
-		legal_address: company.legal_address || '',
-		email: company.email || '',
-		phone: company.phone,
-		phone_2: company.phone_2 || '',
-		phone_3: company.phone_3 || '',
-		website: company.website || '',
-		inn: company.inn,
-		kpp: company.kpp || 0,
-		ogrn: company.ogrn || 0,
-		vat: company.vat,
-		contact_person: company.contact_person || '',
-	};
-	showEditDialog.value = true;
+const viewCompany = (company: Company) => {
+	router.visit(`/app/companies/${company.id}`);
 };
 
 const createCompany = () => {
@@ -176,33 +138,6 @@ const createCompany = () => {
 			const firstError = errors && typeof errors === 'object' ? (errors as any)[Object.keys(errors)[0]] : null;
 			const errorMessage = firstError as string;
 			toast('Ошибка при создании компании', {
-				description: errorMessage || 'Проверьте корректность введенных данных',
-			});
-		},
-		onFinish: () => {
-			isProcessing.value = false;
-		},
-	});
-};
-
-const updateCompany = () => {
-	if (!editingCompany.value) return;
-
-	isProcessing.value = true;
-
-	router.put(`/app/companies/${editingCompany.value.id}`, editForm.value, {
-		preserveScroll: true,
-		onSuccess: () => {
-			showEditDialog.value = false;
-			editingCompany.value = null;
-			toast('Компания успешно обновлена', {
-				description: 'Данные компании были изменены',
-			});
-		},
-		onError: (errors) => {
-			const firstError = errors && typeof errors === 'object' ? (errors as any)[Object.keys(errors)[0]] : null;
-			const errorMessage = firstError as string;
-			toast('Ошибка при обновлении компании', {
 				description: errorMessage || 'Проверьте корректность введенных данных',
 			});
 		},
@@ -348,14 +283,14 @@ const deleteCompany = (company: Company) => {
 										<DropdownMenuContent align="end">
 											<DropdownMenuLabel>Действия</DropdownMenuLabel>
 											<DropdownMenuSeparator />
-											<DropdownMenuItem @click="openEditDialog(company)">
-												<PencilIcon class="h-4 w-4" />
-												<span>Изменить</span>
+											<DropdownMenuItem @click="viewCompany(company)">
+												<EyeIcon class="h-4 w-4" />
+												<span>Просмотр</span>
 											</DropdownMenuItem>
-											<DropdownMenuItem disabled>
+											<!-- <DropdownMenuItem disabled>
 												<ReceiptTextIcon class="h-4 w-4" />
 												<span>Счета</span>
-											</DropdownMenuItem>
+											</DropdownMenuItem> -->
 											<DropdownMenuSeparator />
 											<DropdownMenuItem @click="deleteCompany(company)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
 												<TrashIcon class="h-4 w-4" />
@@ -423,14 +358,14 @@ const deleteCompany = (company: Company) => {
 												<DropdownMenuContent align="end">
 													<DropdownMenuLabel>Действия</DropdownMenuLabel>
 													<DropdownMenuSeparator />
-													<DropdownMenuItem @click="openEditDialog(company)">
-														<PencilIcon class="h-4 w-4" />
-														<span>Изменить</span>
+													<DropdownMenuItem @click="viewCompany(company)">
+														<EyeIcon class="h-4 w-4" />
+														<span>Просмотр</span>
 													</DropdownMenuItem>
-													<DropdownMenuItem disabled>
+													<!-- <DropdownMenuItem disabled>
 														<ReceiptTextIcon class="h-4 w-4" />
 														<span>Счета</span>
-													</DropdownMenuItem>
+													</DropdownMenuItem> -->
 													<DropdownMenuSeparator />
 													<DropdownMenuItem @click="deleteCompany(company)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
 														<TrashIcon class="h-4 w-4" />
@@ -638,189 +573,6 @@ const deleteCompany = (company: Company) => {
 					<Button type="submit" :disabled="isProcessing">
 						<div v-if="isProcessing" class="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
 						{{ isProcessing ? 'Создание...' : 'Создать' }}
-					</Button>
-				</DialogFooter>
-			</form>
-		</DialogContent>
-	</Dialog>
-
-	<!-- Edit Company Dialog -->
-	<Dialog v-model:open="showEditDialog">
-		<DialogContent class="max-w-3xl max-h-[90vh] overflow-y-auto">
-			<DialogHeader>
-				<DialogTitle>Редактировать компанию</DialogTitle>
-				<!-- <DialogDescription>
-					Измените информацию о компании
-				</DialogDescription> -->
-			</DialogHeader>
-			
-			<form @submit.prevent="updateCompany" class="space-y-4">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div class="space-y-2">
-						<Label for="edit-short-name">
-							Короткое название <span class="text-destructive">*</span>
-						</Label>
-						<Input
-							id="edit-short-name"
-							v-model="editForm.short_name"
-							required
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-full-name">
-							Полное название <span class="text-destructive">*</span>
-						</Label>
-						<Input
-							id="edit-full-name"
-							v-model="editForm.full_name"
-							required
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-boss-name">Ф.И.О. руководителя</Label>
-						<Input
-							id="edit-boss-name"
-							v-model="editForm.boss_name"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-boss-title">Должность руководителя</Label>
-						<Select v-model="editForm.boss_title">
-							<SelectTrigger id="edit-boss-title">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									<SelectItem value="director">Директор</SelectItem>
-									<SelectItem value="ceo">Генеральный директор</SelectItem>
-									<SelectItem value="chief">Начальник</SelectItem>
-									<SelectItem value="supervisor">Руководитель</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-phone">
-							Телефон <span class="text-destructive">*</span>
-						</Label>
-						<Input
-							id="edit-phone"
-							v-model="editForm.phone"
-							v-maska="'+7 (###) ### ##-##'"
-							required
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-phone-2">Телефон 2</Label>
-						<Input
-							id="edit-phone-2"
-							v-model="editForm.phone_2"
-							v-maska="'+7 (###) ### ##-##'"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-email">Email</Label>
-						<Input
-							id="edit-email"
-							v-model="editForm.email"
-							type="email"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-website">Сайт</Label>
-						<Input
-							id="edit-website"
-							v-model="editForm.website"
-							type="url"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-inn">
-							ИНН <span class="text-destructive">*</span>
-						</Label>
-						<Input
-							id="edit-inn"
-							v-model.number="editForm.inn"
-							type="number"
-							required
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-kpp">КПП</Label>
-						<Input
-							id="edit-kpp"
-							v-model.number="editForm.kpp"
-							type="number"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="edit-ogrn">ОГРН</Label>
-						<Input
-							id="edit-ogrn"
-							v-model.number="editForm.ogrn"
-							type="number"
-						/>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
-						<Label for="edit-vat">
-							НДС (%) <span class="text-destructive">*</span>
-						</Label>
-						<Select :model-value="String(editForm.vat)" @update:model-value="(value) => editForm.vat = Number(value)">
-							<SelectTrigger id="edit-vat">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									<SelectItem value="0">Без НДС</SelectItem>
-									<SelectItem value="5">5%</SelectItem>
-									<SelectItem value="7">7%</SelectItem>
-									<SelectItem value="10">10%</SelectItem>
-									<SelectItem value="20">20%</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
-						<Label for="edit-legal-address">Юридический адрес</Label>
-						<Input
-							id="edit-legal-address"
-							v-model="editForm.legal_address"
-						/>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
-						<Label for="edit-contact-person">Контактное лицо</Label>
-						<Input
-							id="edit-contact-person"
-							v-model="editForm.contact_person"
-						/>
-					</div>
-				</div>
-
-				<DialogFooter>
-					<Button
-						type="button"
-						variant="outline"
-						@click="showEditDialog = false"
-						:disabled="isProcessing"
-					>
-						Отмена
-					</Button>
-					<Button type="submit" :disabled="isProcessing">
-						<div v-if="isProcessing" class="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-						{{ isProcessing ? 'Сохранение...' : 'Сохранить' }}
 					</Button>
 				</DialogFooter>
 			</form>

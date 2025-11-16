@@ -14,6 +14,11 @@ class CompanyBill extends Model
         'bank_name',
         'bank_address',
         'bik',
+        'is_main',
+    ];
+
+    protected $casts = [
+        'is_main' => 'boolean',
     ];
     
     /**

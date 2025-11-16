@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { computed, ref, onMounted, onUnmounted } from "vue"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../Components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "../Components/ui/sheet"
-import { CircleUser, Menu, LogOut, Settings, Shield, X, Calculator, Building2Icon } from "lucide-vue-next"
+import { 
+    CircleUser, 
+    Menu, 
+    LogOut, 
+    Settings, 
+    Shield, 
+    X, 
+    Calculator, 
+    Building2Icon,
+    ShoppingCart,
+    FileText,
+    Users,
+    DollarSign,
+    LayoutDashboard
+} from "lucide-vue-next"
 import { Button } from "../Components/ui/button/"
 import { Link, usePage } from "@inertiajs/vue3"
 import ThemeSwitcher from "../Components/ThemeSwitcher.vue"
@@ -19,37 +33,78 @@ const {
 const { user } = page.props.auth as any
 
 const mobileMenuOpen = ref(false)
+const sidebarExpanded = ref(false)
+const sidebarCollapsed = ref(true) // Delayed state for layout changes
+let collapseTimeout: ReturnType<typeof setTimeout> | null = null
 
-const navigationMenu = computed(() => {
-    const leftMenu = []
-    const rightMenu = []
+// Add body padding for sidebar on mount
+onMounted(() => {
+    document.body.classList.add('has-sidebar')
+})
+
+// Remove body padding on unmount
+onUnmounted(() => {
+    document.body.classList.remove('has-sidebar')
+    if (collapseTimeout) clearTimeout(collapseTimeout)
+})
+
+const navigationItems = computed(() => {
+    const items = []
 
     if (can_access_app_history) {
-        leftMenu.push({ title: 'Заказы', to: '/app/history', exact: false })
+        items.push({ 
+            title: 'Заказы', 
+            to: '/app/history', 
+            exact: false,
+            icon: ShoppingCart 
+        })
     }
 
-    rightMenu.push({ title: 'КП', to: '/app/commercial-offers', exact: false })
+    if (can_access_app_calculator) {
+        items.push({ 
+            title: 'Калькулятор', 
+            to: '/app/calculator', 
+            exact: false,
+            icon: Calculator 
+        })
+    }
+
+    items.push({ 
+        title: 'КП', 
+        to: '/app/commercial-offers', 
+        exact: false,
+        icon: FileText 
+    })
 
     if (can_access_app_users) {
-        rightMenu.push({ title: 'Пользователи', to: '/app/users', exact: false })
+        items.push({ 
+            title: 'Пользователи', 
+            to: '/app/users', 
+            exact: false,
+            icon: Users 
+        })
     }
 
     if (can_access_commission_credits) {
-        leftMenu.push({ title: 'Комиссии', to: '/app/commission-credits', exact: false })
+        items.push({ 
+            title: 'Комиссии', 
+            to: '/app/commission-credits', 
+            exact: false,
+            icon: DollarSign 
+        })
     }
 
-    return { leftMenu, rightMenu }
-})
-
-const allMenuItems = computed(() => {
-    const menu = [...navigationMenu.value.leftMenu]
-    
-    if (can_access_app_calculator) {
-        menu.push({ title: 'Калькулятор', to: '/app/calculator', exact: false })
+    if (can_access_admin_panel) {
+        items.push({ 
+            title: 'Админка', 
+            to: '/ne-tvoe-delo', 
+            exact: false,
+            icon: LayoutDashboard,
+            external: true 
+        })
     }
-    
-    menu.push(...navigationMenu.value.rightMenu)
-    return menu
+
+    return items
 })
 
 const username = computed(() => {
@@ -78,6 +133,23 @@ const isActive = (item: { to: string, exact?: boolean }) => {
 const closeMobileMenu = () => {
     mobileMenuOpen.value = false
 }
+
+const handleSidebarMouseEnter = () => {
+    sidebarExpanded.value = true
+    if (collapseTimeout) {
+        clearTimeout(collapseTimeout)
+        collapseTimeout = null
+    }
+    sidebarCollapsed.value = false
+}
+
+const handleSidebarMouseLeave = () => {
+    sidebarExpanded.value = false
+    // Delay the layout changes until after animation completes (300ms)
+    collapseTimeout = setTimeout(() => {
+        sidebarCollapsed.value = true
+    }, 300)
+}
 </script>
 
 <script lang="ts">
@@ -87,200 +159,306 @@ export default {
 </script>
 
 <template>
-    <!-- Spacer for fixed header -->
-    <div class="h-16"></div>
-    
-    <!-- Main Header -->
-    <header class="fixed w-full top-0 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-xl px-4 md:px-6 z-50 transition-all duration-300">
-        <!-- Logo -->
-        <Link 
-            href="/" 
-            class="flex items-center h-8 mr-2 transition-transform hover:scale-105 active:scale-95 duration-200"
-            aria-label="Перейти на главную страницу"
-        >
-            <img 
-                src="/assets/logo.png" 
-                alt="Логотип компании" 
-                class="h-6 min-w-24 dark:invert transition-all duration-200"
-            />
-        </Link>
-        
-        <!-- Desktop Navigation -->
-        <nav 
-            class="hidden md:flex flex-1 items-center justify-center gap-1 lg:gap-2"
-            aria-label="Основная навигация"
-        >
-            <!-- Left Menu Items -->
-            <Link 
-                v-for="item in navigationMenu.leftMenu" 
-                :key="item.title" 
-                :href="item.to" 
-                :class="[
-                    'relative px-3 py-2 rounded-md font-medium transition-all duration-200',
-                    isActive(item) 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                ]"
-            >
-                {{ item.title }}
-                <!-- Active indicator -->
-                <span 
-                    v-if="isActive(item)"
-                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
-                ></span>
-            </Link>
-            
-            <!-- Calculator Icon (Middle) -->
-            <Link 
-                v-if="can_access_app_calculator"
-                href="/app/calculator" 
-                :class="[
-                    'relative p-2.5 rounded-md transition-all duration-200 mx-2',
-                    isActive({ to: '/app/calculator', exact: false })
-                        ? 'text-foreground bg-primary/15' 
-                        : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                ]"
-                aria-label="Калькулятор"
-            >
-                <Calculator class="h-5 w-5" />
-                <!-- Active indicator -->
-                <span 
-                    v-if="isActive({ to: '/app/calculator', exact: false })"
-                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
-                ></span>
-            </Link>
-            
-            <!-- Right Menu Items -->
-            <Link 
-                v-for="item in navigationMenu.rightMenu" 
-                :key="item.title" 
-                :href="item.to" 
-                :class="[
-                    'relative px-3 py-2 rounded-md font-medium transition-all duration-200',
-                    isActive(item) 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                ]"
-            >
-                {{ item.title }}
-                <!-- Active indicator -->
-                <span 
-                    v-if="isActive(item)"
-                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
-                ></span>
-            </Link>
-            
-            <a 
-                v-if="can_access_admin_panel" 
-                href="/ne-tvoe-delo" 
-                target="_blank"
-                rel="noopener noreferrer"
-                class="relative px-3 py-2 rounded-md font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 flex items-center gap-1.5"
-            >Админка</a>
-        </nav>
-        
-        <!-- Mobile Menu -->
+    <!-- Mobile Header -->
+    <header class="md:hidden fixed w-full top-0 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-xl px-4 z-50">
+        <!-- Mobile Menu Toggle -->
         <Sheet v-model:open="mobileMenuOpen">
             <SheetTrigger as-child>
                 <Button 
                     variant="outline" 
                     size="icon" 
-                    class="shrink-0 md:hidden hover:bg-accent transition-colors"
+                    class="shrink-0 hover:bg-accent transition-colors"
                     aria-label="Открыть меню навигации"
                 >
                     <Menu class="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" class="w-[280px] sm:w-[320px]">
-                <!-- Mobile Menu Header -->
-                <div class="flex items-center justify-between mb-8">
-                    <Link href="/" @click="closeMobileMenu" class="flex items-center gap-2">
+            <SheetContent side="left" class="w-[280px] sm:w-[320px] p-0">
+                <!-- Mobile Logo -->
+                <div class="p-6 border-b">
+                    <Link href="/" @click="closeMobileMenu" class="flex items-center">
                         <img 
                             src="/assets/logo.png" 
                             alt="Логотип компании" 
-                            class="h-6 sm:h-8 dark:invert"
+                            class="h-7 dark:invert"
                         />
                     </Link>
                 </div>
                 
                 <!-- Mobile Navigation -->
-                <nav class="flex flex-col gap-2" aria-label="Мобильная навигация">
-                    <Link 
-                        v-for="item in allMenuItems" 
-                        :key="item.title" 
-                        :href="item.to"
-                        @click="closeMobileMenu"
-                        :class="[
-                            'px-4 py-3 rounded-lg font-medium transition-all duration-200',
-                            isActive(item)
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'text-foreground hover:bg-primary/10 active:scale-[0.98]'
-                        ]"
-                    >
-                        {{ item.title }}
-                    </Link>
-                    
-                    <a 
-                        v-if="can_access_admin_panel" 
-                        href="/ne-tvoe-delo" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="px-4 py-3 rounded-lg font-medium text-foreground hover:bg-primary/10 transition-all duration-200 flex items-center gap-2 active:scale-[0.98]"
-                    >Админка</a>
+                <nav class="flex flex-col p-3 gap-1" aria-label="Мобильная навигация">
+                    <template v-for="item in navigationItems" :key="item.title">
+                        <a 
+                            v-if="item.external"
+                            :href="item.to"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            :class="[
+                                'flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200',
+                                'text-foreground hover:bg-muted'
+                            ]"
+                        >
+                            <component :is="item.icon" class="h-5 w-5" />
+                            {{ item.title }}
+                        </a>
+                        <Link 
+                            v-else
+                            :href="item.to"
+                            @click="closeMobileMenu"
+                            :class="[
+                                'flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200',
+                                isActive(item)
+                                    ? 'bg-muted text-primary'
+                                    : 'text-foreground hover:bg-muted'
+                            ]"
+                        >
+                            <component :is="item.icon" class="h-5 w-5" />
+                            {{ item.title }}
+                        </Link>
+                    </template>
                 </nav>
+
+                <!-- Mobile Bottom Actions -->
+                <div class="absolute bottom-0 left-0 right-0 p-3 border-t bg-background">
+                    <div class="flex flex-col gap-2">
+                        <Link 
+                            href="/app/account/settings"
+                            @click="closeMobileMenu"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
+                        >
+                            <Settings class="h-5 w-5" />
+                            <span>Настройки</span>
+                        </Link>
+                        <Link 
+                            v-if="can_access_companies"
+                            href="/app/companies"
+                            @click="closeMobileMenu"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
+                        >
+                            <Building2Icon class="h-5 w-5" />
+                            <span>Компании</span>
+                        </Link>
+                        <Link 
+                            href="/logout"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-destructive hover:bg-destructive/10 transition-all"
+                        >
+                            <LogOut class="h-5 w-5" />
+                            <span>Выйти</span>
+                        </Link>
+                    </div>
+                </div>
             </SheetContent>
         </Sheet>
         
-        <!-- Right Section -->
-        <div class="flex items-center gap-2 ml-auto md:gap-3">
-            
-            <!-- Theme Switcher -->
+        <!-- Mobile Logo -->
+        <Link href="/" class="flex items-center">
+            <img 
+                src="/assets/logo.png" 
+                alt="Логотип компании" 
+                class="h-6 dark:invert"
+            />
+        </Link>
+
+        <!-- Mobile User Avatar -->
+        <div class="ml-auto flex items-center gap-2">
             <ThemeSwitcher />
-            
-            <!-- User Menu -->
-            <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        class="relative rounded-full h-9 w-9 transition-all duration-200 hover:bg-primary/10"
-                        aria-label="Открыть меню пользователя"
-                    >
-                        <!-- User Avatar with Initials -->
-                        <div class="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-900 text-primary flex items-center justify-center font-semibold text-sm ring-2 ring-primary/20 transition-all duration-200 hover:ring-primary/40">
-                            {{ userInitials }}
-                        </div>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" class="w-56">
-                    <DropdownMenuLabel class="font-normal">
-                        <div class="flex flex-col space-y-1">
-                            <p class="text-sm font-medium leading-none">{{ username }}</p>
-                            <p class="text-xs leading-none text-muted-foreground">{{ user.email }}</p>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem as-child class="cursor-pointer">
-                        <Link href="/app/account/settings" class="flex items-center gap-2 hover:bg-primary/10">
-                            <Settings class="h-4 w-4" />
-                            <span>Настройки</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem v-if="can_access_companies" as-child class="cursor-pointer">
-                        <Link href="/app/companies" class="flex items-center gap-2 hover:bg-primary/10">
-                            <Building2Icon class="h-4 w-4" />
-                            <span>Компании</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem as-child class="cursor-pointer text-destructive focus:text-destructive">
-                        <Link href="/logout" class="flex items-center gap-2 hover:bg-destructive/10">
-                            <LogOut class="h-4 w-4" />
-                            <span>Выйти</span>
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <div class="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm ring-2 ring-primary/20">
+                {{ userInitials }}
+            </div>
         </div>
     </header>
+
+    <!-- Mobile Spacer -->
+    <div class="h-16 md:hidden"></div>
+    
+    <!-- Desktop Sidebar -->
+    <aside 
+        @mouseenter="handleSidebarMouseEnter"
+        @mouseleave="handleSidebarMouseLeave"
+        :class="[
+            'hidden md:flex fixed left-0 top-0 h-full flex-col border-r bg-background/95 backdrop-blur-xl z-50 transition-all duration-300 ease-in-out',
+            sidebarExpanded ? 'w-64' : 'w-16'
+        ]"
+        aria-label="Главная навигация"
+    >
+        <!-- Logo Section -->
+        <div class="h-16 flex items-center justify-center border-b px-3 overflow-hidden">
+            <Link 
+                href="/" 
+                class="flex items-center justify-center min-w-0"
+                aria-label="Перейти на главную страницу"
+            >
+                <img 
+                    src="/assets/logo.png" 
+                    alt="Логотип компании" 
+                    :class="[
+                        'dark:invert transition-all duration-300 ease-in-out max-h-6 w-auto',
+                        // sidebarCollapsed ? 'h-8 w-8 object-cover' : 'h-8 w-auto'
+                    ]"
+                />
+            </Link>
+        </div>
+
+        <!-- Navigation Section -->
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2" aria-label="Основная навигация">
+            <div class="flex flex-col gap-1">
+                <template v-for="item in navigationItems" :key="item.title">
+                    <a 
+                        v-if="item.external"
+                        :href="item.to"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        :class="[
+                            'group relative flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-300 ease-in-out overflow-hidden',
+                            'text-muted-foreground hover:bg-muted'
+                        ]"
+                        :aria-label="item.title"
+                    >
+                        <!-- Icon -->
+                        <component 
+                            :is="item.icon" 
+                            class="h-5 w-5 ml-[2px] flex-shrink-0"
+                        />
+                        
+                        <!-- Text Label -->
+                        <span 
+                            :class="[
+                                'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
+                            ]"
+                        >
+                            {{ item.title }}
+                        </span>
+                    </a>
+                    <Link 
+                        v-else
+                        :href="item.to"
+                        :class="[
+                            'group relative flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-300 ease-in-out overflow-hidden',
+                            isActive(item) 
+                                ? 'bg-muted text-primary' 
+                                : 'text-muted-foreground hover:bg-muted'
+                        ]"
+                        :aria-label="item.title"
+                    >
+                        <!-- Icon -->
+                        <component 
+                            :is="item.icon" 
+                            class="h-5 w-5 ml-[2px] flex-shrink-0"
+                        />
+                        
+                        <!-- Text Label -->
+                        <span 
+                            :class="[
+                                'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
+                            ]"
+                        >
+                            {{ item.title }}
+                        </span>
+                    </Link>
+                </template>
+            </div>
+        </nav>
+
+        <!-- Bottom Section -->
+        <div class="border-t px-2 py-4">
+            <div class="flex flex-col gap-1">
+                <!-- Theme Switcher -->
+                <ThemeSwitcher variant="inline" />
+
+                <!-- Settings -->
+                <Link 
+                    href="/app/account/settings"
+                    :class="[
+                        'flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden',
+                        // sidebarCollapsed && 'justify-center',
+                        isActive({ to: '/app/account/settings', exact: false }) && 'bg-muted text-muted-foreground'
+                    ]"
+                    aria-label="Настройки"
+                >
+                    <Settings class="h-5 w-5 ml-[2px] flex-shrink-0" />
+                    <span 
+                        :class="[
+                            'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
+                            // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+                        ]"
+                    >
+                        Настройки
+                    </span>
+                </Link>
+
+                <!-- Companies -->
+                <Link 
+                    v-if="can_access_companies"
+                    href="/app/companies"
+                    :class="[
+                        'flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden',
+                        // sidebarCollapsed && 'justify-center',
+                        isActive({ to: '/app/companies', exact: false }) && 'bg-muted text-muted-foreground'
+                    ]"
+                    aria-label="Компании"
+                >
+                    <Building2Icon class="h-5 w-5 ml-[2px] flex-shrink-0" />
+                    <span 
+                        :class="[
+                            'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
+                            // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+                        ]"
+                    >
+                        Компании
+                    </span>
+                </Link>
+
+                <!-- User Section -->
+                <div 
+                    :class="[
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 pl-2 bg-muted transition-all duration-300 ease-in-out overflow-hidden',
+                        // sidebarCollapsed && 'justify-center'
+                    ]"
+                >
+                    <div class="h-8 w-8 rounded-full bg-muted text-primary flex items-center justify-center font-semibold text-xs ring-2 ring-accent/10 flex-shrink-0">
+                        {{ userInitials }}
+                    </div>
+                    <div 
+                        :class="[
+                            'flex-1 min-w-0 transition-all duration-300 ease-in-out',
+                            // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+                        ]"
+                    >
+                        <p class="text-sm font-medium leading-none truncate">{{ username }}</p>
+                        <p class="text-xs text-muted-foreground truncate mt-1">{{ user.email }}</p>
+                    </div>
+                </div>
+
+                <!-- Logout -->
+                <Link 
+                    href="/logout"
+                    :class="[
+                        'flex items-center gap-4 rounded-lg px-3 py-2.5 text-destructive hover:bg-destructive/10 transition-all duration-300 ease-in-out overflow-hidden',
+                        // sidebarCollapsed && 'justify-center'
+                    ]"
+                    aria-label="Выйти"
+                >
+                    <LogOut class="h-5 w-5 ml-[2px] flex-shrink-0" />
+                    <span 
+                        :class="[
+                            'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
+                            // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+                        ]"
+                    >
+                        Выйти
+                    </span>
+                </Link>
+            </div>
+        </div>
+    </aside>
 </template>
+
+<style>
+/* Add left padding for body when sidebar layout is active */
+@media (min-width: 768px) {
+    body.has-sidebar {
+        padding-left: 4rem; /* 64px - collapsed sidebar width */
+        transition: padding-left 0.3s ease-in-out;
+    }
+}
+</style>

@@ -259,7 +259,6 @@ export interface CompanyBill {
     bank_name: string;
     bank_address: string;
     bik: string;
-    is_main: boolean;
     created_at?: string;
     updated_at?: string;
 }
@@ -268,13 +267,13 @@ export interface Company {
     id: number;
     type: 'performer' | 'factory' | 'supplier' | 'customer';
     user_id?: number;
-    short_name: string;
+    short_name?: string;
     full_name: string;
     boss_name?: string;
     boss_title?: 'director' | 'ceo' | 'chief' | 'supervisor';
     legal_address?: string;
     email?: string;
-    phone: string;
+    phone?: string;
     phone_2?: string;
     phone_3?: string;
     website?: string;
@@ -284,6 +283,7 @@ export interface Company {
     vat: number;
     contact_person?: string;
     warehouse_id: number;
+    is_main: boolean;
     created_at?: string;
     updated_at?: string;
     user?: User;

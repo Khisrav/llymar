@@ -58,14 +58,33 @@ class TochkaBankService
     public function createBill(Order $order, array $secondSide = []): array
     {
         $user = User::find($order->user_id);
-        // Validate that tax code (INN) exists
-        // $taxCode = $secondSide['taxCode'] ?? $user->inn ?? null;
-        $taxCode = $user->inn;
+        
+        // Get user's companies
+        $companies = $user->companies;
+        
+        // Check if user has any companies
+        if ($companies->isEmpty()) {
+            throw new Exception('У пользователя нет зарегистрированных компаний. Невозможно создать счет.');
+        }
+        
+        // Try to find the main company
+        $mainCompany = $companies->firstWhere('is_main', true);
+        
+        // If no main company, use the first company
+        $company = $mainCompany ?? $companies->first();
+        
+        // Get the company's INN
+        $taxCode = $company->inn;
         $secondSide['taxCode'] = $taxCode;
 
-        Log::info('User info', ['user' => $user]);
+        Log::info('User and company info', [
+            'user' => $user,
+            'company' => $company,
+            'is_main' => $mainCompany ? 'yes' : 'no (using first company)'
+        ]);
+        
         if (empty($taxCode)) {
-            throw new Exception('Не указан ИНН для создания счета');
+            throw new Exception('Не указан ИНН компании для создания счета');
         }
         
         try {

@@ -35,6 +35,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { vMaska } from 'maska/vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../Components/ui/dialog";
 import { Switch } from "../../../Components/ui/switch";
+import { router } from "@inertiajs/vue3";
 
 // Get initial data from page props
 const pageData = usePage().props;
@@ -201,16 +202,16 @@ const deleteBill = (billId: number) => {
 	});
 };
 
-const toggleMainBill = (billId: number) => {
-	billForm.post(`/app/companies/${company.id}/bills/${billId}/toggle-main`, {
+const toggleMainCompany = () => {
+	router.post(`/app/companies/${company.id}/toggle-main`, {}, {
 		preserveScroll: true,
 		onSuccess: (page: any) => {
-			// Update local company bills
+			// Update the local company object
 			Object.assign(company, page.props.company);
-			toast.success("Основной счет успешно установлен");
+			toast.success("Основная компания успешно установлена");
 		},
 		onError: () => {
-			toast.error("Ошибка при установке основного счета");
+			toast.error("Ошибка при установке основной компании");
 		},
 	});
 };
@@ -235,12 +236,24 @@ const toggleMainBill = (billId: number) => {
 							<BuildingIcon class="h-6 w-6 text-primary" />
 						</div>
 						<div>
-							<h1 class="text-2xl font-bold tracking-tight">{{ company.short_name }}</h1>
-							<p class="text-sm text-muted-foreground mt-1">{{ company.full_name }}</p>
+							<h1 class="text-2xl font-bold tracking-tight">{{ company.short_name || company.full_name }}</h1>
+							<p v-if="company.short_name && company.short_name !== company.full_name" class="text-sm text-muted-foreground mt-1">{{ company.full_name }}</p>
 						</div>
 					</div>
 					
 					<div class="flex items-center gap-3">
+						<!-- Main Company Toggle -->
+						<div class="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+							<Label for="main-toggle" class="text-sm cursor-pointer">
+								Основная
+							</Label>
+							<Switch 
+								id="main-toggle"
+								:checked="company.is_main" 
+								@update:checked="toggleMainCompany"
+							/>
+						</div>
+
 						<!-- Action Dropdown -->
 						<DropdownMenu>
 							<DropdownMenuTrigger>
@@ -307,7 +320,7 @@ const toggleMainBill = (billId: number) => {
 									<BuildingIcon class="h-4 w-4" />
 									Короткое название
 								</Label>
-								<div v-if="!isEditing" class="text-muted-foreground">{{ company.short_name }}</div>
+								<div v-if="!isEditing" class="text-muted-foreground">{{ company.short_name || '—' }}</div>
 								<Input 
 									v-else 
 									v-model="form.short_name" 
@@ -323,7 +336,7 @@ const toggleMainBill = (billId: number) => {
 							<div class="space-y-2">
 								<Label class="text-sm font-medium flex items-center gap-2">
 									<BuildingIcon class="h-4 w-4" />
-									Полное название
+									Полное название <span class="text-destructive">*</span>
 								</Label>
 								<div v-if="!isEditing" class="text-muted-foreground">{{ company.full_name }}</div>
 								<Input 
@@ -386,9 +399,10 @@ const toggleMainBill = (billId: number) => {
 									Телефон
 								</Label>
 								<div v-if="!isEditing">
-									<a :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
+									<a v-if="company.phone" :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
 										{{ company.phone }}
 									</a>
+									<span v-else class="text-muted-foreground">—</span>
 								</div>
 								<Input 
 									v-else 
@@ -524,7 +538,7 @@ const toggleMainBill = (billId: number) => {
 						<CardContent class="space-y-4 p-4">
 							<!-- INN -->
 							<div class="space-y-2">
-								<Label class="text-sm font-medium">ИНН</Label>
+								<Label class="text-sm font-medium">ИНН <span class="text-destructive">*</span></Label>
 								<div v-if="!isEditing" class="text-muted-foreground font-mono">{{ company.inn }}</div>
 								<Input 
 									v-else 
@@ -632,7 +646,7 @@ const toggleMainBill = (billId: number) => {
 							<Card
 								v-for="bill in company.company_bills"
 								:key="bill.id"
-								:class="bill.is_main ? 'border-primary shadow-sm' : 'transition-all duration-200 hover:border-border/60 shadow-sm'"
+								class="transition-all duration-200 hover:border-border/60 shadow-sm"
 							>
 								<CardHeader class="pb-3">
 									<div class="flex items-start justify-between gap-2">
@@ -640,7 +654,6 @@ const toggleMainBill = (billId: number) => {
 											<CardTitle class="text-lg mb-1 flex items-center gap-2">
 												<LandmarkIcon class="h-5 w-5" />
 												{{ bill.bank_name }}
-												<span v-if="bill.is_main" class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Основной</span>
 											</CardTitle>
 											<p class="text-sm text-muted-foreground">{{ bill.bank_address }}</p>
 										</div>
@@ -654,13 +667,6 @@ const toggleMainBill = (billId: number) => {
 												<DropdownMenuItem @click="startEditingBill(bill)">
 													<EditIcon class="h-4 w-4" />
 													<span>Редактировать</span>
-												</DropdownMenuItem>
-												<DropdownMenuItem 
-													v-if="!bill.is_main"
-													@click="toggleMainBill(bill.id)"
-												>
-													<WalletIcon class="h-4 w-4" />
-													<span>Сделать основным</span>
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
 												<DropdownMenuItem 
@@ -705,7 +711,6 @@ const toggleMainBill = (billId: number) => {
 											<TableHead class="font-semibold">Расчетный счет</TableHead>
 											<TableHead class="font-semibold">Корр. счет</TableHead>
 											<TableHead class="font-semibold">БИК</TableHead>
-											<TableHead class="font-semibold w-[100px]">Основной</TableHead>
 											<TableHead class="font-semibold w-[100px]">Действия</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -714,13 +719,10 @@ const toggleMainBill = (billId: number) => {
 										<TableRow 
 											v-for="bill in company.company_bills" 
 											:key="bill.id" 
-											:class="bill.is_main ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'"
+											class="hover:bg-muted/30"
 										>
 											<TableCell class="max-w-xs">
-												<div class="flex items-center gap-2">
-													<div class="font-medium">{{ bill.bank_name }}</div>
-													<span v-if="bill.is_main" class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Основной</span>
-												</div>
+												<div class="font-medium">{{ bill.bank_name }}</div>
 												<div class="text-sm text-muted-foreground line-clamp-1">{{ bill.bank_address }}</div>
 											</TableCell>
 											<TableCell>
@@ -731,13 +733,6 @@ const toggleMainBill = (billId: number) => {
 											</TableCell>
 											<TableCell>
 												<div class="font-mono text-sm">{{ bill.bik }}</div>
-											</TableCell>
-											<TableCell>
-												<Switch 
-													:checked="bill.is_main" 
-													@update:checked="() => toggleMainBill(bill.id)"
-													:disabled="billForm.processing"
-												/>
 											</TableCell>
 											<TableCell>
 												<div class="flex items-center gap-1">

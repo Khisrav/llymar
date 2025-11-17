@@ -58,8 +58,7 @@ class CompanyResource extends Resource
                             ->required()
                             ->live(),
                         TextInput::make('short_name')
-                            ->label('Короткое название')
-                            ->required(),
+                            ->label('Короткое название'),
                         TextInput::make('full_name')
                             ->label('Полное название')
                             ->required(),
@@ -85,7 +84,8 @@ class CompanyResource extends Resource
                             // ->required(),
                         TextInput::make('email')
                             ->label('Email')
-                            ->type('email'),
+                            ->type('email')
+                            ->nullable(),
                         Select::make('warehouse_id')
                             ->label('Склад')
                             ->options(Warehouse::all()->pluck('name', 'id'))
@@ -96,8 +96,7 @@ class CompanyResource extends Resource
                         TextInput::make('phone')
                             ->label('Телефон')
                             ->mask('+7 (999) 999 99-99')
-                            ->placeholder('+7 (___) ___ __-__')
-                            ->required(),
+                            ->placeholder('+7 (___) ___ __-__'),
                         TextInput::make('phone_2')
                             ->label('Телефон 2')
                             ->placeholder('+7 (___) ___ __-__')

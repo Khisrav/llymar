@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class CompanyController extends Controller
@@ -85,13 +86,13 @@ class CompanyController extends Controller
         }
 
         $validated = $request->validate([
-            'short_name' => ['required', 'string', 'max:255'],
+            'short_name' => ['nullable', 'string', 'max:255'],
             'full_name' => ['required', 'string', 'max:500'],
             'boss_name' => ['nullable', 'string', 'max:255'],
             'boss_title' => ['nullable', 'string', 'in:director,ceo,chief,supervisor'],
             'legal_address' => ['nullable', 'string', 'max:500'],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'phone_2' => ['nullable', 'string', 'max:255'],
             'phone_3' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'url', 'max:255'],
@@ -135,13 +136,13 @@ class CompanyController extends Controller
         }
 
         $validated = $request->validate([
-            'short_name' => ['required', 'string', 'max:255'],
+            'short_name' => ['nullable', 'string', 'max:255'],
             'full_name' => ['required', 'string', 'max:500'],
             'boss_name' => ['nullable', 'string', 'max:255'],
             'boss_title' => ['nullable', 'string', 'in:director,ceo,chief,supervisor'],
             'legal_address' => ['nullable', 'string', 'max:500'],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'phone_2' => ['nullable', 'string', 'max:255'],
             'phone_3' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'url', 'max:255'],
@@ -180,6 +181,39 @@ class CompanyController extends Controller
         }
 
         $company->delete();
+
+        return redirect()->back();
+    }
+
+    /**
+     * Toggle the main status of a company
+     */
+    public function toggleMain(Company $company)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Check if user is a manager - they cannot toggle main companies
+        $userRole = $user->roles->first()?->name;
+        if ($userRole === 'Manager') {
+            abort(403, 'Managers cannot toggle main companies');
+        }
+
+        // Ensure the company belongs to the authenticated user
+        if ($company->user_id !== $user->id) {
+            abort(403, 'Unauthorized to modify this company');
+        }
+
+        DB::transaction(function () use ($user, $company) {
+            // Unset all main companies for this user
+            Company::where('user_id', $user->id)->update(['is_main' => false]);
+            
+            // Set this company as main
+            $company->update(['is_main' => true]);
+        });
 
         return redirect()->back();
     }

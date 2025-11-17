@@ -27,6 +27,11 @@ class Company extends Model
         'warehouse_id',
         'contact_person',
         'user_id',
+        'is_main',
+    ];
+
+    protected $casts = [
+        'is_main' => 'boolean',
     ];
     
     /**

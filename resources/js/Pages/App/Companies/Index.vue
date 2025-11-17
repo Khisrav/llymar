@@ -22,6 +22,7 @@ import {
 import { Badge } from '../../../Components/ui/badge';
 import { toast } from 'vue-sonner';
 import { Toaster } from '../../../Components/ui/sonner';
+import { Switch } from '../../../Components/ui/switch';
 import {
 	Dialog,
 	DialogContent,
@@ -166,6 +167,22 @@ const deleteCompany = (company: Company) => {
 		},
 	});
 };
+
+const toggleMainCompany = (company: Company) => {
+	router.post(`/app/companies/${company.id}/toggle-main`, {}, {
+		preserveScroll: true,
+		onSuccess: () => {
+			toast('Основная компания установлена', {
+				description: `"${company.short_name}" теперь основная компания`,
+			});
+		},
+		onError: () => {
+			toast('Ошибка', {
+				description: 'Не удалось установить основную компанию',
+			});
+		},
+	});
+};
 </script>
 
 <template>
@@ -225,13 +242,26 @@ const deleteCompany = (company: Company) => {
 							<CardHeader class="pb-3">
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex-1 min-w-0">
-										<CardTitle class="text-lg mb-1">{{ company.short_name }}</CardTitle>
-										<CardDescription class="text-sm">{{ company.full_name }}</CardDescription>
+										<div class="flex items-center gap-2 mb-1">
+											<CardTitle class="text-lg">{{ company.short_name || company.full_name }}</CardTitle>
+											<!-- <Badge v-if="company.is_main" variant="default" class="text-xs">Основная</Badge> -->
+										</div>
+										<CardDescription v-if="company.short_name && company.short_name !== company.full_name" class="text-sm">{{ company.full_name }}</CardDescription>
 									</div>
-									<Badge variant="outline" class="flex-shrink-0">
-										<PercentIcon class="h-3 w-3 mr-1" />
-										НДС {{ company.vat }}%
-									</Badge>
+									<div class="flex flex-col gap-2 items-end">
+										<Badge variant="outline" class="flex-shrink-0">
+											<PercentIcon class="h-3 w-3 mr-1" />
+											НДС {{ company.vat }}%
+										</Badge>
+										<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+											<span>Основная</span>
+											<Switch 
+												:checked="company.is_main" 
+												@update:checked="() => toggleMainCompany(company)"
+												class="scale-75"
+											/>
+										</div>
+									</div>
 								</div>
 							</CardHeader>
 							<CardContent class="space-y-3">
@@ -243,12 +273,12 @@ const deleteCompany = (company: Company) => {
 									</div>
 								</div>
 
-								<div class="flex items-center gap-2 text-sm">
-									<PhoneIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-									<a :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
-										{{ company.phone }}
-									</a>
-								</div>
+						<div v-if="company.phone" class="flex items-center gap-2 text-sm">
+							<PhoneIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+							<a :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
+								{{ company.phone }}
+							</a>
+						</div>
 
 								<div v-if="company.email" class="flex items-center gap-2 text-sm">
 									<MailIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -314,15 +344,23 @@ const deleteCompany = (company: Company) => {
 										<TableHead class="font-semibold">Контакты</TableHead>
 										<TableHead class="font-semibold">Реквизиты</TableHead>
 										<TableHead class="font-semibold text-center">НДС</TableHead>
+										<TableHead class="font-semibold text-center w-[100px]">Основная</TableHead>
 										<TableHead class="font-semibold text-right">Действия</TableHead>
 									</TableRow>
 								</TableHeader>
 								
 								<TableBody>
-									<TableRow v-for="company in companies" :key="company.id" class="hover:bg-muted/30">
+									<TableRow 
+										v-for="company in companies" 
+										:key="company.id" 
+										:class="company.is_main ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'"
+									>
 										<TableCell class="max-w-xs">
-											<div class="font-medium">{{ company.short_name }}</div>
-											<div class="text-sm text-muted-foreground line-clamp-1">{{ company.full_name }}</div>
+										<div class="flex items-center gap-2">
+											<div class="font-medium">{{ company.short_name || company.full_name }}</div>
+											<!-- <Badge v-if="company.is_main" variant="outline" class="text-xs">Основная</Badge> -->
+										</div>
+										<div v-if="company.short_name && company.short_name !== company.full_name" class="text-sm text-muted-foreground line-clamp-1">{{ company.full_name }}</div>
 										</TableCell>
 										<TableCell>
 											<div v-if="company.boss_name" class="space-y-0.5">
@@ -333,7 +371,8 @@ const deleteCompany = (company: Company) => {
 										</TableCell>
 										<TableCell>
 											<div class="space-y-1">
-												<div class="text-sm font-mono">{{ company.phone }}</div>
+												<div v-if="company.phone" class="text-sm font-mono">{{ company.phone }}</div>
+												<span v-else class="text-sm text-muted-foreground">—</span>
 												<div v-if="company.email" class="text-sm text-muted-foreground line-clamp-1">
 													{{ company.email }}
 												</div>
@@ -347,6 +386,12 @@ const deleteCompany = (company: Company) => {
 										</TableCell>
 										<TableCell class="text-center">
 											<Badge variant="outline">{{ company.vat }}%</Badge>
+										</TableCell>
+										<TableCell class="text-center">
+											<Switch 
+												:checked="company.is_main" 
+												@update:checked="() => toggleMainCompany(company)"
+											/>
 										</TableCell>
 										<TableCell class="text-right">
 											<DropdownMenu>
@@ -398,12 +443,11 @@ const deleteCompany = (company: Company) => {
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div class="space-y-2">
 						<Label for="create-short-name">
-							Короткое название <span class="text-destructive">*</span>
+							Короткое название
 						</Label>
 						<Input
 							id="create-short-name"
 							v-model="newCompany.short_name"
-							required
 							placeholder="ООО «Компания»"
 						/>
 					</div>
@@ -448,13 +492,12 @@ const deleteCompany = (company: Company) => {
 
 					<div class="space-y-2">
 						<Label for="create-phone">
-							Телефон <span class="text-destructive">*</span>
+							Телефон
 						</Label>
 						<Input
 							id="create-phone"
 							v-model="newCompany.phone"
 							v-maska="'+7 (###) ### ##-##'"
-							required
 							placeholder="+7 (___) ___ __-__"
 						/>
 					</div>

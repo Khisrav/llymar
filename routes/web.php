@@ -170,12 +170,12 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::post('/app/companies', [App\Http\Controllers\CompanyController::class, 'store'])->name('app.companies.store');
     Route::put('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])->name('app.companies.update');
     Route::delete('/app/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])->name('app.companies.destroy');
+    Route::post('/app/companies/{company}/toggle-main', [App\Http\Controllers\CompanyController::class, 'toggleMain'])->name('app.companies.toggle_main');
     
     // Company Bills Management Routes
     Route::post('/app/companies/{company}/bills', [App\Http\Controllers\CompanyBillController::class, 'store'])->name('app.companies.bills.store');
     Route::put('/app/companies/{company}/bills/{bill}', [App\Http\Controllers\CompanyBillController::class, 'update'])->name('app.companies.bills.update');
     Route::delete('/app/companies/{company}/bills/{bill}', [App\Http\Controllers\CompanyBillController::class, 'destroy'])->name('app.companies.bills.destroy');
-    Route::post('/app/companies/{company}/bills/{bill}/toggle-main', [App\Http\Controllers\CompanyBillController::class, 'toggleMain'])->name('app.companies.bills.toggle_main');
     
     Route::get('/app/orders/sketcher/{order_id}', [OrderController::class, 'sketcherPage'])->name('app.sketcher');
     Route::post('/app/order/sketch/download', [OrderController::class, 'sketchPDF'])->name('app.sketch');

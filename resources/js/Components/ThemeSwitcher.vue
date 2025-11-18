@@ -72,9 +72,9 @@ export default {
 <button 
     v-else
     @click="themeToggler"
-    class="flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden w-full"
+    class="flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden"
 >
-    <div class="flex-shrink-0 h-5 w-5 ml-[2px] flex items-center justify-center">
+    <div class="flex-shrink-0 h-5 ml-[2px] flex items-center justify-center w-full">
         <svg
             class="w-5 h-5"
             :class="[isDarkMode ? 'hidden' : '']"
@@ -100,12 +100,12 @@ export default {
             ></path>
         </svg>
     </div>
-    <span 
+    <!-- <span 
         :class="[
             'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
         ]"
     >
         {{ isDarkMode ? 'Темная' : 'Светлая' }}
-    </span>
+    </span> -->
 </button>
 </template>

@@ -15,7 +15,8 @@ import {
     FileText,
     Users,
     DollarSign,
-    LayoutDashboard
+    LayoutDashboard,
+    Send
 } from "lucide-vue-next"
 import { Button } from "../Components/ui/button/"
 import { Link, usePage } from "@inertiajs/vue3"
@@ -238,6 +239,15 @@ export default {
                             <Building2Icon class="h-5 w-5" />
                             <span>Компании</span>
                         </Link>
+                        <a 
+                            href="https://t.me/LLymar"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
+                        >
+                            <Send class="h-5 w-5" />
+                            <span>Telegram</span>
+                        </a>
                         <Link 
                             href="/logout"
                             class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-destructive hover:bg-destructive/10 transition-all"
@@ -362,9 +372,6 @@ export default {
         <!-- Bottom Section -->
         <div class="border-t px-2 py-4">
             <div class="flex flex-col gap-1">
-                <!-- Theme Switcher -->
-                <ThemeSwitcher variant="inline" />
-
                 <!-- Settings -->
                 <Link 
                     href="/app/account/settings"
@@ -411,7 +418,7 @@ export default {
                 <!-- User Section -->
                 <div 
                     :class="[
-                        'flex items-center gap-3 rounded-lg px-3 py-2.5 pl-2 bg-muted transition-all duration-300 ease-in-out overflow-hidden',
+                        'flex items-center gap-3 rounded-lg px-3 py-2 pl-2 bg-muted/50 transition-all duration-300 ease-in-out overflow-hidden',
                         // sidebarCollapsed && 'justify-center'
                     ]"
                 >
@@ -429,25 +436,35 @@ export default {
                     </div>
                 </div>
 
-                <!-- Logout -->
-                <Link 
-                    href="/logout"
-                    :class="[
-                        'flex items-center gap-4 rounded-lg px-3 py-2.5 text-destructive hover:bg-destructive/10 transition-all duration-300 ease-in-out overflow-hidden',
-                        // sidebarCollapsed && 'justify-center'
-                    ]"
-                    aria-label="Выйти"
-                >
-                    <LogOut class="h-5 w-5 ml-[2px] flex-shrink-0" />
-                    <span 
-                        :class="[
-                            'text-sm font-medium whitespace-nowrap transition-all duration-300 ease-in-out',
-                            // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
-                        ]"
+                <!-- Actions Row: Theme Switcher, Telegram, Logout -->
+                <div class="flex items-center gap-1 mt-1 overflow-hidden">
+                    <!-- Telegram Link -->
+                    <a
+                        href="https://t.me/LLymar"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="flex items-center justify-center rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-muted transition-all duration-300 ease-in-out"
+                        aria-label="Telegram"
+                        title="Связаться через Telegram"
                     >
-                        Выйти
-                    </span>
-                </Link>
+                        <Send class="h-5 w-5" />
+                    </a>
+
+                    <!-- Theme Switcher -->
+                    <div class="w-full">
+                        <ThemeSwitcher variant="inline" class="w-full" />
+                    </div>
+
+                    <!-- Logout -->
+                    <Link 
+                        href="/logout"
+                        class="flex items-center justify-center rounded-lg px-3 py-2.5 text-destructive hover:bg-destructive/10 transition-all duration-300 ease-in-out"
+                        aria-label="Выйти"
+                        title="Выйти"
+                    >
+                        <LogOut class="h-5 w-5" />
+                    </Link>
+                </div>
             </div>
         </div>
     </aside>

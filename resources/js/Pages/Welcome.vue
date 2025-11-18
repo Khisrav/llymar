@@ -661,7 +661,7 @@ const structuredData = computed(() => ({
 					<div class="container max-w-screen-2xl px-2 md:px-4 flex-1 flex flex-col justify-center">
 						<div class="flex flex-col gap-6 md:gap-8 py-12 md:py-0 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
 							<div class="space-y-4">
-								<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl uppercase font-light leading-tight">
+								<h1 class="text-3xl sm:text-4xl md:text-5xl uppercase font-light leading-tight">
 									{{ slide.title }}
 								</h1>
 

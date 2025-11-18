@@ -109,7 +109,7 @@ watch(
 
 const clearSessionStorage = () => {
 	sessionStorage.removeItem('selectedServicesID')
-	sessionStorage.removeItem('selectedFactor')
+	// sessionStorage.removeItem('selectedFactor')
 	sessionStorage.removeItem('selectedGlassID')
 	sessionStorage.removeItem('cartItems')
 	sessionStorage.removeItem('openings')

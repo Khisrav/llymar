@@ -330,7 +330,7 @@ const hasFileSelected = computed(() => {
 						<div class="space-y-2">
 							<Label for="telegram" class="text-sm font-medium flex items-center gap-2">
 								<MessageSquareIcon class="h-4 w-4" />
-								Telegram <span class="text-destructive">*</span>
+								Telegram
 							</Label>
 							<Input 
 								id="telegram"

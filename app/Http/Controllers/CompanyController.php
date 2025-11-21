@@ -106,7 +106,7 @@ class CompanyController extends Controller
         // Add user_id, type, and warehouse_id to the validated data
         $validated['user_id'] = $user->id;
         $validated['type'] = 'customer';
-        $validated['warehouse_id'] = 1; // Default warehouse
+        $validated['warehouse_id'] = 0; // Default warehouse
 
         Company::create($validated);
 

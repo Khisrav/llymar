@@ -142,6 +142,51 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
         return Inertia::render('App/Index');
     })->name('app.home');
 
+    Route::get('/app/test', function () {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $logisticsCompanies = \App\Models\LogisticsCompany::all(['id', 'name']);
+        
+        // Get dealers if user has permission to select dealers
+        $dealers = collect();
+        
+        if ($user->hasRole('Super-Admin')) {
+            // Get all dealers for super admin
+            $dealers = \App\Models\User::whereHas('roles', function($query) {
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
+        } else {
+            // Get only child dealers for other roles
+            $dealers = \App\Models\User::where('parent_id', $user->id)
+                ->whereHas('roles', function($query) {
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
+        }
+        
+        // Get user's customer companies
+        $userCompanies = \App\Models\Company::where('type', 'customer')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'short_name', 'full_name', 'is_main']);
+        
+        return Inertia::render('Test/OrderConfirmation', [
+            'items' => \App\Http\Controllers\AppCalculatorController::getCalculatorItems(),
+            'additional_items' => \App\Http\Controllers\AppCalculatorController::getAdditionalItems(),
+            'glasses' => \App\Http\Controllers\AppCalculatorController::getGlasses(),
+            'services' => \App\Http\Controllers\AppCalculatorController::getServices(),
+            'categories' => \App\Models\Category::all()->toArray(),
+            'logistics_companies' => $logisticsCompanies,
+            'dealers' => $dealers,
+            'user_companies' => $userCompanies,
+            'user' => $user,
+            'user_default_factor' => $user->default_factor ?? 'pz',
+        ]);
+    })->name('app.test');
+
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
     Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');

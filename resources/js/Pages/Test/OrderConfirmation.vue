@@ -77,9 +77,44 @@ const checkout = () => {
 		return
 	}
 	
+	// Prepare data based on current tab - only send relevant fields
+	const baseData = {
+		delivery_type: currentTab.value,
+		fullname: orderForm.value.fullname,
+		phone: orderForm.value.phone,
+		comment: orderForm.value.comment,
+		consent: orderForm.value.consent,
+	}
+	
+	// Add tab-specific fields
+	let tabSpecificData = {}
+	
+	switch (currentTab.value) {
+		case 'montazh':
+		case 'dostavka':
+			tabSpecificData = {
+				delivery_address: orderForm.value.delivery_address,
+				...(is_in_group('G1') && { current_account: orderForm.value.current_account })
+			}
+			break
+		case 'tk':
+			tabSpecificData = {
+				logistics_company_id: orderForm.value.logistics_company_id,
+				delivery_address: orderForm.value.delivery_address,
+				...(is_in_group('G3') && { dealer_id: orderForm.value.dealer_id })
+			}
+			break
+		case 'samovivoz':
+			tabSpecificData = {
+				...(is_in_group('G4') && { company_id: orderForm.value.company_id })
+			}
+			break
+	}
+	
 	// TODO: Implement backend checkout logic
-	console.log('Checkout data:', {
-		form: orderForm.value,
+	console.log('Checkout data (tab-specific):', {
+		...baseData,
+		...tabSpecificData,
 		cartItems: itemsStore.cartItems,
 		totalAmount: Object.keys(itemsStore.cartItems).reduce((total, itemID) => {
 			const item = itemsStore.getItemInfo(parseInt(itemID))
@@ -120,7 +155,7 @@ const permissionGroups = ref({
 })
 
 const roleGroups = ref({
-    'Super-Admin': ['G1', 'G2'],
+    'Super-Admin': ['G1', 'G3', 'G4'],
     'Operator': ['G1', 'G3', 'G4'],
     'ROP': ['G3', 'G4'],
     'Dealer': ['G2', 'G4'],
@@ -134,11 +169,14 @@ const deliveryOptionTabGroups = ref({
         { value: 'montazh', title: 'Монтаж' },
         { value: 'dostavka', title: 'Доставка' },
     ],
-    'G2': [],
-    'G3': [],
+    'G2': [
+        { value: 'samovivoz', title: 'Самовывоз' },
+    ],
+    'G3': [
+        { value: 'tk', title: 'ТК' },
+    ],
     'G4': [
-        { value: 'montazh', title: 'Монтаж' },
-        { value: 'dostavka', title: 'Доставка' },
+        { value: 'samovivoz', title: 'Самовывоз' },
     ],
 })
 
@@ -147,20 +185,26 @@ const is_in_group = (group_id: 'G1' | 'G2' | 'G3' | 'G4') => permissionGroups.va
 // Get all tabs accessible to the current user based on their role groups
 const availableTabs = computed(() => {
     const userGroups = roleGroups.value[user_role as keyof typeof roleGroups.value] || []
-    const tabs: Array<{ value: string, title: string }> = []
+    const tabsMap = new Map<string, { value: string, title: string }>()
     
     userGroups.forEach((groupId: string) => {
         const groupTabs = deliveryOptionTabGroups.value[groupId as keyof typeof deliveryOptionTabGroups.value] || []
-        tabs.push(...groupTabs)
+        groupTabs.forEach(tab => {
+            // Use Map to automatically deduplicate by tab value
+            tabsMap.set(tab.value, tab)
+        })
     })
     
-    return tabs
+    return Array.from(tabsMap.values())
 })
 
 // Get default tab (first available tab)
 const defaultTab = computed(() => {
     return availableTabs.value[0]?.value || 'montazh'
 })
+
+// Track current active tab
+const currentTab = ref(defaultTab.value)
 
 // Compute if checkout is valid
 const isCheckoutValid = computed(() => {
@@ -215,40 +259,6 @@ const isCheckoutValid = computed(() => {
                                     placeholder="Введите адрес доставки"
                                 />
                             </div>
-                            
-                            <!-- Contact Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-2">
-                                    <Label for="fullname_montazh" class="text-sm font-medium flex items-center gap-2">
-                                        <UserIcon class="h-4 w-4" />
-                                        Ф.И.О. <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="fullname_montazh"
-                                        v-model="orderForm.fullname" 
-                                        type="text" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Введите ваше полное имя"
-                                    />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="phone_montazh" class="text-sm font-medium flex items-center gap-2">
-                                        <PhoneIcon class="h-4 w-4" />
-                                        Номер телефона <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="phone_montazh"
-                                        v-model="orderForm.phone" 
-                                        type="tel" 
-                                        v-maska="'+7 (###) ### ##-##'" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="+7 (___) ___ __-__"
-                                    />
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -276,40 +286,6 @@ const isCheckoutValid = computed(() => {
                                     class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                                     placeholder="Введите адрес доставки"
                                 />
-                            </div>
-                            
-                            <!-- Contact Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-2">
-                                    <Label for="fullname_dostavka" class="text-sm font-medium flex items-center gap-2">
-                                        <UserIcon class="h-4 w-4" />
-                                        Ф.И.О. <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="fullname_dostavka"
-                                        v-model="orderForm.fullname" 
-                                        type="text" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Введите ваше полное имя"
-                                    />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="phone_dostavka" class="text-sm font-medium flex items-center gap-2">
-                                        <PhoneIcon class="h-4 w-4" />
-                                        Номер телефона <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="phone_dostavka"
-                                        v-model="orderForm.phone" 
-                                        type="tel" 
-                                        v-maska="'+7 (###) ### ##-##'" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="+7 (___) ___ __-__"
-                                    />
-                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -360,40 +336,6 @@ const isCheckoutValid = computed(() => {
                                     />
                                 </div>
                             </div>
-
-                            <!-- Contact Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                <div class="space-y-2">
-                                    <Label for="fullname_tk" class="text-sm font-medium flex items-center gap-2">
-                                        <UserIcon class="h-4 w-4" />
-                                        Ф.И.О. <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="fullname_tk"
-                                        v-model="orderForm.fullname" 
-                                        type="text" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Введите ваше полное имя"
-                                    />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="phone_tk" class="text-sm font-medium flex items-center gap-2">
-                                        <PhoneIcon class="h-4 w-4" />
-                                        Номер телефона <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="phone_tk"
-                                        v-model="orderForm.phone" 
-                                        type="tel" 
-                                        v-maska="'+7 (###) ### ##-##'" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="+7 (___) ___ __-__"
-                                    />
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -418,187 +360,160 @@ const isCheckoutValid = computed(() => {
                                     <span>+7 (999) 999-99-99</span>
                                 </div>
                             </div>
-                            
-                            <!-- Contact Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-2">
-                                    <Label for="fullname_samovivoz" class="text-sm font-medium flex items-center gap-2">
-                                        <UserIcon class="h-4 w-4" />
-                                        Ф.И.О. <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="fullname_samovivoz"
-                                        v-model="orderForm.fullname" 
-                                        type="text" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="Введите ваше полное имя"
-                                    />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="phone_samovivoz" class="text-sm font-medium flex items-center gap-2">
-                                        <PhoneIcon class="h-4 w-4" />
-                                        Номер телефона <span class="text-destructive">*</span>
-                                    </Label>
-                                    <Input 
-                                        id="phone_samovivoz"
-                                        v-model="orderForm.phone" 
-                                        type="tel" 
-                                        v-maska="'+7 (###) ### ##-##'" 
-                                        required 
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="+7 (___) ___ __-__"
-                                    />
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
-
+                            
+            <!-- Contact Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- G1 - Billing Information -->
-                <Card v-if="is_in_group('G1')">
-                    <CardHeader class="p-4 pb-0">
-                        <CardTitle class="text-base md:text-lg flex items-center gap-2">
-                            <BanknoteIcon class="h-5 w-5 text-primary" />
-                            Платёжная информация
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent class="p-4">
-                        <div class="space-y-2">
-                            <!-- <Label for="current_account" class="text-sm font-medium flex items-center gap-2">
-                                <BanknoteIcon class="h-4 w-4" />
-                                Расчетный счет для договора
-                            </Label> -->
-                            <Input 
-                                id="current_account"
-                                v-model="orderForm.current_account"
-                                type="text" 
-                                class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                placeholder="Введите расчетный счет для договора"
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                <div class="space-y-2">
+                    <Label for="fullname_montazh" class="text-sm font-medium flex items-center gap-2">
+                        <UserIcon class="h-4 w-4" />
+                        Ф.И.О. <span class="text-destructive">*</span>
+                    </Label>
+                    <Input 
+                        id="fullname_montazh"
+                        v-model="orderForm.fullname" 
+                        type="text" 
+                        required 
+                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        placeholder="Введите ваше полное имя"
+                    />
+                </div>
 
-                <!-- G3 - Dealer Selection -->
-                <Card v-if="is_in_group('G3')">
-                    <CardHeader class="p-4 pb-0">
-                        <CardTitle class="text-base md:text-lg flex items-center gap-2">
-                            <UserIcon class="h-5 w-5 text-primary" />
-                            Выбор дилера
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent class="p-4">
-                        <div class="space-y-2">
-                            <!-- <Label for="dealer" class="text-sm font-medium">
-                                Дилер
-                            </Label> -->
-                            <Select v-model="orderForm.dealer_id">
-                                <SelectTrigger id="dealer">
-                                    <SelectValue placeholder="Выберите дилера"/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="dealer in dealers" :key="dealer.id" :value="dealer.id.toString()">
-                                        {{ dealer.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
+                <div class="space-y-2">
+                    <Label for="phone_montazh" class="text-sm font-medium flex items-center gap-2">
+                        <PhoneIcon class="h-4 w-4" />
+                        Номер телефона <span class="text-destructive">*</span>
+                    </Label>
+                    <Input 
+                        id="phone_montazh"
+                        v-model="orderForm.phone" 
+                        type="tel" 
+                        v-maska="'+7 (###) ### ##-##'" 
+                        required 
+                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        placeholder="+7 (___) ___ __-__"
+                    />
+                </div>
+            </div>
 
-                 <!-- G4 - Company Selection -->
-                 <Card v-if="is_in_group('G4')">
-                     <CardHeader class="p-4 pb-0">
-                         <CardTitle class="text-base md:text-lg flex items-center gap-2">
-                             <TruckIcon class="h-5 w-5 text-primary" />
-                             Выбор компании
-                         </CardTitle>
-                     </CardHeader>
-                     <CardContent class="p-4 space-y-4">
-                         <div v-if="user_companies && user_companies.length > 0" class="space-y-2">
-                             <!-- <Label for="company" class="text-sm font-medium">
-                                 Компания
-                             </Label> -->
-                             <Select v-model="orderForm.company_id">
-                                 <SelectTrigger id="company">
-                                     <SelectValue placeholder="Выберите компанию"/>
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                     <SelectItem v-for="company in user_companies" :key="company.id" :value="company.id.toString()">
-                                         {{ company.short_name || company.full_name }}
-                                         <span v-if="company.is_main" class="ml-2 text-xs text-primary">(Основная)</span>
-                                     </SelectItem>
-                                 </SelectContent>
-                             </Select>
-                         </div>
-                         <div v-else class="text-center py-4 space-y-4">
-                             <div class="text-sm text-muted-foreground pb-2">
-                                 У вас пока нет своих компаний
-                             </div>
-                             <Link href="/app/companies">
-                                 <Button variant="outline" size="sm" class="gap-2">
-                                     <TruckIcon class="h-4 w-4" />
-                                     Создать компанию
-                                 </Button>
-                             </Link>
-                         </div>
-                        <div class="flex items-start gap-3">
-                            <Checkbox 
-                                id="terms" 
-                                v-model:checked="orderForm.consent"
-                                class="mt-0.5"
-                            />
-                            <Label for="terms" class="text-sm font-normal leading-relaxed cursor-pointer">
-                                Я согласен с условиями обработки персональных данных и даю согласие на их обработку
-                            </Label>
-                        </div>
-                     </CardContent>
-                 </Card>
+            <!-- Additional fields based on group permissions - more efficient layout without cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- G1 - Billing Information (shown for montazh and dostavka tabs) -->
+                <div v-if="is_in_group('G1') && (currentTab === 'montazh' || currentTab === 'dostavka')" class="space-y-2">
+                    <Label for="current_account" class="text-sm font-medium flex items-center gap-2">
+                        <BanknoteIcon class="h-4 w-4" />
+                        Расчетный счет для договора
+                    </Label>
+                    <Input 
+                        id="current_account"
+                        v-model="orderForm.current_account"
+                        type="text" 
+                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        placeholder="Введите расчетный счет для договора"
+                    />
+                </div>
 
-                 <!-- Комментарий, согласие на обработку персональных данных -->
-                <Card>
-                    <!-- <CardHeader class="p-4 pb-0">
-                        <CardTitle class="text-base md:text-lg">Дополнительная информация</CardTitle>
-                    </CardHeader> -->
-                    <CardContent class="p-4 space-y-4">
-                        <div class="space-y-2">
-                            <Label for="comment" class="text-sm font-medium">Комментарий к заказу</Label>
-                            <Textarea 
-                                id="comment"
-                                v-model="orderForm.comment"
-                                placeholder="Введите комментарий или особые пожелания к заказу" 
-                                :rows="3" 
-                                class="transition-all duration-200 focus:ring-2 focus:ring-primary/20 resize-none" 
-                            />
+                <!-- G3 - Dealer Selection (shown for tk tab) -->
+                <div v-if="is_in_group('G3') && currentTab === 'tk'" class="space-y-2">
+                    <Label for="dealer" class="text-sm font-medium flex items-center gap-2">
+                        <UserIcon class="h-4 w-4" />
+                        Дилер
+                    </Label>
+                    <Select v-model="orderForm.dealer_id">
+                        <SelectTrigger id="dealer">
+                            <SelectValue placeholder="Выберите дилера"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="dealer in dealers" :key="dealer.id" :value="dealer.id.toString()">
+                                {{ dealer.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- G4 - Company Selection (shown for samovivoz tab) -->
+                <div v-if="is_in_group('G4') && currentTab === 'samovivoz'" class="space-y-2 md:col-span-2">
+                    <div v-if="user_companies && user_companies.length > 0">
+                        <Label for="company" class="text-sm font-medium flex items-center gap-2">
+                            <TruckIcon class="h-4 w-4" />
+                            Компания <span class="text-destructive">*</span>
+                        </Label>
+                        <Select v-model="orderForm.company_id">
+                            <SelectTrigger id="company" class="mt-2">
+                                <SelectValue placeholder="Выберите компанию"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="company in user_companies" :key="company.id" :value="company.id.toString()">
+                                    {{ company.short_name || company.full_name }}
+                                    <span v-if="company.is_main" class="ml-2">(Основная)</span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div v-else class="text-center py-4 space-y-4 border rounded-lg bg-muted/30">
+                        <div class="text-sm text-muted-foreground pb-2">
+                            У вас пока нет своих компаний
                         </div>
-                        <!-- Action Buttons -->
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
-                            <Button 
-                                variant="outline" 
-                                size="lg"
-                                @click="showCartItems = !showCartItems"
-                                class="gap-2 w-full sm:w-auto"
-                            >
-                                <EyeIcon class="h-4 w-4" />
-                                {{ showCartItems ? 'Скрыть товары' : 'Показать товары' }}
+                        <Link href="/app/companies">
+                            <Button variant="outline" size="sm" class="gap-2">
+                                <TruckIcon class="h-4 w-4" />
+                                Создать компанию
                             </Button>
-                            <Button 
-                                variant="default" 
-                                size="lg"
-                                @click="checkout"
-                                :disabled="!isCheckoutValid"
-                                class="gap-2 w-full sm:w-auto"
-                            >
-                                <ShoppingCartIcon class="h-4 w-4" />
-                                Оформить заказ
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment and Consent -->
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <Label for="comment" class="text-sm font-medium">Комментарий к заказу</Label>
+                    <Textarea 
+                        id="comment"
+                        v-model="orderForm.comment"
+                        placeholder="Введите комментарий или особые пожелания к заказу" 
+                        :rows="3" 
+                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20 resize-none" 
+                    />
+                </div>
+
+                <!-- Consent checkbox -->
+                <div class="flex items-start gap-3">
+                    <Checkbox 
+                        id="terms" 
+                        v-model:checked="orderForm.consent"
+                        class="mt-0.5"
+                    />
+                    <Label for="terms" class="text-sm font-normal leading-relaxed cursor-pointer">
+                        Я согласен с условиями обработки персональных данных и даю согласие на их обработку <span class="text-destructive">*</span>
+                    </Label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
+                    <Button 
+                        variant="outline" 
+                        size="lg"
+                        @click="showCartItems = !showCartItems"
+                        class="gap-2 w-full sm:w-auto"
+                    >
+                        <EyeIcon class="h-4 w-4" />
+                        {{ showCartItems ? 'Скрыть товары' : 'Показать товары' }}
+                    </Button>
+                    <Button 
+                        variant="default" 
+                        size="lg"
+                        @click="checkout"
+                        :disabled="!isCheckoutValid"
+                        class="gap-2 w-full sm:w-auto"
+                    >
+                        <ShoppingCartIcon class="h-4 w-4" />
+                        Оформить заказ
+                    </Button>
+                </div>
             </div>
 
             <!-- Validation message -->

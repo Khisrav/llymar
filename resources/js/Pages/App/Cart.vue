@@ -27,6 +27,7 @@ import SelectContent from "../../Components/ui/select/SelectContent.vue"
 import SelectItem from "../../Components/ui/select/SelectItem.vue"
 import SelectTrigger from "../../Components/ui/select/SelectTrigger.vue"
 import SelectValue from "../../Components/ui/select/SelectValue.vue"
+import OrderSteps from "../../Components/OrderSteps.vue"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -114,7 +115,10 @@ const checkout = () => {
 	<Head title="Корзина" />
 	<AuthenticatedHeaderLayout />
 	<div class="container p-0 md:p-4 mb-8">
-		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
+		<!-- Order Progress Steps -->
+		<OrderSteps :current-step="2" />
+		
+		<div class="p-4 md:p-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
 				<Link href="/app/calculator"
 					><Button size="icon" variant="outline"><ArrowLeft /></Button

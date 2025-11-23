@@ -6,7 +6,7 @@ import Button from '../../Components/ui/button/Button.vue';
 import Card from '../../Components/ui/card/Card.vue';
 import CardHeader from '../../Components/ui/card/CardHeader.vue';
 import CardContent from '../../Components/ui/card/CardContent.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import Tabs from '../../Components/ui/tabs/Tabs.vue';
 import TabsContent from '../../Components/ui/tabs/TabsContent.vue';
 import TabsList from '../../Components/ui/tabs/TabsList.vue';
@@ -25,12 +25,13 @@ import { Checkbox } from '../../Components/ui/checkbox';
 import { useItemsStore } from '../../Stores/itemsStore';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
 import CartItem from '../../Components/Cart/CartItem.vue';
+import OrderSteps from '../../Components/OrderSteps.vue';
 
 const itemsStore = useItemsStore()
 const showCartItems = ref(false)
 
 // Get props
-const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor } = usePage().props as any
+const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone } = usePage().props as any
 
 // Initialize itemsStore with backend data
 itemsStore.items = items || []
@@ -57,18 +58,30 @@ const orderForm = ref({
 	fullname: itemsStore.user?.name || '',
 	phone: itemsStore.user?.phone || '',
 	
-	// G1 - Current account
-	current_account: '',
+	// G1 - Bill selection (company comes from G4)
+	company_bill_id: '',
 	
 	// G3 - Dealer
 	dealer_id: '',
 	
-	// G4 - Company
+	// G4 - Company (shared with G1)
 	company_id: mainCompany?.id?.toString() || '',
 	
 	// Comment and consent
 	comment: '',
 	consent: false,
+})
+
+// Computed property to get bills for the selected company (used by G1)
+const selectedCompanyBills = computed(() => {
+	if (!orderForm.value.company_id || !user_companies) return []
+	const company = user_companies.find((c: any) => c.id.toString() === orderForm.value.company_id)
+	return company?.company_bills || []
+})
+
+// Watch for changes in company selection to reset bill selection
+watch(() => orderForm.value.company_id, () => {
+	orderForm.value.company_bill_id = ''
 })
 
 const checkout = () => {
@@ -94,21 +107,40 @@ const checkout = () => {
 		case 'dostavka':
 			tabSpecificData = {
 				delivery_address: orderForm.value.delivery_address,
-				...(is_in_group('G1') && { current_account: orderForm.value.current_account })
 			}
 			break
 		case 'tk':
 			tabSpecificData = {
 				logistics_company_id: orderForm.value.logistics_company_id,
 				delivery_address: orderForm.value.delivery_address,
-				...(is_in_group('G3') && { dealer_id: orderForm.value.dealer_id })
 			}
 			break
 		case 'samovivoz':
-			tabSpecificData = {
-				...(is_in_group('G4') && { company_id: orderForm.value.company_id })
-			}
+			tabSpecificData = {}
 			break
+	}
+	
+	// Add group-specific data
+	if (is_in_group('G1')) {
+		tabSpecificData = {
+			...tabSpecificData,
+			company_id: orderForm.value.company_id,
+			company_bill_id: orderForm.value.company_bill_id
+		}
+	}
+	
+	if (is_in_group('G3')) {
+		tabSpecificData = {
+			...tabSpecificData,
+			dealer_id: orderForm.value.dealer_id
+		}
+	}
+	
+	if (is_in_group('G4')) {
+		tabSpecificData = {
+			...tabSpecificData,
+			company_id: orderForm.value.company_id
+		}
 	}
 	
 	// TODO: Implement backend checkout logic
@@ -206,12 +238,31 @@ const defaultTab = computed(() => {
 // Track current active tab
 const currentTab = ref(defaultTab.value)
 
+// Watch for changes in defaultTab and update currentTab
+watch(defaultTab, (newValue) => {
+    currentTab.value = newValue
+})
+
 // Compute if checkout is valid
 const isCheckoutValid = computed(() => {
-    return orderForm.value.consent && 
+    const baseValid = orderForm.value.consent && 
            orderForm.value.fullname.trim() !== '' && 
            orderForm.value.phone.trim() !== '' &&
            Object.keys(itemsStore.cartItems).length > 0
+    
+    // G1 users MUST select company and bill (required)
+    if (is_in_group('G1')) {
+        return baseValid && 
+               orderForm.value.company_id.trim() !== '' && 
+               orderForm.value.company_bill_id.trim() !== ''
+    }
+    
+    // G4 users must select company (if they have companies)
+    if (is_in_group('G4') && user_companies && user_companies.length > 0) {
+        return baseValid && orderForm.value.company_id.trim() !== ''
+    }
+    
+    return baseValid
 })
 </script>
 
@@ -219,12 +270,15 @@ const isCheckoutValid = computed(() => {
 	<Head title="Оформление заказа" />
 	<AuthenticatedHeaderLayout />
     <div class="container p-0 md:p-4 mb-8">
-        <div class="p-4 md:p-8 md:mt-8 md:border space-y-4 rounded-2xl bg-background">
+        <!-- Order Progress Steps -->
+        <OrderSteps :current-step="3" />
+        
+        <div class="p-4 md:p-8 md:border space-y-4 rounded-2xl bg-background">
             <div class="flex items-center gap-4 mb-6">
-				<Link href="/app/calculator"><Button size="icon" variant="outline"><ArrowLeftIcon /></Button></Link>
+				<Link href="/app/cart"><Button size="icon" variant="outline"><ArrowLeftIcon /></Button></Link>
 				<h2 class="text-3xl font-semibold">Оформление заказа</h2>
 			</div>
-            <Tabs :default-value="defaultTab">
+            <Tabs :default-value="defaultTab" @update:model-value="(value: string) => currentTab = value">
                 <TabsList>
                     <TabsTrigger
                         v-for="tab in availableTabs"
@@ -353,11 +407,11 @@ const isCheckoutValid = computed(() => {
                                 <p class="text-sm font-medium">По готовности вы можете забрать заказ в нашем офисе</p>
                                 <div class="flex items-start gap-2 text-sm">
                                     <MapPinIcon class="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                                    <span>г. Москва, ул. Пушкинская, д. 1</span>
+                                    <span>{{ pickup_address }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm">
                                     <PhoneIcon class="h-4 w-4 text-primary flex-shrink-0" />
-                                    <span>+7 (999) 999-99-99</span>
+                                    <span>{{ pickup_phone }}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -401,23 +455,8 @@ const isCheckoutValid = computed(() => {
 
             <!-- Additional fields based on group permissions - more efficient layout without cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- G1 - Billing Information (shown for montazh and dostavka tabs) -->
-                <div v-if="is_in_group('G1') && (currentTab === 'montazh' || currentTab === 'dostavka')" class="space-y-2">
-                    <Label for="current_account" class="text-sm font-medium flex items-center gap-2">
-                        <BanknoteIcon class="h-4 w-4" />
-                        Расчетный счет для договора
-                    </Label>
-                    <Input 
-                        id="current_account"
-                        v-model="orderForm.current_account"
-                        type="text" 
-                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                        placeholder="Введите расчетный счет для договора"
-                    />
-                </div>
-
-                <!-- G3 - Dealer Selection (shown for tk tab) -->
-                <div v-if="is_in_group('G3') && currentTab === 'tk'" class="space-y-2">
+                <!-- G3 - Dealer Selection -->
+                <div v-if="is_in_group('G3')" class="space-y-2">
                     <Label for="dealer" class="text-sm font-medium flex items-center gap-2">
                         <UserIcon class="h-4 w-4" />
                         Дилер
@@ -434,8 +473,8 @@ const isCheckoutValid = computed(() => {
                     </Select>
                 </div>
 
-                <!-- G4 - Company Selection (shown for samovivoz tab) -->
-                <div v-if="is_in_group('G4') && currentTab === 'samovivoz'" class="space-y-2 md:col-span-2">
+                <!-- G1/G4 - Company Selection (shared) -->
+                <div v-if="is_in_group('G1') || is_in_group('G4')" class="space-y-2">
                     <div v-if="user_companies && user_companies.length > 0">
                         <Label for="company" class="text-sm font-medium flex items-center gap-2">
                             <TruckIcon class="h-4 w-4" />
@@ -464,6 +503,38 @@ const isCheckoutValid = computed(() => {
                             </Button>
                         </Link>
                     </div>
+                </div>
+                
+                <!-- G1 - Bill Selection (tied to G4 company selector) -->
+                <div v-if="is_in_group('G1')" class="space-y-2">
+                    <Label for="company_bill" class="text-sm font-medium flex items-center gap-2">
+                        <BanknoteIcon class="h-4 w-4" />
+                        Расчетный счет <span class="text-destructive">*</span>
+                    </Label>
+                    <div v-if="!orderForm.company_id" class="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+                        Сначала выберите компанию
+                    </div>
+                    <div v-else-if="selectedCompanyBills.length === 0" class="space-y-3 p-3 border rounded-lg bg-muted/30">
+                        <p class="text-sm text-muted-foreground">
+                            У выбранной компании нет расчетных счетов
+                        </p>
+                        <Link :href="`/app/companies/${orderForm.company_id}`">
+                            <Button variant="outline" size="sm" class="gap-2">
+                                <BanknoteIcon class="h-4 w-4" />
+                                Добавить расчетный счет
+                            </Button>
+                        </Link>
+                    </div>
+                    <Select v-else v-model="orderForm.company_bill_id" required>
+                        <SelectTrigger id="company_bill">
+                            <SelectValue placeholder="Выберите расчетный счет"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="bill in selectedCompanyBills" :key="bill.id" :value="bill.id.toString()">
+                                {{ bill.current_account }} ({{ bill.bank_name }})
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 

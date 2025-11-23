@@ -167,11 +167,16 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
                 ->get();
         }
         
-        // Get user's customer companies
-        $userCompanies = \App\Models\Company::where('type', 'customer')
+        // Get user's customer companies with their bills
+        $userCompanies = \App\Models\Company::with('companyBills')
+            ->where('type', 'customer')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get(['id', 'short_name', 'full_name', 'is_main']);
+        
+        // Get pickup location info from landing page options
+        $pickupAddress = \App\Models\LandingPageOption::getValue('address', 'г. Москва, ул. Пушкинская, д. 1');
+        $pickupPhone = \App\Models\LandingPageOption::getValue('phone', '+7 (999) 999-99-99');
         
         return Inertia::render('Test/OrderConfirmation', [
             'items' => \App\Http\Controllers\AppCalculatorController::getCalculatorItems(),
@@ -184,6 +189,8 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
             'user_companies' => $userCompanies,
             'user' => $user,
             'user_default_factor' => $user->default_factor ?? 'pz',
+            'pickup_address' => $pickupAddress,
+            'pickup_phone' => $pickupPhone,
         ]);
     })->name('app.test');
 

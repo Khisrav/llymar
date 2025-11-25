@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { ShoppingCartIcon, ArrowLeft } from "lucide-vue-next"
-import { Head, Link, usePage } from "@inertiajs/vue3"
-import { router } from "@inertiajs/vue3"
+import { Head, Link, usePage, router } from "@inertiajs/vue3"
 import AuthenticatedHeaderLayout from "../../Layouts/AuthenticatedHeaderLayout.vue"
 import Button from "../../Components/ui/button/Button.vue"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { Category, Item, OpeningType, User } from "../../lib/types"
 import CartItem from "../../Components/Cart/CartItem.vue"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
-import Input from "../../Components/ui/input/Input.vue"
 import Label from "../../Components/ui/label/Label.vue"
-import { vMaska } from "maska/vue"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import { RAL } from "ral-colors/index.js";
 import Popover from "../../Components/ui/popover/Popover.vue"
@@ -27,16 +24,15 @@ import SelectContent from "../../Components/ui/select/SelectContent.vue"
 import SelectItem from "../../Components/ui/select/SelectItem.vue"
 import SelectTrigger from "../../Components/ui/select/SelectTrigger.vue"
 import SelectValue from "../../Components/ui/select/SelectValue.vue"
+import OrderSteps from "../../Components/OrderSteps.vue"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
 const selectedDealerId = ref<string>("")
-const { user_default_factor, dealers, can_select_dealer, user_role } = usePage().props as any
 
-// Debug logging
-console.log('Cart debug:', { dealers, can_select_dealer, dealersLength: dealers?.length })
+const { user_default_factor, dealers, can_select_dealer, user_role } = usePage().props as any
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
@@ -47,16 +43,13 @@ itemsStore.categories = usePage().props.categories as Category[]
 
 // Initialize user's default factor
 itemsStore.initializeUserFactor(user_default_factor || 'pz')
-
-
-
 itemsStore.initiateCartItems()
 
 const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number))
 
 const item = (itemID: number): Item | null => itemsStore.getItemInfo(itemID) ?? null
 
-const getOpeningName = (type: OpeningType): string => openingsStore.openingTypes[type]
+const getOpeningName = (type: string): string => openingsStore.openingTypes[type as keyof typeof openingsStore.openingTypes]
 
 // SNP for Surname Name Patronymic
 const snp = ref({
@@ -68,53 +61,75 @@ const snp = ref({
 	patronymic: "",
 })
 
-const order_info = computed(() => ({
-	name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
-	// phone: itemsStore.user.phone,
-	// address: itemsStore.user.address,
-	// email: itemsStore.user.email,
-	phone: '',
-	address: '',
-	email: '',
-	color: "",
-}))
-
-const checkout = () => {
-	const formData = {
-		// name: order_info.value.name,
-		// phone: order_info.value.phone,
-		// address: order_info.value.address,
-		// email: order_info.value.email,
+const goToConfirmationPage = () => {
+	// Validate RAL color selection if item 386 is in cart
+	if (itemsStore.cartItems[386] && selectedRALColor.value.HEX === "none") {
+		alert("Выберите цвет")
+		return
+	}
+	
+	// Validate dealer selection for ROP role
+	if (user_role === 'ROP' && !selectedDealerId.value) {
+		alert("Выберите дилера")
+		return
+	}
+	
+	// Prepare data to send to backend
+	const orderData = {
 		cart_items: itemsStore.cartItems,
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,
 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
-		selected_factor: itemsStore.selectedFactor,
+		selected_factor: itemsStore.userDefaultFactor,
 		selected_dealer_id: selectedDealerId.value ? parseInt(selectedDealerId.value) : null,
 	}
-
-	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
-		alert("Выберите цвет")
-		return
-	}
-
-	router.post("/app/checkout", formData as any, {
-		onSuccess: () => {
-			sessionStorage.removeItem("openings")
-			sessionStorage.removeItem("cartItems")
-		},
-		onError: (errors: any) => {
-			console.log(errors)
-		},
+	
+	// Use Inertia router to navigate with data
+	router.post('/app/cart/confirm', orderData as any, {
+		preserveState: false,
+		preserveScroll: false,
 	})
 }
+
+// const checkout = () => {
+// 	const formData = {
+// 		// name: order_info.value.name,
+// 		// phone: order_info.value.phone,
+// 		// address: order_info.value.address,
+// 		// email: order_info.value.email,
+// 		cart_items: itemsStore.cartItems,
+// 		openings: openingsStore.openings,
+// 		total_price: itemsStore.total_price.with_discount,
+// 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
+// 		selected_factor: itemsStore.selectedFactor,
+// 		selected_dealer_id: selectedDealerId.value ? parseInt(selectedDealerId.value) : null,
+// 	}
+
+// 	if (selectedRALColor.value.HEX === "none" && itemsStore.cartItems[386]?.quantity > 0) {
+// 		alert("Выберите цвет")
+// 		return
+// 	}
+
+// 	router.post("/app/checkout", formData as any, {
+// 		onSuccess: () => {
+// 			sessionStorage.removeItem("openings")
+// 			sessionStorage.removeItem("cartItems")
+// 		},
+// 		onError: (errors: any) => {
+// 			console.log(errors)
+// 		},
+// 	})
+// }
 </script>
 
 <template>
 	<Head title="Корзина" />
 	<AuthenticatedHeaderLayout />
 	<div class="container p-0 md:p-4 mb-8">
-		<div class="p-4 md:p-8 md:mt-8 md:border rounded-2xl bg-background">
+		<!-- Order Progress Steps -->
+		<OrderSteps :current-step="2" />
+		
+		<div class="p-4 md:p-8 md:border rounded-2xl bg-background">
 			<div class="flex items-center gap-4 mb-6">
 				<Link href="/app/calculator"
 					><Button size="icon" variant="outline"><ArrowLeft /></Button
@@ -166,7 +181,8 @@ const checkout = () => {
 						</div>
 					</div>
 
-					<form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+					<!-- <form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4"> -->
+					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
 						<!-- Dealer Selector -->
 						<div v-if="can_select_dealer && dealers && dealers.length > 0">
 							<div class="space-y-4">
@@ -190,38 +206,6 @@ const checkout = () => {
 								</Select>
 							</div>
 						</div>
-
-						<!-- <h3 class="text-lg font-semibold">Информация о клиенте</h3>
-
-						<div>
-							<Label class="inline-block mb-2">Фамилия<span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" v-model="snp.surname" placeholder="Иванов" required />
-						</div>
-
-						<div>
-							<Label class="inline-block mb-2">Имя<span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" v-model="snp.name" placeholder="Иван" required />
-						</div>
-
-						<div>
-							<Label class="inline-block mb-2">Отчество</Label>
-							<Input type="text" v-model="snp.patronymic" placeholder="Иванович" />
-						</div>
-
-						<div>
-							<Label class="inline-block mb-2">Адрес<span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="text" v-model="order_info.address" placeholder="г. Москва, ул. Пушкинская, д. 1" required />
-						</div>
-
-						<div>
-							<Label class="inline-block mb-2">Email<span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="email" v-model="order_info.email" placeholder="email@mail.ru" required />
-						</div>
-
-						<div>
-							<Label class="inline-block mb-2">Телефон<span class="text-destructive dark:text-red-500">*</span></Label>
-							<Input type="tel" v-model="order_info.phone" v-maska="'+7 (###) ###-##-##'" placeholder="+7 (999) 999-99-99" required />
-						</div> -->
 
 						<div v-if="itemsStore.cartItems[386]" class="flex items-center justify-center gap-4">
 							<Label class="inline-block">Цвет<span class="text-destructive dark:text-red-500">*</span></Label>
@@ -266,11 +250,14 @@ const checkout = () => {
 							</div>
 						</div>
 
-						<div>
-							<Button type="submit">Заказать</Button>
-							<p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p>
-						</div>
-					</form>
+					<div>
+						<Button @click="goToConfirmationPage" :disabled="cartItemIDs.length === 0">
+							Оформить
+						</Button>
+						<!-- <p class="text-xs block mt-4">Нажимая кнопку "Оформить заказ", вы даете согласие на обработку персональных данных.</p> -->
+					</div>
+					<!-- </form> -->
+					</div>
 				</div>
 			</div>
 		</div>

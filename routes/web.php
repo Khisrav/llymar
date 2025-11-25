@@ -156,8 +156,13 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::get('/app/commercial-offers/{commercialOffer}/pdf', [CommercialOfferController::class, 'downloadPDF'])->name('app.commercial_offers.pdf');
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
-    
-    Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    Route::post('/app/cart/confirm', [AppCartController::class, 'index_order_confirmation'])->name('app.cart.confirm');
+    Route::get('/app/cart/confirm', function () {
+        //redirect to calculator
+        return redirect()->route('app.calculator');
+    })->name('app.cart.confirm-redirect');
+    // Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    Route::post('/app/checkout', [AppCartController::class, 'store'])->name('app.checkout');
     
     Route::get('/app/account/settings', [UserController::class, 'show'])->name('app.account.settings');
     Route::post('/app/account/settings', [UserController::class, 'update'])->name('app.account.settings.update');

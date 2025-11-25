@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import AuthenticatedHeaderLayout from '../../Layouts/AuthenticatedHeaderLayout.vue';
-import { ArrowLeftIcon, TruckIcon, MapPinIcon, UserIcon, PhoneIcon, BanknoteIcon, EyeIcon, ShoppingCartIcon } from 'lucide-vue-next';
+import { ArrowLeftIcon, TruckIcon, MapPinIcon, UserIcon, PhoneIcon, BanknoteIcon, EyeIcon, ShoppingCartIcon, AlertCircleIcon } from 'lucide-vue-next';
 import Button from '../../Components/ui/button/Button.vue';
 import Card from '../../Components/ui/card/Card.vue';
 import CardHeader from '../../Components/ui/card/CardHeader.vue';
@@ -26,12 +26,18 @@ import { useItemsStore } from '../../Stores/itemsStore';
 import { currencyFormatter } from '../../Utils/currencyFormatter';
 import CartItem from '../../Components/Cart/CartItem.vue';
 import OrderSteps from '../../Components/OrderSteps.vue';
+import { useOpeningStore } from '../../Stores/openingsStore';
 
 const itemsStore = useItemsStore()
-const showCartItems = ref(false)
+const openingsStore = useOpeningStore()
 
-// Get props
-const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone } = usePage().props as any
+const showCartItems = ref(false)
+const isSubmitting = ref(false)
+
+// Get props and errors
+const page = usePage()
+const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone, order_data, has_montazh_services } = page.props as any
+const errors = computed(() => page.props.errors as any)
 
 // Initialize itemsStore with backend data
 itemsStore.items = items || []
@@ -41,11 +47,22 @@ itemsStore.services = services || []
 itemsStore.user = user || {}
 itemsStore.categories = categories || []
 
-// Initialize user's default factor
-itemsStore.initializeUserFactor(user_default_factor || 'pz')
+// Initialize user's default factor from order_data or fallback to user_default_factor
+itemsStore.initializeUserFactor(order_data?.selected_factor || user_default_factor || 'pz')
 
-// Initialize cart items from session storage
-itemsStore.initiateCartItems()
+// Initialize cart items from order_data instead of session storage
+if (order_data?.cart_items) {
+	itemsStore.cartItems = order_data.cart_items
+}
+
+// Initialize openings from order_data
+if (order_data?.openings) {
+	openingsStore.openings = order_data.openings
+}
+
+// Store RAL color and dealer ID from order_data
+const selectedRALColor = ref({ name: order_data?.ral_code || "Выберите цвет", HEX: "none" })
+const selectedDealerId = ref(order_data?.selected_dealer_id?.toString() || '')
 
 // Find main company if exists
 const mainCompany = user_companies?.find((company: any) => company.is_main)
@@ -54,15 +71,12 @@ const mainCompany = user_companies?.find((company: any) => company.is_main)
 const orderForm = ref({
 	// Delivery forms
 	logistics_company_id: '',
-	delivery_address: '',
+	delivery_address: itemsStore.user?.address || '',
 	fullname: itemsStore.user?.name || '',
 	phone: itemsStore.user?.phone || '',
 	
 	// G1 - Bill selection (company comes from G4)
 	company_bill_id: '',
-	
-	// G3 - Dealer
-	dealer_id: '',
 	
 	// G4 - Company (shared with G1)
 	company_id: mainCompany?.id?.toString() || '',
@@ -90,14 +104,11 @@ const checkout = () => {
 		return
 	}
 	
-	// Prepare data based on current tab - only send relevant fields
-	const baseData = {
-		delivery_type: currentTab.value,
-		fullname: orderForm.value.fullname,
-		phone: orderForm.value.phone,
-		comment: orderForm.value.comment,
-		consent: orderForm.value.consent,
+	if (isSubmitting.value) {
+		return
 	}
+	
+	isSubmitting.value = true
 	
 	// Add tab-specific fields
 	let tabSpecificData = {}
@@ -129,13 +140,6 @@ const checkout = () => {
 		}
 	}
 	
-	if (is_in_group('G3')) {
-		tabSpecificData = {
-			...tabSpecificData,
-			dealer_id: orderForm.value.dealer_id
-		}
-	}
-	
 	if (is_in_group('G4')) {
 		tabSpecificData = {
 			...tabSpecificData,
@@ -143,20 +147,38 @@ const checkout = () => {
 		}
 	}
 	
-	// TODO: Implement backend checkout logic
-	console.log('Checkout data (tab-specific):', {
-		...baseData,
+	// Prepare complete checkout data
+	const checkoutData = {
 		...tabSpecificData,
-		cartItems: itemsStore.cartItems,
-		totalAmount: Object.keys(itemsStore.cartItems).reduce((total, itemID) => {
-			const item = itemsStore.getItemInfo(parseInt(itemID))
-			const cartItem = itemsStore.cartItems[parseInt(itemID)]
-			return total + (item && cartItem ? item.retail_price * cartItem.quantity : 0)
-		}, 0)
-	})
+		cart_items: itemsStore.cartItems,
+		total_price: itemsStore.total_price.with_discount,
+		name: orderForm.value.fullname,
+		phone: orderForm.value.phone.replace(/\D/g, ''), // Remove all non-digit characters
+		address: orderForm.value.delivery_address || '',
+		openings: openingsStore.openings,
+		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
+		selected_factor: itemsStore.userDefaultFactor,
+		selected_dealer_id: selectedDealerId.value ? parseInt(selectedDealerId.value) : null,
+		comment: orderForm.value.comment,
+		delivery_option: currentTab.value,
+	}
 	
-	// Show success message (temporary)
-	alert('Заказ успешно оформлен! (Backend integration pending)')
+	// Submit order to backend
+	router.post('/app/checkout', checkoutData as any, {
+		preserveState: true,
+		preserveScroll: true,
+		onSuccess: () => {
+			// Order created successfully, backend will redirect to history page
+			isSubmitting.value = false
+		},
+		onError: (errors: any) => {
+			console.error('Order creation failed:', errors)
+			isSubmitting.value = false
+		},
+		onFinish: () => {
+			isSubmitting.value = false
+		}
+	})
 }
 
 const permissionGroups = ref({
@@ -216,6 +238,12 @@ const is_in_group = (group_id: 'G1' | 'G2' | 'G3' | 'G4') => permissionGroups.va
 
 // Get all tabs accessible to the current user based on their role groups
 const availableTabs = computed(() => {
+    // If cart contains montazh services (category 35), only show montazh tab
+    if (has_montazh_services) {
+        return [{ value: 'montazh', title: 'Монтаж' }]
+    }
+    
+    // Otherwise, show tabs according to user's role groups
     const userGroups = roleGroups.value[user_role as keyof typeof roleGroups.value] || []
     const tabsMap = new Map<string, { value: string, title: string }>()
     
@@ -243,6 +271,19 @@ watch(defaultTab, (newValue) => {
     currentTab.value = newValue
 })
 
+// Watch for changes in tab selection to handle address field for TK
+watch(currentTab, (newTab) => {
+	if (newTab === 'tk') {
+		// Clear address for transport company tab
+		orderForm.value.delivery_address = ''
+	} else {
+		// Restore user's address for other tabs if it was empty
+		if (!orderForm.value.delivery_address) {
+			orderForm.value.delivery_address = itemsStore.user?.address || ''
+		}
+	}
+})
+
 // Compute if checkout is valid
 const isCheckoutValid = computed(() => {
     const baseValid = orderForm.value.consent && 
@@ -250,19 +291,33 @@ const isCheckoutValid = computed(() => {
            orderForm.value.phone.trim() !== '' &&
            Object.keys(itemsStore.cartItems).length > 0
     
+    // Check tab-specific requirements
+    let tabValid = true
+    
+    if (currentTab.value === 'tk') {
+        // TK requires logistics company and address
+        tabValid = orderForm.value.logistics_company_id.trim() !== '' && 
+                   orderForm.value.delivery_address.trim() !== ''
+    } else if (currentTab.value === 'montazh' || currentTab.value === 'dostavka') {
+        // Montazh and Dostavka require address
+        tabValid = orderForm.value.delivery_address.trim() !== ''
+    }
+    // Samovivoz doesn't require additional fields
+    
     // G1 users MUST select company and bill (required)
     if (is_in_group('G1')) {
-        return baseValid && 
+        return baseValid && tabValid &&
                orderForm.value.company_id.trim() !== '' && 
                orderForm.value.company_bill_id.trim() !== ''
     }
     
     // G4 users must select company (if they have companies)
     if (is_in_group('G4') && user_companies && user_companies.length > 0) {
-        return baseValid && orderForm.value.company_id.trim() !== ''
+        return baseValid && tabValid &&
+               orderForm.value.company_id.trim() !== ''
     }
     
-    return baseValid
+    return baseValid && tabValid
 })
 </script>
 
@@ -274,10 +329,47 @@ const isCheckoutValid = computed(() => {
         <OrderSteps :current-step="3" />
         
         <div class="p-4 md:p-8 md:border space-y-4 rounded-2xl bg-background">
+                        
+                        <!-- Total -->
+                        <div class="flex items-center justify-between p-4 rounded-lg bg-primary/10 border-2 border-primary/20 mt-4">
+                            <div class="font-semibold text-base">Итого:</div>
+                            <div class="font-bold text-xl text-primary">
+                                {{ currencyFormatter(itemsStore.total_price.with_discount) }}
+                            </div>
+                        </div>
             <div class="flex items-center gap-4 mb-6">
 				<Link href="/app/cart"><Button size="icon" variant="outline"><ArrowLeftIcon /></Button></Link>
 				<h2 class="text-3xl font-semibold">Оформление заказа</h2>
 			</div>
+			
+			<!-- Error Messages -->
+			<div v-if="errors && Object.keys(errors).length > 0" class="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+				<div class="flex items-start gap-2">
+					<AlertCircleIcon class="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+					<div class="flex-1">
+						<h3 class="font-semibold text-destructive mb-2">Ошибка при оформлении заказа</h3>
+						<ul class="space-y-1 text-sm text-destructive/90">
+							<li v-for="(error, field) in errors" :key="field">
+								{{ Array.isArray(error) ? error[0] : error }}
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Montazh Services Notice -->
+			<div v-if="has_montazh_services" class="mb-4 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+				<div class="flex items-start gap-2">
+					<TruckIcon class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+					<div class="flex-1">
+						<h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-1">Услуги монтажа в заказе</h3>
+						<p class="text-sm text-blue-700 dark:text-blue-300">
+							Ваш заказ включает услуги монтажа. Доставка осуществляется только с монтажом.
+						</p>
+					</div>
+				</div>
+			</div>
+			
             <Tabs :default-value="defaultTab" @update:model-value="(value: string) => currentTab = value">
                 <TabsList>
                     <TabsTrigger
@@ -455,24 +547,6 @@ const isCheckoutValid = computed(() => {
 
             <!-- Additional fields based on group permissions - more efficient layout without cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- G3 - Dealer Selection -->
-                <div v-if="is_in_group('G3')" class="space-y-2">
-                    <Label for="dealer" class="text-sm font-medium flex items-center gap-2">
-                        <UserIcon class="h-4 w-4" />
-                        Дилер
-                    </Label>
-                    <Select v-model="orderForm.dealer_id">
-                        <SelectTrigger id="dealer">
-                            <SelectValue placeholder="Выберите дилера"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="dealer in dealers" :key="dealer.id" :value="dealer.id.toString()">
-                                {{ dealer.name }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
                 <!-- G1/G4 - Company Selection (shared) -->
                 <div v-if="is_in_group('G1') || is_in_group('G4')" class="space-y-2">
                     <div v-if="user_companies && user_companies.length > 0">
@@ -578,22 +652,23 @@ const isCheckoutValid = computed(() => {
                         variant="default" 
                         size="lg"
                         @click="checkout"
-                        :disabled="!isCheckoutValid"
+                        :disabled="!isCheckoutValid || isSubmitting"
                         class="gap-2 w-full sm:w-auto"
                     >
-                        <ShoppingCartIcon class="h-4 w-4" />
-                        Оформить заказ
+                        <ShoppingCartIcon v-if="!isSubmitting" class="h-4 w-4" />
+                        <span v-if="isSubmitting" class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        {{ isSubmitting ? 'Оформление...' : 'Оформить заказ' }}
                     </Button>
                 </div>
             </div>
 
             <!-- Validation message -->
-            <div v-if="!isCheckoutValid && Object.keys(itemsStore.cartItems).length === 0" class="text-sm text-destructive text-center p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <!-- <div v-if="!isCheckoutValid && Object.keys(itemsStore.cartItems).length === 0" class="text-sm text-destructive text-center p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 ⚠️ Корзина пуста. Добавьте товары для оформления заказа.
             </div>
             <div v-else-if="!isCheckoutValid" class="text-sm text-muted-foreground text-center">
                 Заполните все обязательные поля и дайте согласие на обработку данных
-            </div>
+            </div> -->
 
             <!-- Order Summary and Cart Items -->
             <Card v-if="showCartItems" class="transition-all duration-300 ease-in-out">
@@ -634,14 +709,6 @@ const isCheckoutValid = computed(() => {
                             />
                             <div v-else class="text-sm text-muted-foreground">
                                 Неизвестная деталь (ID: {{ itemID }})
-                            </div>
-                        </div>
-                        
-                        <!-- Total -->
-                        <div class="flex items-center justify-between p-4 rounded-lg bg-primary/10 border-2 border-primary/20 mt-4">
-                            <div class="font-semibold text-base">Итого:</div>
-                            <div class="font-bold text-xl text-primary">
-                                {{ currencyFormatter(itemsStore.total_price.with_discount) }}
                             </div>
                         </div>
                     </div>

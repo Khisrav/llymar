@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -14,12 +13,8 @@ use App\Services\TochkaBankService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -52,57 +47,6 @@ class OrderController extends Controller
         return Inertia::render('App/History', [
             'orders' => $orders,
         ]);
-    }
-
-    /**
-     * Store a newly created order.
-     */
-    public function store(Request $request)
-    {
-        $fields = $request->validate([
-            'name'        => 'string|max:255',
-            'phone'       => 'string',
-            'address'     => 'string',
-            'email'       => 'email',
-            'cart_items'  => 'required|array',
-            'openings'    => 'required|array',
-            'total_price' => 'required|numeric',
-            'ral_code'    => 'nullable',
-            'selected_factor' => 'sometimes|string',
-            'selected_dealer_id' => 'nullable|integer|exists:users,id',
-        ]);
-
-        try {
-            // Wrap the order creation and associated items in a DB transaction.
-            $order = DB::transaction(function () use ($fields) {
-                $order = $this->createOrder($fields);
-                $this->createOrderItems($order, $fields['cart_items']);
-                $this->createOrderOpenings($order, $fields['openings']);
-                return $order;
-            });
-
-            // Make bill in Tochka Bank
-            try {
-                $tochkaService = new TochkaBankService();
-                $tochkaService->createBill($order);
-            } catch (\Exception $e) {
-                Log::error("Failed to create Tochka Bank bill", [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-                // Optionally: continue, or return with error
-            }
-
-            return redirect()->route('app.history');
-        } catch (\Exception $e) {
-            Log::error("Order creation failed", [
-                'error' => $e->getMessage(),
-                'stack' => $e->getTraceAsString(),
-            ]);
-            return back()->withErrors([
-                'error' => 'Order creation failed. Please try again later.',
-            ]);
-        }
     }
     
     /**
@@ -525,7 +469,7 @@ class OrderController extends Controller
     /**
      * Create and return a new Order.
      */
-    private function createOrder(array $data): Order
+    public static function createOrder(array $data): Order
     {
         // Determine the user_id for the order
         $currentUser = Auth::user();
@@ -538,6 +482,18 @@ class OrderController extends Controller
             $creatorId = $currentUser->id || $userId;
         }
         
+        // Determine order_type based on delivery_option
+        $orderType = null;
+        $deliveryOption = $data['delivery_option'] ?? null;
+        
+        if ($deliveryOption === 'montazh') {
+            $orderType = 'Монтаж';
+        } elseif (in_array($deliveryOption, ['dostavka', 'tk'])) {
+            $orderType = 'Отправка';
+        } elseif ($deliveryOption === 'samovivoz') {
+            $orderType = 'Самовывоз';
+        }
+        
         $order = Order::create([
             'user_id'          => $userId,
             'creator_id'       => $creatorId ?? null,
@@ -548,16 +504,41 @@ class OrderController extends Controller
             'total_price'      => $data['total_price'],
             'ral_code'         => $data['ral_code'] ?? null,
             'selected_factor'  => $data['selected_factor'] ?? 'pz',
+            'order_type'       => $orderType,
+            'delivery_option'  => $deliveryOption,
+            'company_id'       => $data['company_id'] ?? null,
+            'company_bill_id'  => $data['company_bill_id'] ?? null,
+            'logistics_company_id' => $data['logistics_company_id'] ?? null,
+            'comment'          => $data['comment'] ?? null,
         ]);
 
-        $hasServiceItems = false;
+        // Check if order has montazh service items from category 35
+        $hasMontazhServices = false;
         if (isset($data['cart_items'])) {
             $itemIds = array_keys($data['cart_items']);
-            $serviceItems = Item::whereIn('id', $itemIds)->where('category_id', 35)->exists();
-            $hasServiceItems = $serviceItems;
+            $hasMontazhServices = Item::whereIn('id', $itemIds)->where('category_id', 35)->exists();
         }
         
-        $order->order_number = ($hasServiceItems ? '4-' : '6-') . $order->id;
+        /*
+         * Order number logic:
+         * it should be 4-XXX if cart contains items from category 35 (montazh services)
+         * it should be 1-XXX if user selected tk/dostavka/montazh tab (without category 35 items)
+         * it should be 6-XXX if user selected samovivoz tab
+         */
+        $orderNumberPrefix = '6'; // Default to 6-XXX
+        
+        if ($hasMontazhServices) {
+            // 4-XXX: Cart contains montazh services from category 35
+            $orderNumberPrefix = '4';
+        } elseif (in_array($deliveryOption, ['tk', 'dostavka', 'montazh'])) {
+            // 1-XXX: TK, Dostavka, or Montazh (without category 35 items)
+            $orderNumberPrefix = '1';
+        } elseif ($deliveryOption === 'samovivoz') {
+            // 6-XXX: Samovivoz
+            $orderNumberPrefix = '6';
+        }
+        
+        $order->order_number = $orderNumberPrefix . '-' . $order->id;
         $order->save();
         return $order;
     }
@@ -565,7 +546,7 @@ class OrderController extends Controller
     /**
      * Create order items from cart data.
      */
-    private function createOrderItems(Order $order, array $cartItems): void
+    public static function createOrderItems(Order $order, array $cartItems): void
     {
         foreach ($cartItems as $itemID => $item) {
             // Skip invalid item IDs and items with zero or invalid quantities
@@ -601,7 +582,7 @@ class OrderController extends Controller
     /**
      * Create order openings from the provided array.
      */
-    private function createOrderOpenings(Order $order, array $openings): void
+    public static function createOrderOpenings(Order $order, array $openings): void
     {
         $orderOpenings = array_map(function ($opening) use ($order) {
             return [

@@ -142,58 +142,6 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
         return Inertia::render('App/Index');
     })->name('app.home');
 
-    Route::get('/app/test', function () {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $logisticsCompanies = \App\Models\LogisticsCompany::all(['id', 'name']);
-        
-        // Get dealers if user has permission to select dealers
-        $dealers = collect();
-        
-        if ($user->hasRole('Super-Admin')) {
-            // Get all dealers for super admin
-            $dealers = \App\Models\User::whereHas('roles', function($query) {
-                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
-                })
-                ->select('id', 'name', 'email')
-                ->get();
-        } else {
-            // Get only child dealers for other roles
-            $dealers = \App\Models\User::where('parent_id', $user->id)
-                ->whereHas('roles', function($query) {
-                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
-                })
-                ->select('id', 'name', 'email')
-                ->get();
-        }
-        
-        // Get user's customer companies with their bills
-        $userCompanies = \App\Models\Company::with('companyBills')
-            ->where('type', 'customer')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get(['id', 'short_name', 'full_name', 'is_main']);
-        
-        // Get pickup location info from landing page options
-        $pickupAddress = \App\Models\LandingPageOption::getValue('address', 'г. Москва, ул. Пушкинская, д. 1');
-        $pickupPhone = \App\Models\LandingPageOption::getValue('phone', '+7 (999) 999-99-99');
-        
-        return Inertia::render('Test/OrderConfirmation', [
-            'items' => \App\Http\Controllers\AppCalculatorController::getCalculatorItems(),
-            'additional_items' => \App\Http\Controllers\AppCalculatorController::getAdditionalItems(),
-            'glasses' => \App\Http\Controllers\AppCalculatorController::getGlasses(),
-            'services' => \App\Http\Controllers\AppCalculatorController::getServices(),
-            'categories' => \App\Models\Category::all()->toArray(),
-            'logistics_companies' => $logisticsCompanies,
-            'dealers' => $dealers,
-            'user_companies' => $userCompanies,
-            'user' => $user,
-            'user_default_factor' => $user->default_factor ?? 'pz',
-            'pickup_address' => $pickupAddress,
-            'pickup_phone' => $pickupPhone,
-        ]);
-    })->name('app.test');
-
     Route::get('/app/calculator', [AppCalculatorController::class, 'index'])->name('app.calculator');
 
     Route::get('/app/history', [OrderController::class, 'index'])->name('app.history');
@@ -208,8 +156,13 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::get('/app/commercial-offers/{commercialOffer}/pdf', [CommercialOfferController::class, 'downloadPDF'])->name('app.commercial_offers.pdf');
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
-    
-    Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    Route::post('/app/cart/confirm', [AppCartController::class, 'index_order_confirmation'])->name('app.cart.confirm');
+    Route::get('/app/cart/confirm', function () {
+        //redirect to calculator
+        return redirect()->route('app.calculator');
+    })->name('app.cart.confirm-redirect');
+    // Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
+    Route::post('/app/checkout', [AppCartController::class, 'store'])->name('app.checkout');
     
     Route::get('/app/account/settings', [UserController::class, 'show'])->name('app.account.settings');
     Route::post('/app/account/settings', [UserController::class, 'update'])->name('app.account.settings.update');

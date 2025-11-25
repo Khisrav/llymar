@@ -30,6 +30,9 @@ class Order extends Model
         'when_started_working_on_it',
         'factory_id',
         'order_type',
+        'delivery_option',
+        'company_id',
+        'company_bill_id',
         'logistics_company_id',
         'is_sketch_sent',
         'readiness_date',
@@ -176,6 +179,36 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relationship: Order belongs to a Company.
+     *
+     * @return BelongsTo
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Relationship: Order belongs to a CompanyBill.
+     *
+     * @return BelongsTo
+     */
+    public function companyBill(): BelongsTo
+    {
+        return $this->belongsTo(CompanyBill::class);
+    }
+
+    /**
+     * Relationship: Order belongs to a LogisticsCompany.
+     *
+     * @return BelongsTo
+     */
+    public function logisticsCompany(): BelongsTo
+    {
+        return $this->belongsTo(LogisticsCompany::class);
     }
 
     /**

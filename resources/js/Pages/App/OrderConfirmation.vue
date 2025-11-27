@@ -27,6 +27,8 @@ import { currencyFormatter } from '../../Utils/currencyFormatter';
 import CartItem from '../../Components/Cart/CartItem.vue';
 import OrderSteps from '../../Components/OrderSteps.vue';
 import { useOpeningStore } from '../../Stores/openingsStore';
+import { toast } from 'vue-sonner';
+import { Toaster } from '../../Components/ui/sonner';
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -38,6 +40,17 @@ const isSubmitting = ref(false)
 const page = usePage()
 const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone, order_data, has_montazh_services } = page.props as any
 const errors = computed(() => page.props.errors as any)
+
+// Show toast if there's an error on page load (e.g., after redirect from failed order creation)
+watch(errors, (newErrors) => {
+	if (newErrors && Object.keys(newErrors).length > 0) {
+		const errorMessage = newErrors.error || newErrors[Object.keys(newErrors)[0]] || 'Произошла ошибка'
+		toast.error('Ошибка', {
+			description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+			duration: 5000,
+		})
+	}
+}, { immediate: true })
 
 // Initialize itemsStore with backend data
 itemsStore.items = items || []
@@ -165,14 +178,20 @@ const checkout = () => {
 	
 	// Submit order to backend
 	router.post('/app/checkout', checkoutData as any, {
-		preserveState: true,
-		preserveScroll: true,
 		onSuccess: () => {
-			// Order created successfully, backend will redirect to history page
+			// Order created successfully, backend will redirect to order view page
 			isSubmitting.value = false
 		},
 		onError: (errors: any) => {
 			console.error('Order creation failed:', errors)
+			
+			// Show error toast
+			const errorMessage = errors.error || errors[Object.keys(errors)[0]] || 'Не удалось создать заказ. Пожалуйста, попробуйте снова.'
+			toast.error('Ошибка при создании заказа', {
+				description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+				duration: 5000,
+			})
+			
 			isSubmitting.value = false
 		},
 		onFinish: () => {
@@ -189,8 +208,8 @@ const permissionGroups = ref({
     'G2': [
         'Dealer',
         'Manager',
-        'Dealer Ch',
-        'Dealer R'
+        'Dealer-Ch',
+        'Dealer-R'
     ],
     'G3': [
         'Super-Admin',
@@ -203,8 +222,8 @@ const permissionGroups = ref({
         'ROP',
         'Dealer',
         'Manager',
-        'Dealer Ch',
-        'Dealer R'
+        'Dealer-Ch',
+        'Dealer-R'
     ]
 })
 
@@ -214,8 +233,8 @@ const roleGroups = ref({
     'ROP': ['G3', 'G4'],
     'Dealer': ['G2', 'G4'],
     'Manager': ['G2', 'G4'],
-    'Dealer Ch': ['G2', 'G4'],
-    'Dealer R': ['G2', 'G4']
+    'Dealer-Ch': ['G2', 'G4'],
+    'Dealer-R': ['G2', 'G4']
 })
 
 const deliveryOptionTabGroups = ref({
@@ -223,14 +242,9 @@ const deliveryOptionTabGroups = ref({
         { value: 'montazh', title: 'Монтаж' },
         { value: 'dostavka', title: 'Доставка' },
     ],
-    'G2': [
-        { value: 'samovivoz', title: 'Самовывоз' },
-    ],
-    'G3': [
-        { value: 'tk', title: 'ТК' },
-    ],
     'G4': [
         { value: 'samovivoz', title: 'Самовывоз' },
+        { value: 'tk', title: 'ТК' },
     ],
 })
 
@@ -242,7 +256,7 @@ const availableTabs = computed(() => {
     if (has_montazh_services) {
         return [{ value: 'montazh', title: 'Монтаж' }]
     }
-    
+
     // Otherwise, show tabs according to user's role groups
     const userGroups = roleGroups.value[user_role as keyof typeof roleGroups.value] || []
     const tabsMap = new Map<string, { value: string, title: string }>()
@@ -256,6 +270,14 @@ const availableTabs = computed(() => {
     })
     
     return Array.from(tabsMap.values())
+
+    // if (is_in_group('G1')) {
+    //     return deliveryOptionTabGroups.value['G1']
+    // } else if (is_in_group('G4')) {
+    //     return deliveryOptionTabGroups.value['G4']
+    // }
+
+    // return []
 })
 
 // Get default tab (first available tab)
@@ -311,8 +333,8 @@ const isCheckoutValid = computed(() => {
                orderForm.value.company_bill_id.trim() !== ''
     }
     
-    // G4 users must select company (if they have companies)
-    if (is_in_group('G4') && user_companies && user_companies.length > 0) {
+    // G4 users must select company (always required)
+    if (is_in_group('G4')) {
         return baseValid && tabValid &&
                orderForm.value.company_id.trim() !== ''
     }
@@ -324,19 +346,12 @@ const isCheckoutValid = computed(() => {
 <template>
 	<Head title="Оформление заказа" />
 	<AuthenticatedHeaderLayout />
+	<Toaster />
     <div class="container p-0 md:p-4 mb-8">
         <!-- Order Progress Steps -->
         <OrderSteps :current-step="3" />
         
-        <div class="p-4 md:p-8 md:border space-y-4 rounded-2xl bg-background">
-                        
-                        <!-- Total -->
-                        <div class="flex items-center justify-between p-4 rounded-lg bg-primary/10 border-2 border-primary/20 mt-4">
-                            <div class="font-semibold text-base">Итого:</div>
-                            <div class="font-bold text-xl text-primary">
-                                {{ currencyFormatter(itemsStore.total_price.with_discount) }}
-                            </div>
-                        </div>
+        <div class="p-4 md:p-8 md:border rounded-2xl bg-background">
             <div class="flex items-center gap-4 mb-6">
 				<Link href="/app/cart"><Button size="icon" variant="outline"><ArrowLeftIcon /></Button></Link>
 				<h2 class="text-3xl font-semibold">Оформление заказа</h2>
@@ -370,6 +385,10 @@ const isCheckoutValid = computed(() => {
 				</div>
 			</div>
 			
+			<!-- Two Column Layout -->
+			<div class="flex flex-col md:flex-row md:space-x-8">
+				<!-- Main Content Area -->
+				<div class="md:w-2/3">
             <Tabs :default-value="defaultTab" @update:model-value="(value: string) => currentTab = value">
                 <TabsList>
                     <TabsTrigger
@@ -512,7 +531,7 @@ const isCheckoutValid = computed(() => {
             </Tabs>
                             
             <!-- Contact Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div class="space-y-2">
                     <Label for="fullname_montazh" class="text-sm font-medium flex items-center gap-2">
                         <UserIcon class="h-4 w-4" />
@@ -546,7 +565,7 @@ const isCheckoutValid = computed(() => {
             </div>
 
             <!-- Additional fields based on group permissions - more efficient layout without cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <!-- G1/G4 - Company Selection (shared) -->
                 <div v-if="is_in_group('G1') || is_in_group('G4')" class="space-y-2">
                     <div v-if="user_companies && user_companies.length > 0">
@@ -568,7 +587,7 @@ const isCheckoutValid = computed(() => {
                     </div>
                     <div v-else class="text-center py-4 space-y-4 border rounded-lg bg-muted/30">
                         <div class="text-sm text-muted-foreground pb-2">
-                            У вас пока нет своих компаний
+                            У вас пока нет своих компаний <span class="text-destructive font-medium">*</span>
                         </div>
                         <Link href="/app/companies">
                             <Button variant="outline" size="sm" class="gap-2">
@@ -611,67 +630,79 @@ const isCheckoutValid = computed(() => {
                     </Select>
                 </div>
             </div>
+				</div>
 
-            <!-- Comment and Consent -->
-            <div class="space-y-4">
-                <div class="space-y-2">
-                    <Label for="comment" class="text-sm font-medium">Комментарий к заказу</Label>
-                    <Textarea 
-                        id="comment"
-                        v-model="orderForm.comment"
-                        placeholder="Введите комментарий или особые пожелания к заказу" 
-                        :rows="3" 
-                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20 resize-none" 
-                    />
-                </div>
+				<!-- Sidebar -->
+				<div class="md:w-1/3 mt-8 md:mt-0 md:sticky md:top-20 md:self-start md:max-h-[calc(100vh-4rem)] md:overflow-y-auto">
+					<!-- Total Price Summary -->
+					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6">
+						<h3 class="text-lg font-semibold mb-4">Сводка по заказу</h3>
+						<div class="flex justify-between mb-2">
+							<p>Всего</p>
+							<p>{{ currencyFormatter(itemsStore.total_price.with_discount) }}</p>
+						</div>
 
-                <!-- Consent checkbox -->
-                <div class="flex items-start gap-3">
-                    <Checkbox 
-                        id="terms" 
-                        v-model:checked="orderForm.consent"
-                        class="mt-0.5"
-                    />
-                    <Label for="terms" class="text-sm font-normal leading-relaxed cursor-pointer">
-                        Я согласен с условиями обработки персональных данных и даю согласие на их обработку <span class="text-destructive">*</span>
-                    </Label>
-                </div>
+						<div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4 flex justify-between items-center">
+							<p class="text-lg font-semibold">Итого</p>
+							<p class="text-xl font-semibold">
+								{{ currencyFormatter(itemsStore.total_price.with_discount) }}
+							</p>
+						</div>
+					</div>
 
-                <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
-                    <Button 
-                        variant="outline" 
-                        size="lg"
-                        @click="showCartItems = !showCartItems"
-                        class="gap-2 w-full sm:w-auto"
-                    >
-                        <EyeIcon class="h-4 w-4" />
-                        {{ showCartItems ? 'Скрыть товары' : 'Показать товары' }}
-                    </Button>
-                    <Button 
-                        variant="default" 
-                        size="lg"
-                        @click="checkout"
-                        :disabled="!isCheckoutValid || isSubmitting"
-                        class="gap-2 w-full sm:w-auto"
-                    >
-                        <ShoppingCartIcon v-if="!isSubmitting" class="h-4 w-4" />
-                        <span v-if="isSubmitting" class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        {{ isSubmitting ? 'Оформление...' : 'Оформить заказ' }}
-                    </Button>
-                </div>
-            </div>
+					<!-- Comment, Consent and Actions -->
+					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
+						<!-- Comment -->
+						<div class="space-y-2">
+							<Label for="comment" class="text-sm font-medium">Комментарий к заказу</Label>
+							<Textarea 
+								id="comment"
+								v-model="orderForm.comment"
+								placeholder="Введите комментарий или особые пожелания к заказу" 
+								:rows="3" 
+								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20 resize-none" 
+							/>
+						</div>
 
-            <!-- Validation message -->
-            <!-- <div v-if="!isCheckoutValid && Object.keys(itemsStore.cartItems).length === 0" class="text-sm text-destructive text-center p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                ⚠️ Корзина пуста. Добавьте товары для оформления заказа.
-            </div>
-            <div v-else-if="!isCheckoutValid" class="text-sm text-muted-foreground text-center">
-                Заполните все обязательные поля и дайте согласие на обработку данных
-            </div> -->
+						<!-- Consent checkbox -->
+						<div class="flex items-start gap-3">
+							<Checkbox 
+								id="terms" 
+								v-model:checked="orderForm.consent"
+								class="mt-0.5"
+							/>
+							<Label for="terms" class="text-sm font-normal leading-relaxed cursor-pointer">
+								Я согласен с условиями обработки персональных данных и даю согласие на их обработку <span class="text-destructive">*</span>
+							</Label>
+						</div>
+
+						<!-- Action Buttons -->
+						<div class="flex flex-col gap-3 pt-2">
+							<Button 
+								variant="outline" 
+								@click="showCartItems = !showCartItems"
+								class="gap-2 w-full"
+							>
+								<EyeIcon class="h-4 w-4" />
+								{{ showCartItems ? 'Скрыть товары' : 'Показать товары' }}
+							</Button>
+							<Button 
+								variant="default" 
+								@click="checkout"
+								:disabled="!isCheckoutValid || isSubmitting"
+								class="gap-2 w-full"
+							>
+								<ShoppingCartIcon v-if="!isSubmitting" class="h-4 w-4" />
+								<span v-if="isSubmitting" class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+								{{ isSubmitting ? 'Оформление...' : 'Оформить заказ' }}
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
 
             <!-- Order Summary and Cart Items -->
-            <Card v-if="showCartItems" class="transition-all duration-300 ease-in-out">
+            <Card v-if="showCartItems" class="transition-all duration-300 ease-in-out mt-6">
                 <CardHeader class="p-4 pb-0">
                     <CardTitle class="text-base md:text-lg flex items-center gap-2">
                         <ShoppingCartIcon class="h-5 w-5 text-primary" />

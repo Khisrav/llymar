@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class AppCartController extends Controller
 {
@@ -71,6 +72,9 @@ class AppCartController extends Controller
             'selected_dealer_id' => 'nullable|integer|exists:users,id',
         ]);
         
+        // Store order data in session for GET route access
+        session(['order_confirmation_data' => $orderData]);
+        
         // Get dealers if user has permission to select dealers
         $dealers = collect();
         
@@ -123,6 +127,77 @@ class AppCartController extends Controller
             'pickup_address' => $pickupAddress,
             'pickup_phone' => $pickupPhone,
             // Pass the order data from cart page
+            'order_data' => $orderData,
+            // Flag to indicate if cart has montazh services
+            'has_montazh_services' => $hasMontazhServices,
+        ]);
+    }
+
+    public function show_order_confirmation() {
+        $user = Auth::user();
+        
+        // Retrieve order data from session
+        $orderData = session('order_confirmation_data');
+        
+        // If no data in session, redirect to cart
+        if (!$orderData) {
+            return redirect()->route('app.cart')->with('error', 'Пожалуйста, заполните корзину перед оформлением заказа.');
+        }
+        
+        $logisticsCompanies = LogisticsCompany::all(['id', 'name']);
+        
+        // Get dealers if user has permission to select dealers
+        $dealers = collect();
+        
+        if ($user->hasRole('Super-Admin')) {
+            // Get all dealers for super admin
+            $dealers = User::whereHas('roles', function($query) {
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
+        } else {
+            // Get only child dealers for other roles
+            $dealers = User::where('parent_id', $user->id)
+                ->whereHas('roles', function($query) {
+                    $query->whereIn('name', ['Dealer', 'Dealer-Ch', 'Dealer-R']);
+                })
+                ->select('id', 'name', 'email')
+                ->get();
+        }
+        
+        // Get user's customer companies with their bills
+        $userCompanies = Company::with('companyBills')
+            ->where('type', 'customer')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'short_name', 'full_name', 'is_main']);
+        
+        // Get pickup location info from landing page options
+        $pickupAddress = LandingPageOption::getValue('address', 'г. Москва, ул. Пушкинская, д. 1');
+        $pickupPhone = LandingPageOption::getValue('phone', '+7 (999) 999-99-99');
+        
+        // Check if cart contains montazh services from category 35
+        $hasMontazhServices = false;
+        if (isset($orderData['cart_items'])) {
+            $itemIds = array_keys($orderData['cart_items']);
+            $hasMontazhServices = Item::whereIn('id', $itemIds)->where('category_id', 35)->exists();
+        }
+        
+        return Inertia::render('App/OrderConfirmation', [
+            'items' => AppCalculatorController::getCalculatorItems(),
+            'additional_items' => AppCalculatorController::getAdditionalItems(),
+            'glasses' => AppCalculatorController::getGlasses(),
+            'services' => AppCalculatorController::getServices(),
+            'categories' => Category::all()->toArray(),
+            'logistics_companies' => $logisticsCompanies,
+            'dealers' => $dealers,
+            'user_companies' => $userCompanies,
+            'user' => $user,
+            'user_default_factor' => $user->default_factor ?? 'pz',
+            'pickup_address' => $pickupAddress,
+            'pickup_phone' => $pickupPhone,
+            // Pass the order data from session
             'order_data' => $orderData,
             // Flag to indicate if cart has montazh services
             'has_montazh_services' => $hasMontazhServices,
@@ -229,16 +304,23 @@ class AppCartController extends Controller
                 // Optionally: continue, or return with error
             }
 
-            //maybe show a page for user to download a bill, view order info or redirect to calculator?
-            return redirect()->route('app.history');
+            // Clear order confirmation data from session
+            session()->forget('order_confirmation_data');
+
+            // Redirect to the order view page with a flag to show download bill modal
+            return redirect()->route('app.orders.show', ['order' => $order->id])
+                ->with('order_created', true);
         } catch (\Exception $e) {
             Log::error("Order creation failed", [
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString(),
             ]);
-            return back()->withErrors([
-                'error' => 'Order creation failed. Please try again later.',
-            ]);
+            
+            // Redirect back to order confirmation page with error
+            return redirect()->route('app.cart.confirm-redirect')
+                ->withErrors([
+                    'error' => 'Не удалось создать заказ. Пожалуйста, попробуйте позже.',
+                ]);
         }
     }
 }

@@ -37,6 +37,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { toast } from "vue-sonner";
 import { Toaster } from "../../../Components/ui/sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../Components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../Components/ui/dialog";
 import Popover from "../../../Components/ui/popover/Popover.vue";
 import PopoverContent from "../../../Components/ui/popover/PopoverContent.vue";
 import PopoverTrigger from "../../../Components/ui/popover/PopoverTrigger.vue";
@@ -51,11 +52,16 @@ import CommandGroup from "../../../Components/ui/command/CommandGroup.vue";
 import { RAL } from 'ral-colors/index.js';
 
 // Get initial data from page props
-const pageData = usePage().props;
-const { user_role, can_access_sketcher, order, user, creator }: { user_role: string; can_access_sketcher: boolean; order: Order; user: User; creator: User } = pageData as any;
+const pageData = usePage();
+const { user_role, can_access_sketcher, order, user, creator }: { user_role: string; can_access_sketcher: boolean; order: Order; user: User; creator: User } = pageData.props as any;
+
+// Check if order was just created (from flash message)
+const orderCreated = computed(() => (pageData.props as any).order_created || false);
+
 // Edit state
 const isEditing = ref(false);
 const ralPopoverOpen = ref(false);
+const showDownloadBillModal = ref(orderCreated.value);
 const selectedRALColor = ref({ 
 	name: order.ral_code || "Выберите цвет", 
 	HEX: order.ral_code && RAL.classic[order.ral_code] ? RAL.classic[order.ral_code].HEX : "none" 
@@ -98,7 +104,7 @@ const showItems = ref(false);
 
 // Computed properties
 const canEdit = computed(() => order.status === 'created');
-const canAccess = computed(() => order.user_id === pageData.auth?.user?.id || pageData.auth?.user?.roles?.some((role: any) => role.name === 'Super-Admin'));
+const canAccess = computed(() => order.user_id === (pageData.props as any).auth?.user?.id || (pageData.props as any).auth?.user?.roles?.some((role: any) => role.name === 'Super-Admin'));
 const hasRalItem = computed(() => order.order_items?.some((item: any) => item.item_id === 386) || false);
 
 const canDeleteOrder = ref(order.status == 'created')
@@ -283,6 +289,30 @@ const handleImageError = (event: Event) => {
 	<AuthenticatedHeaderLayout />
 	
 	<Toaster />
+
+	<!-- Download Bill Modal -->
+	<Dialog v-model:open="showDownloadBillModal">
+		<DialogContent class="sm:max-w-md">
+			<DialogHeader>
+				<DialogTitle class="flex items-center gap-2 text-xl">
+					<ReceiptRussianRubleIcon class="h-6 w-6 text-primary" />
+					Заказ успешно создан!
+				</DialogTitle>
+				<DialogDescription class="text-base">
+					Ваш заказ №{{ order.order_number || order.id }} был успешно создан. Вы можете скачать счет для оплаты.
+				</DialogDescription>
+			</DialogHeader>
+			<DialogFooter class="gap-2 sm:gap-0 flex-col sm:flex-row">
+				<Button variant="outline" @click="showDownloadBillModal = false">
+					Закрыть
+				</Button>
+				<Button @click="() => { downloadBill(); showDownloadBillModal = false; }" class="gap-2">
+					<ReceiptRussianRubleIcon class="h-4 w-4" />
+					Скачать счет
+				</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
 
 	<div class="container mx-auto p-0 md:p-6 lg:p-8">
 		<div class="bg-background md:border md:rounded-2xl md:shadow-sm overflow-hidden">

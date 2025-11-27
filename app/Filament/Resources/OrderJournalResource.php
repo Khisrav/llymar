@@ -126,8 +126,15 @@ class OrderJournalResource extends Resource
                     ->wrap()
                     ->formatStateUsing(function (?Model $record) {
                         $prefix = explode('-', $record->order_number)[0];
+                        // if ($prefix == '1') {
+                        //     return $record->city . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
+                        // } else if ($prefix == '4') {
+                        //     return $record->customer_address;
+                        // } else if ($prefix == '6') {
+                        //     return 'Самовывоз';
+                        // } else return $record->customer_address;
                         if ($prefix == '1') {
-                            return $record->city . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
+                            return $record->customer_address . ' / ' . (LogisticsCompany::find($record->logistics_company_id)->name ?? '');
                         } else if ($prefix == '4') {
                             return $record->customer_address;
                         } else if ($prefix == '6') {

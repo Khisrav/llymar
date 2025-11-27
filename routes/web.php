@@ -157,10 +157,7 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     Route::get('/app/cart', [AppCartController::class, 'index'])->name('app.cart');
     Route::post('/app/cart/confirm', [AppCartController::class, 'index_order_confirmation'])->name('app.cart.confirm');
-    Route::get('/app/cart/confirm', function () {
-        //redirect to calculator
-        return redirect()->route('app.calculator');
-    })->name('app.cart.confirm-redirect');
+    Route::get('/app/cart/confirm', [AppCartController::class, 'show_order_confirmation'])->name('app.cart.confirm-redirect');
     // Route::post('/app/checkout', [OrderController::class, 'store'])->name('app.checkout');
     Route::post('/app/checkout', [AppCartController::class, 'store'])->name('app.checkout');
     

@@ -59,19 +59,16 @@ class TochkaBankService
     {
         $user = User::find($order->user_id);
         
-        // Get user's companies
-        $companies = $user->companies;
-        
-        // Check if user has any companies
-        if ($companies->isEmpty()) {
-            throw new Exception('У пользователя нет зарегистрированных компаний. Невозможно создать счет.');
+        // Use the company selected during order creation
+        if (!$order->company_id) {
+            throw new Exception('Компания не указана в заказе. Невозможно создать счет.');
         }
         
-        // Try to find the main company
-        $mainCompany = $companies->firstWhere('is_main', true);
+        $company = Company::find($order->company_id);
         
-        // If no main company, use the first company
-        $company = $mainCompany ?? $companies->first();
+        if (!$company) {
+            throw new Exception('Выбранная компания не найдена. Невозможно создать счет.');
+        }
         
         // Get the company's INN
         $taxCode = $company->inn;
@@ -80,7 +77,7 @@ class TochkaBankService
         Log::info('User and company info', [
             'user' => $user,
             'company' => $company,
-            'is_main' => $mainCompany ? 'yes' : 'no (using first company)'
+            'order_company_id' => $order->company_id
         ]);
         
         if (empty($taxCode)) {

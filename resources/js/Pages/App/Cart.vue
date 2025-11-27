@@ -184,7 +184,7 @@ const goToConfirmationPage = () => {
 					<!-- <form @submit.prevent="checkout" class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4"> -->
 					<div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 md:p-6 mt-4 md:mt-6 flex flex-col gap-4">
 						<!-- Dealer Selector -->
-						<div v-if="can_select_dealer && dealers && dealers.length > 0">
+						<div v-if="can_select_dealer && dealers.length > 0">
 							<div class="space-y-4">
 								<Label class="inline-block">Дилер <span v-if="user_role === 'ROP'" class="text-destructive dark:text-red-500">*</span></Label>
 								<Select 
@@ -204,6 +204,15 @@ const goToConfirmationPage = () => {
 										</SelectItem>
 									</SelectContent>
 								</Select>
+							</div>
+						</div>
+						<div v-else-if="can_select_dealer && dealers.length === 0">
+							<div>
+								<Label class="inline-block">Дилер <span v-if="user_role === 'ROP'" class="text-destructive dark:text-red-500">*</span></Label>
+								<div class="flex flex-col gap-2 bg-muted mt-2 rounded-lg p-4">
+									<p class="text-muted-foreground text-sm">Нет доступных дилеров</p>
+									<Link href="/app/users" class="text-blue-500 hover:text-blue-600 text-sm">Перейти к пользователям</Link>
+								</div>
 							</div>
 						</div>
 

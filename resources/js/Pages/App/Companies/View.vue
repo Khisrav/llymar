@@ -58,6 +58,11 @@ const bossTitle = {
 // Computed properties
 const hasBills = computed(() => company.company_bills && company.company_bills.length > 0);
 
+// Check if user can manage bills (Super-Admin or Operator only)
+const canManageBills = computed(() => {
+	return (pageData as any).auth?.user?.roles?.some((role: any) => role.name === 'Super-Admin' || role.name === 'Operator') || false;
+});
+
 // Form for editing company details
 const form = useForm({
 	short_name: company.short_name || '',
@@ -620,7 +625,7 @@ const toggleMainCompany = () => {
 							Банковские счета
 							<span v-if="hasBills" class="text-sm text-muted-foreground">({{ company.company_bills?.length }})</span>
 						</h2>
-						<Button @click="startAddingBill" size="sm">
+						<Button v-if="canManageBills" @click="startAddingBill" size="sm">
 							<PlusIcon class="h-4 w-4" />
 							Добавить счет
 						</Button>
@@ -657,7 +662,7 @@ const toggleMainCompany = () => {
 											</CardTitle>
 											<p class="text-sm text-muted-foreground">{{ bill.bank_address }}</p>
 										</div>
-										<DropdownMenu>
+										<DropdownMenu v-if="canManageBills">
 											<DropdownMenuTrigger as-child>
 												<Button variant="ghost" size="icon">
 													<EllipsisVerticalIcon class="h-4 w-4" />
@@ -711,7 +716,7 @@ const toggleMainCompany = () => {
 											<TableHead class="font-semibold">Расчетный счет</TableHead>
 											<TableHead class="font-semibold">Корр. счет</TableHead>
 											<TableHead class="font-semibold">БИК</TableHead>
-											<TableHead class="font-semibold w-[100px]">Действия</TableHead>
+											<TableHead v-if="canManageBills" class="font-semibold w-[100px]">Действия</TableHead>
 										</TableRow>
 									</TableHeader>
 									
@@ -734,7 +739,7 @@ const toggleMainCompany = () => {
 											<TableCell>
 												<div class="font-mono text-sm">{{ bill.bik }}</div>
 											</TableCell>
-											<TableCell>
+											<TableCell v-if="canManageBills">
 												<div class="flex items-center gap-1">
 													<Button 
 														variant="ghost" 

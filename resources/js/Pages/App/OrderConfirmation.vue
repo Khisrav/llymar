@@ -27,6 +27,8 @@ import { currencyFormatter } from '../../Utils/currencyFormatter';
 import CartItem from '../../Components/Cart/CartItem.vue';
 import OrderSteps from '../../Components/OrderSteps.vue';
 import { useOpeningStore } from '../../Stores/openingsStore';
+import { toast } from 'vue-sonner';
+import { Toaster } from '../../Components/ui/sonner';
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
@@ -38,6 +40,17 @@ const isSubmitting = ref(false)
 const page = usePage()
 const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone, order_data, has_montazh_services } = page.props as any
 const errors = computed(() => page.props.errors as any)
+
+// Show toast if there's an error on page load (e.g., after redirect from failed order creation)
+watch(errors, (newErrors) => {
+	if (newErrors && Object.keys(newErrors).length > 0) {
+		const errorMessage = newErrors.error || newErrors[Object.keys(newErrors)[0]] || 'Произошла ошибка'
+		toast.error('Ошибка', {
+			description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+			duration: 5000,
+		})
+	}
+}, { immediate: true })
 
 // Initialize itemsStore with backend data
 itemsStore.items = items || []
@@ -165,14 +178,20 @@ const checkout = () => {
 	
 	// Submit order to backend
 	router.post('/app/checkout', checkoutData as any, {
-		preserveState: true,
-		preserveScroll: true,
 		onSuccess: () => {
-			// Order created successfully, backend will redirect to history page
+			// Order created successfully, backend will redirect to order view page
 			isSubmitting.value = false
 		},
 		onError: (errors: any) => {
 			console.error('Order creation failed:', errors)
+			
+			// Show error toast
+			const errorMessage = errors.error || errors[Object.keys(errors)[0]] || 'Не удалось создать заказ. Пожалуйста, попробуйте снова.'
+			toast.error('Ошибка при создании заказа', {
+				description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+				duration: 5000,
+			})
+			
 			isSubmitting.value = false
 		},
 		onFinish: () => {
@@ -314,8 +333,8 @@ const isCheckoutValid = computed(() => {
                orderForm.value.company_bill_id.trim() !== ''
     }
     
-    // G4 users must select company (if they have companies)
-    if (is_in_group('G4') && user_companies && user_companies.length > 0) {
+    // G4 users must select company (always required)
+    if (is_in_group('G4')) {
         return baseValid && tabValid &&
                orderForm.value.company_id.trim() !== ''
     }
@@ -327,6 +346,7 @@ const isCheckoutValid = computed(() => {
 <template>
 	<Head title="Оформление заказа" />
 	<AuthenticatedHeaderLayout />
+	<Toaster />
     <div class="container p-0 md:p-4 mb-8">
         <!-- Order Progress Steps -->
         <OrderSteps :current-step="3" />
@@ -567,7 +587,7 @@ const isCheckoutValid = computed(() => {
                     </div>
                     <div v-else class="text-center py-4 space-y-4 border rounded-lg bg-muted/30">
                         <div class="text-sm text-muted-foreground pb-2">
-                            У вас пока нет своих компаний
+                            У вас пока нет своих компаний <span class="text-destructive font-medium">*</span>
                         </div>
                         <Link href="/app/companies">
                             <Button variant="outline" size="sm" class="gap-2">

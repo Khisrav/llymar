@@ -109,6 +109,8 @@ const navigationItems = computed(() => {
 })
 
 const username = computed(() => {
+    if (!user.name) return 'Пользователь'
+
     let firstName = user.name.split(' ')[0], lastName = user.name.split(' ')[1]
     
     if (!lastName) return firstName
@@ -116,6 +118,8 @@ const username = computed(() => {
 })
 
 const userInitials = computed(() => {
+    if (!user.name) return 'П'
+
     const nameParts = user.name.split(' ')
     if (nameParts.length >= 2) {
         return nameParts[0][0] + nameParts[1][0]
@@ -237,7 +241,7 @@ export default {
                             class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
                         >
                             <Building2Icon class="h-5 w-5" />
-                            <span>Компании</span>
+                            <span>Организации</span>
                         </Link>
                         <a 
                             href="https://t.me/LLymar"
@@ -411,7 +415,7 @@ export default {
                             // sidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
                         ]"
                     >
-                        Компании
+                        Организации
                     </span>
                 </Link>
 

@@ -39,10 +39,13 @@ class ChildUserController extends Controller
                     'phone' => $user->phone,
                     'telegram' => $user->telegram,
                     'company' => $user->company,
+                    'website' => $user->website,
                     'country' => $user->country,
                     'region' => $user->region,
+                    'city' => $user->city,
                     'address' => $user->address,
                     'reward_fee' => $user->reward_fee,
+                    'private_note' => $user->private_note,
                     // 'can_access_dxf' => $user->can('access dxf'),
                     'role' => $user->roles->first()?->display_name ?? $user->roles->first()?->name,
                     'created_at' => $user->created_at,
@@ -88,15 +91,13 @@ class ChildUserController extends Controller
 
         // Base validation rules
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['required', 'string', 'max:255', 'unique:users'],
+            'phone' => ['nullable', 'string', 'max:255', 'unique:users'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'url', 'max:255'],
         ];
-
-        // Add address validation for Dealers
-        if ($targetRole === 'Dealer') {
-            $rules['address'] = ['required', 'string', 'max:500'];
-        }
 
         $validated = $request->validate($rules);
 
@@ -111,10 +112,12 @@ class ChildUserController extends Controller
             }
 
             $newUser = User::create([
-                'name' => $validated['name'],
+                'name' => $validated['name'] ?? null,
                 'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'website' => $validated['website'] ?? null,
                 'password' => Hash::make($plainPassword),
                 'parent_id' => $user->id,
                 'profile_completed' => false,
@@ -130,7 +133,7 @@ class ChildUserController extends Controller
             try {
                 Mail::to($newUser->email)->send(
                     new UserCredentialsMail(
-                        userName: $newUser->name,
+                        userName: $newUser->name ?? $newUser->email,
                         userEmail: $newUser->email,
                         userPassword: $plainPassword,
                         loginUrl: url('/login')
@@ -166,29 +169,35 @@ class ChildUserController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['required', 'string', 'max:255', 'unique:users,phone,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:255', 'unique:users,phone,' . $user->id],
             'telegram' => ['nullable', 'string', 'max:255'],
-            'country' => ['required', 'string', 'max:255'],
-            'region' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:500'],
-            'company' => ['required', 'string', 'max:255'],
-            'reward_fee' => ['required', 'numeric', 'min:0', 'max:100'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'region' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'company' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'reward_fee' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'private_note' => ['nullable', 'string', 'max:1000'],
             // 'can_access_dxf' => ['boolean'],
         ]);
 
         try {
             $user->update([
-                'name' => $validated['name'],
+                'name' => $validated['name'] ?? null,
                 'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'phone' => $validated['phone'] ?? null,
                 'telegram' => $validated['telegram'] ?? null,
-                'country' => $validated['country'],
-                'region' => $validated['region'],
-                'address' => $validated['address'],
-                'company' => $validated['company'],
-                'reward_fee' => $validated['reward_fee'],
+                'country' => $validated['country'] ?? null,
+                'region' => $validated['region'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'company' => $validated['company'] ?? null,
+                'website' => $validated['website'] ?? null,
+                'reward_fee' => $validated['reward_fee'] ?? 0,
+                'private_note' => $validated['private_note'] ?? null,
             ]);
 
             // Update DXF access

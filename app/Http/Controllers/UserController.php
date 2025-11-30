@@ -26,12 +26,16 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'region' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
             'telegram' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'url', 'max:255'],
         ]);
 
         $user = Auth::user();

@@ -165,22 +165,25 @@ class UserResource extends Resource
                             ->options(function () {
                                 return Cache::remember('user_parent_options', 300, function () {
                                     if (static::isSuperAdmin()) {
-                                        return User::orderBy('name')->pluck('name', 'id');
+                                        return User::whereNotNull('name')
+                                            ->orderBy('name')
+                                            ->pluck('name', 'id');
                                     } else {
                                         $currentUser = static::getCurrentUser();
-                                        return $currentUser ? [$currentUser->id => $currentUser->name] : [];
+                                        return $currentUser && $currentUser->name 
+                                            ? [$currentUser->id => $currentUser->name] 
+                                            : [];
                                     }
                                 });
                             })
                             ->default(static::getCurrentUser()?->id)
-                            ->required()
                             ->columnSpan(2),
 
                         // Personal Information
                         Forms\Components\TextInput::make('name')
                             ->label('ФИО')
                             ->placeholder('Введите полное имя')
-                            ->required()
+                            // ->required()
                             ->maxLength(255)
                             ->autocomplete('name'),
 
@@ -198,7 +201,7 @@ class UserResource extends Resource
                             ->label('Телефон')
                             ->mask('+7 (999) 999 99-99')
                             ->placeholder('+7 (XXX) XXX XX-XX')
-                            ->required()
+                            // ->required()
                             ->prefixIcon('heroicon-o-phone'),
 
                         Forms\Components\TextInput::make('telegram')
@@ -209,13 +212,13 @@ class UserResource extends Resource
                             ->prefixIcon('heroicon-o-chat-bubble-left-ellipsis'),
 
                         // Address Information
-                        Grid::make(2)
+                        Grid::make(3)
                             ->columnSpan(2)
                             ->schema([
                                 Forms\Components\Select::make('country')
                                     ->label('Страна')
                                     ->native(false)
-                                    ->required()
+                                    // ->required()
                                     ->searchable()
                                     ->prefixIcon('heroicon-o-globe-americas')
                                     ->options([
@@ -231,7 +234,7 @@ class UserResource extends Resource
                                 Forms\Components\Select::make('region')
                                     ->label('Регион')
                                     ->native(false)
-                                    ->required()
+                                    // ->required()
                                     ->searchable()
                                     ->disabled(fn (Get $get) => !$get('country'))
                                     ->options(function (Get $get) {
@@ -239,12 +242,17 @@ class UserResource extends Resource
                                         return $country ? self::$countries[$country] : [];
                                     })
                                     ->helperText('Сначала выберите страну'),
+
+                                Forms\Components\TextInput::make('city')
+                                    ->label('Город')
+                                    ->placeholder('Название города')
+                                    ->maxLength(255),
                             ]),
 
                         Forms\Components\Textarea::make('address')
                             ->label('Фактический адрес')
                             ->placeholder('Введите полный адрес')
-                            ->required()
+                            // ->required()
                             ->maxLength(500)
                             ->rows(2)
                             ->columnSpan(2),
@@ -253,15 +261,23 @@ class UserResource extends Resource
                 Section::make('Бизнес информация')
                     ->description('Данные о компании и комиссиях')
                     ->icon('heroicon-o-building-office')
-                    ->columns(12)
+                    ->columns(8)
                     ->collapsible()
                     ->schema([
                         Forms\Components\TextInput::make('company')
                             ->label('Контрагент')
                             ->placeholder('Название компании')
-                            ->required()
+                            // ->required()
                             ->columnSpan(4)
                             ->maxLength(255),
+
+                        Forms\Components\TextInput::make('website')
+                            ->label('Веб-сайт')
+                            ->placeholder('https://example.com')
+                            ->url()
+                            ->columnSpan(4)
+                            ->maxLength(255)
+                            ->prefixIcon('heroicon-o-globe-alt'),
 
                         Forms\Components\TextInput::make('reward_fee')
                             ->label('Комиссия')
@@ -271,15 +287,17 @@ class UserResource extends Resource
                             ->minValue(0)
                             ->maxValue(100)
                             ->default(0)
+                            ->dehydrateStateUsing(fn ($state) => $state ?? 0)
                             ->columnSpan(2)
-                            ->step(0.01)
-                            ->required(),
+                            ->step(0.01),
+                            // ->required(),
                             // ->helperText(''),
 
                         Forms\Components\Select::make('default_factor')
                             ->label('Цена по умолчанию')
                             ->native(false)
-                            ->required()
+                            // ->required()
+                            ->selectablePlaceholder(false)
                             ->default('p3')
                             ->visible(static::isSuperAdmin())
                             // ->helperText('Применяется для расчетов')
@@ -333,6 +351,7 @@ class UserResource extends Resource
                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name ?: $record->name)
                             ->preload()
                             ->required()
+                            ->selectablePlaceholder(false)
                             ->native(false)
                             ->options(function () {
                                 /** @var User|null $user */
@@ -492,6 +511,20 @@ class UserResource extends Resource
                     //         }),
 
                     ]),
+
+                Section::make('Заметки')
+                    ->description('Внутренняя информация (видна только администраторам, операторам и родителям)')
+                    ->icon('heroicon-o-document-text')
+                    ->columns(1)
+                    ->collapsible()
+                    ->visible(fn () => static::isSuperAdmin() || static::currentUserHasRole('Operator'))
+                    ->schema([
+                        Forms\Components\Textarea::make('private_note')
+                            ->label('Примечание')
+                            ->placeholder('Внутренние заметки о пользователе...')
+                            ->maxLength(1000)
+                            ->rows(4),
+                    ]),
             ]);
     }
 
@@ -594,6 +627,7 @@ class UserResource extends Resource
                     ->suffix('%')
                     ->numeric(decimalPlaces: 2)
                     ->alignEnd()
+                    ->default(0)
                     ->sortable()
                     ->toggleable(),
 

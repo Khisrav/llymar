@@ -217,7 +217,7 @@ const totalPriceWithGhostGlass = (glassId: number) => {
 
 				<div class="flex flex-col gap-2 mt-6">
 					<div class="flex justify-between items-center">
-						<span class="font-semibold">Фантомные стекла</span>
+						<span class="font-semibold">Доп. стекла для КП</span>
 						<span class="text-xs text-muted-foreground">(Для КП, не учитываются в цене)</span>
 					</div>
 
@@ -285,7 +285,7 @@ const totalPriceWithGhostGlass = (glassId: number) => {
 					
 				<div class="flex flex-col gap-2 mt-6">
 					<div class="flex justify-between items-center">
-						<span class="font-semibold">Фантомные ручки</span>
+						<span class="font-semibold">Доп. ручки для КП</span>
 						<span class="text-xs text-muted-foreground">(не учитываются в цене)</span>
 					</div>
 					

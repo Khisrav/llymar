@@ -41,8 +41,11 @@ class User extends Authenticatable implements FilamentUser
         'reward_fee',
         'country',
         'region',
+        'city',
         'logo',
         'profile_completed',
+        'website',
+        'private_note',
     ];
 
     /**
@@ -66,6 +69,8 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'profile_completed' => 'boolean',
+            // 'website' => 'string',
+            // 'private_note' => 'text',
         ];
     }
     

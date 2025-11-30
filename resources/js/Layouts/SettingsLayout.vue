@@ -25,10 +25,10 @@ const allMenuItems: MenuItem[] = [
 		visible: true
 	},
 	{
-		title: 'Компании',
+		title: 'Организации',
 		href: '/app/companies',
 		icon: BuildingIcon,
-		description: 'Управление компаниями',
+		description: 'Реквизиты для выставления счетов',
 		visible: can_access_companies
 	}
 ];

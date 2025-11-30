@@ -43,7 +43,7 @@ import { Input } from "../../../Components/ui/input/";
 import { Textarea } from "../../../Components/ui/textarea/";
 import { Button } from "../../../Components/ui/button/";
 import { Switch } from "../../../Components/ui/switch";
-import { PencilIcon, TrashIcon, UserIcon, PhoneIcon, BuildingIcon, MapPinIcon, EyeClosedIcon, EyeIcon } from "lucide-vue-next";
+import { PencilIcon, TrashIcon, UserIcon, PhoneIcon, BuildingIcon, MapPinIcon, EyeClosedIcon, EyeIcon, GlobeIcon } from "lucide-vue-next";
 
 const props = defineProps<{
 	childUsers: Array<any>;
@@ -64,6 +64,8 @@ const newUser = ref({
 	email: "",
 	phone: "",
 	address: "",
+	city: "",
+	website: "",
 	role: "", // 'Dealer' or 'Manager'
 });
 
@@ -78,11 +80,6 @@ const canCreateRole = computed(() => {
 		return { canCreate: ['Dealer', 'Manager'], showSelect: true, defaultRole: '' };
 	}
 	return { canCreate: [], showSelect: false, defaultRole: '' };
-});
-
-// Check if address field should be shown
-const shouldShowAddress = computed(() => {
-	return newUser.value.role === 'Dealer';
 });
 
 const countries = {
@@ -158,6 +155,8 @@ const resetNewUser = () => {
 		email: "",
 		phone: "",
 		address: "",
+		city: "",
+		website: "",
 		role: canCreateRole.value.defaultRole,
 	};
 	showPassword.value = false;
@@ -291,7 +290,7 @@ const resetNewUser = () => {
 								<TableRow class="bg-muted/30 hover:bg-muted/30">
 									<TableHead class="font-semibold text-sm">Пользователь</TableHead>
 									<TableHead class="font-semibold text-sm">Компания</TableHead>
-									<TableHead class="font-semibold text-sm">Местоположение</TableHead>
+									<TableHead class="font-semibold text-sm">Город</TableHead>
 									<TableHead v-if="userRole == 'Super-Admin'" class="font-semibold text-sm">Комиссия</TableHead>
 									<!-- <TableHead class="font-semibold text-sm">DXF</TableHead> -->
 									<TableHead v-if="['Super-Admin', 'Dealer R'].includes(userRole)" class="font-semibold text-sm">Роль</TableHead>
@@ -306,7 +305,7 @@ const resetNewUser = () => {
 								>
 									<TableCell>
 										<div class="space-y-1">
-											<p class="font-medium">{{ user.name }}</p>
+											<p class="font-medium">{{ user.name ?? '-' }}</p>
 											<p class="text-sm text-muted-foreground">{{ user.email }}</p>
 											<a :href="'tel:' + user.phone" class="text-sm text-primary hover:underline font-mono">
 												{{ user.phone }}
@@ -315,8 +314,8 @@ const resetNewUser = () => {
 									</TableCell>
 									<TableCell class="font-medium">{{ user.company }}</TableCell>
 									<TableCell class="text-sm text-muted-foreground">
-										<div>{{ user.country }}</div>
-										<div class="text-xs">{{ user.region }}</div>
+										<div>{{ user.city }}</div>
+										<div class="text-xs text-wrap">{{ user.country }} <span v-if="user.region">, {{ user.region }}</span> </div>
 									</TableCell>
 								<TableCell v-if="userRole == 'Super-Admin'" class="font-semibold">{{ user.reward_fee }}%</TableCell>
 								<!-- <TableCell>
@@ -377,12 +376,6 @@ const resetNewUser = () => {
 					</Select>
 				</div>
 
-				<!-- Name Field -->
-				<div class="space-y-2">
-					<Label>ФИО *</Label>
-					<Input v-model="newUser.name" required />
-				</div>
-
 				<!-- Email Field -->
 				<div class="space-y-2">
 					<Label>Email *</Label>
@@ -391,14 +384,8 @@ const resetNewUser = () => {
 
 				<!-- Phone Field -->
 				<div class="space-y-2">
-					<Label>Телефон *</Label>
-					<Input v-model="newUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" required />
-				</div>
-
-				<!-- Address Field (only for Dealers) -->
-				<div v-if="shouldShowAddress" class="space-y-2">
-					<Label>Адрес *</Label>
-					<Textarea v-model="newUser.address" required :rows="2" />
+					<Label>Телефон</Label>
+					<Input v-model="newUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" />
 				</div>
 			</div>
 			<DialogFooter class="flex gap-2">
@@ -417,24 +404,24 @@ const resetNewUser = () => {
 			</DialogHeader>
 			<div class="space-y-2 md:space-y-0 md:grid md:grid-cols-2 gap-4">
 				<div class="space-y-2">
-					<Label>ФИО *</Label>
-					<Input v-model="editingUser.name" required />
+					<Label>ФИО</Label>
+					<Input v-model="editingUser.name" />
 				</div>
 				<div class="space-y-2">
 					<Label>Email *</Label>
 					<Input v-model="editingUser.email" type="email" required />
 				</div>
 				<div class="space-y-2">
-					<Label>Телефон *</Label>
-					<Input v-model="editingUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" required />
+					<Label>Телефон</Label>
+					<Input v-model="editingUser.phone" type="tel" v-maska="'+7 (###) ### ##-##'" placeholder="+7 (___) ___ __-__" />
 				</div>
 				<div class="space-y-2">
 					<Label>Telegram</Label>
 					<Input v-model="editingUser.telegram" placeholder="@username" />
 				</div>
 				<div class="space-y-2">
-					<Label>Страна *</Label>
-					<Select v-model="editingUser.country" required>
+					<Label>Страна</Label>
+					<Select v-model="editingUser.country">
 						<SelectTrigger>
 							<SelectValue />
 						</SelectTrigger>
@@ -450,8 +437,8 @@ const resetNewUser = () => {
 					</Select>
 				</div>
 				<div class="space-y-2">
-					<Label>Регион *</Label>
-					<Select v-model="editingUser.region" :disabled="!editingUser.country" required>
+					<Label>Регион</Label>
+					<Select v-model="editingUser.region" :disabled="!editingUser.country">
 						<SelectTrigger>
 							<SelectValue />
 						</SelectTrigger>
@@ -464,22 +451,37 @@ const resetNewUser = () => {
 						</SelectContent>
 					</Select>
 				</div>
-			<div class="col-span-2 space-y-2">
-				<Label>Адрес *</Label>
-				<Textarea v-model="editingUser.address" required :rows="2" />
-			</div>
-				<div class="col-span-2 space-y-2">
-					<Label>Компания *</Label>
-					<Input v-model="editingUser.company" required />
+				<div class="space-y-2">
+					<Label>Город</Label>
+					<Input v-model="editingUser.city" placeholder="Название города" />
 				</div>
-				<div v-if="userRole === 'Super-Admin'" class="space-y-2">
-					<Label>Комиссия (%) *</Label>
-					<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" required />
+			<div class="col-span-2 space-y-2">
+				<Label>Адрес</Label>
+				<Textarea v-model="editingUser.address" :rows="2" />
+			</div>
+				<div class="space-y-2">
+					<Label>Компания</Label>
+					<Input v-model="editingUser.company" />
+				</div>
+				<div class="space-y-2">
+					<Label>Веб-сайт</Label>
+					<Input v-model="editingUser.website" type="url" placeholder="https://example.com" />
+				</div>
+				<div v-if="userRole === 'Super-Admin'" class="col-span-2 space-y-2">
+					<Label>Комиссия (%)</Label>
+					<Input v-model.number="editingUser.reward_fee" type="number" min="0" max="100" step="0.01" />
 				</div>
 				<!-- <div class="col-span-2 flex items-center space-x-2">
 					<Switch v-model:checked="editingUser.can_access_dxf" />
 					<Label>Доступ к DXF</Label>
 				</div> -->
+				
+				<!-- Private Note (Admin Only) -->
+				<div v-if="['Super-Admin', 'Operator'].includes(userRole)" class="col-span-2 space-y-2">
+					<Label class="text-muted-foreground">Примечание (видно только вам)</Label>
+					<Textarea v-model="editingUser.private_note" :rows="4" placeholder="Внутренние заметки о пользователе..." />
+					<!-- <p class="text-xs text-muted-foreground">Это примечание видно только администраторам</p> -->
+				</div>
 			</div>
 			<DialogFooter class="flex gap-2">
 				<Button variant="outline" @click="showEditUserDialog = false">Отмена</Button>

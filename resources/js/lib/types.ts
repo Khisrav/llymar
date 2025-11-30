@@ -75,6 +75,9 @@ export interface User {
     name: string;
     email: string;
     address?: string;
+    country?: string;
+    region?: string;
+    city?: string;
     phone?: string;
     company?: string;
     discount: number;
@@ -86,6 +89,7 @@ export interface User {
     current_account?: string;
     correspondent_account?: string;
     telegram?: string;
+    website?: string;
     logo?: string | null;
     roles?: Array<{ name: string; [key: string]: any }>;
     created_at?: string | null;

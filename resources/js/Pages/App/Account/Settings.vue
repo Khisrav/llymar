@@ -24,8 +24,17 @@ import {
 	UploadIcon,
 	TrashIcon,
 	AlertCircleIcon,
-	CheckCircleIcon
+	CheckCircleIcon,
+	GlobeIcon
 } from 'lucide-vue-next';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../../../Components/ui/select';
 
 const user = ref(usePage().props.user as User);
 
@@ -42,14 +51,30 @@ const LOGO_MAX_SIZE = 2 * 1024 * 1024; // 2MB
 const LOGO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const LOGO_ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
+const countries = {
+	Армения: ["Арагацотн", "Арарат", "Армавир", "Гегаркуник", "Котайк", "Лори", "Ширак", "Сюник", "Тавуш", "Вайоц Дзор", "Ереван"],
+	Беларусь: ["Брестская область", "Гомельская область", "Гродненская область", "Минская область", "Могилевская область", "Витебская область", "Минск"],
+	Казахстан: ["Акмолинская область", "Актюбинская область", "Алматинская область", "Атырауская область", "Восточно-Казахстанская область", "Жамбылская область", "Карагандинская область", "Костанайская область", "Кызылординская область", "Мангистауская область", "Северо-Казахстанская область", "Павлодарская область", "Туркестанская область", "Западно-Казахстанская область", "Алматы", "Астана", "Шымкент"],
+	Киргизия: ["Баткенская область", "Чуйская область", "Джалал-Абадская область", "Нарынская область", "Ошская область", "Таласская область", "Иссык-Кульская область", "Бишкек", "Ош"],
+	Россия: ["Республика Адыгея", "Республика Башкортостан", "Республика Бурятия", "Республика Алтай", "Республика Дагестан", "Республика Ингушетия", "Кабардино-Балкарская Республика", "Республика Калмыкия", "Карачаево-Черкесская Республика", "Республика Карелия", "Республика Крым", "Республика Коми", "Республика Марий Эл", "Республика Мордовия", "Республика Саха (Якутия)", "Республика Северная Осетия-Алания", "Республика Татарстан", "Республика Тыва", "Удмуртская Республика", "Республика Хакасия", "Чеченская Республика", "Чувашская Республика", "Алтайский край", "Забайкальский край", "Камчатский край", "Краснодарский край", "Красноярский край", "Пермский край", "Приморский край", "Ставропольский край", "Хабаровский край", "Амурская область", "Архангельская область", "Астраханская область", "Белгородская область", "Брянская область", "Владимирская область", "Волгоградская область", "Вологодская область", "Воронежская область", "Ивановская область", "Иркутская область", "Калининградская область", "Калужская область", "Кемеровская область", "Кировская область", "Костромская область", "Курганская область", "Курская область", "Ленинградская область", "Липецкая область", "Магаданская область", "Московская область", "Мурманская область", "Нижегородская область", "Новгородская область", "Новосибирская область", "Омская область", "Оренбургская область", "Орловская область", "Пензенская область", "Псковская область", "Ростовская область", "Рязанская область", "Самарская область", "Саратовская область", "Сахалинская область", "Свердловская область", "Смоленская область", "Тамбовская область", "Тверская область", "Томская область", "Тульская область", "Тюменская область", "Ульяновская область", "Челябинская область", "Ярославская область", "Москва", "Санкт-Петербург", "Севастополь", "Еврейская автономная область", "Ненецкий автономный округ", "Ханты-Мансийский автономный округ", "Чукотский автономный округ", "Ямало-Ненецкий автономный округ"],
+};
+
 const form = useForm({
 	name: user.value.name,
 	company: user.value.company,
 	email: user.value.email,
 	phone: user.value.phone,
 	address: user.value.address,
+	country: user.value.country,
+	region: user.value.region,
+	city: user.value.city,
 	telegram: user.value.telegram,
+	website: user.value.website,
 })
+
+const availableRegions = computed(() => {
+	return form.country ? countries[form.country as keyof typeof countries] || [] : [];
+});
 
 const resetForm = () => {
 	form.reset();
@@ -58,7 +83,11 @@ const resetForm = () => {
 	form.email = user.value.email;
 	form.phone = user.value.phone;
 	form.address = user.value.address;
+	form.country = user.value.country;
+	form.region = user.value.region;
+	form.city = user.value.city;
 	form.telegram = user.value.telegram;
+	form.website = user.value.website;
 }
 
 const updateUser = () => {
@@ -264,35 +293,88 @@ const hasFileSelected = computed(() => {
 					</CardDescription>
 				</CardHeader>
 				<CardContent class="space-y-6">
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div class="space-y-2">
+						<Label for="name" class="text-sm font-medium flex items-center gap-2">
+							<UserIcon class="h-4 w-4" />
+							Ф.И.О.
+						</Label>
+						<Input 
+							id="name"
+							v-model="form.name" 
+							type="text" 
+							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
+							placeholder="Введите ваше полное имя"
+						/>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<div class="space-y-2">
-							<Label for="name" class="text-sm font-medium flex items-center gap-2">
-								<UserIcon class="h-4 w-4" />
-								Ф.И.О. <span class="text-destructive">*</span>
+							<Label class="text-sm font-medium flex items-center gap-2">
+								<GlobeIcon class="h-4 w-4" />
+								Страна
 							</Label>
-							<Input 
-								id="name"
-								v-model="form.name" 
-								type="text" 
-								required 
-								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
-								placeholder="Введите ваше полное имя"
-							/>
+							<Select v-model="form.country">
+								<SelectTrigger>
+									<SelectValue placeholder="Выберите страну" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectItem value="Армения">Армения</SelectItem>
+										<SelectItem value="Беларусь">Беларусь</SelectItem>
+										<SelectItem value="Казахстан">Казахстан</SelectItem>
+										<SelectItem value="Киргизия">Киргизия</SelectItem>
+										<SelectItem value="Россия">Россия</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div class="space-y-2">
-							<Label for="address" class="text-sm font-medium flex items-center gap-2">
+							<Label class="text-sm font-medium flex items-center gap-2">
 								<MapPinIcon class="h-4 w-4" />
-								Фактический адрес
+								Регион
+							</Label>
+							<Select v-model="form.region" :disabled="!form.country">
+								<SelectTrigger>
+									<SelectValue placeholder="Выберите регион" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectItem v-for="region in availableRegions" :key="region" :value="region">
+											{{ region }}
+										</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div class="space-y-2">
+							<Label for="city" class="text-sm font-medium flex items-center gap-2">
+								<MapPinIcon class="h-4 w-4" />
+								Город
 							</Label>
 							<Input 
-								id="address"
-								v-model="form.address" 
+								id="city"
+								v-model="form.city" 
 								type="text" 
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
-								placeholder="Введите ваш адрес"
+								placeholder="Название города"
 							/>
 						</div>
+					</div>
+
+					<div class="space-y-2">
+						<Label for="address" class="text-sm font-medium flex items-center gap-2">
+							<MapPinIcon class="h-4 w-4" />
+							Фактический адрес
+						</Label>
+						<Input 
+							id="address"
+							v-model="form.address" 
+							type="text" 
+							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20" 
+							placeholder="Введите ваш адрес"
+						/>
 					</div>
 
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -314,14 +396,13 @@ const hasFileSelected = computed(() => {
 						<div class="space-y-2">
 							<Label for="phone" class="text-sm font-medium flex items-center gap-2">
 								<PhoneIcon class="h-4 w-4" />
-								Номер телефона <span class="text-destructive">*</span>
+								Номер телефона
 							</Label>
 							<Input 
 								id="phone"
 								v-model="form.phone" 
 								type="tel" 
 								v-maska="'+7 (###) ### ##-##'" 
-								required 
 								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
 								placeholder="+7 (___) ___ __-__"
 							/>
@@ -340,20 +421,34 @@ const hasFileSelected = computed(() => {
 								placeholder="@username"
 							/>
 						</div>
-					</div>
 
-					<div class="space-y-2">
-						<Label for="company" class="text-sm font-medium flex items-center gap-2">
-							<BuildingIcon class="h-4 w-4" />
-							Организация
-						</Label>
-						<Input 
-							id="company"
-							v-model="form.company" 
-							type="text" 
-							class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-							placeholder="Название вашей организации"
-						/>
+						<div class="space-y-2">
+							<Label for="company" class="text-sm font-medium flex items-center gap-2">
+								<BuildingIcon class="h-4 w-4" />
+								Организация
+							</Label>
+							<Input 
+								id="company"
+								v-model="form.company" 
+								type="text" 
+								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+								placeholder="Название вашей организации"
+							/>
+						</div>
+
+						<div class="space-y-2">
+							<Label for="website" class="text-sm font-medium flex items-center gap-2">
+								<GlobeIcon class="h-4 w-4" />
+								Веб-сайт
+							</Label>
+							<Input 
+								id="website"
+								v-model="form.website" 
+								type="url" 
+								class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+								placeholder="https://example.com"
+							/>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
@@ -440,12 +535,12 @@ const hasFileSelected = computed(() => {
 						</div>
 					</div>
 
-					<div class="space-y-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-						<p class="text-xs font-medium text-blue-900 flex items-center gap-2">
+					<div class="space-y-2 p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-950 dark:border-blue-800">
+						<p class="text-xs font-medium text-blue-900 dark:text-blue-100 flex items-center gap-2">
 							<CheckCircleIcon class="h-4 w-4" />
 							Информация
 						</p>
-						<ul class="text-xs text-blue-800 space-y-1 ml-6 list-disc">
+						<ul class="text-xs text-blue-800 dark:text-blue-200 space-y-1 ml-6 list-disc">
 							<li>Логотип не является обязательным полем</li>
 							<li>Если логотип не загружен, будет использоваться логотип LLYMAR по умолчанию</li>
 							<li>Логотип будет отображаться в коммерческих предложениях (PDF)</li>

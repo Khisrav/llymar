@@ -93,25 +93,24 @@ function getLogoBase64($user) {
     </style>
 </head>
 <body>
+    <table style="margin:0">
+        <tbody>
+            <tr>
+                <td style="padding:0;width:50%">
+                    <div>
+                        <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления LLYMAR</h1>
+                        {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления LLYMAR</p> --}}
+                    </div>
+                </td>
+                <td style="text-align: center;padding:0;width:50%">
+                    <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:48px">
+                </td>
+            </tr>
+        </tbody>
+    </table>
     <table style="table-layout: fixed;border:none;margin-top:0;" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td style="border:none;vertical-align: top">
-                <table style="margin-top:0;">
-                    <tbody>
-                        <tr>
-                            <td style="border:none">
-                                <div>
-                                    <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления LLYMAR</h1>
-                                    {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления LLYMAR</p> --}}
-                                </div>
-                            </td>
-                            <!-- <td style="text-align: right;border:none">
-                                <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
-                            </td> -->
-                        </tr>
-                    </tbody>
-                </table>
-            
                 <table class="table">
                     <thead>
                         <tr>
@@ -312,22 +311,6 @@ function getLogoBase64($user) {
                 @endif
             </td>
             <td style="vertical-align: top;border:none">
-                <table>
-                    <tbody>
-                        <tr>
-                            <td style="border:none">
-                                {{-- <div style='font-size:14px;font-weight:semibold;'>
-                                    <h1 style="margin:0;padding:0;">Коммерческое предложение</h1>
-                                    <p style="margin:0;padding:0;">на поставку безрамной системы остекления</p>
-                                </div> --}}
-                            </td>
-                            <td style="text-align: center;border:none;padding-bottom:12px;">
-                                <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:30px;width:auto">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
                 <table>
                     <thead>
                         <tr>

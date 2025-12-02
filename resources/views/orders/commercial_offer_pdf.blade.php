@@ -96,13 +96,13 @@ function getLogoBase64($user) {
     <table style="margin:0">
         <tbody>
             <tr>
-                <td style="padding:0;width:50%">
+                <td style="padding:0;width:50%;border:none">
                     <div>
                         <h1 style="margin:0;padding:0;font-size:16px !important;">Производство и поставка систем<br> безрамного остекления LLYMAR</h1>
                         {{-- <p style="margin:0;padding:0;font-size:14px !important;line-height:15px;">на поставку безрамной системы остекления LLYMAR</p> --}}
                     </div>
                 </td>
-                <td style="text-align: center;padding:0;width:50%">
+                <td style="text-align: center;padding:0;width:50%;border:none">
                     <img src="data:image/jpeg;base64,{{ getLogoBase64($user ?? null) }}" alt="" style="height:48px">
                 </td>
             </tr>

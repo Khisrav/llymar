@@ -222,45 +222,6 @@ export default {
                         </Link>
                     </template>
                 </nav>
-
-                <!-- Mobile Bottom Actions -->
-                <div class="absolute bottom-0 left-0 right-0 p-3 border-t bg-background">
-                    <div class="flex flex-col gap-2">
-                        <Link 
-                            href="/app/account/settings"
-                            @click="closeMobileMenu"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
-                        >
-                            <Settings class="h-5 w-5" />
-                            <span>Настройки</span>
-                        </Link>
-                        <Link 
-                            v-if="can_access_companies"
-                            href="/app/companies"
-                            @click="closeMobileMenu"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
-                        >
-                            <Building2Icon class="h-5 w-5" />
-                            <span>Организации</span>
-                        </Link>
-                        <a 
-                            href="https://t.me/LLymar"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-foreground hover:bg-muted transition-all"
-                        >
-                            <Send class="h-5 w-5" />
-                            <span>Telegram</span>
-                        </a>
-                        <Link 
-                            href="/logout"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-destructive hover:bg-destructive/10 transition-all"
-                        >
-                            <LogOut class="h-5 w-5" />
-                            <span>Выйти</span>
-                        </Link>
-                    </div>
-                </div>
             </SheetContent>
         </Sheet>
         
@@ -273,12 +234,62 @@ export default {
             />
         </Link>
 
-        <!-- Mobile User Avatar -->
+        <!-- Mobile User Avatar with Dropdown -->
         <div class="ml-auto flex items-center gap-2">
             <ThemeSwitcher />
-            <div class="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm ring-2 ring-primary/20">
-                {{ userInitials }}
-            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger class="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm ring-2 ring-primary/20 cursor-pointer hover:ring-primary/40 transition-all">
+                        {{ userInitials }}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-56">
+                    <DropdownMenuLabel class="font-normal">
+                        <div class="flex flex-col space-y-1">
+                            <p class="text-sm font-medium leading-none">{{ username }}</p>
+                            <p class="text-xs leading-none text-muted-foreground">{{ user.email }}</p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem as-child>
+                        <Link 
+                            href="/app/account/settings"
+                            class="flex items-center gap-2 cursor-pointer"
+                        >
+                            <Settings class="h-4 w-4" />
+                            <span>Настройки</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem v-if="can_access_companies" as-child>
+                        <Link 
+                            href="/app/companies"
+                            class="flex items-center gap-2 cursor-pointer"
+                        >
+                            <Building2Icon class="h-4 w-4" />
+                            <span>Организации</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem as-child>
+                        <a 
+                            href="https://t.me/LLymar"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-2 cursor-pointer"
+                        >
+                            <Send class="h-4 w-4" />
+                            <span>Telegram</span>
+                        </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem as-child>
+                        <Link 
+                            href="/logout"
+                            class="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                        >
+                            <LogOut class="h-4 w-4" />
+                            <span>Выйти</span>
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     </header>
 

@@ -48,13 +48,6 @@ const isEditing = ref(false);
 const isAddingBill = ref(false);
 const editingBill = ref<number | null>(null);
 
-const bossTitle = {
-	'director': 'Директор',
-	'ceo': 'Генеральный директор',
-	'chief': 'Начальник',
-	'supervisor': 'Руководитель',
-};
-
 // Computed properties
 const hasBills = computed(() => company.company_bills && company.company_bills.length > 0);
 
@@ -65,21 +58,10 @@ const canManageBills = computed(() => {
 
 // Form for editing company details
 const form = useForm({
-	short_name: company.short_name || '',
 	full_name: company.full_name || '',
 	boss_name: company.boss_name || '',
-	boss_title: company.boss_title || 'director' as 'director' | 'ceo' | 'chief' | 'supervisor',
-	legal_address: company.legal_address || '',
-	email: company.email || '',
-	phone: company.phone || '',
-	phone_2: company.phone_2 || '',
-	phone_3: company.phone_3 || '',
-	website: company.website || '',
 	inn: company.inn || 0,
-	kpp: company.kpp || 0,
-	ogrn: company.ogrn || 0,
 	vat: company.vat || 0,
-	contact_person: company.contact_person || '',
 });
 
 const startEditing = () => {
@@ -223,7 +205,7 @@ const toggleMainCompany = () => {
 </script>
 
 <template>
-	<Head :title="`${company.short_name}`" />
+	<Head :title="`${company.full_name}`" />
 	<AuthenticatedHeaderLayout />
 	
 	<Toaster />
@@ -241,8 +223,7 @@ const toggleMainCompany = () => {
 							<BuildingIcon class="h-6 w-6 text-primary" />
 						</div>
 						<div>
-							<h1 class="text-2xl font-bold tracking-tight">{{ company.short_name || company.full_name }}</h1>
-							<p v-if="company.short_name && company.short_name !== company.full_name" class="text-sm text-muted-foreground mt-1">{{ company.full_name }}</p>
+							<h1 class="text-2xl font-bold tracking-tight">{{ company.full_name }}</h1>
 						</div>
 					</div>
 					
@@ -318,25 +299,7 @@ const toggleMainCompany = () => {
 								</div>
 							</div>
 						</CardHeader>
-						<CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-							<!-- Short Name -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<BuildingIcon class="h-4 w-4" />
-									Короткое название
-								</Label>
-								<div v-if="!isEditing" class="text-muted-foreground">{{ company.short_name || '—' }}</div>
-								<Input 
-									v-else 
-									v-model="form.short_name" 
-									placeholder="ООО «Компания»"
-									:class="{ 'border-red-500': form.errors.short_name }"
-								/>
-								<div v-if="form.errors.short_name" class="text-red-500 text-sm">
-									{{ form.errors.short_name }}
-								</div>
-							</div>
-
+						<CardContent class="grid grid-cols-1 gap-4 p-4">
 							<!-- Full Name -->
 							<div class="space-y-2">
 								<Label class="text-sm font-medium flex items-center gap-2">
@@ -372,163 +335,6 @@ const toggleMainCompany = () => {
 									{{ form.errors.boss_name }}
 								</div>
 							</div>
-
-							<!-- Boss Title -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<UserIcon class="h-4 w-4" />
-									Должность руководителя
-								</Label>
-								<div v-if="!isEditing" class="text-muted-foreground">
-									{{ company.boss_title ? bossTitle[company.boss_title] : '—' }}
-								</div>
-								<Select v-else v-model="form.boss_title">
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
-											<SelectItem value="director">Директор</SelectItem>
-											<SelectItem value="ceo">Генеральный директор</SelectItem>
-											<SelectItem value="chief">Начальник</SelectItem>
-											<SelectItem value="supervisor">Руководитель</SelectItem>
-										</SelectGroup>
-									</SelectContent>
-								</Select>
-							</div>
-
-							<!-- Phone -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<PhoneIcon class="h-4 w-4" />
-									Телефон
-								</Label>
-								<div v-if="!isEditing">
-									<a v-if="company.phone" :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
-										{{ company.phone }}
-									</a>
-									<span v-else class="text-muted-foreground">—</span>
-								</div>
-								<Input 
-									v-else 
-									v-model="form.phone" 
-									v-maska="'+7 (###) ### ##-##'"
-									placeholder="+7 (___) ___-__-__"
-									:class="{ 'border-red-500': form.errors.phone }"
-								/>
-								<div v-if="form.errors.phone" class="text-red-500 text-sm">
-									{{ form.errors.phone }}
-								</div>
-							</div>
-
-							<!-- Phone 2 -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<PhoneIcon class="h-4 w-4" />
-									Телефон 2
-								</Label>
-								<div v-if="!isEditing">
-									<a v-if="company.phone_2" :href="'tel:' + company.phone_2" class="text-primary hover:underline font-mono">
-										{{ company.phone_2 }}
-									</a>
-									<span v-else class="text-muted-foreground">—</span>
-								</div>
-								<Input 
-									v-else 
-									v-model="form.phone_2" 
-									v-maska="'+7 (###) ### ##-##'"
-									placeholder="+7 (___) ___-__-__"
-									:class="{ 'border-red-500': form.errors.phone_2 }"
-								/>
-								<div v-if="form.errors.phone_2" class="text-red-500 text-sm">
-									{{ form.errors.phone_2 }}
-								</div>
-							</div>
-
-							<!-- Email -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<MailIcon class="h-4 w-4" />
-									Email
-								</Label>
-								<div v-if="!isEditing">
-									<a v-if="company.email" :href="'mailto:' + company.email" class="text-primary hover:underline">
-										{{ company.email }}
-									</a>
-									<span v-else class="text-muted-foreground">—</span>
-								</div>
-								<Input 
-									v-else 
-									v-model="form.email" 
-									type="email"
-									placeholder="email@example.com"
-									:class="{ 'border-red-500': form.errors.email }"
-								/>
-								<div v-if="form.errors.email" class="text-red-500 text-sm">
-									{{ form.errors.email }}
-								</div>
-							</div>
-
-							<!-- Website -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<GlobeIcon class="h-4 w-4" />
-									Сайт
-								</Label>
-								<div v-if="!isEditing">
-									<a v-if="company.website" :href="company.website" target="_blank" class="text-primary hover:underline break-all">
-										{{ company.website }}
-									</a>
-									<span v-else class="text-muted-foreground">—</span>
-								</div>
-								<Input 
-									v-else 
-									v-model="form.website" 
-									type="url"
-									placeholder="https://company.com"
-									:class="{ 'border-red-500': form.errors.website }"
-								/>
-								<div v-if="form.errors.website" class="text-red-500 text-sm">
-									{{ form.errors.website }}
-								</div>
-							</div>
-
-							<!-- Legal Address -->
-							<div class="space-y-2 md:col-span-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<MapPinIcon class="h-4 w-4" />
-									Юридический адрес
-								</Label>
-								<div v-if="!isEditing" class="text-muted-foreground">{{ company.legal_address || '—' }}</div>
-								<Textarea 
-									v-else 
-									v-model="form.legal_address" 
-									placeholder="г. Москва, ул. Примерная, д. 1"
-									:rows="2"
-									:class="{ 'border-red-500': form.errors.legal_address }"
-								/>
-								<div v-if="form.errors.legal_address" class="text-red-500 text-sm">
-									{{ form.errors.legal_address }}
-								</div>
-							</div>
-
-							<!-- Contact Person -->
-							<div class="space-y-2 md:col-span-2">
-								<Label class="text-sm font-medium flex items-center gap-2">
-									<UserIcon class="h-4 w-4" />
-									Контактное лицо
-								</Label>
-								<div v-if="!isEditing" class="text-muted-foreground">{{ company.contact_person || '—' }}</div>
-								<Input 
-									v-else 
-									v-model="form.contact_person" 
-									placeholder="Петров Петр Петрович"
-									:class="{ 'border-red-500': form.errors.contact_person }"
-								/>
-								<div v-if="form.errors.contact_person" class="text-red-500 text-sm">
-									{{ form.errors.contact_person }}
-								</div>
-							</div>
 						</CardContent>
 					</Card>
 
@@ -554,38 +360,6 @@ const toggleMainCompany = () => {
 								/>
 								<div v-if="form.errors.inn" class="text-red-500 text-sm">
 									{{ form.errors.inn }}
-								</div>
-							</div>
-
-							<!-- KPP -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium">КПП</Label>
-								<div v-if="!isEditing" class="text-muted-foreground font-mono">{{ company.kpp || '—' }}</div>
-								<Input 
-									v-else 
-									v-model.number="form.kpp" 
-									type="number"
-									placeholder="123456789"
-									:class="{ 'border-red-500': form.errors.kpp }"
-								/>
-								<div v-if="form.errors.kpp" class="text-red-500 text-sm">
-									{{ form.errors.kpp }}
-								</div>
-							</div>
-
-							<!-- OGRN -->
-							<div class="space-y-2">
-								<Label class="text-sm font-medium">ОГРН</Label>
-								<div v-if="!isEditing" class="text-muted-foreground font-mono">{{ company.ogrn || '—' }}</div>
-								<Input 
-									v-else 
-									v-model.number="form.ogrn" 
-									type="number"
-									placeholder="1234567890123"
-									:class="{ 'border-red-500': form.errors.ogrn }"
-								/>
-								<div v-if="form.errors.ogrn" class="text-red-500 text-sm">
-									{{ form.errors.ogrn }}
 								</div>
 							</div>
 

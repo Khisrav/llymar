@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import { vMaska } from 'maska/vue';
 import AuthenticatedHeaderLayout from '../../../Layouts/AuthenticatedHeaderLayout.vue';
 import SettingsLayout from '../../../Layouts/SettingsLayout.vue';
 import {
@@ -46,14 +45,9 @@ import {
 	PlusIcon,
 	TrashIcon,
 	BuildingIcon,
-	PhoneIcon,
-	MailIcon,
-	MapPinIcon,
 	UserIcon,
 	PercentIcon,
-	GlobeIcon,
 	EllipsisVerticalIcon,
-	ReceiptTextIcon,
 	EyeIcon
 } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '../../../Components/ui/dropdown-menu';
@@ -67,50 +61,21 @@ const showCreateDialog = ref(false);
 
 const hasCompanies = computed(() => props.companies.length > 0);
 
-const bossTitle = {
-	'director': 'Директор',
-	'ceo': 'Генеральный директор',
-	'chief': 'Начальник',
-	'supervisor': 'Руководитель',
-};
-
 const newCompany = ref({
-	short_name: '',
 	full_name: '',
 	boss_name: '',
-	boss_title: 'director' as 'director' | 'ceo' | 'chief' | 'supervisor',
-	legal_address: '',
-	email: '',
-	phone: '',
-	phone_2: '',
-	phone_3: '',
-	website: '',
 	inn: 0,
-	kpp: 0,
-	ogrn: 0,
 	vat: 0,
-	contact_person: '',
 });
 
 const isProcessing = ref(false);
 
 const resetNewCompanyForm = () => {
 	newCompany.value = {
-		short_name: '',
 		full_name: '',
 		boss_name: '',
-		boss_title: 'director',
-		legal_address: '',
-		email: '',
-		phone: '',
-		phone_2: '',
-		phone_3: '',
-		website: '',
 		inn: 0,
-		kpp: 0,
-		ogrn: 0,
 		vat: 0,
-		contact_person: '',
 	};
 };
 
@@ -131,14 +96,14 @@ const createCompany = () => {
 		onSuccess: () => {
 			showCreateDialog.value = false;
 			resetNewCompanyForm();
-			toast('Компания успешно создан', {
-				description: 'Новая компания добавлена в список',
+			toast('Организация успешно создана', {
+				description: 'Новая организация добавлена в список',
 			});
 		},
 		onError: (errors) => {
 			const firstError = errors && typeof errors === 'object' ? (errors as any)[Object.keys(errors)[0]] : null;
 			const errorMessage = firstError as string;
-			toast('Ошибка при создании компании', {
+			toast('Ошибка при создании организации', {
 				description: errorMessage || 'Проверьте корректность введенных данных',
 			});
 		},
@@ -156,13 +121,13 @@ const deleteCompany = (company: Company) => {
 	router.delete(`/app/companies/${company.id}`, {
 		preserveScroll: true,
 		onSuccess: () => {
-			toast('Компания успешно удалена', {
-				description: 'Компания удалена из списка',
+			toast('Организация успешно удалена', {
+				description: 'Организация удалена из списка',
 			});
 		},
 		onError: () => {
-			toast('Ошибка при удалении компании', {
-				description: 'Не удалось удалить компанию',
+			toast('Ошибка при удалении организации', {
+				description: 'Не удалось удалить организацию',
 			});
 		},
 	});
@@ -172,13 +137,13 @@ const toggleMainCompany = (company: Company) => {
 	router.post(`/app/companies/${company.id}/toggle-main`, {}, {
 		preserveScroll: true,
 		onSuccess: () => {
-			toast('Основная компания установлена', {
-				description: `"${company.short_name}" теперь основная компания`,
+			toast('Основная организация установлена', {
+				description: `"${company.short_name}" теперь основная организация`,
 			});
 		},
 		onError: () => {
 			toast('Ошибка', {
-				description: 'Не удалось установить основную компанию',
+				description: 'Не удалось установить основную организацию',
 			});
 		},
 	});
@@ -186,7 +151,7 @@ const toggleMainCompany = (company: Company) => {
 </script>
 
 <template>
-	<Head title="Компании" />
+	<Head title="Организации" />
 	<AuthenticatedHeaderLayout />
 	
 	<Toaster />
@@ -194,7 +159,7 @@ const toggleMainCompany = (company: Company) => {
 	<div class="container p-4 md:p-6 max-w-7xl mx-auto">
 		<!-- <div class="mb-6">
 			<h1 class="text-3xl font-bold tracking-tight">Настройки</h1>
-			<p class="text-muted-foreground mt-2">Управляйте своими личными данными и компаниями</p>
+			<p class="text-muted-foreground mt-2">Управляйте своими личными данными и организациями</p>
 		</div> -->
 
 		<SettingsLayout>
@@ -202,10 +167,10 @@ const toggleMainCompany = (company: Company) => {
 				<!-- Header -->
 				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<div>
-						<h2 class="text-2xl font-semibold tracking-tight">Компании</h2>
-						<p class="text-sm text-muted-foreground mt-1">
-							Управление компаниями-заказчиками
-						</p>
+						<h2 class="text-2xl font-semibold tracking-tight">Организации</h2>
+						<!-- <p class="text-sm text-muted-foreground mt-1">
+							Управление организациями
+						</p> -->
 					</div>
 					<Button @click="openCreateDialog" class="sm:w-auto">
 						<PlusIcon class="h-4 w-4 mr-2" />
@@ -219,9 +184,9 @@ const toggleMainCompany = (company: Company) => {
 						<div class="mx-auto w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-4">
 							<BuildingIcon class="h-10 w-10 text-muted-foreground" />
 						</div>
-						<h3 class="text-xl font-semibold mb-2">Компаний пока нет</h3>
+						<h3 class="text-xl font-semibold mb-2">Организаций пока нет</h3>
 						<p class="text-muted-foreground mb-6 max-w-sm">
-							Добавьте свою первую компанию-заказчика
+							Добавьте свою первую организацию-заказчика
 						</p>
 						<Button @click="openCreateDialog">
 							<PlusIcon class="h-4 w-4 mr-2" />
@@ -242,11 +207,7 @@ const toggleMainCompany = (company: Company) => {
 							<CardHeader class="pb-3">
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex-1 min-w-0">
-										<div class="flex items-center gap-2 mb-1">
-											<CardTitle class="text-lg">{{ company.short_name || company.full_name }}</CardTitle>
-											<!-- <Badge v-if="company.is_main" variant="default" class="text-xs">Основная</Badge> -->
-										</div>
-										<CardDescription v-if="company.short_name && company.short_name !== company.full_name" class="text-sm">{{ company.full_name }}</CardDescription>
+										<CardTitle class="text-lg mb-1">{{ company.full_name }}</CardTitle>
 									</div>
 									<div class="flex flex-col gap-2 items-end">
 										<Badge variant="outline" class="flex-shrink-0">
@@ -268,41 +229,13 @@ const toggleMainCompany = (company: Company) => {
 								<div v-if="company.boss_name" class="flex items-start gap-2 text-sm">
 									<UserIcon class="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
 									<div class="flex-1 min-w-0">
-										<div class="font-medium">{{ bossTitle[company.boss_title || 'director'] }}</div>
 										<div class="text-muted-foreground">{{ company.boss_name }}</div>
 									</div>
-								</div>
-
-						<div v-if="company.phone" class="flex items-center gap-2 text-sm">
-							<PhoneIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-							<a :href="'tel:' + company.phone" class="text-primary hover:underline font-mono">
-								{{ company.phone }}
-							</a>
-						</div>
-
-								<div v-if="company.email" class="flex items-center gap-2 text-sm">
-									<MailIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-									<a :href="'mailto:' + company.email" class="text-primary hover:underline break-all">
-										{{ company.email }}
-									</a>
-								</div>
-
-								<div v-if="company.legal_address" class="flex items-start gap-2 text-sm">
-									<MapPinIcon class="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-									<span class="flex-1 break-words">{{ company.legal_address }}</span>
-								</div>
-
-								<div v-if="company.website" class="flex items-center gap-2 text-sm">
-									<GlobeIcon class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-									<a :href="company.website" target="_blank" class="text-primary hover:underline break-all">
-										{{ company.website }}
-									</a>
 								</div>
 
 								<div class="pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
 									<div>
 										<div>ИНН: {{ company.inn }}</div>
-										<div v-if="company.kpp">КПП: {{ company.kpp }}</div>
 									</div>
 									<DropdownMenu>
 										<DropdownMenuTrigger as-child>
@@ -317,10 +250,6 @@ const toggleMainCompany = (company: Company) => {
 												<EyeIcon class="h-4 w-4" />
 												<span>Просмотр</span>
 											</DropdownMenuItem>
-											<!-- <DropdownMenuItem disabled>
-												<ReceiptTextIcon class="h-4 w-4" />
-												<span>Счета</span>
-											</DropdownMenuItem> -->
 											<DropdownMenuSeparator />
 											<DropdownMenuItem @click="deleteCompany(company)" class="text-destructive focus:text-destructive hover:bg-destructive/10">
 												<TrashIcon class="h-4 w-4" />
@@ -339,10 +268,9 @@ const toggleMainCompany = (company: Company) => {
 							<Table>
 								<TableHeader>
 									<TableRow class="bg-muted/30 hover:bg-muted/30">
-										<TableHead class="font-semibold">Компания</TableHead>
+										<TableHead class="font-semibold">Организация</TableHead>
 										<TableHead class="font-semibold">Руководитель</TableHead>
-										<TableHead class="font-semibold">Контакты</TableHead>
-										<TableHead class="font-semibold">Реквизиты</TableHead>
+										<TableHead class="font-semibold">ИНН</TableHead>
 										<TableHead class="font-semibold text-center">НДС</TableHead>
 										<TableHead class="font-semibold text-center w-[100px]">Основная</TableHead>
 										<TableHead class="font-semibold text-right">Действия</TableHead>
@@ -356,33 +284,14 @@ const toggleMainCompany = (company: Company) => {
 										:class="company.is_main ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'"
 									>
 										<TableCell class="max-w-xs">
-										<div class="flex items-center gap-2">
-											<div class="font-medium">{{ company.short_name || company.full_name }}</div>
-											<!-- <Badge v-if="company.is_main" variant="outline" class="text-xs">Основная</Badge> -->
-										</div>
-										<div v-if="company.short_name && company.short_name !== company.full_name" class="text-sm text-muted-foreground line-clamp-1">{{ company.full_name }}</div>
+											<div class="font-medium">{{ company.full_name }}</div>
 										</TableCell>
 										<TableCell>
-											<div v-if="company.boss_name" class="space-y-0.5">
-												<div class="text-sm font-medium">{{ bossTitle[company.boss_title || 'director'] }}</div>
-												<div class="text-sm text-muted-foreground">{{ company.boss_name }}</div>
-											</div>
+											<div v-if="company.boss_name" class="text-sm">{{ company.boss_name }}</div>
 											<span v-else class="text-sm text-muted-foreground">—</span>
 										</TableCell>
 										<TableCell>
-											<div class="space-y-1">
-												<div v-if="company.phone" class="text-sm font-mono">{{ company.phone }}</div>
-												<span v-else class="text-sm text-muted-foreground">—</span>
-												<div v-if="company.email" class="text-sm text-muted-foreground line-clamp-1">
-													{{ company.email }}
-												</div>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div class="text-sm space-y-0.5">
-												<div>ИНН: {{ company.inn }}</div>
-												<div v-if="company.kpp" class="text-muted-foreground">КПП: {{ company.kpp }}</div>
-											</div>
+											<div class="text-sm font-mono">{{ company.inn }}</div>
 										</TableCell>
 										<TableCell class="text-center">
 											<Badge variant="outline">{{ company.vat }}%</Badge>
@@ -407,10 +316,6 @@ const toggleMainCompany = (company: Company) => {
 														<EyeIcon class="h-4 w-4" />
 														<span>Просмотр</span>
 													</DropdownMenuItem>
-													<!-- <DropdownMenuItem disabled>
-														<ReceiptTextIcon class="h-4 w-4" />
-														<span>Счета</span>
-													</DropdownMenuItem> -->
 													<DropdownMenuSeparator />
 													<DropdownMenuItem @click="deleteCompany(company)" class="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
 														<TrashIcon class="h-4 w-4" />
@@ -433,25 +338,14 @@ const toggleMainCompany = (company: Company) => {
 	<Dialog v-model:open="showCreateDialog">
 		<DialogContent class="max-w-3xl max-h-[90vh] overflow-y-auto">
 			<DialogHeader>
-				<DialogTitle>Добавить компанию</DialogTitle>
+				<DialogTitle>Добавить организацию</DialogTitle>
 				<!-- <DialogDescription>
-					Заполните информацию о новой компании-заказчике
+					Заполните информацию о новой организации-заказчике
 				</DialogDescription> -->
 			</DialogHeader>
 			
 			<form @submit.prevent="createCompany" class="space-y-4">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div class="space-y-2">
-						<Label for="create-short-name">
-							Короткое название
-						</Label>
-						<Input
-							id="create-short-name"
-							v-model="newCompany.short_name"
-							placeholder="ООО «Компания»"
-						/>
-					</div>
-
+				<div class="grid grid-cols-1 gap-4">
 					<div class="space-y-2">
 						<Label for="create-full-name">
 							Полное название <span class="text-destructive">*</span>
@@ -460,7 +354,7 @@ const toggleMainCompany = (company: Company) => {
 							id="create-full-name"
 							v-model="newCompany.full_name"
 							required
-							placeholder="Общество с ограниченной ответственностью «Компания»"
+							placeholder="ООО «Организация»"
 						/>
 					</div>
 
@@ -470,65 +364,6 @@ const toggleMainCompany = (company: Company) => {
 							id="create-boss-name"
 							v-model="newCompany.boss_name"
 							placeholder="Иванов Иван Иванович"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-boss-title">Должность руководителя</Label>
-						<Select v-model="newCompany.boss_title">
-							<SelectTrigger id="create-boss-title">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									<SelectItem value="director">Директор</SelectItem>
-									<SelectItem value="ceo">Генеральный директор</SelectItem>
-									<SelectItem value="chief">Начальник</SelectItem>
-									<SelectItem value="supervisor">Руководитель</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-phone">
-							Телефон
-						</Label>
-						<Input
-							id="create-phone"
-							v-model="newCompany.phone"
-							v-maska="'+7 (###) ### ##-##'"
-							placeholder="+7 (___) ___ __-__"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-phone-2">Телефон 2</Label>
-						<Input
-							id="create-phone-2"
-							v-model="newCompany.phone_2"
-							v-maska="'+7 (###) ### ##-##'"
-							placeholder="+7 (___) ___ __-__"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-email">Email</Label>
-						<Input
-							id="create-email"
-							v-model="newCompany.email"
-							type="email"
-							placeholder="example@company.com"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-website">Сайт</Label>
-						<Input
-							id="create-website"
-							v-model="newCompany.website"
-							type="url"
-							placeholder="https://company.com"
 						/>
 					</div>
 
@@ -546,26 +381,6 @@ const toggleMainCompany = (company: Company) => {
 					</div>
 
 					<div class="space-y-2">
-						<Label for="create-kpp">КПП</Label>
-						<Input
-							id="create-kpp"
-							v-model.number="newCompany.kpp"
-							type="number"
-							placeholder="123456789"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="create-ogrn">ОГРН</Label>
-						<Input
-							id="create-ogrn"
-							v-model.number="newCompany.ogrn"
-							type="number"
-							placeholder="1234567890123"
-						/>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
 						<Label for="create-vat">
 							НДС (%) <span class="text-destructive">*</span>
 						</Label>
@@ -583,24 +398,6 @@ const toggleMainCompany = (company: Company) => {
 								</SelectGroup>
 							</SelectContent>
 						</Select>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
-						<Label for="create-legal-address">Юридический адрес</Label>
-						<Input
-							id="create-legal-address"
-							v-model="newCompany.legal_address"
-							placeholder="г. Москва, ул. Примерная, д. 1"
-						/>
-					</div>
-
-					<div class="space-y-2 md:col-span-2">
-						<Label for="create-contact-person">Контактное лицо</Label>
-						<Input
-							id="create-contact-person"
-							v-model="newCompany.contact_person"
-							placeholder="Петров Петр Петрович"
-						/>
 					</div>
 				</div>
 
@@ -622,4 +419,3 @@ const toggleMainCompany = (company: Company) => {
 		</DialogContent>
 	</Dialog>
 </template>
-

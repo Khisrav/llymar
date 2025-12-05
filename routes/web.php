@@ -137,7 +137,8 @@ Route::get('/auth', function() {
 /*
  *  PRIVATE ROUTES
  */
-Route::middleware(['auth', 'profile.completed'])->group(function () {
+// Route::middleware(['auth', 'profile.completed'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/app', function () {
         return Inertia::render('App/Index');
     })->name('app.home');

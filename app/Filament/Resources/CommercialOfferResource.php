@@ -184,7 +184,14 @@ class CommercialOfferResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('id')
                                     ->label('Товар')
-                                    ->options(Item::where('is_for_llymar', true)->whereNotNull('name')->pluck('name', 'id'))
+                                    ->options(function () {
+                                        return Item::where('is_for_llymar', true)
+                                            ->whereNotNull('name')
+                                            ->where('name', '!=', '')
+                                            ->pluck('name', 'id')
+                                            ->filter(fn($name) => !empty($name))
+                                            ->toArray();
+                                    })
                                     ->searchable()
                                     ->columnSpanFull(),
                             ])
@@ -204,7 +211,14 @@ class CommercialOfferResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('glass.id')
                             ->label('Тип стекла')
-                            ->options(Item::where('category_id', 1)->whereNotNull('name')->pluck('name', 'id'))
+                            ->options(function () {
+                                return Item::where('category_id', 1)
+                                    ->whereNotNull('name')
+                                    ->where('name', '!=', '')
+                                    ->pluck('name', 'id')
+                                    ->filter(fn($name) => !empty($name))
+                                    ->toArray();
+                            })
                             ->searchable(),
                     ]),
 
@@ -218,7 +232,14 @@ class CommercialOfferResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('id')
                                     ->label('Услуга')
-                                    ->options(Item::whereIn('category_id', [26, 35])->whereNotNull('name')->pluck('name', 'id'))
+                                    ->options(function () {
+                                        return Item::whereIn('category_id', [26, 35])
+                                            ->whereNotNull('name')
+                                            ->where('name', '!=', '')
+                                            ->pluck('name', 'id')
+                                            ->filter(fn($name) => !empty($name))
+                                            ->toArray();
+                                    })
                                     ->searchable()
                                     ->columnSpanFull(),
                             ])
@@ -241,7 +262,13 @@ class CommercialOfferResource extends Resource
                                     ->schema([
                                         Forms\Components\Select::make('item_id')
                                             ->label('Товар')
-                                            ->options(Item::whereNotNull('name')->pluck('name', 'id'))
+                                            ->options(function () {
+                                                return Item::whereNotNull('name')
+                                                    ->where('name', '!=', '')
+                                                    ->pluck('name', 'id')
+                                                    ->filter(fn($name) => !empty($name))
+                                                    ->toArray();
+                                            })
                                             ->searchable()
                                             ->columnSpan(1)
                                             ->required(),
@@ -390,7 +417,7 @@ class CommercialOfferResource extends Resource
             ->filters([
                 SelectFilter::make('user_id')
                     ->label('Ответственный')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'name', fn ($query) => $query->whereNotNull('name')->where('name', '!=', ''))
                     ->searchable()
                     ->preload(),
                     

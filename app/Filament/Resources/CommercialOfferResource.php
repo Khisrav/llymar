@@ -184,7 +184,7 @@ class CommercialOfferResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('id')
                                     ->label('Товар')
-                                    ->options(Item::where('is_for_llymar', true)->pluck('name', 'id'))
+                                    ->options(Item::where('is_for_llymar', true)->whereNotNull('name')->pluck('name', 'id'))
                                     ->searchable()
                                     ->columnSpanFull(),
                             ])
@@ -204,7 +204,7 @@ class CommercialOfferResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('glass.id')
                             ->label('Тип стекла')
-                            ->options(Item::where('category_id', 1)->pluck('name', 'id'))
+                            ->options(Item::where('category_id', 1)->whereNotNull('name')->pluck('name', 'id'))
                             ->searchable(),
                     ]),
 
@@ -218,7 +218,7 @@ class CommercialOfferResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('id')
                                     ->label('Услуга')
-                                    ->options(Item::whereIn('category_id', [26, 35])->pluck('name', 'id'))
+                                    ->options(Item::whereIn('category_id', [26, 35])->whereNotNull('name')->pluck('name', 'id'))
                                     ->searchable()
                                     ->columnSpanFull(),
                             ])
@@ -241,7 +241,7 @@ class CommercialOfferResource extends Resource
                                     ->schema([
                                         Forms\Components\Select::make('item_id')
                                             ->label('Товар')
-                                            ->options(Item::all()->pluck('name', 'id'))
+                                            ->options(Item::whereNotNull('name')->pluck('name', 'id'))
                                             ->searchable()
                                             ->columnSpan(1)
                                             ->required(),

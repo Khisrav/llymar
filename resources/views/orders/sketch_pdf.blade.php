@@ -81,6 +81,18 @@ $openingName = [
     'triangle' => 'Треугольник',
 ];
 
+function sketch_normalize_padding($value, int $default, int $min, int $max): int {
+    if (! is_numeric($value)) {
+        return $default;
+    }
+    $n = (float) $value;
+    if (! is_finite($n) || $n === 0.0) {
+        return $default;
+    }
+
+    return max($min, min($max, (int) round($n)));
+}
+
 $glass_counter = 0;
 
 function svgLeft($g, $i, $d, $mr) {
@@ -425,66 +437,77 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
 <div>
     @for ($oindex = 0; $oindex < count($openings); $oindex++)
     @php
-        //central opening
         $opening = $openings[$oindex];
         $stvorki = $opening['doors'];
         $totalOpeningWeight = 0;
         $totalOpeningArea = 0;
-        
-        $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 2 * $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'];
-        $doorsGap = [
-            'start' => $opening['e'] + $opening['g'],
-            'end' => $opening['b'],
-        ];
-        
-        $overlaps = $stvorki / ($opening['type'] == 'center' ? 2 : 1) - 1;
-        $middle = intval(($overlaps * 13) / ($stvorki / ($opening['type'] == 'center' ? 2 : 1)));
-        
-        if ($opening['type'] == 'center') {
-            $edges = intval(($overlaps * 13 - $middle * ($stvorki / 2 - 2)) / 2);
-        } else {
-            $edges = intval(($overlaps * 13 - $middle * ($stvorki - 2)) / 2);
-        }
-        
-        $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
-        
-        $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
 
         $shirinaStvorok = [];
 
-        if ($opening['type'] == 'center') {
-            for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++) {
-                $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
-                
-                if ($openingDoorsIndex == $stvorki / 2) {
-                    $temp += $doorsGap['start'];
-                } else if ($openingDoorsIndex == 1) {
-                    $temp += $doorsGap['end'];
-                }
-                $temp2 = 0;
-                // $temp2 = ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2) ? -1 : 0);
-                // if ($stvorki == 4 && ($openingDoorsIndex != 1 || $openingDoorsIndex != $stvorki / 2)) {
-                //     $temp2 = -0.5;
-                // }
-                                    
-                $shirinaStvorok[$openingDoorsIndex] = intval($temp + $temp2);
-                $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp + $temp2);
+        if (($opening['type'] ?? '') == 'blind-glazing') {
+            $ot1 = sketch_normalize_padding($opening['ot1'] ?? null, 30, 1, 100);
+            $ot2 = sketch_normalize_padding($opening['ot2'] ?? null, 30, 1, 100);
+            $ot3 = sketch_normalize_padding($opening['ot3'] ?? null, 24, 1, 100);
+            $ot4 = sketch_normalize_padding($opening['ot4'] ?? null, 30, 1, 100);
+            $zr = sketch_normalize_padding($opening['zr'] ?? null, 10, 1, 50);
+            $innerW = $opening['width'] - $ot1 - $ot2 - ($stvorki - 1) * $zr;
+            $panelW = $stvorki > 0 ? (int) floor($innerW / $stvorki) : 0;
+            $panelW = max(1, $panelW);
+            for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki; $openingDoorsIndex++) {
+                $shirinaStvorok[$openingDoorsIndex] = $panelW;
             }
-        } else if ($opening['type'] == 'left' || $opening['type'] == 'right') {
-            for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--) {
-                $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
-                    
-                if ($openingDoorsIndex == $stvorki) {
-                    $temp += $doorsGap['start'];
-                } else if ($openingDoorsIndex == 1) {
-                    $temp += $doorsGap['end'];
-                }
-                
-                $shirinaStvorok[$openingDoorsIndex] = intval($temp);
+            $height = max(1, (int) floor($opening['height'] - $ot3 - $ot4));
+        } else {
+            $gap = $opening['type'] == 'center' ? $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'] + 3 : 2 * $opening['a'] + $opening['b'] + $opening['e'] + $opening['g'];
+            $doorsGap = [
+                'start' => $opening['e'] + $opening['g'],
+                'end' => $opening['b'],
+            ];
+
+            $overlaps = $stvorki / ($opening['type'] == 'center' ? 2 : 1) - 1;
+            $middle = intval(($overlaps * 13) / ($stvorki / ($opening['type'] == 'center' ? 2 : 1)));
+
+            if ($opening['type'] == 'center') {
+                $edges = intval(($overlaps * 13 - $middle * ($stvorki / 2 - 2)) / 2);
+            } else {
+                $edges = intval(($overlaps * 13 - $middle * ($stvorki - 2)) / 2);
             }
+
+            $y = $opening['width'] / ($opening['type'] == 'center' ? 2 : 1) - $gap;
+
+            $z = $y / ($stvorki / ($opening['type'] == 'center' ? 2 : 1));
+
+            if ($opening['type'] == 'center') {
+                for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki / 2; $openingDoorsIndex++) {
+                    $temp = $z + ($openingDoorsIndex == $stvorki / 2 || $openingDoorsIndex == 1 ? $edges : $middle);
+
+                    if ($openingDoorsIndex == $stvorki / 2) {
+                        $temp += $doorsGap['start'];
+                    } else if ($openingDoorsIndex == 1) {
+                        $temp += $doorsGap['end'];
+                    }
+                    $temp2 = 0;
+
+                    $shirinaStvorok[$openingDoorsIndex] = intval($temp + $temp2);
+                    $shirinaStvorok[$stvorki - $openingDoorsIndex + 1] = intval($temp + $temp2);
+                }
+            } else if ($opening['type'] == 'left' || $opening['type'] == 'right') {
+                for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--) {
+                    $temp = $z + ($openingDoorsIndex == $stvorki || $openingDoorsIndex == 1 ? $edges : $middle);
+
+                    if ($openingDoorsIndex == $stvorki) {
+                        $temp += $doorsGap['start'];
+                    } else if ($openingDoorsIndex == 1) {
+                        $temp += $doorsGap['end'];
+                    }
+
+                    $shirinaStvorok[$openingDoorsIndex] = intval($temp);
+                }
+            }
+
+            $height = $opening['height'] - 103;
         }
-    
-        $height = $opening['height'] - 103;
+
         foreach ($shirinaStvorok as $doorWidth) {
             $totalOpeningWeight += ($doorWidth / 1000) * ($height / 1000) * $glassWeight;
             $totalOpeningArea += ($doorWidth / 1000) * ($height / 1000);
@@ -586,6 +609,17 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
                     </div>
                 </div>
             @endfor
+            @elseif (($opening['type'] ?? '') == 'blind-glazing')
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 8px; margin-top: 8px;">
+                    @for ($openingDoorsIndex = 1; $openingDoorsIndex <= $stvorki; $openingDoorsIndex++)
+                        <div class="inline-block">
+                            <div>СТ{{ $glass_counter + $openingDoorsIndex }}</div>
+                            <div class="glass-top">
+                                <div></div>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
             @elseif ($opening['type'] == 'left' || $opening['type'] == 'right')
                 @for ($openingDoorsIndex = $stvorki; $openingDoorsIndex >= 1; $openingDoorsIndex--)
                 @php
@@ -677,14 +711,14 @@ function getDoorHandleSVG($direction = 'right', $g = 55, $i = 550, $d = 12, $mr 
                     <div class="inline-block">
                         <div>СТ{{ $i + $glass_counter }}</div>
                         <div class="glass-top" style="position:relative">
-                            @if ($opening['type'] == 'left' || $opening['type'] == 'center' && $i > $stvorki / 2)
-                                <span style="position: absolute;top: 50%;right: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                            @if ($opening['type'] == 'left' || ($opening['type'] == 'center' && $i > $stvorki / 2))
+                                <span style="position: absolute;top: 50%;right: -4px;transform: rotate(-90deg);">{{ $height }}</span>
                             @else
-                                <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $opening['height'] - 103 }}</span>
+                                <span style="position: absolute;top: 50%;left: -4px;transform: rotate(-90deg);">{{ $height }}</span>
                             @endif
                             <span style="position: absolute;top:0;left: 50%;transform: translateX(-50%);">{{ $shirinaStvorok[$opening['type'] == 'left' ? $stvorki - $i + 1 : $i] }}</span>
                             
-                            @if ($opening['type'] == 'left' && $i == 1 || $opening['type'] == 'right' && $i == $stvorki || $opening['type'] == 'center' && ($i - $stvorki / 2) <= 1 && ($i - $stvorki / 2) >= 0)
+                            @if (($opening['type'] ?? '') !== 'blind-glazing' && (($opening['type'] == 'left' && $i == 1) || ($opening['type'] == 'right' && $i == $stvorki) || ($opening['type'] == 'center' && ($i - $stvorki / 2) <= 1 && ($i - $stvorki / 2) >= 0)))
                                 @if ($opening['type'] == 'left' || $opening['type'] == 'center' && $i > $stvorki / 2)
                                     {{-- <img src="data:image/jpeg;base64,{{ base64_encode(getDoorHandleSVG('left')) }}" alt="" height="86" style="position: absolute;bottom:0;left:-4px;"> --}}
                                     <div style="position: absolute;bottom:46px;left:6px;width:4px;height:48px;border:1px solid rgb(0, 195, 255);"></div>

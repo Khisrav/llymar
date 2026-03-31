@@ -35,6 +35,11 @@ export interface Opening {
     f?: number;
     g?: number;
     i?: number;
+    ot1?: number;
+    ot2?: number;
+    ot3?: number;
+    ot4?: number;
+    zr?: number;
     mp?: number;
     door_handle_item_id?: number;
 }

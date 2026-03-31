@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\OrderOpening;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -66,54 +67,94 @@ class OpeningsRelationManager extends RelationManager
                         ->schema([
                             Forms\Components\TextInput::make('a')
                                 ->label('a (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('b')
                                 ->label('b (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             // Forms\Components\TextInput::make('c')
                             //     ->label('c (мм)')
+                            //     ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                             //     ->numeric()
                             //     ->minValue(0)
                             //     ->default(0),
     
                             Forms\Components\TextInput::make('d')
                                 ->label('d (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('e')
                                 ->label('e (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('f')
                                 ->label('f (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('g')
                                 ->label('g (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('i')
                                 ->label('i (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
     
                             Forms\Components\TextInput::make('mp')
                                 ->label('mp (мм)')
+                                ->visible(fn (Get $get) => $get('type') !== 'blind-glazing')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                            
+                            Forms\Components\TextInput::make('ot1')
+                                ->label('ot1 (мм)')
+                                ->visible(fn (Get $get) => $get('type') === 'blind-glazing')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                            Forms\Components\TextInput::make('ot2')
+                                ->label('ot2 (мм)')
+                                ->visible(fn (Get $get) => $get('type') === 'blind-glazing')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                            Forms\Components\TextInput::make('ot3')
+                                ->label('ot3 (мм)')
+                                ->visible(fn (Get $get) => $get('type') === 'blind-glazing')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                            Forms\Components\TextInput::make('ot4')
+                                ->label('ot4 (мм)')
+                                ->visible(fn (Get $get) => $get('type') === 'blind-glazing')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0),
+                            Forms\Components\TextInput::make('zr')
+                                ->label('zr (мм)')
+                                ->visible(fn (Get $get) => $get('type') === 'blind-glazing')
                                 ->numeric()
                                 ->minValue(0)
                                 ->default(0),
@@ -213,7 +254,11 @@ class OpeningsRelationManager extends RelationManager
                     ->label('Параметры')
                     ->wrap()
                     ->formatStateUsing(function (OrderOpening $record) {
-                        return 'a: ' . $record->a . 'мм, b: ' . $record->b . 'мм, d: ' . $record->d . 'мм, e: ' . $record->e . 'мм, f: ' . $record->f . 'мм, g: ' . $record->g . 'мм, i: ' . $record->i . 'мм, mp: ' . $record->mp . 'мм';
+                        if ($record->type === 'blind-glazing') {
+                            return 'ot1: ' . $record->ot1 . 'мм, ot2: ' . $record->ot2 . 'мм, ot3: ' . $record->ot3 . 'мм, ot4: ' . $record->ot4 . 'мм, zr: ' . $record->zr . 'мм';
+                        } else {
+                            return 'a: ' . $record->a . 'мм, b: ' . $record->b . 'мм, d: ' . $record->d . 'мм, e: ' . $record->e . 'мм, f: ' . $record->f . 'мм, g: ' . $record->g . 'мм, i: ' . $record->i . 'мм, mp: ' . $record->mp . 'мм';
+                        }
                     }),
             ])
             ->filters([

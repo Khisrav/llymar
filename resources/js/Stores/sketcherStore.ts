@@ -45,7 +45,23 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		f: { start: 5, end: 20, default: 14, interval: 1 },
 		g: { start: 30, end: 80, default: 55, interval: 1 },
 		i: { start: 20, end: 1000, default: 550, interval: 1 },
+		ot1: { start: 1, end: 100, default: 30, interval: 1 },
+		ot2: { start: 1, end: 100, default: 30, interval: 1 },
+		ot3: { start: 1, end: 100, default: 24, interval: 1 },
+		ot4: { start: 1, end: 100, default: 30, interval: 1 },
+		zr: { start: 1, end: 50, default: 10, interval: 1 },
 		mp: { start: 0, end: 1000, default: 0, interval: 1 },
+	}
+
+	const normalizePaddingValue = (key: string, raw: unknown): number => {
+		const c = sketch_constraints[key]
+		if (!c) return 0
+		const n = typeof raw === 'number' ? raw : Number(raw)
+		// DB/migration defaults use 0 — treat as unset so inputs show constraint defaults
+		if (!Number.isFinite(n) || n === 0) {
+			return c.default
+		}
+		return Math.min(Math.max(n, c.start), c.end)
 	}
 
 	const sketch_vars = ref<Record<number, Record<string, number[]>>>({})
@@ -156,8 +172,17 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				g: [opening.g as number],
 				i: [opening.i as number],
 				mp: [opening.mp as number],
+				ot1: [normalizePaddingValue('ot1', opening.ot1)],
+				ot2: [normalizePaddingValue('ot2', opening.ot2)],
+				ot3: [normalizePaddingValue('ot3', opening.ot3)],
+				ot4: [normalizePaddingValue('ot4', opening.ot4)],
+				zr: [normalizePaddingValue('zr', opening.zr)],
 			};
-			selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
+			if (opening.type === 'blind-glazing') {
+				selectedDoorHandles.value[opening.id as number] = undefined;
+			} else {
+				selectedDoorHandles.value[opening.id as number] = opening.door_handle_item_id;
+			}
 		});
 
 		// Set initial selected opening
@@ -165,8 +190,12 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			selectedOpeningID.value = openings.value[0].id as number;
 		}
 
-		// Apply door handle properties to sketch_vars for each opening
+		// Apply door handle properties to sketch_vars for each opening (not blind glazing — no handle)
 		openings.value.forEach((opening) => {
+			if (opening.type === 'blind-glazing') {
+				return;
+			}
+
 			const handleId = selectedDoorHandles.value[opening.id as number] || opening.door_handle_item_id;
 
 			if (handleId) {
@@ -178,6 +207,11 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 						g: [handleProps.g],
 						i: [handleProps.i],
 						mp: [handleProps.mp],
+						ot1: [normalizePaddingValue('ot1', handleProps.ot1)],
+						ot2: [normalizePaddingValue('ot2', handleProps.ot2)],
+						ot3: [normalizePaddingValue('ot3', handleProps.ot3)],
+						ot4: [normalizePaddingValue('ot4', handleProps.ot4)],
+						zr: [normalizePaddingValue('zr', handleProps.zr)],
 					};
 				} catch (error) {
 					console.error(`Error applying handle properties for opening ${opening.id}:`, error);
@@ -198,7 +232,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		console.log(initialState.value);
 	}
 
-	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number } => {
+	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number; ot1: number; ot2: number; ot3: number; ot4: number; zr: number } => {
 		// Look for the handle in all door handles (from database)
 		const item = allDoorHandles.value.find((dh) => dh.id === item_id);
 
@@ -227,6 +261,11 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			g: getPropertyValue("g"),
 			i: getPropertyValue("i"),
 			mp: getPropertyValue("MP"),
+			ot1: getPropertyValue("ot1"),
+			ot2: getPropertyValue("ot2"),
+			ot3: getPropertyValue("ot3"),
+			ot4: getPropertyValue("ot4"),
+			zr: getPropertyValue("zr"),
 		};
 	}
 
@@ -244,6 +283,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		let y = currentOpening.value.width / (currentOpening.value.type == "center" ? 2 : 1) - gap;
 		let z = y / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1));
 		let shirinaStvorok = [];
+		let height = currentOpening.value.height - 103;
 
 		if (currentOpening.value.type == "center") {
 			for (let i = 1; i <= currentOpening.value.doors / 2; i++) {
@@ -274,11 +314,20 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				//shirinaStvorok[0] = 365 + 63 = 428
 				shirinaStvorok[i] = Math.floor(temp);
 			}
+		} else if (currentOpening.value.type == "blind-glazing") {
+			const ot1 = sketch_vars.value[selectedOpeningID.value].ot1[0];
+			const ot2 = sketch_vars.value[selectedOpeningID.value].ot2[0];
+			const ot3 = sketch_vars.value[selectedOpeningID.value].ot3[0];
+			const ot4 = sketch_vars.value[selectedOpeningID.value].ot4[0];
+			const zr = sketch_vars.value[selectedOpeningID.value].zr[0];
+			const effectiveWidthPerDoor = (currentOpening.value.width - ot1 - ot2 - (currentOpening.value.doors - 1) * zr) / currentOpening.value.doors;
+			shirinaStvorok[doorIndex] = Math.floor(effectiveWidthPerDoor);
+			height = Math.floor(currentOpening.value.height - ot3 - ot4);
 		}
 
 		return {
 			width: shirinaStvorok[doorIndex],
-			height: currentOpening.value.height - 103,
+			height: height,
 		};
 	}
 
@@ -293,6 +342,11 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			sketch_vars.value[openingId].g = [handleProps.g];
 			sketch_vars.value[openingId].i = [handleProps.i];
 			sketch_vars.value[openingId].mp = [handleProps.mp];
+			sketch_vars.value[openingId].ot1 = [normalizePaddingValue('ot1', handleProps.ot1)];
+			sketch_vars.value[openingId].ot2 = [normalizePaddingValue('ot2', handleProps.ot2)];
+			sketch_vars.value[openingId].ot3 = [normalizePaddingValue('ot3', handleProps.ot3)];
+			sketch_vars.value[openingId].ot4 = [normalizePaddingValue('ot4', handleProps.ot4)];
+			sketch_vars.value[openingId].zr = [normalizePaddingValue('zr', handleProps.zr)];
 
 			// Ensure the selected handle is part of the order handles list for grouping in UI
 			const existsInOrder = doorHandles.value.some(dh => dh.id === doorHandleId);
@@ -325,7 +379,16 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		if (!sketch_vars.value[openingId]) {
 			sketch_vars.value[openingId] = {};
 		}
-		sketch_vars.value[openingId][key] = [value];
+		const c = sketch_constraints[key]
+		let next = value
+		if (c) {
+			if (!Number.isFinite(next)) {
+				next = c.default
+			} else {
+				next = Math.min(Math.max(next, c.start), c.end)
+			}
+		}
+		sketch_vars.value[openingId][key] = [next];
 	}
 
 	const updateOpeningDimension = (openingId: number, dimension: 'width' | 'height', value: number) => {
@@ -391,8 +454,9 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			return;
 		}
 
-		// Check if all openings have door handles selected
-		const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
+		const openingsWithoutHandles = openings.value.filter(
+			(opening) => opening.type !== 'blind-glazing' && !selectedDoorHandles.value[opening.id as number],
+		);
 		if (openingsWithoutHandles.length > 0) {
 			toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием DXF.");
 			return;
@@ -442,8 +506,9 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			return;
 		}
 
-		// Check if all openings have door handles selected
-		const openingsWithoutHandles = openings.value.filter(opening => !selectedDoorHandles.value[opening.id as number]);
+		const openingsWithoutHandles = openings.value.filter(
+			(opening) => opening.type !== 'blind-glazing' && !selectedDoorHandles.value[opening.id as number],
+		);
 		if (openingsWithoutHandles.length > 0) {
 			toast.error("Пожалуйста, выберите ручки для всех проемов перед скачиванием PDF.");
 			return;

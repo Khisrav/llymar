@@ -8,7 +8,7 @@ use App\Models\Order;
 use App\Models\OrderOpening;
 use DXFighter\DXFighter;
 use DXFighter\lib\Circle;
-use DXFighter\lib\Polyline;
+use DXFighter\lib\Line;
 use DXFighter\lib\Text;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +17,22 @@ use Illuminate\Support\Facades\Response;
 
 class SketchController extends Controller
 {
+    /**
+     * Normalize blind-glazing padding (matches sketcher store: 0 / invalid → default, else clamp).
+     */
+    private static function normalizeBlindPaddingValue($value, int $default, int $min, int $max): int
+    {
+        if (! is_numeric($value)) {
+            return $default;
+        }
+        $n = (float) $value;
+        if (! is_finite($n) || $n === 0.0) {
+            return $default;
+        }
+
+        return max($min, min($max, (int) round($n)));
+    }
+
     public function generateDXF(Request $request)
     {
         $requestData = $request->validate([
@@ -36,14 +52,20 @@ class SketchController extends Controller
         $this->getOrderParameters($order);
 
         foreach ($order->orderOpenings as $opening) {
-            $opening->mp = $requestOpenings[$opening->id]['mp'];
-            $opening->g = $requestOpenings[$opening->id]['g'];
-            $opening->d = $requestOpenings[$opening->id]['d'];
-            $opening->i = $requestOpenings[$opening->id]['i'];
-            $opening->a = $requestOpenings[$opening->id]['a'];
-            $opening->b = $requestOpenings[$opening->id]['b'];
-            $opening->e = $requestOpenings[$opening->id]['e'];
-            $opening->f = $requestOpenings[$opening->id]['f'];
+            $req = $requestOpenings[$opening->id] ?? [];
+            $opening->mp = $req['mp'] ?? $opening->mp;
+            $opening->g = $req['g'] ?? $opening->g;
+            $opening->d = $req['d'] ?? $opening->d;
+            $opening->i = $req['i'] ?? $opening->i;
+            $opening->a = $req['a'] ?? $opening->a;
+            $opening->b = $req['b'] ?? $opening->b;
+            $opening->e = $req['e'] ?? $opening->e;
+            $opening->f = $req['f'] ?? $opening->f;
+            foreach (['ot1', 'ot2', 'ot3', 'ot4', 'zr'] as $padKey) {
+                if (array_key_exists($padKey, $req)) {
+                    $opening->{$padKey} = $req[$padKey];
+                }
+            }
         }
 
         $order->orderOpenings = $order->orderOpenings->reverse();
@@ -118,7 +140,13 @@ class SketchController extends Controller
 
         foreach ($openings as $opening) {
             $opening['doorsWidths'] = static::getOpeningDoorsWidthsStatic($opening);
-            $opening['doorsHeight'] = $opening['height'] - 103;
+            if (($opening['type'] ?? '') === 'blind-glazing') {
+                $ot3 = static::normalizeBlindPaddingValue($opening['ot3'] ?? null, 24, 1, 100);
+                $ot4 = static::normalizeBlindPaddingValue($opening['ot4'] ?? null, 30, 1, 100);
+                $opening['doorsHeight'] = max(1, (int) floor($opening['height'] - $ot3 - $ot4));
+            } else {
+                $opening['doorsHeight'] = $opening['height'] - 103;
+            }
         }
     }
 
@@ -184,6 +212,16 @@ class SketchController extends Controller
             if ($opening['type'] == 'left') {
                 $shirinaStvorok = array_reverse($shirinaStvorok);
             }
+        } elseif ($opening['type'] === 'blind-glazing') {
+            $ot1 = static::normalizeBlindPaddingValue($opening['ot1'] ?? null, 30, 1, 100);
+            $ot2 = static::normalizeBlindPaddingValue($opening['ot2'] ?? null, 30, 1, 100);
+            $zr = static::normalizeBlindPaddingValue($opening['zr'] ?? null, 10, 1, 50);
+            $innerWidth = $opening['width'] - $ot1 - $ot2 - ($stvorki - 1) * $zr;
+            $panelW = $stvorki > 0 ? (int) floor($innerWidth / $stvorki) : 0;
+            $panelW = max(1, $panelW);
+            for ($i = 1; $i <= $stvorki; $i++) {
+                $shirinaStvorok[$i] = $panelW;
+            }
         }
 
         ksort($shirinaStvorok);
@@ -199,7 +237,13 @@ class SketchController extends Controller
 
         foreach ($openings as $opening) {
             $opening['doorsWidths'] = $this->getOpeningDoorsWidths($opening);
-            $opening['doorsHeight'] = $opening['height'] - 103;
+            if ($opening['type'] === 'blind-glazing') {
+                $ot3 = self::normalizeBlindPaddingValue($opening['ot3'] ?? null, 24, 1, 100);
+                $ot4 = self::normalizeBlindPaddingValue($opening['ot4'] ?? null, 30, 1, 100);
+                $opening['doorsHeight'] = max(1, (int) floor($opening['height'] - $ot3 - $ot4));
+            } else {
+                $opening['doorsHeight'] = $opening['height'] - 103;
+            }
         }
     }
 
@@ -261,6 +305,16 @@ class SketchController extends Controller
             
             if ($opening['type'] == 'left') {
                 $shirinaStvorok = array_reverse($shirinaStvorok);
+            }
+        } elseif ($opening['type'] === 'blind-glazing') {
+            $ot1 = self::normalizeBlindPaddingValue($opening['ot1'] ?? null, 30, 1, 100);
+            $ot2 = self::normalizeBlindPaddingValue($opening['ot2'] ?? null, 30, 1, 100);
+            $zr = self::normalizeBlindPaddingValue($opening['zr'] ?? null, 10, 1, 50);
+            $innerWidth = $opening['width'] - $ot1 - $ot2 - ($stvorki - 1) * $zr;
+            $panelW = $stvorki > 0 ? (int) floor($innerWidth / $stvorki) : 0;
+            $panelW = max(1, $panelW);
+            for ($i = 1; $i <= $stvorki; $i++) {
+                $shirinaStvorok[$i] = $panelW;
             }
         }
 
@@ -447,18 +501,17 @@ class SketchController extends Controller
                 $p3 = array_pad($coordinateSet['P3'], 3, 0);
 
 
-                $polyline = new Polyline();
-                $polyline->setFlag(1, 1); 
-                $polyline->setColor(0); 
-
-                $polyline->addPoint($p0);
-                $polyline->addPoint($p1);
-                $polyline->addPoint($p2);
-                $polyline->addPoint($p3);
-                $polyline->addPoint($p0); 
-
-                $dxf->addEntity($polyline);
-                $entitiesAdded++;
+                $lines = [
+                    new Line($p0, $p1),
+                    new Line($p1, $p2),
+                    new Line($p2, $p3),
+                    new Line($p3, $p0),
+                ];
+                foreach ($lines as $line) {
+                    $line->setColor(0);
+                    $dxf->addEntity($line);
+                }
+                $entitiesAdded += 4;
 
                 $width = sqrt(pow($p3[0] - $p0[0], 2) + pow($p3[1] - $p0[1], 2));
 
@@ -625,6 +678,11 @@ class SketchController extends Controller
                 'g' => $opening->g,
                 'i' => $opening->i,
                 'mp' => $opening->mp ?? 0,
+                'ot1' => $opening->ot1,
+                'ot2' => $opening->ot2,
+                'ot3' => $opening->ot3,
+                'ot4' => $opening->ot4,
+                'zr' => $opening->zr,
                 'door_handle_item_id' => $opening->door_handle_item_id,
             ];
         })->toArray();

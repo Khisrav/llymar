@@ -173,7 +173,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 									</div>
 								</div>
 
-								<div class="mt-2 flex items-center justify-between gap-2">
+								<div v-if="opening.type !== 'blind-glazing'" class="mt-2 flex items-center justify-between gap-2">
 									<div class="flex-1 overflow-hidden">
 										<Select
 											:disabled="!canEditOrderSketch || sketcherStore.selectedOpeningID != opening.id"
@@ -299,7 +299,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							</div>
 						</template>
 
-						<div class="flex flex-col gap-2 pb-3 mb-3 border-b border-gray-200">
+						<div class="flex flex-col gap-2" :class="{'border-b border-gray-200 pb-3 mb-3': sketcherStore.currentOpening?.type !== 'blind-glazing'}">
 							<div>
 								<Button v-if="canEditOrderSketch" type="button" class="w-full" @click="sketcherStore.saveAndClose"> 
 									<SaveIcon class="mr-2 h-4 w-4" /> Сохранить 
@@ -316,11 +316,11 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							</div>
 						</div>
 
-						<div class="flex items-center justify-between mb-4 gap-4">
+						<div v-if="sketcherStore.currentOpening?.type !== 'blind-glazing'" class="flex items-center justify-between mb-4 gap-4">
 							<h3 class="text-xl text-muted-foreground font-semibold">Параметры ручки <span class="text-base font-normal">(мм)</span></h3>
 						</div>
 
-						<template v-for="(value, key) in sketcherStore.currentSketch" :key="key">
+						<template v-if="sketcherStore.currentOpening?.type !== 'blind-glazing'" v-for="(value, key) in sketcherStore.currentSketch" :key="key">
 							<div v-if="['e', 'g', 'd', 'i', 'mp'].includes(key)" class="flex flex-row items-center justify-between w-full gap-2 pb-3 mb-3 border-b border-gray-200 last:border-b-0 last:pb-0 last:mb-0">
 								<div
 									:class="{

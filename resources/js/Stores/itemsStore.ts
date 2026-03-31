@@ -203,6 +203,24 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return cartItems.value[item?.id as number]?.quantity || 0
     }
 
+    const splitIntoChunks = (n: number): number[] => {
+        const result = []
+        const remainder = n % 4
+        const fours = Math.floor(n / 4)
+        
+        for (let i = 0; i < fours; i++) result.push(4)
+        
+        if (remainder === 1) {
+            result.pop()       // remove last 4
+            result.push(3, 2)  // replace with 3, 2
+        } else if (remainder > 0) {
+            result.push(remainder)
+        }
+        
+        //L1 is reference to 3, L3 is ref to 2, L4.1 is ref to 4, L4.2 should inherit value of L4.1, L4=L3, L2=L1
+        return result
+    }
+
     const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
@@ -236,35 +254,15 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
         const quantityMap: { [key: string]: () => number } = {
             L1: () => {
-                // const res = openings.reduce(
-                //     (acc, { width, type, doors }) => {
-                //         // If adding the opening does not exceed 6000, include it in the current group.
-                //         if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
-                //             // For a new group, record type and doors.
-                //             if (acc.group === 0) {
-                //                 acc.groupType = type;
-                //                 acc.groupDoors = doors;
-                //             }
-                //             acc.group += width;
-                //         } else {
-                //             // Finalize the current group: convert total width to a rounded value and multiply.
-                //             acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", acc.groupDoors, acc.groupType);
-                //             // Start a new group with the current opening.
-                //             acc.group = width;
-                //             acc.groupType = type;
-                //             acc.groupDoors = doors;
-                //         }
-                //         return acc;
-                //     },
-                //     { total: 0, group: 0, groupType: "", groupDoors: 0 }
-                // );
-                // // Finalize any remaining group.
-                // return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", res.groupDoors, res.groupType) : 0);
-                return openings.reduce((acc, { width, type, doors }) => {
-                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L1", doors, type)
-                }, 0)
+                return 0
             },
-            L2: () => getItemQuantity("L1"),
+            L2: () => {
+                let temp = 0
+                for (const opening of openings) {
+                    temp += splitIntoChunks(opening.doors).filter(chunkEl => chunkEl === 3).length
+                }
+                return temp
+            },
             L3: () => {
                 // const res = openings.reduce(
                 //     (acc, { width, type, doors }) => {
@@ -290,9 +288,20 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
                 }, 0)
             },
-            L4: () => getItemQuantity("L3"),
-
-
+            L4: () => {
+                let temp = 0
+                for (const opening of openings) {
+                    temp += splitIntoChunks(opening.doors).filter(chunkEl => chunkEl === 2).length
+                }
+                return temp
+            },
+            'L4.2': () => {
+                let temp = 0
+                for (const opening of openings) {
+                    temp += splitIntoChunks(opening.doors).filter(chunkEl => chunkEl === 4).length
+                }
+                return temp
+            },
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
                 if (type === 'triangle' || type === 'blind-glazing') return acc
                 return acc + Math.floor((width - 1800) / 1000 + 3)

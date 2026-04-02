@@ -230,69 +230,54 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return multipliers[type]?.[vendor_code]?.[doors] ?? 0
     }
 
+    //for L1, L3, L4.1
+    const isWeirdVendorCodeActive = (doors: number, type: string, vendor_code: string): boolean => {
+        const map: Record<number, Record<string, string[]>> = {
+            2: { left: ["L3"], right: ["L3"], center: [], 'inner-left': [], 'inner-right': [] },
+            3: { left: ["L1"], right: ["L1"], center: [], 'inner-left': ["L3"], 'inner-right': ["L3"] },
+            4: { left: ["L4.1"], right: ["L4.1"], center: ["L3"], 'inner-left': ["L1"], 'inner-right': [] },
+            5: { left: ["L3", "L1"], right: ["L3", "L1"], center: [], 'inner-left': ["L4.1"], 'inner-right': [] },
+            6: { left: ["L3", "L4.1"], right: ["L3", "L4.1"], center: ["L1"], 'inner-left': [], 'inner-right': ["L3", "L1"] },
+            7: { left: ["L1", "L4.1"], right: ["L1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L3", "L4.1"] },
+            8: { left: ["L4.1", "L4.1"], right: ["L4.1", "L4.1"], center: ["L4.1"], 'inner-left': [], 'inner-right': ["L1", "L4.1"] },
+            9: { left: ["L3", "L1", "L4.1"], right: ["L3", "L1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L4.1", "L4.1"] },
+            10: { left: ["L3", "L4.1", "L4.1"], right: ["L3", "L4.1", "L4.1"], center: ["L3", "L1"], 'inner-left': [], 'inner-right': ["L3", "L1", "L4.1"] },
+            11: { left: ["L1", "L4.1", "L4.1"], right: ["L1", "L4.1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L3", "L4.1", "L4.1"] },
+            12: { left: ["L4.1", "L4.1", "L4.1"], right: ["L4.1", "L4.1", "L4.1"], center: ["L3", "L4.1"], 'inner-left': [], 'inner-right': [] },
+            14: { left: [], right: [], center: ["L1", "L4.1"], 'inner-left': [], 'inner-right': [] },
+            16: { left: [], right: [], center: ["L4.1", "L4.1"], 'inner-left': [], 'inner-right': [] },
+            18: { left: [], right: [], center: ["L3", "L1", "L4.1"], 'inner-left': [], 'inner-right': [] },
+            20: { left: [], right: [], center: ["L3", "L4.1", "L4.1"], 'inner-left': [], 'inner-right': [] },
+        }
+    
+        return map[doors]?.[type]?.includes(vendor_code) ?? false
+    }
+
     const calculateQuantity = (item: Item): number => {
         const { vendor_code } = item
         const openings = openingsStore.openings
 
         const quantityMap: { [key: string]: () => number } = {
             L1: () => {
-                // const res = openings.reduce(
-                //     (acc, { width, type, doors }) => {
-                //         // If adding the opening does not exceed 6000, include it in the current group.
-                //         if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
-                //             // For a new group, record type and doors.
-                //             if (acc.group === 0) {
-                //                 acc.groupType = type;
-                //                 acc.groupDoors = doors;
-                //             }
-                //             acc.group += width;
-                //         } else {
-                //             // Finalize the current group: convert total width to a rounded value and multiply.
-                //             acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", acc.groupDoors, acc.groupType);
-                //             // Start a new group with the current opening.
-                //             acc.group = width;
-                //             acc.groupType = type;
-                //             acc.groupDoors = doors;
-                //         }
-                //         return acc;
-                //     },
-                //     { total: 0, group: 0, groupType: "", groupDoors: 0 }
-                // );
-                // // Finalize any remaining group.
-                // return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L1", res.groupDoors, res.groupType) : 0);
                 return openings.reduce((acc, { width, type, doors }) => {
+                    if (!isWeirdVendorCodeActive(doors, type, 'L1')) return acc
                     return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L1", doors, type)
                 }, 0)
             },
-            L2: () => getItemQuantity("L1"),
+            L2: () => getItemQuantity('L1'),
             L3: () => {
-                // const res = openings.reduce(
-                //     (acc, { width, type, doors }) => {
-                //         if (acc.group + width <= (width <= 3000 ? 3000 : 6000)) {
-                //             if (acc.group === 0) {
-                //                 acc.groupType = type;
-                //                 acc.groupDoors = doors;
-                //             }
-                //             acc.group += width;
-                //         } else {
-                //             acc.total += Math.ceil(acc.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", acc.groupDoors, acc.groupType);
-                //             acc.group = width;
-                //             acc.groupType = type;
-                //             acc.groupDoors = doors;
-                //         }
-                //         console.log(acc)
-                //         return acc;
-                //     },
-                //     { total: 0, group: 0, groupType: "", groupDoors: 0 }
-                // );
-                // return res.total + (res.group ? Math.ceil(res.group / 1000 / 3) * 3 * L1_L3_multiplier("L3", res.groupDoors, res.groupType) : 0);
                 return openings.reduce((acc, { width, type, doors }) => {
+                    if (!isWeirdVendorCodeActive(doors, type, 'L3')) return acc
                     return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
                 }, 0)
             },
-            L4: () => getItemQuantity("L3"),
-
-
+            L4: () => getItemQuantity('L3'),
+            'L4.1': () => {
+                return openings.reduce((acc, { width, type, doors }) => {
+                    if (!isWeirdVendorCodeActive(doors, type, 'L4.1')) return acc
+                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                }, 0)
+            },
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
                 if (type === 'triangle' || type === 'blind-glazing') return acc
                 return acc + Math.floor((width - 1800) / 1000 + 3)

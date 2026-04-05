@@ -203,31 +203,73 @@ export const useItemsStore = defineStore('itemsStore', () => {
         return cartItems.value[item?.id as number]?.quantity || 0
     }
 
-    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
+    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3' | 'L4.1', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
-                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
-                L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
+                L1:     { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 0, 12: 0 },
+                L3:     { 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0, 8: 0, 9: 1, 10: 1, 11: 0, 12: 0 },
+                "L4.1": { 2: 0, 3: 0, 4: 1, 5: 0, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2, 11: 2, 12: 3 },
             },
             right: {
-                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
-                L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
+                L1:     { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 0, 12: 0 },
+                L3:     { 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0, 8: 0, 9: 1, 10: 1, 11: 0, 12: 0 },
+                "L4.1": { 2: 0, 3: 0, 4: 1, 5: 0, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2, 11: 2, 12: 3 },
             },
             center: {
-                L1: { 4: 0, 6: 1, 8: 0, 10: 1 },
-                L3: { 4: 1, 6: 0, 8: 2, 10: 1 },
+                L1:     { 4: 0, 6: 1, 8: 0, 10: 1, 12: 0, 14: 1, 16: 0, 18: 1, 20: 0 },
+                L3:     { 4: 1, 6: 0, 8: 2, 10: 1, 12: 1, 14: 0, 16: 0, 18: 1, 20: 1 },
+                "L4.1": { 4: 0, 6: 0, 8: 1, 10: 0, 12: 1, 14: 1, 16: 2, 18: 1, 20: 2 },
             },
             'inner-left': {
-                L1: { 3: 0 },
-                L3: { 3: 1 },
+                L1: { 3: 0, 4: 1, 5: 0, 6: 1, 7: 0, 8: 1, 9: 0, 10: 1, 11: 0 },
+                L3: { 3: 1, 4: 0, 5: 0, 6: 1, 7: 1, 8: 0, 9: 0, 10: 1, 11: 1 },
+                "L4.1": { 3: 0, 4: 0, 5: 1, 6: 0, 7: 1, 8: 1, 9: 2, 10: 1, 11: 2 },
             },
             'inner-right': {
-                L1: { 3: 0 },
-                L3: { 3: 1 },
+                L1: { 3: 0, 4: 1, 5: 0, 6: 1, 7: 0, 8: 1, 9: 0, 10: 1, 11: 0 },
+                L3: { 3: 1, 4: 0, 5: 0, 6: 1, 7: 1, 8: 0, 9: 0, 10: 1, 11: 1 },
+                "L4.1": { 3: 0, 4: 0, 5: 1, 6: 0, 7: 1, 8: 1, 9: 2, 10: 1, 11: 2 },
             },
         }
 
         return multipliers[type]?.[vendor_code]?.[doors] ?? 0
+    }
+
+    const L1_to_L4_1_factor = (width: number): number => {
+        let qnt = 0
+
+        while (width > 0) {
+            if (width >= 7000) {
+                width -= 7000
+                qnt += 7
+            }
+            else if (width >= 6001 && width < 7000) {
+                width -= width
+                qnt += 7
+            }
+            else if (width >= 6000) {
+                width -= 6000
+                qnt += 6
+            }
+            else if (width >= 3501 && width < 6000) {
+                width -= width
+                qnt += 6
+            }
+            else if (width >= 3500) {
+                width -= 3500
+                qnt += 3.5
+            }
+            else if (width >= 3001 && width < 3500) {
+                width -= width
+                qnt += 3.5
+            }
+            else {
+                width -= 3000
+                qnt += 3
+            }
+        }
+
+        return qnt
     }
 
     //for L1, L3, L4.1
@@ -268,14 +310,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
             L3: () => {
                 return openings.reduce((acc, { width, type, doors }) => {
                     if (!isWeirdVendorCodeActive(doors, type, 'L3')) return acc
-                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                    return acc + L1_to_L4_1_factor(width) * L1_L3_multiplier("L3", doors, type)
                 }, 0)
             },
             L4: () => getItemQuantity('L3'),
             'L4.1': () => {
                 return openings.reduce((acc, { width, type, doors }) => {
                     if (!isWeirdVendorCodeActive(doors, type, 'L4.1')) return acc
-                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                    return acc + L1_to_L4_1_factor(width) * L1_L3_multiplier("L4.1", doors, type)
                 }, 0)
             },
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {

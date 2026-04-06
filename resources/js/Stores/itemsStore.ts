@@ -320,6 +320,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                     return acc + L1_to_L4_1_factor(width) * L1_L3_multiplier("L4.1", doors, type)
                 }, 0)
             },
+            'L4.2': () => getItemQuantity('L4.1'),
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
                 if (type === 'triangle' || type === 'blind-glazing') return acc
                 return acc + Math.floor((width - 1800) / 1000 + 3)

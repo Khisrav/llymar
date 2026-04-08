@@ -26,6 +26,7 @@ const props = defineProps<{ item: Item, disabled?: boolean }>()
 const itemPrice = itemsStore.itemPrice(props.item.id || 0)
 
 const removeItem = (item_id: number) => {
+    itemsStore.removeManualOverrideOnly(item_id)
     delete itemsStore.cartItems[item_id]
 }
 
@@ -62,7 +63,11 @@ const closeImageModal = () => {
 		<p class="block md:hidden mt-1 text-xs md:text-sm">Всего: <b>{{ currencyFormatter(itemsStore.cartItems[props.item.id || 0].quantity * itemPrice) }}</b></p>
 		<div class="flex justify-between gap-2 md:gap-4 items-center mt-1">
 		    <div>
-		        <NumberField v-model="itemsStore.cartItems[props.item.id || 0].quantity" :disabled="props.disabled">
+		        <NumberField
+					:model-value="itemsStore.cartItems[props.item.id || 0].quantity"
+					@update:model-value="(v: number) => itemsStore.setManualQuantity(props.item.id || 0, v)"
+					:disabled="props.disabled"
+				>
                     <NumberFieldContent>
                         <NumberFieldDecrement />
                         <NumberFieldInput class="h-8 md:h-auto" />

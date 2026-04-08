@@ -49,7 +49,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		ot2: { start: 1, end: 100, default: 30, interval: 1 },
 		ot3: { start: 1, end: 100, default: 24, interval: 1 },
 		ot4: { start: 1, end: 100, default: 30, interval: 1 },
-		zr: { start: 1, end: 50, default: 10, interval: 1 },
+		zr: { start: 1, end: 50, default: 1, interval: 1 },
 		mp: { start: 0, end: 1000, default: 0, interval: 1 },
 	}
 

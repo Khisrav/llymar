@@ -58,7 +58,6 @@ const updateGroupedOpening = <K extends keyof Opening>(group: GroupedOpening, fi
 	group.indices.forEach((index: number) => {
 		openingStore.openings[index][field] = value;
 	});
-	itemsStore.calculate();
 };
 
 const removeGroup = (group: GroupedOpening): void => {
@@ -102,6 +101,7 @@ watch(
 				{ immediate: true }
 			);
 		});
+		itemsStore.clearAllManualOverrides();
 		itemsStore.calculate();
 	},
 	{ deep: true }
@@ -112,10 +112,12 @@ const clearSessionStorage = () => {
 	// sessionStorage.removeItem('selectedFactor')
 	sessionStorage.removeItem('selectedGlassID')
 	sessionStorage.removeItem('cartItems')
+	sessionStorage.removeItem('manualOverrides')
 	sessionStorage.removeItem('openings')
 	
 	openingStore.clearOpenings()
 	
+	itemsStore.clearAllManualOverrides()
 	itemsStore.initiateCartItems()
 	itemsStore.initializeUserFactor(itemsStore.userDefaultFactor)
 	itemsStore.calculate()

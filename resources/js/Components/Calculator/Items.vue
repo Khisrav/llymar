@@ -24,9 +24,7 @@ const isModalOpen = ref(false)
 
 const addItemToCart = (itemId: number) => {
     if (!itemsStore.cartItems[itemId]) {
-        itemsStore.cartItems[itemId] = { quantity: 1, checked: true }
-        
-        itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
+        itemsStore.setManualQuantity(itemId, 1)
     }
 }
 
@@ -119,11 +117,23 @@ const closeImageModal = () => {
     
                     <!-- Quantity Selector -->
                     <div class="mt-3">
-                        <Label v-if="itemsStore.cartItems[item.id || 0]" class="text-center mb-1 text-muted-foreground text-xs block">Кол-во: </Label>
+                        <div v-if="itemsStore.cartItems[item.id || 0]" class="flex items-center justify-center gap-1 mb-1">
+                            <Label class="text-center text-muted-foreground text-xs">
+                                Кол-во<span v-if="(item.id || 0) in itemsStore.manualOverrides"> (фиксирован)</span>:
+                            </Label>
+                            <button
+                                v-if="(item.id || 0) in itemsStore.manualOverrides"
+                                @click="itemsStore.clearManualOverride(item.id || 0)"
+                                class="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                                title="Сбросить к расчётному значению"
+                            >
+                                ↺
+                            </button>
+                        </div>
                         <NumberField 
                             v-if="itemsStore.cartItems[item.id || 0]" 
-                            v-model="itemsStore.cartItems[item.id || 0].quantity"
-                            @update:model-value="itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)"
+                            :model-value="itemsStore.cartItems[item.id || 0].quantity"
+                            @update:model-value="(v: number) => itemsStore.setManualQuantity(item.id || 0, v)"
                             :min="0"
                             :max="1000"
                         >

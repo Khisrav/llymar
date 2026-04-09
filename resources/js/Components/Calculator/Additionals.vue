@@ -68,10 +68,8 @@ const step = (category_id: number) => {
 
 const addAdditionalItemToCart = (itemId: number, step: number) => {
 	if (!itemsStore.cartItems[itemId]) {
-		itemsStore.cartItems[itemId] = { quantity: step, checked: true }
+		itemsStore.setManualQuantity(itemId, step)
 	}
-	
-	itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
 }
 
 const openImageModal = (item: Item) => {
@@ -325,7 +323,14 @@ const totalPriceWithGhostGlass = (glassId: number) => {
 								<div class="flex items-center justify-between gap-2 w-full md:w-auto">
 									<div class="flex items-center gap-4">
 										<div class="flex items-center gap-2">
-											<QuantitySelector v-model="itemsStore.cartItems[handle.id || 0].quantity" :min="1" :max="100" :step="1" :unit="handle.unit || 'шт.'" />
+											<QuantitySelector
+												:model-value="itemsStore.cartItems[handle.id || 0].quantity"
+												@update:model-value="(v: number) => itemsStore.setManualQuantity(handle.id || 0, v)"
+												:min="1"
+												:max="100"
+												:step="1"
+												:unit="handle.unit || 'шт.'"
+											/>
 										</div>
 									</div>
 									<Button 
@@ -453,14 +458,10 @@ const totalPriceWithGhostGlass = (glassId: number) => {
 							<div>
 								<NumberField 
 									v-if="itemsStore.cartItems[item.id || 0]" 
-									v-model="itemsStore.cartItems[item.id || 0].quantity"
+									:model-value="itemsStore.cartItems[item.id || 0].quantity"
+									@update:model-value="(v: number) => itemsStore.setManualQuantity(item.id || 0, v)"
 									:min="0"
 									:max="100"
-									@update:modelValue="() => {
-										if (categoryId == 30) {
-											itemsStore.updateServicesQuantity(itemsStore.selectedServicesID)
-										}
-									}"
 									:step="step(+categoryId)"
 								>
 									<NumberFieldContent>

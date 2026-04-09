@@ -14,6 +14,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const glasses = ref<Item[]>([])
     const services = ref<Item[]>([])
     const cartItems = ref<{ [key: number]: CartItem }>({})
+    const manualOverrides = ref<{ [key: number]: number }>({})
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
     const markupPercentage = ref(0)
@@ -101,39 +102,69 @@ export const useItemsStore = defineStore('itemsStore', () => {
         selectedFactor.value = savedFactor || defaultFactor
     }
 
+    const persistManualOverrides = () => {
+        sessionStorage.setItem('manualOverrides', JSON.stringify(manualOverrides.value))
+    }
+
     const initiateCartItems = () => {
-        cartItems.value = {}
-    
-        if (sessionStorage.getItem('cartItems')) {
-            const savedCartItems = JSON.parse(sessionStorage.getItem('cartItems') as string)
-            // Clean up and validate saved cart items
-            const cleanedCartItems: { [key: number]: CartItem } = {}
-            
-            Object.keys(savedCartItems).forEach(key => {
-                const itemId = +key
-                const item = savedCartItems[itemId]
-                
-                // Skip invalid item IDs (must be positive numbers)
-                if (!itemId || itemId <= 0) {
-                    console.warn(`Skipping invalid item ID: ${key}`)
-                    return
-                }
-                
-                // Check if the cart item exists and is valid
-                if (item && typeof item === 'object' && typeof item.quantity === 'number') {
-                    // Only keep items with positive quantities
-                    if (item.quantity > 0) {
-                        cleanedCartItems[itemId] = {
-                            quantity: item.quantity,
-                            checked: item.checked !== false // Default to true if undefined
-                        }
+        if (sessionStorage.getItem('manualOverrides')) {
+            try {
+                manualOverrides.value = JSON.parse(sessionStorage.getItem('manualOverrides') as string)
+            } catch {
+                manualOverrides.value = {}
+            }
+        } else {
+            manualOverrides.value = {}
+        }
+
+        const rawCart = sessionStorage.getItem('cartItems')
+        let cleanedCartItems: { [key: number]: CartItem } = {}
+
+        if (rawCart) {
+            try {
+                const savedCartItems = JSON.parse(rawCart)
+                Object.keys(savedCartItems).forEach(key => {
+                    const itemId = +key
+                    const item = savedCartItems[itemId]
+
+                    if (!itemId || itemId <= 0) {
+                        console.warn(`Skipping invalid item ID: ${key}`)
+                        return
                     }
-                } else {
-                    console.warn(`Skipping invalid cart item for ID ${itemId}:`, item)
-                }
-            })
-            
+
+                    if (item && typeof item === 'object' && typeof item.quantity === 'number') {
+                        if (item.quantity > 0) {
+                            cleanedCartItems[itemId] = {
+                                quantity: item.quantity,
+                                checked: item.checked !== false
+                            }
+                        }
+                    } else {
+                        console.warn(`Skipping invalid cart item for ID ${itemId}:`, item)
+                    }
+                })
+            } catch {
+                cleanedCartItems = {}
+            }
+        }
+
+        if (Object.keys(cleanedCartItems).length > 0) {
             cartItems.value = cleanedCartItems
+        } else {
+            cartItems.value = {}
+            if (!rawCart) {
+                const allItems = [...items.value]
+
+                Object.keys(additional_items.value).forEach(key => {
+                    allItems.push(...additional_items.value[+key])
+                })
+
+                allItems.forEach(item => {
+                    if (item.id && item.id > 0) {
+                        cartItems.value[item.id as number] = { quantity: 0, checked: true }
+                    }
+                })
+            }
         }
 
         if (sessionStorage.getItem('selectedGlassID')) {
@@ -155,21 +186,6 @@ export const useItemsStore = defineStore('itemsStore', () => {
         if (sessionStorage.getItem('selectedGhostGlassesID')) {
             selectedGhostGlassesID.value = JSON.parse(sessionStorage.getItem('selectedGhostGlassesID') as string)
         } else { selectedGhostGlassesID.value = [] }
-
-        if (!sessionStorage.getItem('cartItems')) {
-            const allItems = [...items.value]
-
-            Object.keys(additional_items.value).forEach(key => {
-                allItems.push(...additional_items.value[+key])
-            })
-
-            // Only initialize items with valid IDs
-            allItems.forEach(item => {
-                if (item.id && item.id > 0) {
-                    cartItems.value[item.id as number] = { quantity: 0, checked: true }
-                }
-            })
-        }
 
         // Clean up any invalid items that might have been loaded
         cleanupCartItems()
@@ -200,34 +216,80 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const getItemQuantity = (vendorCode: string): number => {
         const item = items.value.find(i => i.vendor_code === vendorCode)
-        return cartItems.value[item?.id as number]?.quantity || 0
+        const id = item?.id as number | undefined
+        if (id != null && id in manualOverrides.value) {
+            return parseQuantity(manualOverrides.value[id])
+        }
+        return cartItems.value[id as number]?.quantity || 0
     }
 
-    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3', doors: number, type: string): number => {
+    const L1_L3_multiplier = (vendor_code: 'L1' | 'L3' | 'L4.1', doors: number, type: string): number => {
         const multipliers: Record<string, Record<string, Record<number, number>>> = {
             left: {
-                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
-                L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
+                L1:     { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 1, 12: 0 },
+                L3:     { 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0, 8: 0, 9: 1, 10: 1, 11: 0, 12: 0 },
+                "L4.1": { 2: 0, 3: 0, 4: 1, 5: 0, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2, 11: 2, 12: 3 },
             },
             right: {
-                L1: { 2: 0, 3: 1, 4: 0, 5: 1, 6: 2, 7: 1, 8: 2 },
-                L3: { 2: 1, 3: 0, 4: 2, 5: 1, 6: 0, 7: 2, 8: 1 },
+                L1:     { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 1, 12: 0 },
+                L3:     { 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0, 8: 0, 9: 1, 10: 1, 11: 0, 12: 0 },
+                "L4.1": { 2: 0, 3: 0, 4: 1, 5: 0, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2, 11: 2, 12: 3 },
             },
             center: {
-                L1: { 4: 0, 6: 1, 8: 0, 10: 1 },
-                L3: { 4: 1, 6: 0, 8: 2, 10: 1 },
+                L1:     { 4: 0, 6: 1, 8: 0, 10: 1, 12: 0, 14: 1, 16: 0, 18: 1, 20: 0 },
+                L3:     { 4: 1, 6: 0, 8: 2, 10: 1, 12: 1, 14: 0, 16: 0, 18: 1, 20: 1 },
+                "L4.1": { 4: 0, 6: 0, 8: 1, 10: 0, 12: 1, 14: 1, 16: 2, 18: 1, 20: 2 },
             },
             'inner-left': {
-                L1: { 3: 0 },
-                L3: { 3: 1 },
+                L1:     { 3: 0, 4: 1, 5: 0, 6: 1, 7: 0, 8: 1, 9: 0, 10: 1, 11: 0 },
+                L3:     { 3: 1, 4: 0, 5: 0, 6: 1, 7: 1, 8: 0, 9: 0, 10: 1, 11: 1 },
+                "L4.1": { 3: 0, 4: 0, 5: 1, 6: 0, 7: 1, 8: 1, 9: 2, 10: 1, 11: 2 },
             },
             'inner-right': {
-                L1: { 3: 0 },
-                L3: { 3: 1 },
+                L1:     { 3: 0, 4: 1, 5: 0, 6: 1, 7: 0, 8: 1, 9: 0, 10: 1, 11: 0 },
+                L3:     { 3: 1, 4: 0, 5: 0, 6: 1, 7: 1, 8: 0, 9: 0, 10: 1, 11: 1 },
+                "L4.1": { 3: 0, 4: 0, 5: 1, 6: 0, 7: 1, 8: 1, 9: 2, 10: 1, 11: 2 },
             },
         }
 
         return multipliers[type]?.[vendor_code]?.[doors] ?? 0
+    }
+
+    const L1_to_L4_1_factor = (width: number): number => {
+        let qnt = 0
+
+        while (width > 0) {
+            if (width >= 7000) {
+                width -= 7000
+                qnt += 7
+            }
+            else if (width >= 6001 && width < 7000) {
+                width -= width
+                qnt += 7
+            }
+            else if (width >= 6000) {
+                width -= 6000
+                qnt += 6
+            }
+            else if (width >= 3501 && width < 6000) {
+                width -= width
+                qnt += 6
+            }
+            else if (width >= 3500) {
+                width -= 3500
+                qnt += 3.5
+            }
+            else if (width >= 3001 && width < 3500) {
+                width -= width
+                qnt += 3.5
+            }
+            else {
+                width -= 3000
+                qnt += 3
+            }
+        }
+
+        return qnt
     }
 
     //for L1, L3, L4.1
@@ -235,14 +297,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
         const map: Record<number, Record<string, string[]>> = {
             2: { left: ["L3"], right: ["L3"], center: [], 'inner-left': [], 'inner-right': [] },
             3: { left: ["L1"], right: ["L1"], center: [], 'inner-left': ["L3"], 'inner-right': ["L3"] },
-            4: { left: ["L4.1"], right: ["L4.1"], center: ["L3"], 'inner-left': ["L1"], 'inner-right': [] },
-            5: { left: ["L3", "L1"], right: ["L3", "L1"], center: [], 'inner-left': ["L4.1"], 'inner-right': [] },
-            6: { left: ["L3", "L4.1"], right: ["L3", "L4.1"], center: ["L1"], 'inner-left': [], 'inner-right': ["L3", "L1"] },
-            7: { left: ["L1", "L4.1"], right: ["L1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L3", "L4.1"] },
-            8: { left: ["L4.1", "L4.1"], right: ["L4.1", "L4.1"], center: ["L4.1"], 'inner-left': [], 'inner-right': ["L1", "L4.1"] },
-            9: { left: ["L3", "L1", "L4.1"], right: ["L3", "L1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L4.1", "L4.1"] },
-            10: { left: ["L3", "L4.1", "L4.1"], right: ["L3", "L4.1", "L4.1"], center: ["L3", "L1"], 'inner-left': [], 'inner-right': ["L3", "L1", "L4.1"] },
-            11: { left: ["L1", "L4.1", "L4.1"], right: ["L1", "L4.1", "L4.1"], center: [], 'inner-left': [], 'inner-right': ["L3", "L4.1", "L4.1"] },
+            4: { left: ["L4.1"], right: ["L4.1"], center: ["L3"], 'inner-left': ["L1"], 'inner-right': ["L1"] },
+            5: { left: ["L3", "L1"], right: ["L3", "L1"], center: [], 'inner-left': ["L4.1"], 'inner-right': ["L4.1"] },
+            6: { left: ["L3", "L4.1"], right: ["L3", "L4.1"], center: ["L1"], 'inner-left': ["L3", "L1"], 'inner-right': ["L3", "L1"] },
+            7: { left: ["L1", "L4.1"], right: ["L1", "L4.1"], center: [], 'inner-left': ["L3", "L4.1"], 'inner-right': ["L3", "L4.1"] },
+            8: { left: ["L4.1", "L4.1"], right: ["L4.1", "L4.1"], center: ["L4.1"], 'inner-left': ["L1", "L4.1"], 'inner-right': ["L1", "L4.1"] },
+            9: { left: ["L3", "L1", "L4.1"], right: ["L3", "L1", "L4.1"], center: [], 'inner-left': ["L4.1", "L4.1"], 'inner-right': ["L4.1", "L4.1"] },
+            10: { left: ["L3", "L4.1", "L4.1"], right: ["L3", "L4.1", "L4.1"], center: ["L3", "L1"], 'inner-left': ["L3", "L1", "L4.1"], 'inner-right': ["L3", "L1", "L4.1"] },
+            11: { left: ["L1", "L4.1", "L4.1"], right: ["L1", "L4.1", "L4.1"], center: [], 'inner-left': ["L3", "L4.1", "L4.1"], 'inner-right': ["L3", "L4.1", "L4.1"] },
             12: { left: ["L4.1", "L4.1", "L4.1"], right: ["L4.1", "L4.1", "L4.1"], center: ["L3", "L4.1"], 'inner-left': [], 'inner-right': [] },
             14: { left: [], right: [], center: ["L1", "L4.1"], 'inner-left': [], 'inner-right': [] },
             16: { left: [], right: [], center: ["L4.1", "L4.1"], 'inner-left': [], 'inner-right': [] },
@@ -268,22 +330,21 @@ export const useItemsStore = defineStore('itemsStore', () => {
             L3: () => {
                 return openings.reduce((acc, { width, type, doors }) => {
                     if (!isWeirdVendorCodeActive(doors, type, 'L3')) return acc
-                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                    return acc + L1_to_L4_1_factor(width) * L1_L3_multiplier("L3", doors, type)
                 }, 0)
             },
             L4: () => getItemQuantity('L3'),
             'L4.1': () => {
                 return openings.reduce((acc, { width, type, doors }) => {
                     if (!isWeirdVendorCodeActive(doors, type, 'L4.1')) return acc
-                    return acc + Math.ceil(width / 1000 / 3) * 3 * L1_L3_multiplier("L3", doors, type)
+                    return acc + L1_to_L4_1_factor(width) * L1_L3_multiplier("L4.1", doors, type)
                 }, 0)
             },
+            'L4.2': () => getItemQuantity('L4.1'),
             L5: () => Math.floor((openings.reduce((acc, { width, type }) => {
                 if (type === 'triangle' || type === 'blind-glazing') return acc
                 return acc + Math.floor((width - 1800) / 1000 + 3)
             }, 0))),
-            // (ширина - 1800) / 1000 + 3
-            // L6: () => openings.length * 6,
             L6: () => {
                 return openings.reduce((acc, { type }) => ['triangle', 'blind-glazing'].includes(type) ? acc : acc + 6, 0)
             },
@@ -294,9 +355,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 return acc
             }, 0),
             L9: () => openings.reduce((acc, { type }) => acc + ([...CENTER_TYPE, ...INNER_TYPES].includes(type) ? 1 : 0), 0),
-            L12: () => getItemQuantity('L9') * 9 + getItemQuantity('L2') * 6 + getItemQuantity('L4') * 4,
-            L13: () => getItemQuantity('L8') * 3 + getItemQuantity('L5') * 2,
-            L14: () => getItemQuantity('L6') * 2,
+            L12: () => getItemQuantity('L2') * 6 + getItemQuantity('L4') * 4 + getItemQuantity('L4.2') * 8,
+            L13: () => getItemQuantity('L9') * 6 + getItemQuantity('L8') * 3 + getItemQuantity('L5') * 2,
+            L14: () => getItemQuantity('L6') * 2 + getItemQuantity('L6.1') * 2,
             L15: () => openings.reduce((acc, { type, doors }) => acc + (type === 'right' ? doors - 1 : 0)
                 + (CENTER_TYPE.includes(type) ? doors / 2 - 1 : 0)
                 + (type === 'inner-right' ? 1 : 0), 0),
@@ -321,9 +382,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (INNER_TYPES.includes(type) ? 1 : 0), 0),
             L22: () => openings.reduce((acc, { type, doors }) => acc + (type === 'center' ? doors - 4 : 0)
                 + (LEFT_RIGHT.includes(type) ? doors - 2 : 0), 0),
-            L26: () => openings.reduce((acc, { doors }) => acc + doors * 2, 0),
+            L26: () => openings.reduce((acc, { doors, type }) => acc + (type !== 'triangle' && type !== 'blind-glazing' ? doors * 2 : 0), 0),
             L501: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2 : 0), 0),
-            L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) : 0), 0),
+            L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0),
             L503: () => openings.reduce((acc, { type}) => acc + (!['triangle', 'blind-glazing'].includes(type) ? getItemQuantity('L26') * 2 + 2 + getItemQuantity('L21') + 2 : 0), 0)
         }
 
@@ -479,16 +540,48 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const calculate = () => {
         items.value.forEach(item => {
-            const quantity = parseQuantity(calculateQuantity(item))
-            const existingItem = cartItems.value[item.id as number]
-            const checked = existingItem?.checked !== false // preserve existing checked state, default to true
-            cartItems.value[item.id as number] = { quantity, checked }
+            const id = item.id as number
+            const existingItem = cartItems.value[id]
+            const checked = existingItem?.checked !== false
+            const quantity =
+                id in manualOverrides.value
+                    ? parseQuantity(manualOverrides.value[id])
+                    : parseQuantity(calculateQuantity(item))
+            cartItems.value[id] = { quantity, checked }
         })
 
         updateGlassQuantity(selectedGlassID.value)
         updateServicesQuantity(selectedServicesID.value)
         updateGhostHandlesQuantity(selectedGhostHandlesID.value)
         updateGhostGlassesQuantity(selectedGhostGlassesID.value)
+    }
+
+    const setManualQuantity = (itemId: number, quantity: number) => {
+        const q = parseQuantity(quantity)
+        manualOverrides.value[itemId] = q
+        persistManualOverrides()
+        if (cartItems.value[itemId]) {
+            cartItems.value[itemId].quantity = q
+        } else {
+            cartItems.value[itemId] = { quantity: q, checked: true }
+        }
+        calculate()
+    }
+
+    const clearManualOverride = (itemId: number) => {
+        delete manualOverrides.value[itemId]
+        persistManualOverrides()
+        calculate()
+    }
+
+    const clearAllManualOverrides = () => {
+        manualOverrides.value = {}
+        sessionStorage.removeItem('manualOverrides')
+    }
+
+    const removeManualOverrideOnly = (itemId: number) => {
+        delete manualOverrides.value[itemId]
+        persistManualOverrides()
     }
 
     const itemPrice = (item_id: number): number => {
@@ -625,9 +718,14 @@ export const useItemsStore = defineStore('itemsStore', () => {
         additional_items,
         ghost_handles,
         cartItems,
+        manualOverrides,
         total_price,
         calculate,
         initiateCartItems,
+        setManualQuantity,
+        clearManualOverride,
+        clearAllManualOverrides,
+        removeManualOverrideOnly,
         initializeUserFactor,
         getItemInfo,
         toggleItemChecked,

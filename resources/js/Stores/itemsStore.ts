@@ -356,7 +356,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
             }, 0),
             L9: () => openings.reduce((acc, { type }) => acc + ([...CENTER_TYPE, ...INNER_TYPES].includes(type) ? 1 : 0), 0),
             L12: () => getItemQuantity('L2') * 6 + getItemQuantity('L4') * 4 + getItemQuantity('L4.2') * 8,
-            L13: () => getItemQuantity('L9') * 3 + getItemQuantity('L8') * 3 + getItemQuantity('L5') * 2,
+            L13: () => getItemQuantity('L9') * 6 + getItemQuantity('L8') * 3 + getItemQuantity('L5') * 2,
             L14: () => getItemQuantity('L6') * 2 + getItemQuantity('L6.1') * 2,
             L15: () => openings.reduce((acc, { type, doors }) => acc + (type === 'right' ? doors - 1 : 0)
                 + (CENTER_TYPE.includes(type) ? doors / 2 - 1 : 0)
@@ -384,7 +384,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (LEFT_RIGHT.includes(type) ? doors - 2 : 0), 0),
             L26: () => openings.reduce((acc, { doors, type }) => acc + (type !== 'triangle' && type !== 'blind-glazing' ? doors * 2 : 0), 0),
             L501: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2 : 0), 0),
-            L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) : 0), 0),
+            L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0),
             L503: () => openings.reduce((acc, { type}) => acc + (!['triangle', 'blind-glazing'].includes(type) ? getItemQuantity('L26') * 2 + 2 + getItemQuantity('L21') + 2 : 0), 0)
         }
 

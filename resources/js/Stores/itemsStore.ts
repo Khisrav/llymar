@@ -355,7 +355,21 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 return acc
             }, 0),
             L9: () => openings.reduce((acc, { type }) => acc + ([...CENTER_TYPE, ...INNER_TYPES].includes(type) ? 1 : 0), 0),
-            L12: () => getItemQuantity('L2') * 6 + getItemQuantity('L4') * 4 + (getItemQuantity('L4.2') !== 0 ? getItemQuantity('L4.2') : getItemQuantity('L4.1')) * 8,
+            // L12: () => getItemQuantity('L2') * 6 + getItemQuantity('L4') * 4 + getItemQuantity('L4.2') * 8,
+            L12: () => {
+                // L2=L1, L4=L3, L4.2=L4.1 - call base calculations directly to avoid cartItems timing issues
+                const getBaseQty = (code: 'L1' | 'L3' | 'L4.1'): number => {
+                    const item = items.value.find(i => i.vendor_code === code)
+                    if (!item) return 0
+                    const id = item.id as number
+                    if (id in manualOverrides.value) {
+                        return parseQuantity(manualOverrides.value[id])
+                    }
+                    return parseQuantity(calculateQuantity(item))
+                }
+                
+                return getBaseQty('L1') * 6 + getBaseQty('L3') * 4 + getBaseQty('L4.1') * 8
+            },
             L13: () => getItemQuantity('L9') * 6 + getItemQuantity('L8') * 3 + getItemQuantity('L5') * 2,
             L14: () => getItemQuantity('L6') * 2 + getItemQuantity('L6.1') * 2,
             L15: () => openings.reduce((acc, { type, doors }) => acc + (type === 'right' ? doors - 1 : 0)
@@ -385,7 +399,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (INNER_TYPES.includes(type) ? doors - 3 : 0), 0),
             L26: () => openings.reduce((acc, { doors, type }) => acc + (type !== 'triangle' && type !== 'blind-glazing' ? doors * 2 : 0), 0),
             L501: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2 : 0), 0),
-            L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0),
+            L502: () => Math.ceil(openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0)),
             L503: () => openings.reduce((acc, { type}) => acc + (!['triangle', 'blind-glazing'].includes(type) ? getItemQuantity('L26') * 2 + 2 + getItemQuantity('L21') + 2 : 0), 0)
         }
 

@@ -360,28 +360,29 @@ export const useItemsStore = defineStore('itemsStore', () => {
             L14: () => getItemQuantity('L6') * 2 + getItemQuantity('L6.1') * 2,
             L15: () => openings.reduce((acc, { type, doors }) => acc + (type === 'right' ? doors - 1 : 0)
                 + (CENTER_TYPE.includes(type) ? doors / 2 - 1 : 0)
-                + (type === 'inner-right' ? 1 : 0), 0),
+                + (type === 'inner-right' ? doors - 2 : 0), 0),
             L16: () => openings.reduce((acc, { type, doors }) => acc + (CENTER_TYPE.includes(type) ? doors / 2 : 0)
                 + (type === 'left' ? 1 : 0)
                 + (type === 'right' ? doors : 0)
                 + (type === 'inner-left' ? 1 : 0)
-                + (type === 'inner-right' ? 2 : 0), 0),
+                + (type === 'inner-right' ? doors - 1 : 0), 0),
             L17: () => openings.reduce((acc, { type }) => acc + ([...CENTER_TYPE, ...INNER_TYPES].includes(type) ? 1 : 0), 0),
             L18: () => openings.reduce((acc, { type, doors }) => acc + (type === 'left' ? doors - 1 : 0)
                 + (CENTER_TYPE.includes(type) ? doors / 2 - 1 : 0)
-                + (type === 'inner-left' ? 1 : 0), 0),
+                + (type === 'inner-left' ? doors - 2 : 0), 0),
             L19: () => openings.reduce((acc, { type, doors }) => acc + (type === 'left' ? doors : 0)
                 + (type === 'right' ? 1 : 0)
                 + (type === 'center' ? doors / 2 : 0)
-                + (type === 'inner-left' ? 2 : 0)
+                + (type === 'inner-left' ? doors - 1 : 0)
                 + (type === 'inner-right' ? 1 : 0), 0),
             L20: () => openings.reduce((acc, { type }) => acc + (type === 'center' ? 1 : 0)
                 + (INNER_TYPES.includes(type) ? 1 : 0), 0),
             L21: () => openings.reduce((acc, { type, doors }) => acc + (type === 'center' ? doors - 2 : 0)
                 + (LEFT_RIGHT.includes(type) ? doors - 1 : 0)
-                + (INNER_TYPES.includes(type) ? 1 : 0), 0),
+                + (INNER_TYPES.includes(type) ? doors - 2 : 0), 0),
             L22: () => openings.reduce((acc, { type, doors }) => acc + (type === 'center' ? doors - 4 : 0)
-                + (LEFT_RIGHT.includes(type) ? doors - 2 : 0), 0),
+                + (LEFT_RIGHT.includes(type) ? doors - 2 : 0)
+                + (INNER_TYPES.includes(type) ? doors - 3 : 0), 0),
             L26: () => openings.reduce((acc, { doors, type }) => acc + (type !== 'triangle' && type !== 'blind-glazing' ? doors * 2 : 0), 0),
             L501: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2 : 0), 0),
             L502: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0),

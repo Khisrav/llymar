@@ -365,7 +365,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (type === 'left' ? 1 : 0)
                 + (type === 'right' ? doors : 0)
                 + (type === 'inner-left' ? 1 : 0)
-                + (type === 'inner-right' ? doors - 2 : 0), 0),
+                + (type === 'inner-right' ? doors - 1 : 0), 0),
             L17: () => openings.reduce((acc, { type }) => acc + ([...CENTER_TYPE, ...INNER_TYPES].includes(type) ? 1 : 0), 0),
             L18: () => openings.reduce((acc, { type, doors }) => acc + (type === 'left' ? doors - 1 : 0)
                 + (CENTER_TYPE.includes(type) ? doors / 2 - 1 : 0)

@@ -484,7 +484,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 }, 0) / 1000000)
             }
             else if ([435].includes(serviceID)) {
-                quantity = getItemQuantity('L1') + getItemQuantity('L3')
+                quantity = getItemQuantity('L1') + getItemQuantity('L3') + getItemQuantity('L4.1')
             }
 
             // Only add if quantity is positive

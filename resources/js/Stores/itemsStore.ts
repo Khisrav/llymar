@@ -271,9 +271,17 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 width -= 6000
                 qnt += 6
             }
-            else if (width >= 3501 && width < 6000) {
+            else if (width >= 4001 && width < 6000) {
                 width -= width
                 qnt += 6
+            }
+            else if (width >= 4000) {
+                width -= 4000
+                qnt += 4
+            }
+            else if (width >= 3501 && width < 4000) {
+                width -= width
+                qnt += 4
             }
             else if (width >= 3500) {
                 width -= 3500

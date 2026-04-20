@@ -406,9 +406,33 @@ export const useItemsStore = defineStore('itemsStore', () => {
                 + (LEFT_RIGHT.includes(type) ? doors - 2 : 0)
                 + (INNER_TYPES.includes(type) ? doors - 3 : 0), 0),
             L26: () => openings.reduce((acc, { doors, type }) => acc + (type !== 'triangle' && type !== 'blind-glazing' ? doors * 2 : 0), 0),
-            L501: () => openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L15') + getItemQuantity('L16') + getItemQuantity('L17') + getItemQuantity('L18') + getItemQuantity('L19') + getItemQuantity('L20')) * 3 + 2 : 0), 0),
-            L502: () => Math.ceil(openings.reduce((acc, { type }) => acc + (!['triangle', 'blind-glazing'].includes(type) ? (getItemQuantity('L1') / 3 * 8 + 2) + (getItemQuantity('L3') / 3 * 4 + 2) + (getItemQuantity('L4.1') / 3 * 4 + 2) : 0), 0)),
-            L503: () => openings.reduce((acc, { type}) => acc + (!['triangle', 'blind-glazing'].includes(type) ? getItemQuantity('L26') * 2 + 2 + getItemQuantity('L21') + 2 : 0), 0)
+            L501: () => {
+                const hasValidOpening = openings.some(({ type }) => !['triangle', 'blind-glazing'].includes(type))
+                if (!hasValidOpening) return 0
+                const l15 = getItemQuantity('L15')
+                const l16 = getItemQuantity('L16')
+                const l17 = getItemQuantity('L17')
+                const l18 = getItemQuantity('L18')
+                const l19 = getItemQuantity('L19')
+                const l20 = getItemQuantity('L20')
+                return (l15 + l16 + l17 + l18 + l19 + l20) * 3 + 2
+            },
+            L502: () => {
+                const hasValidOpening = openings.some(({ type }) => !['triangle', 'blind-glazing'].includes(type))
+                if (!hasValidOpening) return 0
+                const l1 = getItemQuantity('L1')
+                const l3 = getItemQuantity('L3')
+                const l41 = getItemQuantity('L4.1')
+                return Math.ceil((l1 / 3 * 8 + 2) + (l3 / 3 * 4 + 2) + (l41 / 3 * 4 + 2))
+            },
+            L503: () => {
+                const hasValidOpening = openings.some(({ type }) => !['triangle', 'blind-glazing'].includes(type))
+                if (!hasValidOpening) return 0
+                const l26 = getItemQuantity('L26')
+                const l21 = getItemQuantity('L21')
+                return l26 * 2 + 2 + l21 + 2
+            },
+       
         }
 
         return quantityMap[vendor_code as string] ? quantityMap[vendor_code as string]() : 0

@@ -71,11 +71,12 @@ itemsStore.initializeUserFactor(user_default_factor || 'pz')
 itemsStore.selectedFactor = selectedFactor.value
 
 // SNP for Surname Name Patronymic
+const nameParts = (itemsStore.user.name || "").trim().split(" ");
 const snp = ref({
-    surname: itemsStore.user.name.split(" ")[0],
-    name: itemsStore.user.name.split(" ")[1],
-    patronymic: itemsStore.user.name.split(" ")[2],
-})
+    surname: nameParts[0] || "",
+    name: nameParts[1] || "",
+    patronymic: nameParts[2] || "",
+});
 
 const order_info = computed(() => ({
     name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),

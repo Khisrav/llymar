@@ -70,6 +70,10 @@ Route::get('/about-glazing-system', function () {
     return Inertia::render('AboutGlazingSystem');
 });
 
+Route::get('/partners', function () {
+    return Inertia::render('Partners');
+})->name('partners');
+
 // News routes
 Route::get('/articles', [NewsController::class, 'index'])->name('news.index');
 Route::get('/articles/{news:slug}', [NewsController::class, 'show'])->name('news.show');

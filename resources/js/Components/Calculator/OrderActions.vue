@@ -39,10 +39,17 @@ const { can_access_app_cart, can_access_factors, user_default_factor, user_role 
 
 // Factor management
 const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'pz')
+
+const userRoles = computed(() =>
+    Array.isArray(user_role) ? user_role : (typeof user_role === 'string' ? [user_role] : [])
+)
+
+const canAccessListP = computed(() =>
+    userRoles.value.includes('Super-Admin') || userRoles.value.includes('ROP')
+)
+
 const factors = computed(() => {
-    // 'user_role' can be a string or an array. Normalize to array for checking.
-    const userRoles = Array.isArray(user_role) ? user_role : (typeof user_role === 'string' ? [user_role] : []);
-    if (userRoles.includes('ROP') || userRoles.includes('Operator')) {
+    if (userRoles.value.includes('ROP') || userRoles.value.includes('Operator')) {
         return [
             { key: 'p3', label: 'Р3' },
             { key: 'p4', label: 'РЦ' },
@@ -88,6 +95,14 @@ const order_info = computed(() => ({
 // File name dialog state
 const showFileNameDialog = ref(false);
 const fileName = ref("");
+
+const showListPDialog = ref(false);
+const listPFileName = ref("");
+
+const openListPDialog = () => {
+    listPFileName.value = "";
+    showListPDialog.value = true;
+};
 
 const openFileNameDialog = () => {
 	// Load existing file name if editing
@@ -303,6 +318,44 @@ const downloadSpecificationPDF = async () => {
     }
 }
 
+const downloadListWithoutPricesPDF = async () => {
+    if (!listPFileName.value.trim()) {
+        toast.error("Введите имя файла");
+        return;
+    }
+
+    try {
+        toast.info("Подготовка перечня...")
+        const formData = {
+            cart_items: itemsStore.cartItems,
+            openings: openingsStore.openings,
+            selected_factor: selectedFactor.value,
+            file_name: listPFileName.value.trim(),
+        }
+
+        const response = await axios.post('/orders/simple-list-without-prices-from-calc', formData, {
+            responseType: 'blob',
+            headers: { 'Content-Type': 'application/json' }
+        })
+
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+
+        link.href = url
+        link.setAttribute('download', `${listPFileName.value.trim()}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+
+        link.parentNode?.removeChild(link)
+        showListPDialog.value = false;
+        listPFileName.value = "";
+        toast.success("Перечень успешно загружен")
+    } catch (error) {
+        console.error('Error downloading the PDF:', error)
+        toast.error("Ошибка при загрузке перечня")
+    }
+}
+
 const downloadListPDF = async () => {
     try {
         toast.info("Подготовка перечня...")
@@ -394,6 +447,10 @@ const downloadListPDF = async () => {
                             <FileText class="size-4 mr-2" />
                             <span>Перечень</span>
                         </DropdownMenuItem>
+                        <DropdownMenuItem v-if="canAccessListP" @click="openListPDialog" class="cursor-pointer">
+                            <FileText class="size-4 mr-2" />
+                            <span>Перечень П</span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 
@@ -442,6 +499,39 @@ const downloadListPDF = async () => {
                 </Button>
                 <Button @click="downloadAndSaveCommercialOffer" class="col-span-3">
                     Сохранить и скачать
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="showListPDialog">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Скачать перечень</DialogTitle>
+                <DialogDescription>
+                    Введите имя файла для перечня без цен и контактных данных.
+                </DialogDescription>
+            </DialogHeader>
+            <div class="grid gap-4">
+                <div class="grid gap-2">
+                    <Label for="listPFileName">
+                        Имя файла
+                    </Label>
+                    <div class="flex gap-2 items-center">
+                        <Input
+                            id="listPFileName"
+                            v-model="listPFileName"
+                            placeholder="perechen_1"
+                            class="flex-1"
+                            @keyup.enter="downloadListWithoutPricesPDF"
+                        />
+                        <span class="text-sm text-muted-foreground">.pdf</span>
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button @click="downloadListWithoutPricesPDF">
+                    Скачать
                 </Button>
             </DialogFooter>
         </DialogContent>

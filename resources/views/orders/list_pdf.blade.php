@@ -44,13 +44,16 @@
 </head>
 <body>
     <div class="header">
-        @if ($order->order_number)
+        @if (!empty($customTitle))
+            <h1>{{ $customTitle }}</h1>
+        @elseif ($order->order_number)
             <h1>Заказ №{{ $order->order_number }}</h1>
         @else
             <h1>Перечень</h1>
         @endif
     </div>
 
+    @if (empty($hideCustomerInfo))
     <table style="width: 100%">
         <tbody>
             <tr>
@@ -66,6 +69,7 @@
             </tr>
         </tbody>
     </table>
+    @endif
 
     {{-- <h2>Проемы</h2> --}}
     @if($orderOpenings)
@@ -124,8 +128,10 @@
                 <th class="nowrap">Деталь</th> --}}
                 <th class="nowrap">Вес</th>
                 <th class="nowrap">Кол-во</th>
+                @if (empty($hidePrices))
                 <th class="nowrap">Цена</th>
                 <th class="nowrap">Сумма</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -141,16 +147,25 @@
                     <td class="nowrap">{{ ++$count }}</td>
                     <td class="nowrap">
                         @if ($item->item->img != null)
-                            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img))) }}" alt="" width="48">
+                            @php
+                                $imgPath = base_path('public/storage' . ($item->item->img[0] != '/' ? '/' : '') . $item->item->img);
+                                $imgData = is_file($imgPath) ? @file_get_contents($imgPath) : false;
+                            @endphp
+                            @if ($imgData)
+                                <img src="data:image/jpeg;base64,{{ base64_encode($imgData) }}" alt="" width="48">
+                            @endif
                         @endif
                     </td>
                     <td class="" style="text-align:left !important;">{{ $item->item->name . ($item->item->vendor_code ? ' - ' . $item->item->vendor_code : '') }}</td>
                     <td class="nowrap">{{ $item->item->weight ? $item->item->weight * $item->quantity . ' кг' : '' }}</td>
                     <td class="nowrap">{{ rtrim(rtrim(number_format((float)$item->quantity, 2, '.', ''), '0'), '.') }} {{ $item->item->unit }}</td>
+                    @if (empty($hidePrices))
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor), 0, '.', '') }} ₽</td>
                     <td class="nowrap">{{ number_format((float)App\Models\Item::itemPrice($item->item_id, $selected_factor) * $item->quantity, 0, '.', '') }} ₽</td>
+                    @endif
                 </tr>
             @endforeach
+            @if (empty($hidePrices))
             <tr style="font-weight:bold;">
                 <td colspan="2"></td>
                 <td style="text-align: right !important;">Вес</td>
@@ -158,6 +173,7 @@
                 <td style="text-align: right !important;">Итого</td>
                 <td class="nowrap" colspan="2">{{ number_format((float)$order->total_price, 0, '.', '') }} ₽</td>
             </tr>
+            @endif
         </tbody>
     </table>
     {{-- total price --}}

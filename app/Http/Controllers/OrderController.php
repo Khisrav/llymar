@@ -330,7 +330,84 @@ class OrderController extends Controller
         return $pdf->stream($pdfName);
     }
 
+    /**
+     * Generate and download list PDF without prices or customer info (Super-Admin / ROP only).
+     */
+    public static function simpleListWithoutPricesFromCalcPDF(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->hasRole(['Super-Admin', 'ROP'])) {
+            abort(403);
+        }
 
+        $fields = $request->validate([
+            'cart_items'      => 'required|array',
+            'openings'        => 'required|array',
+            'file_name'       => 'required|string|max:255',
+            'selected_factor' => 'sometimes|string',
+        ]);
+
+        $selectedFactor = $fields['selected_factor'] ?? 'pz';
+
+        $order = new Order([
+            'user_id' => Auth::id(),
+        ]);
+
+        $validCartItems = array_filter($fields['cart_items'], function ($item, $itemID) {
+            return is_numeric($itemID) && $itemID > 0 &&
+                   is_array($item) &&
+                   isset($item['quantity']) &&
+                   $item['quantity'] > 0;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $orderItems = [];
+        foreach ($validCartItems as $itemID => $item) {
+            try {
+                $product = Item::find($itemID);
+                if (!$product) {
+                    Log::warning("Item not found with ID: {$itemID}");
+                    continue;
+                }
+
+                $orderItems[] = (object)[
+                    'item_id'        => $itemID,
+                    'item'           => $product,
+                    'quantity'       => $item['quantity'],
+                    'checked'        => $item['checked'] ?? true,
+                    'itemTotalPrice' => $item['quantity'] * Item::itemPrice($itemID, $selectedFactor),
+                ];
+            } catch (\Exception $e) {
+                Log::error("Failed to process item with ID: {$itemID}", [
+                    'item_id' => $itemID,
+                    'error'   => $e->getMessage(),
+                ]);
+                continue;
+            }
+        }
+
+        $orderOpenings = array_map(function ($opening) {
+            return (object)[
+                'type'   => $opening['type'],
+                'doors'  => $opening['doors'],
+                'width'  => $opening['width'],
+                'height' => $opening['height'],
+            ];
+        }, $fields['openings']);
+
+        $data = self::preparePdfData($order, $orderItems, $orderOpenings);
+        $data['selected_factor'] = $selectedFactor;
+        $data['hidePrices'] = true;
+        $data['hideCustomerInfo'] = true;
+        $data['customTitle'] = 'Перечень ' . $fields['file_name'];
+
+        $pdf = Pdf::loadView('orders.list_pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
+
+        $pdfName = $fields['file_name'] . '.pdf';
+
+        return $pdf->stream($pdfName);
+    }
 
     /**
      * Generate and download a sketch PDF.

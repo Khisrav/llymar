@@ -71,7 +71,9 @@ const toggleMenu = () => {
 
 				<!-- Action buttons -->
 				<li>
-					<LandingButton :variant="props.theme === 'transparent' ? 'secondary' : 'outline'" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog"> Дилерам </LandingButton>
+					<Link href="/partners">
+						<LandingButton :variant="props.theme === 'transparent' ? 'secondary' : 'outline'" size="sm" iconPosition="left"> Партнерам </LandingButton>
+					</Link>
 				</li>
 				<li>
 					<Link href="/auth">

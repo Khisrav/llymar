@@ -201,18 +201,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			if (handleId) {
 				try {
 					const handleProps = getHandleProperties(handleId);
-					sketch_vars.value[opening.id as number] = {
-						...sketch_vars.value[opening.id as number],
-						d: [handleProps.d],
-						g: [handleProps.g],
-						i: [handleProps.i],
-						mp: [handleProps.mp],
-						ot1: [normalizePaddingValue('ot1', handleProps.ot1)],
-						ot2: [normalizePaddingValue('ot2', handleProps.ot2)],
-						ot3: [normalizePaddingValue('ot3', handleProps.ot3)],
-						ot4: [normalizePaddingValue('ot4', handleProps.ot4)],
-						zr: [normalizePaddingValue('zr', handleProps.zr)],
-					};
+					applyHandlePropertiesToSketchVars(opening.id as number, handleProps);
 				} catch (error) {
 					console.error(`Error applying handle properties for opening ${opening.id}:`, error);
 				}
@@ -232,7 +221,38 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		console.log(initialState.value);
 	}
 
-	const getHandleProperties = (item_id: number): { d: number; g: number; i: number; mp: number; ot1: number; ot2: number; ot3: number; ot4: number; zr: number } => {
+	const PADDING_HANDLE_KEYS = ['ot1', 'ot2', 'ot3', 'ot4', 'zr'] as const;
+
+	const applyHandlePropertiesToSketchVars = (
+		openingId: number,
+		handleProps: ReturnType<typeof getHandleProperties>,
+	) => {
+		sketch_vars.value[openingId] = {
+			...sketch_vars.value[openingId],
+			d: [handleProps.d],
+			g: [handleProps.g],
+			i: [handleProps.i],
+			mp: [handleProps.mp],
+		};
+		for (const key of PADDING_HANDLE_KEYS) {
+			const value = handleProps[key];
+			if (value !== undefined) {
+				sketch_vars.value[openingId][key] = [normalizePaddingValue(key, value)];
+			}
+		}
+	};
+
+	const getHandleProperties = (item_id: number): {
+		d: number;
+		g: number;
+		i: number;
+		mp: number;
+		ot1?: number;
+		ot2?: number;
+		ot3?: number;
+		ot4?: number;
+		zr?: number;
+	} => {
 		// Look for the handle in all door handles (from database)
 		const item = allDoorHandles.value.find((dh) => dh.id === item_id);
 
@@ -240,32 +260,35 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 			throw new Error("Item not found");
 		}
 
-		const getPropertyValue = (name: string): number => {
+		const getPropertyValue = (name: string, required = true): number | undefined => {
 			const property = item.item_properties.find((p) => p.name === name);
 			if (!property) {
+				if (!required) {
+					return undefined;
+				}
 				throw new Error(`Property ${name} not found`);
 			}
 			const value = parseFloat(property.value);
 			if (isNaN(value)) {
 				throw new Error(`Property ${name} value is not a valid number`);
 			}
-			// Only apply constraints if they exist for this property
-			if (sketch_constraints[name]) {
-				return Math.min(Math.max(value, sketch_constraints[name].start), sketch_constraints[name].end);
+			const constraintKey = name === 'MP' ? 'mp' : name;
+			if (sketch_constraints[constraintKey]) {
+				return Math.min(Math.max(value, sketch_constraints[constraintKey].start), sketch_constraints[constraintKey].end);
 			}
 			return value;
 		};
 
 		return {
-			d: getPropertyValue("d"),
-			g: getPropertyValue("g"),
-			i: getPropertyValue("i"),
-			mp: getPropertyValue("MP"),
-			ot1: getPropertyValue("ot1"),
-			ot2: getPropertyValue("ot2"),
-			ot3: getPropertyValue("ot3"),
-			ot4: getPropertyValue("ot4"),
-			zr: getPropertyValue("zr"),
+			d: getPropertyValue("d")!,
+			g: getPropertyValue("g")!,
+			i: getPropertyValue("i")!,
+			mp: getPropertyValue("MP")!,
+			ot1: getPropertyValue("ot1", false),
+			ot2: getPropertyValue("ot2", false),
+			ot3: getPropertyValue("ot3", false),
+			ot4: getPropertyValue("ot4", false),
+			zr: getPropertyValue("zr", false),
 		};
 	}
 
@@ -336,17 +359,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 
 		try {
 			const handleProps = getHandleProperties(doorHandleId);
-
-			// Update sketch vars with handle properties
-			sketch_vars.value[openingId].d = [handleProps.d];
-			sketch_vars.value[openingId].g = [handleProps.g];
-			sketch_vars.value[openingId].i = [handleProps.i];
-			sketch_vars.value[openingId].mp = [handleProps.mp];
-			sketch_vars.value[openingId].ot1 = [normalizePaddingValue('ot1', handleProps.ot1)];
-			sketch_vars.value[openingId].ot2 = [normalizePaddingValue('ot2', handleProps.ot2)];
-			sketch_vars.value[openingId].ot3 = [normalizePaddingValue('ot3', handleProps.ot3)];
-			sketch_vars.value[openingId].ot4 = [normalizePaddingValue('ot4', handleProps.ot4)];
-			sketch_vars.value[openingId].zr = [normalizePaddingValue('zr', handleProps.zr)];
+			applyHandlePropertiesToSketchVars(openingId, handleProps);
 
 			// Ensure the selected handle is part of the order handles list for grouping in UI
 			const existsInOrder = doorHandles.value.some(dh => dh.id === doorHandleId);

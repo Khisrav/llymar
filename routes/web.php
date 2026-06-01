@@ -70,6 +70,10 @@ Route::get('/about-glazing-system', function () {
     return Inertia::render('AboutGlazingSystem');
 });
 
+Route::get('/partners', function () {
+    return Inertia::render('Partners');
+})->name('partners');
+
 // News routes
 Route::get('/articles', [NewsController::class, 'index'])->name('news.index');
 Route::get('/articles/{news:slug}', [NewsController::class, 'show'])->name('news.show');
@@ -106,6 +110,8 @@ Route::post('/orders/list-pdf-from-calc', [OrderController::class, 'listFromCalc
     ->name('orders.calc_list_pdf');
 Route::post('/orders/simple-list-from-calc', [OrderController::class, 'simpleListFromCalcPDF'])
     ->name('orders.simple_list_from_calc');
+Route::post('/orders/simple-list-without-prices-from-calc', [OrderController::class, 'simpleListWithoutPricesFromCalcPDF'])
+    ->name('orders.simple_list_without_prices_from_calc');
 Route::post('/orders/commercial-offer', [CommercialOfferController::class, 'commercialOfferPDF'])
     ->name('orders.commercial_offer_pdf');
 Route::post('/orders/sketch', [OrderController::class, 'sketchPDF'])

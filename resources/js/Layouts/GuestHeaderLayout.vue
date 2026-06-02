@@ -105,7 +105,9 @@ const toggleMenu = () => {
 							<Link href="tel:+7 (989) 804 12-34" class="block text-lg font-semibold hover:text-light-gold transition-colors" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'"> +7 (989) 804 12-34 </Link>
 						</li>
 						<li class="">
-							<LandingButton variant="outline" size="sm" iconPosition="left" :icon="HandshakeIcon" @click="props.openConsultationDialog" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" class="block w-full"> Дилерам </LandingButton>
+							<Link href="/partners" class="block w-full">
+								<LandingButton variant="outline" size="sm" iconPosition="left" :icon="HandshakeIcon" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'" class="block w-full"> Специалистам </LandingButton>
+							</Link>
 						</li>
 						<li class="">
 							<Link href="/auth">

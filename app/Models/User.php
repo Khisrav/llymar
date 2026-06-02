@@ -46,6 +46,7 @@ class User extends Authenticatable implements FilamentUser
         'profile_completed',
         'website',
         'private_note',
+        'full_access_sketcher',
     ];
 
     /**
@@ -69,6 +70,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'profile_completed' => 'boolean',
+            'full_access_sketcher' => 'boolean',
             // 'website' => 'string',
             // 'private_note' => 'text',
         ];

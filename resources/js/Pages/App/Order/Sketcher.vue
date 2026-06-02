@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, usePage, useForm } from "@inertiajs/vue3";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import AuthenticatedHeaderLayout from "../../../Layouts/AuthenticatedHeaderLayout.vue";
 import { Slider } from "../../../Components/ui/slider";
 import { Separator } from "../../../Components/ui/separator";
@@ -28,8 +28,10 @@ const openings = pageData.openings as Opening[];
 const doorHandles = pageData.door_handles as ItemWithProperties[];
 const allDoorHandles = pageData.all_door_handles as ItemWithProperties[];
 // const can_access_dxf = pageData.can_access_dxf as boolean;
+const fullAccessSketcher = Boolean(pageData.full_access_sketcher);
 
-const canEditOrderSketch  = order.status == 'paid'
+const canEditOrderSketch = computed(() => fullAccessSketcher || order.status === 'paid');
+const canViewSketcherSketch = computed(() => fullAccessSketcher || order.status !== 'created');
 
 // Store initial dimensions for range calculation
 const initialDimensions = ref<Record<number, { width: number; height: number }>>({});
@@ -124,7 +126,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 							</div>
 						</div>
 
-						<RadioGroup :disabled="order.status === 'created'" :model-value="String(sketcherStore.selectedOpeningID)" @update:model-value="(value) => sketcherStore.selectedOpeningID = Number(value)" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
+						<RadioGroup :disabled="!fullAccessSketcher && order.status === 'created'" :model-value="String(sketcherStore.selectedOpeningID)" @update:model-value="(value) => sketcherStore.selectedOpeningID = Number(value)" class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 mt-4">
 							<div
 								v-for="opening in sketcherStore.openings"
 								:key="opening.id"
@@ -218,7 +220,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 
 					<Separator class="my-4" />
 
-					<div v-if="order.status !== 'created'" class="text-center" id="sketch-container">
+					<div v-if="canViewSketcherSketch" class="text-center" id="sketch-container">
 						<div class="text-red-400">
 							<span>Вид изнутри</span>
 						</div>
@@ -242,7 +244,7 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 						</div>
 					</div>
 					
-					<div v-if="order.status !== 'created'" class="flex items-center justify-center mt-4">
+					<div v-if="canViewSketcherSketch" class="flex items-center justify-center mt-4">
 						<img :src="`/assets/sketch-reference/${sketcherStore.currentOpening?.type}.jpg`" class="w-full max-w-md" alt="Sketch reference" />
 					</div>
 				</div>

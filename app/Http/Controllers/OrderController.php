@@ -497,6 +497,7 @@ class OrderController extends Controller
             'door_handles' => $orderDoorHandles,
             'all_door_handles' => $allDoorHandles,
             'glass_weight' => $glassWeight,
+            'full_access_sketcher' => (bool) $user->full_access_sketcher,
             // 'can_access_dxf' => $user->can('access app dxf'),
         ]);
     }

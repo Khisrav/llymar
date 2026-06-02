@@ -72,7 +72,7 @@ const toggleMenu = () => {
 				<!-- Action buttons -->
 				<li>
 					<Link href="/partners">
-						<LandingButton :variant="props.theme === 'transparent' ? 'secondary' : 'outline'" size="sm" iconPosition="left"> Партнерам </LandingButton>
+						<LandingButton :variant="props.theme === 'transparent' ? 'secondary' : 'outline'" size="sm" iconPosition="left"> Специалистам </LandingButton>
 					</Link>
 				</li>
 				<li>

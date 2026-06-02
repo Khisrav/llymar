@@ -457,6 +457,11 @@ class UserResource extends Resource
                                 }
                             })
                             ->default(false),
+
+                        Forms\Components\Toggle::make('full_access_sketcher')
+                            ->label('Полный доступ к чертежу')
+                            ->helperText('Позволяет использовать весь функционал чертежа независимо от статуса заказа')
+                            ->default(false),
                         
                     //     Forms\Components\Toggle::make('can_access_dxf')
                     //         ->label('Доступ к DXF')
@@ -657,6 +662,10 @@ class UserResource extends Resource
                         }
                         return 'Доступ к чертежу';
                     }),
+
+                Tables\Columns\ToggleColumn::make('full_access_sketcher')
+                    ->label('Полный Sketcher')
+                    ->tooltip('Полный доступ к Sketcher независимо от статуса заказа'),
 
                 // Tables\Columns\ToggleColumn::make('can_access_dxf')
                 //     ->label('DXF')

@@ -104,7 +104,14 @@ class ConsultationController extends Controller
 
     private function formatTelegramMessage(array $data)
     {
-        $message = "🔔 <b>Новая заявка на консультацию</b>\n\n";
+        $source = mb_strtolower($data['source'] ?? '');
+        $isSpecialistsPage = str_contains($source, 'специалист') || str_contains($source, 'партн') || str_contains($source, 'partners');
+
+        $title = $isSpecialistsPage
+            ? '🔔 <b>Новая заявка — страница «Специалистам»</b>'
+            : '🔔 <b>Новая заявка на консультацию</b>';
+
+        $message = "{$title}\n\n";
         $message .= "👤 <b>Имя:</b> " . htmlspecialchars($data['name']) . "\n";
         $message .= "📞 <b>Телефон:</b> <code>" . htmlspecialchars($data['phone']) . "</code>\n";
         $message .= "🏙️ <b>Город:</b> " . htmlspecialchars($data['city']) . "\n";

@@ -79,46 +79,50 @@ const pricePerM2 = computed(() => {
 </script>
 
 <template>
-	<div class="border p-2 md:p-4 rounded-2xl bg-background w-full max-w-md mx-auto">
+	<div class="border p-2 md:p-4 rounded-2xl bg-background w-full max-w-5xl mx-auto">
 		<h2 class="text-xl font-bold text-muted-foreground block">Стоимость для КП</h2>
 
-		<div class="mt-2">
-			<div class="flex justify-between gap-4 mb-4">
-				<div>Закупочная цена:</div>
-				<div class="font-bold">{{ currencyFormatter(basePrice) }}</div>
-			</div>
-
-			<div class="flex justify-between items-center gap-4 mb-4">
-				<div>Наценка в %:</div>
-				<NumberField 
-					:model-value="itemsStore.markupPercentage" 
-					@update:model-value="handleMarkupPercentageUpdate"
-					:step="0.01"
-					:default-value="0"
-					class="w-24 md:w-32"
-				>
-					<NumberFieldContent>
-						<NumberFieldDecrement />
-						<NumberFieldInput class="h-9 text-center" />
-						<NumberFieldIncrement />
-					</NumberFieldContent>
-				</NumberField>
-			</div>
-
-			<div class="flex justify-between gap-4 mb-4">
-				<Slider v-model="sliderValue" :min="-100" :max="100" :step="0.01" />
-			</div>
-
-			<div class="flex justify-between gap-4 mb-4">
-				<div>Цена с наценкой за м<sup>2</sup>:</div>
-				<div class="font-bold">{{ currencyFormatter(pricePerM2) }}/м<sup>2</sup></div>
-			</div>
-
-			<div class="flex justify-between items-center gap-4">
-				<div>
-					Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(4) }}%</b>:
+		<div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div>
+				<div class="flex justify-between gap-4 mb-4">
+					<div>Закупочная цена:</div>
+					<div class="font-bold">{{ currencyFormatter(basePrice) }}</div>
 				</div>
-				<Input v-model="typedTotalPrice" @blur="handleTypedTotalPriceBlur" type="number" class="w-24 md:w-32" />
+
+				<div class="flex justify-between items-center gap-4 mb-4">
+					<div>Наценка в %:</div>
+					<NumberField 
+						:model-value="itemsStore.markupPercentage" 
+						@update:model-value="handleMarkupPercentageUpdate"
+						:step="0.01"
+						:default-value="0"
+						class="w-24 md:w-32"
+					>
+						<NumberFieldContent>
+							<NumberFieldDecrement />
+							<NumberFieldInput class="h-9 text-center" />
+							<NumberFieldIncrement />
+						</NumberFieldContent>
+					</NumberField>
+				</div>
+
+				<div class="flex justify-between gap-4 mb-4">
+					<Slider v-model="sliderValue" :min="-100" :max="100" :step="0.01" />
+				</div>
+			</div>
+
+			<div>
+				<div class="flex justify-between gap-4 mb-4">
+					<div>Цена с наценкой за м<sup>2</sup>:</div>
+					<div class="font-bold">{{ currencyFormatter(pricePerM2) }}/м<sup>2</sup></div>
+				</div>
+
+				<div class="flex justify-between items-center gap-4">
+					<div>
+						Цена с наценкой <b>{{ itemsStore.markupPercentage.toFixed(4) }}%</b>:
+					</div>
+					<Input v-model="typedTotalPrice" @blur="handleTypedTotalPriceBlur" type="number" class="w-24 md:w-32" />
+				</div>
 			</div>
 		</div>
 	</div>

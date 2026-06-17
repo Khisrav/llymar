@@ -32,14 +32,15 @@ itemsStore.calculate()
 <Head title="Калькулятор" />
 <AuthenticatedHeaderLayout />
 <div class="container p-2 pt-4 md:pt-8 rounded-xl">
-    <h1 class="text-2xl font-bold">Калькулятор</h1>
+    <!-- <h1 class="text-2xl font-bold">Калькулятор</h1> -->
     
-    <div class="mt-4">
+    <div>
         <CommercialOfferFields class="mb-8" />
         <Openings class="mb-8" />
-        <Additionals class="mb-8" />
         <CustomPricing class="mb-8" />
         <Items class="mb-8" />
+        <Additionals class="mb-8" />
+        <br>
     </div>
 </div>
 <OrderActions />

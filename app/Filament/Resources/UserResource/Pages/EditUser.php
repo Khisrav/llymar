@@ -5,6 +5,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\ChildUsersByRolesWidget;
 use App\Filament\Resources\UserResource\Widgets\CommissionCreditsOverviewByUser;
+use App\Filament\Resources\UserResource\Widgets\UserActivityHeatmap;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Contracts\Support\Htmlable;
@@ -41,6 +42,7 @@ class EditUser extends EditRecord
         return [
             ChildUsersByRolesWidget::make(['record' => $this->record]),
             CommissionCreditsOverviewByUser::make(['record' => $this->record]),
+            UserActivityHeatmap::make(['record' => $this->record]),
         ];
     }
 }

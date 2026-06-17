@@ -303,7 +303,17 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Get commission records received by this user.
      */
-    
+
+    /**
+     * Relationship: User has many activity logs.
+     *
+     * @return HasMany
+     */
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(UserActivityLog::class);
+    }
+
     /**
      * Relationship: User has many Companies (of type customer).
      *

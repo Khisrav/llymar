@@ -166,6 +166,13 @@ const closeImageModal = () => {
                 </div>
             </div>
         </div>
+
+        <div class="text-right">
+            <Button v-if="!isItemsListHidden" variant="outline" size="icon" class="ml-auto mt-4 rounded-lg" @click="isItemsListHidden = !isItemsListHidden">
+                <Eye v-if="!isItemsListHidden" class="size-6" />
+                <EyeOff v-else class="size-6" />
+            </Button>
+        </div>
     </div>
     
     <!-- Image Modal -->

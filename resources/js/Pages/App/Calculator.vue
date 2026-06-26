@@ -34,15 +34,6 @@ itemsStore.calculate()
 <AuthenticatedHeaderLayout />
 <div class="container p-2 pt-4 md:pt-8 rounded-xl">
     <!-- <h1 class="text-2xl font-bold">Калькулятор</h1> -->
-    
-    <div class="flex flex-row gap-4 p-4 border border-red-100 bg-red-50 text-red-600 rounded-md mb-8">
-        <div>
-            <MessageCircleWarningIcon />
-        </div>
-        <div>
-            <p>С 20 июня 2026 по 21 июня 2026 будут вестись технические работы</p>
-        </div>
-    </div>
 
     <div>
         <CommercialOfferFields class="mb-8" />

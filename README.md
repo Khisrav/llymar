@@ -219,12 +219,6 @@ This project is proprietary software owned by Llymar.
 
 This is a private business application. Contact the development team for contribution guidelines.
 
-## 📞 Support
-
-For technical support or business inquiries:
-- Phone: +7 (989) 804 12-34
-- Website: https://llymar.ru
-
 ---
 
 *Developed for Llymar - Making spaces brighter and more comfortable through innovative frameless glazing solutions.* 

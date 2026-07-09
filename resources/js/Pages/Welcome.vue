@@ -388,7 +388,7 @@ const structuredData = computed(() => ({
 	logo: `https://llymar.ru${getOption('og_image', '/assets/logo.jpg')}`,
 	
 	// Enhanced contact information for Yandex rich snippets
-	telephone: getOption('phone', '+7 989 804 12-34'),
+	telephone: getOption('phone', '+7 993 993-29-98'),
 	email: getOption('email', 'info@llymar.ru'),
 	
 	// Complete address information
@@ -445,7 +445,7 @@ const structuredData = computed(() => ({
 	contactPoint: [
 		{
 			"@type": "ContactPoint",
-			telephone: getOption('phone', '+7 989 804 12-34'),
+			telephone: getOption('phone', '+7 993 993-29-98'),
 			contactType: "customer service",
 			availableLanguage: ["Russian"],
 			areaServed: "RU",
@@ -458,7 +458,7 @@ const structuredData = computed(() => ({
 		},
 		{
 			"@type": "ContactPoint",
-			telephone: getOption('phone', '+7 989 804 12-34'),
+			telephone: getOption('phone', '+7 993 993-29-98'),
 			contactType: "sales",
 			availableLanguage: ["Russian"],
 			areaServed: "RU"
@@ -685,7 +685,7 @@ const structuredData = computed(() => ({
 									itemScope
 									itemType="https://schema.org/ContactPoint"
 								> 
-									<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
+									<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (993) 993-29-98') }}</span>
 								</LandingButton>
 							</div>
 
@@ -743,13 +743,13 @@ const structuredData = computed(() => ({
 							<LandingButton 
 								variant="secondary" 
 								:icon="PhoneIcon" 
-								:href="`tel:${getOption('phone', '+7 989 804 12-34')}`" 
+								:href="`tel:${getOption('phone', '+7 993 993-29-98')}`" 
 								iconPosition="left"
 								itemProp="telephone"
 								itemScope
 								itemType="https://schema.org/ContactPoint"
 							> 
-								<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (989) 804 12-34') }}</span>
+								<span itemProp="telephone">{{ getOption('phone_formatted', '+7 (993) 993-29-98') }}</span>
 							</LandingButton>
 						</div>
 
@@ -1043,43 +1043,6 @@ const structuredData = computed(() => ({
 							<div>Вс: 10:00-16:00</div>
 						</div> -->
 					</div>
-					
-					<!-- <span class="hidden md:block">или</span> -->
-					
-					<!-- <div class="flex flex-col gap-4">
-						<div class="flex flex-row gap-4">
-							<a 
-								href="tel:+7 989 804 12-34"
-								class="inline-flex items-center gap-2 bg-dark-green text-light-gold px-4 py-2 rounded-full transition-colors hover:bg-dark-green/90"
-								itemProp="telephone"
-							>
-								<PhoneIcon class="w-5 h-5" />
-								<span>+7 (989) 804 12-34</span>
-							</a>
-							<a 
-								href="mailto:info@llymar.ru"
-								class="inline-flex items-center gap-2 bg-dark-green text-light-gold px-4 py-2 rounded-full transition-colors hover:bg-dark-green/90"
-								itemProp="email"
-							>
-								<MailIcon class="w-5 h-5" />
-								<span>info@llymar.ru</span>
-							</a>
-						</div>
-						
-						<div 
-							class="text-sm text-dark-green"
-							itemProp="address" 
-							itemScope 
-							itemType="https://schema.org/PostalAddress"
-						>
-							<div><strong>Адрес:</strong></div>
-							<div>
-								<span itemProp="addressLocality">Краснодар</span>, 
-								<span itemProp="addressRegion">Краснодарский край</span>
-							</div>
-							<div itemProp="streetAddress">ул. Примерная, 123</div>
-						</div>
-					</div> -->
 				</div>
 			</div>
 		</div>

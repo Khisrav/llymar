@@ -93,7 +93,7 @@ class LandingPageOptionSeeder extends Seeder
             [
                 'key' => 'phone',
                 'label' => 'Номер телефона',
-                'value' => '+7 989 804 12-34',
+                'value' => '+7 993 993-29-98',
                 'type' => 'tel',
                 'description' => 'Основной номер телефона',
                 'group' => 'contact',
@@ -102,7 +102,7 @@ class LandingPageOptionSeeder extends Seeder
             [
                 'key' => 'phone_formatted',
                 'label' => 'Телефон (для отображения)',
-                'value' => '+7 (989) 804 12-34',
+                'value' => '+7 (993) 993-29-98',
                 'type' => 'text',
                 'description' => 'Отформатированный номер телефона для отображения',
                 'group' => 'contact',

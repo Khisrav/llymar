@@ -102,7 +102,7 @@ const toggleMenu = () => {
 						<li class="border-t border-light-gold/20"></li>
 
 						<li>
-							<Link href="tel:+7 (989) 804 12-34" class="block text-lg font-semibold hover:text-light-gold transition-colors" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'"> +7 (989) 804 12-34 </Link>
+							<Link href="tel:+7 (993) 993-29-98" class="block text-lg font-semibold hover:text-light-gold transition-colors" :class="props.theme === 'transparent' ? 'text-white' : 'text-dark-green'">+7 (993) 993-29-98</Link>
 						</li>
 						<li class="">
 							<Link href="/partners" class="block w-full">

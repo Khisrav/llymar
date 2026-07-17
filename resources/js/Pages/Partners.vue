@@ -20,8 +20,8 @@ import {
 } from "lucide-vue-next";
 import { vMaska } from "maska/vue";
 
-const PARTNERS_PHONE = "+79528695336";
-const PARTNERS_PHONE_FORMATTED = "+7 (952) 869-53-36";
+const PARTNERS_PHONE = "+79939932998";
+const PARTNERS_PHONE_FORMATTED = "+7 (993) 993-29-98";
 const PAGE_SOURCE = "Страница «Специалистам»";
 
 const partnerTypes = [

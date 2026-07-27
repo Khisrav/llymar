@@ -139,7 +139,11 @@ class NewsResource extends Resource
                                     ->schema([
                                         Select::make('author_id')
                                             ->label('Автор')
-                                            ->relationship('author', 'name')
+                                            ->relationship(
+                                                'author',
+                                                'name',
+                                                fn (Builder $query) => $query->whereNotNull('name')->where('name', '!=', ''),
+                                            )
                                             ->searchable()
                                             ->preload()
                                             ->default(Auth::id())
@@ -250,7 +254,11 @@ class NewsResource extends Resource
 
                 SelectFilter::make('author')
                     ->label('Автор')
-                    ->relationship('author', 'name')
+                    ->relationship(
+                        'author',
+                        'name',
+                        fn (Builder $query) => $query->whereNotNull('name')->where('name', '!=', ''),
+                    )
                     ->searchable()
                     ->preload(),
             ])

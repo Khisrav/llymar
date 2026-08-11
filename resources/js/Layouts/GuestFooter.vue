@@ -72,8 +72,8 @@ const socialLinks = ref([
 					<h3 class="text-lg font-semibold mb-4 text-light-gold">Контакты</h3>
 					<div class="space-y-2 text-gray-300">
 						<p>{{ getOption('ui_address', 'г. Краснодар') }}</p>
-						<a :href="`tel:${getOption('phone', '+7 952 869-53-36')}`" class="block hover:text-light-gold transition-colors"> 
-							{{ getOption('phone_formatted', '+7 (952) 869-53-36') }}
+						<a :href="`tel:${getOption('phone', '+79898041234')}`" class="block hover:text-light-gold transition-colors"> 
+							{{ getOption('phone_formatted', '+7 (989) 804-12-34') }}
 						</a>
 						<a :href="`mailto:${getOption('email', 'info@llymar.ru')}`" class="block hover:text-light-gold transition-colors"> 
 							{{ getOption('email', 'info@llymar.ru') }}

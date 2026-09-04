@@ -57,12 +57,12 @@
     <table style="width: 100%">
         <tbody>
             <tr>
-                <td><b>Ф.И.О.:</b> {{ $order->customer_name }}</td>
-                <td><b>Телефон:</b> {{ $order->customer_phone }}</td>
+                <td><b>Ф.И.О.:</b> {{ $order->customer_name ?? '' }}</td>
+                <td><b>Телефон:</b> {{ $order->customer_phone ?? '' }}</td>
             </tr>
             <tr>
-                <td><b>Почта:</b> {{ $order->customer_email }}</td>
-                <td><b>Адрес:</b> {{ $order->customer_address }}</td>
+                <td><b>Почта:</b> {{ $order->customer_email ?? '' }}</td>
+                <td><b>Адрес:</b> {{ $order->customer_address ?? '' }}</td>
             </tr>
             <tr>
                 <td><b>Комментарий к заказу:</b> {{ $order->comment ?? '-' }}</td>

@@ -172,10 +172,10 @@ class OrderController extends Controller
     public static function listFromCalcPDF(Request $request)
     {
         $fields = $request->validate([
-            'name'        => 'required|string|max:255',
-            'phone'       => 'required|string',
-            'address'     => 'required|string',
-            'email'       => 'required|email',
+            'name'        => 'nullable|string|max:255',
+            'phone'       => 'nullable|string',
+            'address'     => 'nullable|string',
+            'email'       => 'nullable|email',
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
@@ -187,10 +187,10 @@ class OrderController extends Controller
         // Create a temporary Order instance (not persisted)
         $order = new Order([
             'user_id'          => Auth::id(),
-            'customer_name'    => $fields['name'],
-            'customer_phone'   => $fields['phone'],
-            'customer_address' => $fields['address'],
-            'customer_email'   => $fields['email'],
+            'customer_name'    => $fields['name'] ?? '',
+            'customer_phone'   => $fields['phone'] ?? '',
+            'customer_address' => $fields['address'] ?? '',
+            'customer_email'   => $fields['email'] ?? '',
             'total_price'      => $fields['total_price'],
         ]);
 
@@ -254,10 +254,10 @@ class OrderController extends Controller
     public static function simpleListFromCalcPDF(Request $request)
     {
         $fields = $request->validate([
-            'name'        => 'required|string|max:255',
-            'phone'       => 'required|string',
-            'address'     => 'required|string',
-            'email'       => 'required|email',
+            'name'        => 'nullable|string|max:255',
+            'phone'       => 'nullable|string',
+            'address'     => 'nullable|string',
+            'email'       => 'nullable|email',
             'cart_items'  => 'required|array',
             'openings'    => 'required|array',
             'total_price' => 'required|numeric',
@@ -269,10 +269,10 @@ class OrderController extends Controller
         // Create a temporary Order instance (not persisted)
         $order = new Order([
             'user_id'          => Auth::id(),
-            'customer_name'    => $fields['name'],
-            'customer_phone'   => $fields['phone'],
-            'customer_address' => $fields['address'],
-            'customer_email'   => $fields['email'],
+            'customer_name'    => $fields['name'] ?? '',
+            'customer_phone'   => $fields['phone'] ?? '',
+            'customer_address' => $fields['address'] ?? '',
+            'customer_email'   => $fields['email'] ?? '',
             'total_price'      => $fields['total_price'],
         ]);
 

@@ -87,9 +87,9 @@ const snp = ref({
 
 const order_info = computed(() => ({
     name: `${snp.value.surname || ""} ${snp.value.name || ""} ${snp.value.patronymic || ""}`.trim(),
-    phone: itemsStore.user.phone,
-    address: itemsStore.user.address,
-    email: itemsStore.user.email,
+    phone: itemsStore.user.phone || "",
+    address: itemsStore.user.address || "",
+    email: itemsStore.user.email || "",
 }))
 
 // File name dialog state

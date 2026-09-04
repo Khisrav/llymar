@@ -321,18 +321,18 @@ function getLogoBase64($user) {
             
                     <tbody>
                         <tr>
-                            <td><b>{{ $offer['customer']['name'] }}</b></td>
+                            <td><b>{{ $offer['customer']['name'] ?? '' }}</b></td>
                             <td><b>{{ $offer['manufacturer']['manufacturer'] ?? '-' }}</b></td>
                         </tr>
                         <tr>
-                            <td><b>{{ $offer['customer']['address'] }}</b></td>
+                            <td><b>{{ $offer['customer']['address'] ?? '' }}</b></td>
                             <td><b>{{ $offer['manufacturer']['phone'] ?? '-' }}</b></td>
                         </tr>
                         <tr>
-                            <td><b>{{ $offer['customer']['phone'] }}</b></td>
+                            <td><b>{{ $offer['customer']['phone'] ?? '' }}</b></td>
                             <td></td>
                         </tr>
-                        @if ($offer['customer']['comment'])
+                        @if (!empty($offer['customer']['comment']))
                             <tr>
                                 <td colspan="2">{{ $offer['customer']['comment'] }}</td>
                             </tr>

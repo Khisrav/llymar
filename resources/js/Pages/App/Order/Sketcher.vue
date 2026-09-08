@@ -7,7 +7,7 @@ import { Separator } from "../../../Components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "../../../Components/ui/radio-group";
 import { Label } from "../../../Components/ui/label";
 import { Button } from "../../../Components/ui/button";
-import { CircleHelpIcon, EraserIcon, FileAxis3DIcon, FileType2Icon, SlidersHorizontalIcon, HashIcon, SaveIcon } from "lucide-vue-next";
+import { EraserIcon, FileAxis3DIcon, FileType2Icon, SlidersHorizontalIcon, HashIcon, SaveIcon } from "lucide-vue-next";
 import { Item, ItemProperty, Opening, Order } from "../../../lib/types";
 import { useOpeningStore } from "../../../Stores/openingsStore";
 import { useSketcherStore } from "../../../Stores/sketcherStore";

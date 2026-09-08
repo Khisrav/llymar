@@ -356,6 +356,9 @@ export const useItemsStore = defineStore('itemsStore', () => {
             L6: () => {
                 return openings.reduce((acc, { type }) => ['triangle', 'blind-glazing'].includes(type) ? acc : acc + 6, 0)
             },
+            'L6.1': () => {
+                return openings.length
+            },
             L8: () => openings.reduce((acc, { type, doors }) => {
                 if (LEFT_RIGHT.includes(type)) return acc + (doors * 2 - 2)
                 if (CENTER_TYPE.includes(type)) return acc + (doors * 2 - 4)

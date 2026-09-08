@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3aeb830664919d65d167908f114bfe3f",
+    "content-hash": "0ed816109c28270c91a9763184f2f140",
     "packages": [
         {
             "name": "adamasantares/dxf",
@@ -1547,30 +1547,30 @@
         },
         {
             "name": "enjoping/dxfighter",
-            "version": "1.1.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Anecho/DXFighter.git",
-                "reference": "f8b7fee8d7a51f87af02f1906147c5387031710d"
+                "url": "https://github.com/enjoping/DXFighter.git",
+                "reference": "71943c37c2e7de9713416b49ee4c9d4c90f5dcd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Anecho/DXFighter/zipball/f8b7fee8d7a51f87af02f1906147c5387031710d",
-                "reference": "f8b7fee8d7a51f87af02f1906147c5387031710d",
+                "url": "https://api.github.com/repos/enjoping/DXFighter/zipball/71943c37c2e7de9713416b49ee4c9d4c90f5dcd6",
+                "reference": "71943c37c2e7de9713416b49ee4c9d4c90f5dcd6",
                 "shasum": ""
             },
             "require-dev": {
                 "phpcheckstyle/phpcheckstyle": "^0.14.7",
                 "phpunit/phpunit": "^7"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "DXFighter\\": "",
-                    "DXFighter\\lib\\": "lib/"
+                    "DXFighter\\lib\\": "lib/",
+                    "DXFighter\\": ""
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1581,9 +1581,10 @@
                 }
             ],
             "support": {
-                "source": "https://github.com/Anecho/DXFighter/tree/master"
+                "source": "https://github.com/enjoping/DXFighter/tree/master",
+                "issues": "https://github.com/enjoping/DXFighter/issues"
             },
-            "time": "2020-04-13T17:23:22+00:00"
+            "time": "2021-03-16T14:33:54+00:00"
         },
         {
             "name": "filament/actions",
@@ -12602,12 +12603,14 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "enjoping/dxfighter": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

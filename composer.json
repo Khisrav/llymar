@@ -13,7 +13,7 @@
         "awcodes/filament-tiptap-editor": "^3.5",
         "barryvdh/laravel-dompdf": "^3.0",
         "bostos/reorderable-columns": "^1.1",
-        "enjoping/dxfighter": "^1.1",
+        "enjoping/dxfighter": "dev-master",
         "filament/filament": "^3.2",
         "firebase/php-jwt": "^6.11",
         "guzzlehttp/guzzle": "^7.9",
@@ -88,5 +88,10 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [{
+        "name": "dxfighter",
+        "type": "vcs",
+        "url": "https://github.com/enjoping/DXFighter.git"
+    }]
 }

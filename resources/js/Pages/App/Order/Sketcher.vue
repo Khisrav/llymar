@@ -287,7 +287,8 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 										:max="sketcherStore.sketch_constraints[key]?.end || 100"
 										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
 										:model-value="parseInt(String(value[0]))"
-										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, Number(val))"
+										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, val)"
+										@blur="sketcherStore.clampSketchVar(sketcherStore.selectedOpeningID, key)"
 										class="h-8 text-sm"
 									/>
 								</div>
@@ -360,7 +361,8 @@ sketcherStore.saveAndClose = (): Promise<boolean> => {
 										:step="sketcherStore.sketch_constraints[key]?.interval || 1"
 										:model-value="parseInt(String(value[0]))"
 										:disabled="sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch"
-										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, Number(val))"
+										@update:model-value="(val) => sketcherStore.updateSketchVar(sketcherStore.selectedOpeningID, key, val)"
+										@blur="sketcherStore.clampSketchVar(sketcherStore.selectedOpeningID, key)"
 										class="h-8 text-sm"
 										:class="{
 											'opacity-50': sketcherStore.isSliderDisabled && (key == 'mp' || key == 'd') || !canEditOrderSketch,

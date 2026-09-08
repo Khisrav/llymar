@@ -53,12 +53,17 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		mp: { start: 0, end: 1000, default: 0, interval: 1 },
 	}
 
+	const toNumber = (raw: unknown, fallback = 0): number => {
+		const n = Number(raw)
+		return Number.isFinite(n) ? n : fallback
+	}
+
 	const normalizePaddingValue = (key: string, raw: unknown): number => {
 		const c = sketch_constraints[key]
 		if (!c) return 0
-		const n = typeof raw === 'number' ? raw : Number(raw)
+		const n = toNumber(raw)
 		// DB/migration defaults use 0 — treat as unset so inputs show constraint defaults
-		if (!Number.isFinite(n) || n === 0) {
+		if (n === 0) {
 			return c.default
 		}
 		return Math.min(Math.max(n, c.start), c.end)
@@ -164,14 +169,14 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		// Initialize sketch variables and selected door handles
 		openings.value.forEach((opening: Opening) => {
 			sketch_vars.value[opening.id as number] = {
-				a: [opening.a as number],
-				b: [opening.b as number],
-				d: [opening.d as number],
-				e: [opening.e as number],
-				f: [opening.f as number],
-				g: [opening.g as number],
-				i: [opening.i as number],
-				mp: [opening.mp as number],
+				a: [toNumber(opening.a, sketch_constraints.a.default)],
+				b: [toNumber(opening.b, sketch_constraints.b.default)],
+				d: [toNumber(opening.d, sketch_constraints.d.default)],
+				e: [toNumber(opening.e, sketch_constraints.e.default)],
+				f: [toNumber(opening.f, sketch_constraints.f.default)],
+				g: [toNumber(opening.g, sketch_constraints.g.default)],
+				i: [toNumber(opening.i, sketch_constraints.i.default)],
+				mp: [toNumber(opening.mp, sketch_constraints.mp.default)],
 				ot1: [normalizePaddingValue('ot1', opening.ot1)],
 				ot2: [normalizePaddingValue('ot2', opening.ot2)],
 				ot3: [normalizePaddingValue('ot3', opening.ot3)],
@@ -295,10 +300,13 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 	const getOpeningSketchDimensions = (doorIndex: number) => {
 		if (!currentOpening.value) return { width: 0, height: 0 };
 
-		let gap = currentOpening.value.type == "center" ? sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0] + 3 : 2 * sketch_vars.value[selectedOpeningID.value].a[0] + sketch_vars.value[selectedOpeningID.value].b[0] + sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0];
+		const vars = sketch_vars.value[selectedOpeningID.value] || {};
+		const n = (key: string) => toNumber(vars[key]?.[0]);
+
+		let gap = currentOpening.value.type == "center" ? n('a') + n('b') + n('e') + n('g') + 3 : 2 * n('a') + n('b') + n('e') + n('g');
 		let doorsGap = {
-			start: sketch_vars.value[selectedOpeningID.value].e[0] + sketch_vars.value[selectedOpeningID.value].g[0],
-			end: sketch_vars.value[selectedOpeningID.value].b[0],
+			start: n('e') + n('g'),
+			end: n('b'),
 		};
 		let overlaps = currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1) - 1;
 		let middle = Math.floor((overlaps * 13) / (currentOpening.value.doors / (currentOpening.value.type == "center" ? 2 : 1)));
@@ -338,11 +346,11 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				shirinaStvorok[i] = Math.floor(temp);
 			}
 		} else if (currentOpening.value.type == "blind-glazing") {
-			const ot1 = sketch_vars.value[selectedOpeningID.value].ot1[0];
-			const ot2 = sketch_vars.value[selectedOpeningID.value].ot2[0];
-			const ot3 = sketch_vars.value[selectedOpeningID.value].ot3[0];
-			const ot4 = sketch_vars.value[selectedOpeningID.value].ot4[0];
-			const zr = sketch_vars.value[selectedOpeningID.value].zr[0];
+			const ot1 = n('ot1');
+			const ot2 = n('ot2');
+			const ot3 = n('ot3');
+			const ot4 = n('ot4');
+			const zr = n('zr');
 			const effectiveWidthPerDoor = (currentOpening.value.width - ot1 - ot2 - (currentOpening.value.doors - 1) * zr) / currentOpening.value.doors;
 			shirinaStvorok[doorIndex] = Math.floor(effectiveWidthPerDoor);
 			height = Math.floor(currentOpening.value.height - ot3 - ot4);
@@ -388,18 +396,30 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		useInputFields.value = !useInputFields.value;
 	}
 
-	const updateSketchVar = (openingId: number, key: string, value: number) => {
+	const updateSketchVar = (openingId: number, key: string, value: number | string | null) => {
 		if (!sketch_vars.value[openingId]) {
 			sketch_vars.value[openingId] = {};
 		}
-		const c = sketch_constraints[key]
-		let next = value
-		if (c) {
-			if (!Number.isFinite(next)) {
-				next = c.default
-			} else {
-				next = Math.min(Math.max(next, c.start), c.end)
-			}
+		// Don't clamp while typing — empty/partial values are ignored until blur
+		if (value === '' || value === null || value === undefined) {
+			return;
+		}
+		const next = Number(value);
+		if (!Number.isFinite(next)) {
+			return;
+		}
+		sketch_vars.value[openingId][key] = [next];
+	}
+
+	const clampSketchVar = (openingId: number, key: string) => {
+		if (!sketch_vars.value[openingId]) return;
+		const c = sketch_constraints[key];
+		if (!c) return;
+		let next = Number(sketch_vars.value[openingId][key]?.[0]);
+		if (!Number.isFinite(next)) {
+			next = c.default;
+		} else {
+			next = Math.min(Math.max(next, c.start), c.end);
 		}
 		sketch_vars.value[openingId][key] = [next];
 	}
@@ -588,6 +608,7 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 		clearSelectedDoorHandles,
 		toggleInputMode,
 		updateSketchVar,
+		clampSketchVar,
 		updateOpeningDimension,
 		addDoorHandleToOpening,
 		updateInitialState,

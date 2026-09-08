@@ -30,6 +30,23 @@ class OrderOpening extends Model
         'zr',
         'door_handle_item_id',
     ];
+
+    protected $casts = [
+        'a' => 'integer',
+        'b' => 'float',
+        'c' => 'float',
+        'd' => 'float',
+        'e' => 'float',
+        'f' => 'float',
+        'g' => 'float',
+        'i' => 'float',
+        'mp' => 'integer',
+        'ot1' => 'integer',
+        'ot2' => 'integer',
+        'ot3' => 'integer',
+        'ot4' => 'integer',
+        'zr' => 'integer',
+    ];
     
     /**
      * Relationship: OrderOpening belongs to an Order.

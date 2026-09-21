@@ -12,7 +12,7 @@ import CustomPricing from '../../Components/Calculator/CustomPricing.vue';
 import { MessageCircleWarningIcon } from 'lucide-vue-next';
 
 const itemsStore = useItemsStore();
-const { user_default_factor } = usePage().props as any
+const { user_default_factor, can_access_factors } = usePage().props as any
 
 console.log(usePage().props.additional_items)
 itemsStore.items = usePage().props.items as Item[]
@@ -24,7 +24,7 @@ itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
 
 // Initialize user's default factor before calculating
-itemsStore.initializeUserFactor(user_default_factor || 'pz')
+itemsStore.initializeUserFactor(user_default_factor, !!can_access_factors)
 itemsStore.initiateCartItems()
 itemsStore.calculate()
 </script>

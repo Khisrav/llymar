@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Middleware\TrackUserActivity;
+use App\Support\PriceFactor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Middleware;
@@ -74,7 +75,7 @@ class HandleInertiaRequests extends Middleware
             // 'can_access_dxf' => ($user->can('access dxf') && $user->can_access_dxf) || $user->hasRole('Super-Admin'),
             'can_access_factors' => $user->can('access factors'),
             'can_access_sketcher' => $user->can('access app sketcher'),
-            'user_default_factor' => $user->default_factor ?? 'pz',
+            'user_default_factor' => PriceFactor::normalize($user->default_factor),
             'can_access_app_users' => $user->can('access app users'),
             'can_access_commission_credits' => $user->can('access app commission-credits'),
             'can_access_companies' => !$user->hasRole('Manager'),

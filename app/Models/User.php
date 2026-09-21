@@ -71,9 +71,19 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'profile_completed' => 'boolean',
             'full_access_sketcher' => 'boolean',
+            'default_factor' => 'array',
             // 'website' => 'string',
             // 'private_note' => 'text',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (empty($user->default_factor)) {
+                $user->default_factor = ['p3'];
+            }
+        });
     }
     
     public function canAccessPanel(Panel $panel): bool

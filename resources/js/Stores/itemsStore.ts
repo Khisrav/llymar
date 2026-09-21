@@ -4,6 +4,7 @@ import { useOpeningStore } from './openingsStore'
 import { Item, CartItem, User, Category } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 import { parseQuantity } from '../Utils/quantityFormatter'
+import { asFactorList, pickAutoFactor } from '../Utils/priceFactor'
 
 export const useItemsStore = defineStore('itemsStore', () => {
     const openingsStore = useOpeningStore()
@@ -18,8 +19,11 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const user = ref<User>({} as User)
     const categories = ref<Category[]>([])
     const markupPercentage = ref(0)
-    const selectedFactor = ref('pz')
-    const userDefaultFactor = ref('pz')
+    const selectedFactor = ref('p3')
+    const userDefaultFactor = ref('p3')
+    const allowedFactors = ref<string[]>(['p3'])
+    const autoFactorEnabled = ref(false)
+    const canAccessFactors = ref(false)
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -85,21 +89,42 @@ export const useItemsStore = defineStore('itemsStore', () => {
         sessionStorage.setItem('cartItems', JSON.stringify(validCartItems))
     }, { deep: true })
 
-    // Watch for factor changes and recalculate totals
-    watch(selectedFactor, () => {
-        // No need to recalculate individual item quantities since factor only affects pricing
-        // The total_price computed will automatically recalculate when selectedFactor changes
-    })
-
     const LEFT_RIGHT = ['left', 'right']
     const INNER_TYPES = ['inner-left', 'inner-right']
     const CENTER_TYPE = ['center']
 
-    const initializeUserFactor = (defaultFactor: string) => {
-        userDefaultFactor.value = defaultFactor
-        // Use saved factor from session or fallback to user's default factor
-        const savedFactor = sessionStorage.getItem('selectedFactor')
-        selectedFactor.value = savedFactor || defaultFactor
+    const applyAutoFactor = () => {
+        if (!autoFactorEnabled.value) return
+        selectedFactor.value = pickAutoFactor(compositionTotalAtP3.value, allowedFactors.value)
+    }
+
+    const initializeUserFactor = (
+        defaultFactor: string | string[] | undefined,
+        hasFactorAccess = false,
+        lockedFactor?: string,
+    ) => {
+        allowedFactors.value = asFactorList(defaultFactor)
+        userDefaultFactor.value = allowedFactors.value[0] ?? 'p3'
+        canAccessFactors.value = hasFactorAccess
+        autoFactorEnabled.value = !hasFactorAccess && !lockedFactor
+
+        if (lockedFactor) {
+            selectedFactor.value = lockedFactor
+            return
+        }
+
+        if (hasFactorAccess) {
+            sessionStorage.removeItem('selectedFactor')
+            selectedFactor.value = 'p3'
+            return
+        }
+
+        applyAutoFactor()
+    }
+
+    const setSelectedFactor = (factor: string) => {
+        if (autoFactorEnabled.value || !factor || factor === 'pz') return
+        selectedFactor.value = factor
     }
 
     const persistManualOverrides = () => {
@@ -601,6 +626,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         updateServicesQuantity(selectedServicesID.value)
         updateGhostHandlesQuantity(selectedGhostHandlesID.value)
         updateGhostGlassesQuantity(selectedGhostGlassesID.value)
+        applyAutoFactor()
     }
 
     const setManualQuantity = (itemId: number, quantity: number) => {
@@ -631,62 +657,72 @@ export const useItemsStore = defineStore('itemsStore', () => {
         persistManualOverrides()
     }
 
-    const itemPrice = (item_id: number): number => {
+    const itemPriceAt = (item_id: number, factor: string): number => {
         const item = getItemInfo(item_id)
 
-        if (!item) return 0;
+        if (!item) return 0
 
-        // Get the price directly from the selected factor (no multiplication needed)
-        const factor = selectedFactor.value.toLowerCase()
-        let price = 0.0
-
-        switch (factor) {
+        switch (factor.toLowerCase()) {
             case 'p1':
-                price = (item as any).p1 ?? 1.0
-                break
+                return (item as any).p1 ?? 1.0
             case 'p2':
-                price = (item as any).p2 ?? 1.0
-                break
+                return (item as any).p2 ?? 1.0
             case 'p3':
-                price = (item as any).p3 ?? 1.0
-                break
+                return (item as any).p3 ?? 1.0
             case 'p4':
-                price = (item as any).pr ?? 1.0
-                break
+            case 'pr':
+                return (item as any).pr ?? 1.0
             case 'pz':
             default:
-                price = (item as any).pz ?? 1.0
-                break
+                return (item as any).pz ?? 1.0
         }
-
-        return price;
     }
 
-    const total_price = computed(() => {
-        let totalPriceWithoutDiscount = 0, totalPriceWithDiscount = 0
-        // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
+    const itemPrice = (item_id: number): number => itemPriceAt(item_id, selectedFactor.value)
+
+    const totalPriceAt = (factor: string): number => {
         const allItems = [...items.value, ...glasses.value, ...services.value, ...ghost_handles.value]
 
         Object.keys(additional_items.value).forEach(key => {
             allItems.push(...additional_items.value[+key])
         })
 
-        allItems.forEach(item => {
+        return allItems.reduce((total, item) => {
             const cartItem = cartItems.value[item.id as number]
             const quantity = cartItem?.quantity || 0
-            const isChecked = cartItem?.checked !== false // default to true if undefined
+            const isChecked = cartItem?.checked !== false
 
-            if (!quantity || !isChecked) return
+            if (!quantity || !isChecked) return total
 
-            totalPriceWithoutDiscount += 0
-            totalPriceWithDiscount += itemPrice(item.id as number) * quantity
-        })
+            return total + itemPriceAt(item.id as number, factor) * quantity
+        }, 0)
+    }
 
-        return {
-            without_discount: totalPriceWithoutDiscount,
-            with_discount: totalPriceWithDiscount
-        }
+    const compositionTotalAtP3 = computed(() => {
+        return items.value.reduce((total, item) => {
+            const cartItem = cartItems.value[item.id as number]
+            const quantity = cartItem?.quantity || 0
+            const isChecked = cartItem?.checked !== false
+
+            if (!quantity || !isChecked) return total
+
+            return total + itemPriceAt(item.id as number, 'p3') * quantity
+        }, 0)
     })
+
+    const recommendedFactor = computed(() => {
+        const allowed = autoFactorEnabled.value ? allowedFactors.value : ['p3', 'p2', 'p1']
+        return pickAutoFactor(compositionTotalAtP3.value, allowed)
+    })
+
+    const total_price = computed(() => ({
+        without_discount: 0,
+        with_discount: totalPriceAt(selectedFactor.value),
+    }))
+
+    watch([cartItems, items, manualOverrides], () => {
+        applyAutoFactor()
+    }, { deep: true })
 
     const getItemInfo = (id: number) => {
         // const allItems = [...items.value, ...additional_items.value, ...glasses.value, ...services.value]
@@ -774,15 +810,22 @@ export const useItemsStore = defineStore('itemsStore', () => {
         clearAllManualOverrides,
         removeManualOverrideOnly,
         initializeUserFactor,
+        setSelectedFactor,
         getItemInfo,
         toggleItemChecked,
         cleanupCartItems,
         user,
         categories,
         itemPrice,
+        itemPriceAt,
+        totalPriceAt,
+        compositionTotalAtP3,
+        recommendedFactor,
         markupPercentage,
         selectedFactor,
         userDefaultFactor,
+        allowedFactors,
+        canAccessFactors,
         selectedGhostHandlesID,
         addGhostHandle,
         removeGhostHandle,

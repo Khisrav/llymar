@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\ReceivedCommissionsRelationManager;
 use App\Models\User;
+use App\Support\PriceFactor;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -296,18 +297,14 @@ class UserResource extends Resource
                         Forms\Components\Select::make('default_factor')
                             ->label('Цена по умолчанию')
                             ->native(false)
-                            // ->required()
-                            ->selectablePlaceholder(false)
-                            ->default('p3')
+                            ->multiple()
+                            ->required()
+                            ->default(['p3'])
+                            ->dehydrateStateUsing(fn ($state) => $state ? PriceFactor::normalize($state) : ['p3'])
                             ->visible(static::isSuperAdmin())
-                            // ->helperText('Применяется для расчетов')
-                            ->options([
-                                'pz' => 'ЗЦ',
-                                'p1' => 'Р1',
-                                'p2' => 'Р2',
-                                'p3' => 'Р3',
-                                'p4' => 'РЦ',
-                            ])
+                            ->dehydrated(fn () => static::isSuperAdmin())
+                            ->helperText('Автовыбор без ручного доступа: Р3 до 200 000 ₽, Р2 до 500 000 ₽, Р1 выше — только среди выбранных Р1/Р2/Р3.')
+                            ->options(PriceFactor::LABELS)
                             ->columnSpan(static::isSuperAdmin() ? 2 : 0),
 
                         Forms\Components\FileUpload::make('logo')
@@ -613,18 +610,24 @@ class UserResource extends Resource
 
                 Tables\Columns\TextColumn::make('default_factor')
                     ->label('Цена')
-                    ->formatStateUsing(fn ($state) => strtoupper($state ?? 'pz'))
+                    ->formatStateUsing(function ($state) {
+                        return collect(PriceFactor::normalize($state))
+                            ->map(fn ($factor) => PriceFactor::LABELS[$factor] ?? strtoupper((string) $factor))
+                            ->join(', ');
+                    })
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'pz' => 'gray',
-                        'p1' => 'blue',
-                        'p2' => 'green',
-                        'p3' => 'yellow',
-                        'p4' => 'red',
-                        default => 'gray',
+                    ->color(function ($state) {
+                        $factors = PriceFactor::normalize($state);
+                        return match ($factors[0] ?? null) {
+                            'pz' => 'gray',
+                            'p1' => 'blue',
+                            'p2' => 'green',
+                            'p3' => 'yellow',
+                            'p4' => 'red',
+                            default => 'gray',
+                        };
                     })
                     ->visible(static::isSuperAdmin())
-                    ->sortable()
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('reward_fee')
@@ -732,13 +735,15 @@ class UserResource extends Resource
                     ->label('Цена')
                     ->native(false)
                     ->visible(static::isSuperAdmin())
-                    ->options([
-                        'pz' => 'PZ',
-                        'p1' => 'P1',
-                        'p2' => 'P2',
-                        'p3' => 'P3',
-                        'p4' => 'P4',
-                    ]),
+                    ->options(PriceFactor::LABELS)
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+                        if (!$value) {
+                            return $query;
+                        }
+
+                        return $query->whereJsonContains('default_factor', $value);
+                    }),
 
                 Tables\Filters\Filter::make('has_sketcher_access')
                     ->label('Доступ к Sketcher')

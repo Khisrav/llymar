@@ -1,23 +1,36 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from "vue"
+import { usePage } from "@inertiajs/vue3"
 import { useItemsStore } from "../../Stores/itemsStore"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import { currencyFormatter } from "../../Utils/currencyFormatter"
+import { DISPLAY_FACTORS, factorLabel } from "../../Utils/priceFactor"
 import { Slider } from "../ui/slider"
 import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { 
 	NumberField, 
-	NumberFieldContent, 
-	NumberFieldDecrement, 
-	NumberFieldInput, 
-	NumberFieldIncrement 
+    NumberFieldContent, 
+    NumberFieldDecrement, 
+    NumberFieldInput, 
+    NumberFieldIncrement 
 } from '../ui/number-field'
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
+const { can_access_factors } = usePage().props as any
 
 const basePrice = computed(() => itemsStore.total_price.with_discount)
 const allOpeningsArea = computed(() => openingsStore.openings.reduce((acc, o) => acc + o.width * o.height, 0) / 1000000)
+
+const factorOptions = computed(() => DISPLAY_FACTORS.map((key) => ({
+	key,
+	label: factorLabel(key),
+	price: itemsStore.totalPriceAt(key),
+	selectable: key !== 'pz',
+	isDiscount: key === itemsStore.recommendedFactor && key !== 'pz' && key !== 'p4',
+})))
 
 // ---------- HELPER FUNCTIONS ----------
 const totalPriceFromPercentage = (percentage: number) => basePrice.value * (1 + percentage / 100)
@@ -82,7 +95,32 @@ const pricePerM2 = computed(() => {
 	<div class="border p-2 md:p-4 rounded-2xl bg-background w-full max-w-5xl mx-auto">
 		<h2 class="text-xl font-bold text-muted-foreground block">Стоимость для КП</h2>
 
-		<div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+		<RadioGroup
+			v-if="can_access_factors"
+			class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2"
+			:model-value="itemsStore.selectedFactor"
+			@update:model-value="(value) => itemsStore.setSelectedFactor(String(value))"
+		>
+			<Label
+				v-for="option in factorOptions"
+				:key="option.key"
+				:for="`factor-${option.key}`"
+				class="flex items-center gap-2 rounded-xl border p-3 cursor-pointer"
+				:class="{
+					'font-bold border-primary': option.isDiscount,
+					'opacity-60 cursor-not-allowed': !option.selectable,
+					'border-primary bg-primary/5': option.key === itemsStore.selectedFactor,
+				}"
+			>
+				<RadioGroupItem :id="`factor-${option.key}`" :value="option.key" :disabled="!option.selectable" />
+				<span>
+					{{ option.label }} {{ currencyFormatter(option.price) }}
+					<template v-if="option.isDiscount"> Скидка</template>
+				</span>
+			</Label>
+		</RadioGroup>
+
+		<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<div class="flex justify-between gap-4 mb-4">
 					<div>Закупочная цена:</div>

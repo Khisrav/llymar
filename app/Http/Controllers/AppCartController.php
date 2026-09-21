@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\User;
+use App\Support\PriceFactor;
 use Inertia\Inertia;
 use App\Http\Controllers\AppCalculatorController;
 use App\Models\Company;
@@ -123,7 +124,7 @@ class AppCartController extends Controller
             'dealers' => $dealers,
             'user_companies' => $userCompanies,
             'user' => $user,
-            'user_default_factor' => $user->default_factor ?? 'pz',
+            'user_default_factor' => PriceFactor::normalize($user->default_factor),
             'pickup_address' => $pickupAddress,
             'pickup_phone' => $pickupPhone,
             // Pass the order data from cart page
@@ -194,7 +195,7 @@ class AppCartController extends Controller
             'dealers' => $dealers,
             'user_companies' => $userCompanies,
             'user' => $user,
-            'user_default_factor' => $user->default_factor ?? 'pz',
+            'user_default_factor' => PriceFactor::normalize($user->default_factor),
             'pickup_address' => $pickupAddress,
             'pickup_phone' => $pickupPhone,
             // Pass the order data from session

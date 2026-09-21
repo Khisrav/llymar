@@ -32,7 +32,7 @@ const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
 const selectedDealerId = ref<string>("")
 
-const { user_default_factor, dealers, can_select_dealer, user_role } = usePage().props as any
+const { user_default_factor, dealers, can_select_dealer, user_role, can_access_factors } = usePage().props as any
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
@@ -42,7 +42,7 @@ itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
 
 // Initialize user's default factor
-itemsStore.initializeUserFactor(user_default_factor || 'pz')
+itemsStore.initializeUserFactor(user_default_factor, !!can_access_factors)
 itemsStore.initiateCartItems()
 
 const cartItemIDs = computed(() => Object.keys(itemsStore.cartItems).map(Number))
@@ -80,7 +80,7 @@ const goToConfirmationPage = () => {
 		openings: openingsStore.openings,
 		total_price: itemsStore.total_price.with_discount,
 		ral_code: selectedRALColor.value.name === "Выберите цвет" ? "" : selectedRALColor.value.name,
-		selected_factor: itemsStore.userDefaultFactor,
+		selected_factor: itemsStore.selectedFactor,
 		selected_dealer_id: selectedDealerId.value ? parseInt(selectedDealerId.value) : null,
 	}
 	

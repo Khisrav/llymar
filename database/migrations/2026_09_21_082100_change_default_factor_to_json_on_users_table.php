@@ -24,7 +24,8 @@ return new class extends Migration
             }
         });
 
-        DB::statement("ALTER TABLE users MODIFY default_factor JSON NOT NULL DEFAULT (JSON_ARRAY('p3'))");
+        // MySQL 5.7 does not support non-NULL JSON defaults / expression defaults.
+        DB::statement("ALTER TABLE users MODIFY default_factor JSON NOT NULL");
     }
 
     public function down(): void

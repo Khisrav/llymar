@@ -95,32 +95,38 @@ const pricePerM2 = computed(() => {
 	<div class="border p-2 md:p-4 rounded-2xl bg-background w-full max-w-5xl mx-auto">
 		<h2 class="text-xl font-bold text-muted-foreground block">Стоимость для КП</h2>
 
-		<RadioGroup
-			v-if="can_access_factors"
-			class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2"
-			:model-value="itemsStore.selectedFactor"
-			@update:model-value="(value) => itemsStore.setSelectedFactor(String(value))"
-		>
-			<Label
-				v-for="option in factorOptions"
-				:key="option.key"
-				:for="`factor-${option.key}`"
-				class="flex items-center gap-2 rounded-xl border p-3 cursor-pointer"
-				:class="{
-					'font-bold border-primary': option.isDiscount,
-					'opacity-60 cursor-not-allowed': !option.selectable,
-					'border-primary bg-primary/5': option.key === itemsStore.selectedFactor,
-				}"
+		<div class="mt-4 flex flex-col md:flex-row md:items-start gap-6">
+			<RadioGroup
+				v-if="can_access_factors"
+				class="w-fit shrink-0 gap-1"
+				:model-value="itemsStore.selectedFactor"
+				@update:model-value="(value) => itemsStore.setSelectedFactor(String(value))"
 			>
-				<RadioGroupItem :id="`factor-${option.key}`" :value="option.key" :disabled="!option.selectable" />
-				<span>
-					{{ option.label }} {{ currencyFormatter(option.price) }}
-					<template v-if="option.isDiscount"> Скидка</template>
-				</span>
-			</Label>
-		</RadioGroup>
+				<Label
+					v-for="option in factorOptions"
+					:key="option.key"
+					:for="`factor-${option.key}`"
+					class="flex items-center gap-2 py-0.5 text-sm cursor-pointer"
+					:class="{
+						'font-medium': option.key === itemsStore.selectedFactor && !option.isDiscount,
+						'text-red-600 dark:text-red-400': option.isDiscount,
+						'opacity-50 cursor-not-allowed': !option.selectable,
+					}"
+				>
+					<RadioGroupItem
+						:id="`factor-${option.key}`"
+						:value="option.key"
+						:disabled="!option.selectable"
+						:class="option.isDiscount ? 'border-red-500 text-red-500' : ''"
+					/>
+					<span>
+						{{ option.label }} {{ currencyFormatter(option.price) }}
+						<template v-if="option.isDiscount"> Скидка</template>
+					</span>
+				</Label>
+			</RadioGroup>
 
-		<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<div class="flex justify-between gap-4 mb-4">
 					<div>Закупочная цена:</div>
@@ -162,6 +168,7 @@ const pricePerM2 = computed(() => {
 					<Input v-model="typedTotalPrice" @blur="handleTypedTotalPriceBlur" type="number" class="w-24 md:w-32" />
 				</div>
 			</div>
+		</div>
 		</div>
 	</div>
 </template>

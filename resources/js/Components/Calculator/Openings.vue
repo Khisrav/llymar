@@ -109,7 +109,7 @@ watch(
 
 const clearSessionStorage = () => {
 	sessionStorage.removeItem('selectedServicesID')
-	// sessionStorage.removeItem('selectedFactor')
+	sessionStorage.removeItem('selectedFactor')
 	sessionStorage.removeItem('selectedGlassID')
 	sessionStorage.removeItem('cartItems')
 	sessionStorage.removeItem('manualOverrides')
@@ -119,7 +119,7 @@ const clearSessionStorage = () => {
 	
 	itemsStore.clearAllManualOverrides()
 	itemsStore.initiateCartItems()
-	itemsStore.initializeUserFactor(itemsStore.userDefaultFactor)
+	itemsStore.initializeUserFactor(itemsStore.allowedFactors, itemsStore.canAccessFactors)
 	itemsStore.calculate()
 }
 </script>

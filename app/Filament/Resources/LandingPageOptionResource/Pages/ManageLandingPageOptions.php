@@ -91,6 +91,15 @@ class ManageLandingPageOptions extends Page
                                 ->schema($this->getFieldsByGroup('social'))
                                 ->columns(1),
                         ]),
+
+                    Tabs\Tab::make('Калькулятор')
+                        ->icon('heroicon-o-calculator')
+                        ->schema([
+                            Section::make('Пороги цен Р3 / Р2 / Р1')
+                                ->description('Сумма состава системы по Р3. Ниже порога Р2 — Р3, от Р2 до Р1 — Р2, от Р1 и выше — Р1.')
+                                ->schema($this->getFieldsByGroup('calculator'))
+                                ->columns(2),
+                        ]),
                 ])
                 ->columnSpanFull()
                 ->persistTabInQueryString(),
@@ -116,6 +125,11 @@ class ManageLandingPageOptions extends Page
                     ->tel(),
                 'url' => TextInput::make("option_{$option->id}")
                     ->url(),
+                'number' => TextInput::make("option_{$option->id}")
+                    ->numeric()
+                    ->minValue(0)
+                    ->step(1)
+                    ->suffix('₽'),
                 default => TextInput::make("option_{$option->id}"),
             };
 
@@ -148,6 +162,24 @@ class ManageLandingPageOptions extends Page
     public function save(): void
     {
         $data = $this->form->getState();
+
+        $p2Option = LandingPageOption::where('key', 'factor_p2_from')->first();
+        $p1Option = LandingPageOption::where('key', 'factor_p1_from')->first();
+
+        if ($p2Option && $p1Option) {
+            $p2 = (float) ($data["option_{$p2Option->id}"] ?? 0);
+            $p1 = (float) ($data["option_{$p1Option->id}"] ?? 0);
+
+            if ($p1 <= $p2) {
+                Notification::make()
+                    ->title('Ошибка')
+                    ->danger()
+                    ->body('Порог Р1 должен быть больше порога Р2.')
+                    ->send();
+
+                return;
+            }
+        }
 
         try {
             DB::beginTransaction();

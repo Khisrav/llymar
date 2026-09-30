@@ -27,18 +27,16 @@ import { Link, router, usePage } from "@inertiajs/vue3"
 import { useOpeningStore } from "../../Stores/openingsStore"
 import axios from 'axios';
 import { useCommercialOfferStore } from "../../Stores/commercialOfferStore"
-import { computed, ref, watch } from "vue"
+import { computed, ref } from "vue"
 import { Toaster } from "../ui/sonner"
 import { toast } from "vue-sonner"
+import { factorLabel } from "../../Utils/priceFactor"
 
 const itemsStore = useItemsStore()
 const openingsStore = useOpeningStore()
 const commercialOfferStore = useCommercialOfferStore()
 
-const { can_access_app_cart, can_access_factors, user_default_factor, user_role } = usePage().props as any
-
-// Factor management
-const selectedFactor = ref(sessionStorage.getItem('selectedFactor') || user_default_factor || 'pz')
+const { can_access_app_cart, user_role } = usePage().props as any
 
 const userRoles = computed(() =>
     Array.isArray(user_role) ? user_role : (typeof user_role === 'string' ? [user_role] : [])
@@ -47,35 +45,6 @@ const userRoles = computed(() =>
 const canAccessListP = computed(() =>
     userRoles.value.includes('Super-Admin') || userRoles.value.includes('ROP')
 )
-
-const factors = computed(() => {
-    if (userRoles.value.includes('ROP') || userRoles.value.includes('Operator')) {
-        return [
-            { key: 'p3', label: 'Р3' },
-            { key: 'p4', label: 'РЦ' },
-        ];
-    }
-    return [
-        { key: 'pz', label: 'ЗЦ' },
-        { key: 'p1', label: 'Р1' },
-        { key: 'p2', label: 'Р2' },
-        { key: 'p3', label: 'Р3' },
-        { key: 'p4', label: 'РЦ' },
-    ];
-});
-
-// Watch for factor changes and update session storage
-watch(selectedFactor, (newValue) => {
-    sessionStorage.setItem('selectedFactor', newValue)
-    // Trigger recalculation in items store
-    itemsStore.selectedFactor = newValue
-})
-
-
-
-// Initialize factor in items store with user's default factor
-itemsStore.initializeUserFactor(user_default_factor || 'pz')
-itemsStore.selectedFactor = selectedFactor.value
 
 // SNP for Surname Name Patronymic
 const nameParts = (itemsStore.user.name || "").trim().split(" ");
@@ -130,7 +99,7 @@ const downloadOnlyCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
             file_name: fileName.value || null,
             generate_pdf: true,
         }
@@ -180,7 +149,7 @@ const saveCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
             file_name: fileName.value || null,
             generate_pdf: false, // Don't generate PDF for save-only
         }
@@ -229,7 +198,7 @@ const downloadAndSaveCommercialOffer = async () => {
             cart_items: itemsStore.cartItems,
             total_price: itemsStore.total_price.with_discount,
             markup_percentage: itemsStore.markupPercentage,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
             file_name: fileName.value || null,
             generate_pdf: true, // Generate PDF for download
         }
@@ -294,7 +263,7 @@ const downloadSpecificationPDF = async () => {
             cart_items: itemsStore.cartItems,
             openings: openingsStore.openings,
             total_price: itemsStore.total_price.with_discount,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
         }
     
         const response = await axios.post('/orders/list-pdf-from-calc', formData, {
@@ -329,7 +298,7 @@ const downloadListWithoutPricesPDF = async () => {
         const formData = {
             cart_items: itemsStore.cartItems,
             openings: openingsStore.openings,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
             file_name: listPFileName.value.trim(),
         }
 
@@ -367,7 +336,7 @@ const downloadListPDF = async () => {
             cart_items: itemsStore.cartItems,
             openings: openingsStore.openings,
             total_price: itemsStore.total_price.with_discount,
-            selected_factor: selectedFactor.value,
+            selected_factor: itemsStore.selectedFactor,
         }
     
         const response = await axios.post('/orders/simple-list-from-calc', formData, {
@@ -398,32 +367,11 @@ const downloadListPDF = async () => {
     <div class="z-20 fixed bottom-0 sm:bottom-2 left-1/2 w-full max-w-96 transform -translate-x-1/2 backdrop-blur-sm p-2 sm:p-4 bg-white/75 dark:bg-slate-900/75 ring-1 ring-black/10 sm:rounded-xl md:rounded-2xl shadow-lg">
         <div class="flex items-center justify-between">
             <div class="flex flex-col">
-                <span class="text-xs font-thin text-muted-foreground">Цена ({{ selectedFactor.toUpperCase() }}):</span>
+                <span class="text-xs font-thin text-muted-foreground">Цена ({{ factorLabel(itemsStore.selectedFactor) }}):</span>
                 <span class="font-bold text-xl text-primary">{{ currencyFormatter(itemsStore.total_price.with_discount) }}</span>
             </div>
 
             <div class="flex gap-2 md:gap-2 items-center actions">
-                <DropdownMenu v-if="can_access_factors">
-                    <DropdownMenuTrigger>
-                        <Button variant="outline" size="sm" class="min-w-12">
-                            <span class="text-sm font-medium">{{ factors.find(factor => factor.key === selectedFactor)?.label || 'ЗЦ' }}</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent class="w-32">
-                        <DropdownMenuLabel>Цены</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                            v-for="factor in factors" 
-                            :key="factor.key" 
-                            @click="selectedFactor = factor.key" 
-                            :class="{ 'bg-accent text-white': factor.key === selectedFactor }" 
-                            class="mb-1 cursor-pointer flex items-center gap-2"
-                        >
-                            <span>{{ factor.label }}</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Button variant="outline" size="sm" class="">

@@ -121,6 +121,7 @@ class ChildUserController extends Controller
                 'password' => Hash::make($plainPassword),
                 'parent_id' => $user->id,
                 'profile_completed' => false,
+                'default_factor' => ['p3'],
             ]);
 
             // Assign the determined role

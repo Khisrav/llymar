@@ -32,7 +32,7 @@ const open = ref(false)
 const selectedRALColor = ref({ name: "Выберите цвет", HEX: "none" })
 const selectedDealerId = ref<string>("")
 
-const { user_default_factor, dealers, can_select_dealer, user_role, can_access_factors } = usePage().props as any
+const { user_default_factor, dealers, can_select_dealer, user_role, can_access_factors, factor_ranges } = usePage().props as any
 
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
@@ -42,6 +42,7 @@ itemsStore.user = usePage().props.user as User
 itemsStore.categories = usePage().props.categories as Category[]
 
 // Initialize user's default factor
+itemsStore.setFactorRanges(factor_ranges)
 itemsStore.initializeUserFactor(user_default_factor, !!can_access_factors)
 itemsStore.initiateCartItems()
 

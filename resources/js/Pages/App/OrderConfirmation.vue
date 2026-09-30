@@ -38,7 +38,7 @@ const isSubmitting = ref(false)
 
 // Get props and errors
 const page = usePage()
-const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone, order_data, has_montazh_services, can_access_factors } = page.props as any
+const { user_role, logistics_companies, user, dealers, user_companies, items, additional_items, glasses, services, categories, user_default_factor, pickup_address, pickup_phone, order_data, has_montazh_services, can_access_factors, factor_ranges } = page.props as any
 const errors = computed(() => page.props.errors as any)
 
 // Show toast if there's an error on page load (e.g., after redirect from failed order creation)
@@ -61,6 +61,7 @@ itemsStore.user = user || {}
 itemsStore.categories = categories || []
 
 // Initialize user's default factor from order_data or fallback to user_default_factor
+itemsStore.setFactorRanges(factor_ranges)
 itemsStore.initializeUserFactor(user_default_factor, !!can_access_factors, order_data?.selected_factor)
 
 // Initialize cart items from order_data instead of session storage

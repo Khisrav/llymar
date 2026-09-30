@@ -4,7 +4,7 @@ import { useOpeningStore } from './openingsStore'
 import { Item, CartItem, User, Category } from '../lib/types'
 import { discountRate } from '../Utils/discountRate'
 import { parseQuantity } from '../Utils/quantityFormatter'
-import { asFactorList, pickAutoFactor } from '../Utils/priceFactor'
+import { asFactorList, normalizeRanges, pickAutoFactor, type FactorRanges } from '../Utils/priceFactor'
 
 export const useItemsStore = defineStore('itemsStore', () => {
     const openingsStore = useOpeningStore()
@@ -24,6 +24,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
     const allowedFactors = ref<string[]>(['p3'])
     const autoFactorEnabled = ref(false)
     const canAccessFactors = ref(false)
+    const factorRanges = ref<FactorRanges>(normalizeRanges())
 
     const selectedServicesID = ref<number[]>([])
     const selectedGlassID = ref(287)
@@ -95,7 +96,12 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const applyAutoFactor = () => {
         if (!autoFactorEnabled.value) return
-        selectedFactor.value = pickAutoFactor(compositionTotalAtP3.value, allowedFactors.value)
+        selectedFactor.value = pickAutoFactor(compositionTotalAtP3.value, allowedFactors.value, factorRanges.value)
+    }
+
+    const setFactorRanges = (ranges?: Partial<FactorRanges> | null) => {
+        factorRanges.value = normalizeRanges(ranges)
+        applyAutoFactor()
     }
 
     const initializeUserFactor = (
@@ -712,7 +718,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
 
     const recommendedFactor = computed(() => {
         const allowed = autoFactorEnabled.value ? allowedFactors.value : ['p3', 'p2', 'p1']
-        return pickAutoFactor(compositionTotalAtP3.value, allowed)
+        return pickAutoFactor(compositionTotalAtP3.value, allowed, factorRanges.value)
     })
 
     const total_price = computed(() => ({
@@ -810,6 +816,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         clearAllManualOverrides,
         removeManualOverrideOnly,
         initializeUserFactor,
+        setFactorRanges,
         setSelectedFactor,
         getItemInfo,
         toggleItemChecked,
@@ -825,6 +832,7 @@ export const useItemsStore = defineStore('itemsStore', () => {
         selectedFactor,
         userDefaultFactor,
         allowedFactors,
+        factorRanges,
         canAccessFactors,
         selectedGhostHandlesID,
         addGhostHandle,

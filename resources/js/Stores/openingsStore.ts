@@ -49,7 +49,6 @@ export const useOpeningStore = defineStore('openingStore', () => {
     }
     
     const addDuplicateOpening = (index: number) => {
-        console.log('addDuplicateOpening', index)
         openings.value.splice(index + 1, 0, openings.value[index])
     }
     

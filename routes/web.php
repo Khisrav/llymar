@@ -33,7 +33,8 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.i
 
 Route::get('/', function () {
     // Get landing page options
-    $options = \App\Models\LandingPageOption::orderBy('group')->orderBy('order')->get();
+    $options = \App\Models\LandingPageOption::where('group', '!=', 'calculator')
+        ->orderBy('group')->orderBy('order')->get(['key', 'value']);
     $optionsMap = [];
     foreach ($options as $option) {
         $optionsMap[$option->key] = $option->value;

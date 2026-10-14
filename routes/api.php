@@ -28,7 +28,8 @@ Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])
  * LANDING PAGE OPTIONS ROUTES
  */
 Route::get('/landing-page-options', function () {
-    $options = \App\Models\LandingPageOption::orderBy('group')->orderBy('order')->get();
+    $options = \App\Models\LandingPageOption::where('group', '!=', 'calculator')
+        ->orderBy('group')->orderBy('order')->get(['key', 'value', 'group']);
     return response()->json([
         'success' => true,
         'data' => $options,

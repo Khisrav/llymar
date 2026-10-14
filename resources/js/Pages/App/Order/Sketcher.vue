@@ -52,7 +52,6 @@ onMounted(() => {
 	});
 
 	// Initialize the sketcher store with page data
-	console.log(order);
 	sketcherStore.initializeStore({
 		order,
 		openings,

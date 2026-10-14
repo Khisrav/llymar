@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+    esbuild: mode === 'production'
+        ? { pure: ['console.log', 'console.info', 'console.debug'], drop: ['debugger'] }
+        : {},
     plugins: [
         laravel({
             input: [
@@ -22,4 +25,4 @@ export default defineConfig({
         }),
     ],
     base: '/build/',
-});
+}));

@@ -14,7 +14,6 @@ import { MessageCircleWarningIcon } from 'lucide-vue-next';
 const itemsStore = useItemsStore();
 const { user_default_factor, can_access_factors, factor_ranges } = usePage().props as any
 
-console.log(usePage().props.additional_items)
 itemsStore.items = usePage().props.items as Item[]
 itemsStore.additional_items = usePage().props.additional_items as { [key: number]: Item[] }
 itemsStore.ghost_handles = usePage().props.ghost_handles as Item[]

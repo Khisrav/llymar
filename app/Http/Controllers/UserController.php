@@ -19,7 +19,10 @@ class UserController extends Controller
     public function show()
     {
         return Inertia::render('App/Account/Settings', [
-            'user' => Auth::user(),
+            'user' => Auth::user()->only([
+                'id', 'name', 'email', 'company', 'phone', 'address',
+                'country', 'region', 'city', 'telegram', 'website', 'logo',
+            ]),
         ]);
     }
     

@@ -47,24 +47,19 @@ class HandleInertiaRequests extends Middleware
                     ...(new Ziggy)->toArray(),
                     'location' => $request->url(),
                 ],
-                'can_access_app_calculator' => false,
-                'can_access_app_history' => false,
-                'can_access_admin_panel' => false,
-                'can_access_app_cart' => false,
-                // 'can_access_dxf' => false,
-                'can_access_factors' => false,
-                'can_access_sketcher' => false,
-                'can_access_app_users' => false,
-                'can_access_commission_credits' => false,
-                'can_access_companies' => false,
-                'user_role' => null,
-                'factor_ranges' => PriceFactor::ranges(),
             ];
         }
         
         return [
             ...parent::share($request),
-            'auth' => ['user' => $user],
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->roles->map(fn ($role) => ['name' => $role->name])->values(),
+                ],
+            ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

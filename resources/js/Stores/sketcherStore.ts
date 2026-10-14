@@ -218,7 +218,6 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 				height: o.height as number
 			}))
 		};
-		console.log(initialState.value);
 	}
 
 	const PADDING_HANDLE_KEYS = ['ot1', 'ot2', 'ot3', 'ot4', 'zr'] as const;
@@ -369,8 +368,6 @@ export const useSketcherStore = defineStore('sketcherStore', () => {
 					doorHandles.value.push(handle);
 				}
 			}
-
-			console.log(sketch_vars.value[openingId]);
 		} catch (error) {
 			console.error("Error setting door handle properties:", error);
 		}
